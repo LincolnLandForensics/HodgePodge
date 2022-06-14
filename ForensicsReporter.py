@@ -23,9 +23,9 @@ todaysDate = d.strftime("%m/%d/%Y")
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "convert cls to written forensic report"
+description = "convert cls to written forensic report, print stickers, and convert imaging logs to xlsx"
 tech = 'LincolnLandForensics'  # change this to your name
-version = '1.3.9'
+version = '1.4.1'
 
 # Regex section
 regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
@@ -503,7 +503,7 @@ def parse_log():
     
     
     if len(capacity) != 0:
-        notes = ("This had a %s hard drive, model %s, serial # %s. %s" %(capacity, model, hddserial, notes))
+        notes = ("This had a %s drive, model %s, serial # %s. %s" %(capacity, model, hddserial, notes))
 
     if len(OS) != 0 and 'The operating system was' not in notes:
         notes = ("%s The operating system was %s." %(notes, OS)) 
@@ -675,7 +675,7 @@ Exhibit %s
                 report = ('''%sA %s''') %(report, makeModel)
 
         if len(OS) != 0:
-            report = ("%s, %s" %(report, OS))
+            report = ("%s, with a %s OS" %(report, OS))
         if len(serial) != 0:
             report = ("%s, serial # %s" %(report, serial))
         if len(dateReceived) != 0:
@@ -723,20 +723,19 @@ Exhibit %s
             report = ("%s %s" %(report, notes))
 
         if exportedEvidence == "Y" and 'elevant files were exported' not in notes:
-            report = ("%s Relevant files were exported." %(report))
-
+            # report = ("%s Relevant files were exported." %(report.strip()))
+            report = ("%s Relevant files were exported." %(report.rstrip()))
         elif exportedEvidence == "N" and 'search for relevant files was made and no files were found' not in notes:
-            report = ("%s A search for relevant files was made and no files were found." %(report))
+            report = ("%s A search for relevant files was made and no files were found." %(report.rstrip()))
         
         report = report.replace("    , was received. ", "    ")
         report = report.replace("This was a DVR system was not imaged.","This was a DVR system and was not imaged.")
         report = report.replace("Digital Forensic Examiner Casey Karaffa did not conduct a forensic extraction.","This was not imaged.")
         report = report.replace("The image was processed with copy.","Pertinent files were copied.")
-        report = report.replace("Digital Forensic Examiner Jeff Thompson conducted a forensic extraction.","")
-        report = report.replace("Digital Forensic Examiner Rick Branham conducted a forensic extraction.","")
-        report = report.replace("Digital Forensic Examiner Casey Karaffa conducted a forensic extraction.","")
-        report = report.replace("This had a  hard drive, model , serial # .","") # fixme     
-        notes = notes.replace("This had a  hard drive, model , serial # .","")  # fixme
+        report = report.replace("This had a  drive, model , serial # .","") # fixme     
+        notes = notes.replace("This had a  drive, model , serial # .","")  # fixme
+        report = report.replace(", serial # .",".") # fixme 
+        notes = notes.replace(", serial # .",".") # fixme 
         
         print(report)
         output.write(report)
@@ -926,7 +925,7 @@ if __name__ == '__main__':
 
 """
 output to pdf or Doc?
-
+if ', serial # .', replace with .
 
 """
 

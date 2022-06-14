@@ -3,20 +3,25 @@
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+
 import re
 import sys
+import codecs
 import hashlib
 import datetime
 import argparse  # for menu system
 import xlsxwriter
 from subprocess import call
 
+# reload(sys)
+# sys.setdefaultencoding("utf8")    #to avoid 'ascii' codec errors # avoid this
+
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "parse dirlist"
+description = "parse dirlist (dir /s /b > dirlist.txt)"
 tech = 'LincolnLandForensics'  # change this to your name
-version = '1.0.2'
+version = '1.0.4'
 # output_file = "report_backup.txt"   # temp
 
 # Regex section
@@ -122,7 +127,12 @@ def format_function(bg_color='white'):
 def parse_log():
     style = workbook.add_format()
     (header, report, date) = ('', '', '<insert date here>')
-    csv_file = open(filename)
+    # csv_file = open(filename, encoding='utf8')  # UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d
+    # csv_file = io.open(filename, 'r', encoding='windows-1252')
+    csv_file = codecs.open(filename,'rU','utf-8')   # alpha
+    
+    
+    
     outputFile = "logreport.txt"
     output = open(outputFile, 'w+')
     (caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType) = ('', '', '', '', '', '', '')
@@ -225,13 +235,21 @@ def read_text():
     # global Row    #The magic to pass Row globally
     style = workbook.add_format()
     (header, report, date) = ('', '', '<insert date here>')
-    csv_file = open(filename)
+    # csv_file = open(filename)
+    csv_file = open(filename, encoding='utf8')  # UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d
+    # csv_file = io.open(filename, 'r', encoding='windows-1252')
+    # csv_file = codecs.open(filename,'rU','utf-8')   # alpha
+    # csv_file = codecs.open(filename,'rU','utf-8')   # alpha
     outputFile = "report.txt"
     output = open(outputFile, 'w+')
     (subject, vowel) = ('test', 'aeiou')
 
 
     for each_line in csv_file:
+        each_line = each_line.decode('utf-8')       # fight bytes error in python3   'str' object has no attribute 'decode'
+        
+        
+        
         (filePath, fileType, extension, note, priority) = ('', '', '', '', '')
         filePath = each_line.strip()
 
@@ -357,7 +375,13 @@ def write_sticker():
     # global Row    #The magic to pass Row globally
     style = workbook.add_format()
     (header, report, date) = ('', '', '<insert date here>')
-    csv_file = open(filename)
+    # csv_file = open(filename)
+    csv_file = open(filename, encoding='utf8')  # UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d
+    # csv_file = io.open(filename, 'r', encoding='windows-1252')
+    # csv_file = codecs.open(filename,'rU','utf-8')   # alpha
+    # csv_file = codecs.open(filename,'rU','utf-8')   # alpha
+
+    
     outputFile = "report.txt"
     output = open(outputFile, 'w+')
 
