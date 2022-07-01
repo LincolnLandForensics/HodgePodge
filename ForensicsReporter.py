@@ -668,25 +668,28 @@ Exhibit %s
     ''') %(exhibit)
 
         if makeModel != '':
-        
             if makeModel[0].lower() in vowel:
                 report = ('''%sAn %s''') %(report, makeModel)
             else:
                 report = ('''%sA %s''') %(report, makeModel)
 
         if len(OS) != 0:
-            report = ("%s, with a %s OS" %(report, OS))
+            if OS[0].lower() in vowel:
+                report = ("%s, with an %s OS" %(report, OS))
+            else:
+                report = ("%s, with a %s OS" %(report, OS))          
+
         if len(serial) != 0:
             report = ("%s, serial # %s" %(report, serial))
         if len(dateReceived) != 0:
-            report = ("%s, was received on %s" %(report, dateReceived))
+            report = ("%s, was received on %s" %(report, dateReceived.replace(" ", " at ", 1)))
         else:
             report = ("%s, was received" %(report))
         report = ("%s." %(report))
         
         # if len(imagingStarted) != 0:
         if len(imagingStarted) != 0 and status != "Not imaged":
-            report = ("%s On %s," %(report, imagingStarted))
+            report = ("%s On %s," %(report, imagingStarted.replace(" ", " at ", 1)))
         report = ("%s Digital Forensic Examiner %s" %(report, forensicExaminer))
         if len(imagingTool) != 0 and imagingType != '':
             report = ("%s used %s to conduct a %s" %(report, imagingTool, imagingType.lower()))  
@@ -886,6 +889,8 @@ Agent: %s
 %s
 ''') %(caseNumber, exhibit, caseName, subjectBusinessName, makeModel, serial, caseAgent, status)
         header = header.strip()
+
+# write it one line at at time. If phone isn't blank, include it
 
         # Write excel
         write_report(header, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType,
