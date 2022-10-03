@@ -25,7 +25,7 @@ todaysDate = d.strftime("%m/%d/%Y")
 author = 'LincolnLandForensics'
 description = "convert cls to written forensic report, print stickers, and convert imaging logs to xlsx"
 tech = 'LincolnLandForensics'  # change this to your name
-version = '1.4.1'
+version = '2.0.0'
 
 # Regex section
 regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
@@ -107,43 +107,43 @@ def create_xlsx():  # BCI output (Default)
 
     # Excel column width
  
-    Sheet1.set_column(0, 0, 15)  
-    Sheet1.set_column(1, 1, 16)  # 
-    Sheet1.set_column(2, 2, 20)  # 
-    Sheet1.set_column(3, 3, 16)  # 
-    Sheet1.set_column(4, 4, 25)  # 
-    Sheet1.set_column(5, 5, 15)  # 
-    Sheet1.set_column(6, 6, 7)  # 
-    Sheet1.set_column(7, 7, 30)  # 
-    Sheet1.set_column(8, 8, 17)  # 
-    Sheet1.set_column(9, 9, 16)  # 
-    Sheet1.set_column(10, 10, 16)  # 
-    Sheet1.set_column(11, 11, 16)  # 
-    Sheet1.set_column(12, 12, 30)  # 
-    Sheet1.set_column(13, 13, 32)  # 
-    Sheet1.set_column(14, 14, 16)  # 
-    Sheet1.set_column(15, 15, 16)  # 
-    Sheet1.set_column(16, 16, 16)  # 
-    Sheet1.set_column(17, 17, 8)  # 
-    Sheet1.set_column(18, 18, 26)  # 
-    Sheet1.set_column(19, 19, 15)  # 
-    Sheet1.set_column(20, 20, 23)  # 
-    Sheet1.set_column(21, 21, 18)  # 
-    Sheet1.set_column(22, 22, 20)  # 
-    Sheet1.set_column(23, 23, 19)  # 
-    Sheet1.set_column(24, 24, 15)  # 
-    Sheet1.set_column(25, 25, 25)  # 
-    Sheet1.set_column(26, 26, 25)  # 
-    Sheet1.set_column(27, 27, 25)  #
-    Sheet1.set_column(28, 28, 15)  #
-    Sheet1.set_column(29, 29, 20)  #
-    Sheet1.set_column(30, 30, 25)  #
-    Sheet1.set_column(31, 31, 25)  #
-    Sheet1.set_column(32, 32, 25)  #
-    Sheet1.set_column(33, 33, 15)  #
-    Sheet1.set_column(34, 34, 20)  #
-
-
+    Sheet1.set_column(0, 0, 15)  # caseNumber
+    Sheet1.set_column(1, 1, 16)  # caseName
+    Sheet1.set_column(2, 2, 20)  # subjectBusinessName
+    Sheet1.set_column(3, 3, 16)  # caseType
+    Sheet1.set_column(4, 4, 25)  # caseAgent
+    Sheet1.set_column(5, 5, 15)  # forensicExaminer
+    Sheet1.set_column(6, 6, 7)  # exhibit
+    Sheet1.set_column(7, 7, 30)  # make/Model
+    Sheet1.set_column(8, 8, 17)  # serial#
+    Sheet1.set_column(9, 9, 16)  # phoneNumber
+    Sheet1.set_column(10, 10, 16)  # imagingStarted
+    Sheet1.set_column(11, 11, 16)  # imagingFinished
+    Sheet1.set_column(12, 12, 24)  # imagingTool
+    Sheet1.set_column(13, 13, 13)  # imagingType
+    Sheet1.set_column(14, 14, 12)  # status
+    Sheet1.set_column(15, 15, 25)  # exportLocation
+    Sheet1.set_column(16, 16, 16)  # imageMD5
+    Sheet1.set_column(17, 17, 25)  # notes
+    Sheet1.set_column(18, 18, 26)  # summary
+    Sheet1.set_column(19, 19, 15)  # OS
+    Sheet1.set_column(20, 20, 23)  # analysisTool
+    Sheet1.set_column(21, 21, 17)  # exportedEvidence
+    Sheet1.set_column(22, 22, 20)  # storageLocation
+    Sheet1.set_column(23, 23, 16)  # dateSeized
+    Sheet1.set_column(24, 24, 16)  # dateReceived
+    Sheet1.set_column(25, 25, 16)  # inventoryDate 
+    Sheet1.set_column(26, 26, 16)  # removalDate 
+    Sheet1.set_column(27, 27, 25)  # removalStaff
+    Sheet1.set_column(28, 28, 18)  # reasonForRemoval
+    Sheet1.set_column(29, 29, 15)  # operation
+    Sheet1.set_column(30, 30, 10)  # Action
+    Sheet1.set_column(31, 31, 25)  # imageSHA256
+    Sheet1.set_column(32, 32, 25)  # tempNotes
+    Sheet1.set_column(33, 33, 7)  # report
+    Sheet1.set_column(34, 34, 5)  # ..
+    Sheet1.set_column(35, 35, 20)  # locationOfCaseFile
+    Sheet1.set_column(36, 36, 12)  # attachment
     
     # Write column headers
 
@@ -161,29 +161,29 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.write(0, 11, 'imagingFinished', header_format)
     Sheet1.write(0, 12, 'imagingTool', header_format)
     Sheet1.write(0, 13, 'imagingType', header_format)
-    Sheet1.write(0, 14, 'storageLocation', header_format)
-    Sheet1.write(0, 15, 'dateReceived', header_format)
-    Sheet1.write(0, 16, 'removalDate', header_format)
-    Sheet1.write(0, 17, 'exportedEvidence', header_format)
-    Sheet1.write(0, 18, 'status', header_format)
-    Sheet1.write(0, 19, 'analysisTool', header_format)
-    Sheet1.write(0, 20, 'exportLocation', header_format)
-    Sheet1.write(0, 21, 'imageMD5', header_format)
-    Sheet1.write(0, 22, 'locationOfCaseFile', header_format)
-    Sheet1.write(0, 23, 'reasonForRemoval', header_format)
-    Sheet1.write(0, 24, 'removalStaff', header_format)
-    Sheet1.write(0, 25, 'notes', header_format)
-    Sheet1.write(0, 26, 'attachment', header_format)
-    Sheet1.write(0, 27, 'tempNotes', header_format)
-    Sheet1.write(0, 28, 'inventoryDate', header_format)
+    Sheet1.write(0, 14, 'status', header_format)
+    Sheet1.write(0, 15, 'exportLocation', header_format)
+    Sheet1.write(0, 16, 'imageMD5', header_format)
+    Sheet1.write(0, 17, 'notes', header_format)
+    Sheet1.write(0, 18, 'summary', header_format)
+    Sheet1.write(0, 19, 'OS', header_format)
+    Sheet1.write(0, 20, 'analysisTool', header_format)
+    Sheet1.write(0, 21, 'exportedEvidence', header_format)
+    Sheet1.write(0, 22, 'storageLocation', header_format)
+    Sheet1.write(0, 23, 'dateSeized', header_format)
+    Sheet1.write(0, 24, 'dateReceived', header_format)
+    Sheet1.write(0, 25, 'inventoryDate', header_format)
+    Sheet1.write(0, 26, 'removalDate', header_format)
+    Sheet1.write(0, 27, 'removalStaff', header_format)
+    Sheet1.write(0, 28, 'reasonForRemoval', header_format)
     Sheet1.write(0, 29, 'operation', header_format)
-    Sheet1.write(0, 30, 'Action', header_format)
+    Sheet1.write(0, 30, 'action', header_format)
     Sheet1.write(0, 31, 'imageSHA256', header_format)
-    Sheet1.write(0, 32, 'OS', header_format)
-    Sheet1.write(0, 33, 'dateSeized', header_format)    
-    Sheet1.write(0, 34, 'summary', header_format)    
-    
-    
+    Sheet1.write(0, 32, 'tempNotes', header_format)
+    Sheet1.write(0, 33, 'report', header_format)    
+    # Sheet1.write(0, 34, '..', header_format)    
+    # Sheet1.write(0, 35, 'locationOfCaseFile', header_format)      
+    # Sheet1.write(0, 36, 'attachment', header_format)      
     
 
 def format_function(bg_color='white'):
@@ -315,14 +315,38 @@ def parse_log():
             if 'iPhone' in makeModel:
                 os = ('iOS %s' %(os))
 
+        elif "S/N: " in each_line:  # tableau
+            hddserial = re.split("S/N: ", each_line, 0)
+            hddserial = str(hddserial[1]).strip()
+            # serial = hddserial
+
+        # elif "Serial Number:" in each_line and serial != '': #cellebrite
         elif "Serial Number:" in each_line: #cellebrite
+
             serial = re.split("Serial Number:", each_line, 0)
             print("serial=",serial[1].strip())      
             serial = str(serial[1]).strip()
-        elif "Serial " in each_line: #cellebrite
+            if "number: " in serial:
+                serial = ''
+            
+        elif "Serial " in each_line and serial != '': #cellebrite
             serial = re.split("Serial ", each_line, 0)
+            print('hello world4' )   # temp
+
             print("serial=",serial[1].strip())      
             serial = str(serial[1]).strip()
+            # if "number: " in each_line:
+                # serial = ''
+            print("serial = %s" %(serial))  # temp
+            
+            
+
+        elif "Drive Serial Number:" in each_line:
+            hddserial = re.split("Drive Serial Number:", each_line, 0)
+            hddserial = str(hddserial[1]).strip()
+            # serial = hddserial
+
+
 
         elif "MSISDN" in each_line: #cellebrite
             phoneNumber = re.split("MSISDN", each_line, 0)
@@ -368,7 +392,7 @@ def parse_log():
             caseNumber = str(caseNumber[1]).strip()
             print(caseNumber)   #temp
 
-        elif "Case Notes:" in each_line:
+        elif "Case Notes:" in each_line:    # Tableau logs
             notes = re.split("Case Notes:", each_line, 0)
             notes = str(notes[1]).strip()
             notes = notes.replace("<<not entered>>", "")
@@ -376,7 +400,7 @@ def parse_log():
             notes = re.split("Notes: ", each_line, 0)
             notes = str(notes[1]).strip()
             notes = notes.replace("<<not entered>>", "")
-
+            # print("notes2 = %s" %(notes)) # temp
         elif "Imager App: " in each_line:
             imagingTool1 = re.split("Imager App: ", each_line, 0)
             imagingTool1 = str(imagingTool1[1]).strip()
@@ -411,16 +435,6 @@ def parse_log():
 
         elif "Acquired using: ADI3" in each_line:
             imagingTool = "FTK Imager"
-
-
-        elif "S/N: " in each_line:
-            hddserial = re.split("S/N: ", each_line, 0)
-            hddserial = str(hddserial[1]).strip()
-            # serial = hddserial
-        elif "Drive Serial Number:" in each_line:
-            hddserial = re.split("Drive Serial Number:", each_line, 0)
-            hddserial = str(hddserial[1]).strip()
-            # serial = hddserial
 
         elif "Capacity in bytes reported Pwr-ON: " in each_line:
             capacity = re.split("Capacity in bytes reported Pwr-ON: ", each_line, 0)
@@ -484,9 +498,9 @@ def parse_log():
             timezone = str(timezone[1]).strip()
             notes = ("%s The system timezone is set to %s." %(notes, timezone))
         elif "OS Name: " in each_line:
-            os = re.split("OS Name: ", each_line, 0)
-            os = str(os[1]).strip()
-            # notes = ("%s The operating system was %s." %(notes, os)) 
+            OS = re.split("OS Name: ", each_line, 0)
+            OS = str(OS[1]).strip()
+            notes = ("%s The operating system was %s." %(notes, OS)) 
         elif "   IPv4 Address" in each_line:
             ip = re.split("   IPv4 Address. . . . . . . . . . . : ", each_line, 0)
             ip = str(ip[1]).strip()
@@ -589,27 +603,29 @@ Evidence:
             imagingFinished = each_line[11]
             imagingTool = each_line[12]
             imagingType = each_line[13].lower()
-            storageLocation = each_line[14]
-            dateReceived = each_line[15]
-            removalDate = each_line[16]
-            exportedEvidence = each_line[17]
-            status = each_line[18]
-            analysisTool = each_line[19]
-            exportLocation = each_line[20]
-            imageMD5 = each_line[21]
-            locationOfCaseFile = each_line[22]
-            reasonForRemoval = each_line[23]
-            removalStaff = each_line[24]
-            notes = each_line[25]            
-            attachement = each_line[26]            
-            tempNotes = each_line[27]
-            inventoryDate = each_line[28]
+            status = each_line[14]
+            exportLocation = each_line[15]
+            imageMD5 = each_line[16]
+            notes = each_line[17]            
+            summary = each_line[18]
+            OS = each_line[19]
+            analysisTool = each_line[20]
+            exportedEvidence = each_line[21]
+            storageLocation = each_line[22]
+            dateSeized = each_line[23]
+            dateReceived = each_line[24]
+            inventoryDate = each_line[25]
+            removalDate = each_line[26]
+            removalStaff = each_line[27]
+            reasonForRemoval = each_line[28]
             operation = each_line[29]
             Action = each_line[30]
             imageSHA256 = each_line[31]
-            OS = each_line[32]
-            dateSeized = each_line[33]
-            summary = each_line[34]
+            tempNotes = each_line[32]
+            report = each_line[33]
+            # thirtyfour = each_line[34]            
+            locationOfCaseFile = each_line[35]
+            attachement = each_line[36]            
             
             if subject == 'test':
                 subject = subjectBusinessName
@@ -708,8 +724,11 @@ Exhibit %s
             report = ("%s phone extraction." %(report))
             if phoneNumber.lower() != 'unknown':
                 report = ("%s The mobile Station International Subscriber Number (MSISDN) was %s." %(report, phoneNumber))
-        else:
+        # else:
+        elif imagingStarted != '':        
             report = ("%s forensic extraction." %(report))
+        else:        
+            report = ("%s manual analysis." %(report))
 
         if len(imageMD5) != 0 and exportLocation != '':
             report = ("%s The image, which had a MD5 hash of % s, was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
@@ -724,12 +743,23 @@ Exhibit %s
         
         if notes != '':
             report = ("%s %s" %(report, notes))
-
+          
+        # exportedEvidence
         if exportedEvidence == "Y" and 'elevant files were exported' not in notes:
             # report = ("%s Relevant files were exported." %(report.strip()))
             report = ("%s Relevant files were exported." %(report.rstrip()))
         elif exportedEvidence == "N" and 'search for relevant files was made and no files were found' not in notes:
             report = ("%s A search for relevant files was made and no files were found." %(report.rstrip()))
+
+        # evidence return
+        if "2" in removalDate and "returned" in storageLocation:
+            
+            if " " in removalDate:
+                removalDate2 = removalDate.split(' ')[0]
+            else:
+                removalDate2 = removalDate
+            report = ("%s This item was returned to the owner on %s." %(report, removalDate2))  # test
+
         
         report = report.replace("    , was received. ", "    ")
         report = report.replace("This was a DVR system was not imaged.","This was a DVR system and was not imaged.")
@@ -774,29 +804,31 @@ def write_report(caseNumber, exhibit, imagingStarted, imagingFinished, caseName,
     Sheet1.write_string(Row, 11, imagingFinished)
     Sheet1.write_string(Row, 12, imagingTool)
     Sheet1.write_string(Row, 13, imagingType)
-    Sheet1.write_string(Row, 14, storageLocation)
-    Sheet1.write_string(Row, 15, dateReceived) 
-    Sheet1.write_string(Row, 16, removalDate)
-    Sheet1.write_string(Row, 17, exportedEvidence)
-    Sheet1.write_string(Row, 18, status)
-    Sheet1.write_string(Row, 19, analysisTool)
-    Sheet1.write_string(Row, 20, exportLocation)
-    Sheet1.write_string(Row, 21, imageMD5)
-    Sheet1.write_string(Row, 22, locationOfCaseFile)
-    Sheet1.write_string(Row, 23, reasonForRemoval)
-    Sheet1.write_string(Row, 24, removalStaff)
-    try:
-        Sheet1.write_string(Row, 25, notes)
-    except:pass
-    Sheet1.write_string(Row, 26, attachment)
-    Sheet1.write_string(Row, 27, tempNotes)  
-    Sheet1.write_string(Row, 28, inventoryDate)
+    Sheet1.write_string(Row, 14, status)
+    Sheet1.write_string(Row, 15, exportLocation) 
+    Sheet1.write_string(Row, 16, imageMD5)
+
+    Sheet1.write_string(Row, 17, notes)
+    # try:
+        # Sheet1.write_string(Row, 17, notes)
+    # except:pass    
+
+    Sheet1.write_string(Row, 18, summary)
+    Sheet1.write_string(Row, 19, OS)
+    Sheet1.write_string(Row, 20, analysisTool)
+    Sheet1.write_string(Row, 21, exportedEvidence)
+    Sheet1.write_string(Row, 22, storageLocation)
+    Sheet1.write_string(Row, 23, dateSeized)
+    Sheet1.write_string(Row, 24, dateReceived)
+    Sheet1.write_string(Row, 25, inventoryDate)
+    Sheet1.write_string(Row, 26, removalDate)
+    Sheet1.write_string(Row, 27, removalStaff)  
+    Sheet1.write_string(Row, 28, reasonForRemoval)
     Sheet1.write_string(Row, 29, operation)
     Sheet1.write_string(Row, 30, Action)
     Sheet1.write_string(Row, 31, imageSHA256)
-    Sheet1.write_string(Row, 32, OS)
-    Sheet1.write_string(Row, 33, dateSeized)
-    Sheet1.write_string(Row, 34, summary)
+    Sheet1.write_string(Row, 32, tempNotes)
+    # Sheet1.write_string(Row, 33, report)
 
     Row += 1
 
@@ -918,6 +950,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.0.0 - Reorginized column orders
 1.0.1 - Created a Tableau log parser
 1.0.0 - Created forensic report writer
 0.1.2 - converted tabs to 4 spaces for #pep8
@@ -929,8 +962,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-output to pdf or Doc?
+output to pdf or Docx?
 if ', serial # .', replace with .
+tableau log parser is importing notes but notes is blank in the sheet. 
 
 """
 
@@ -957,4 +991,3 @@ if ', serial # .', replace with .
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      The End        >>>>>>>>>>>>>>>>>>>>>>>>>>
-
