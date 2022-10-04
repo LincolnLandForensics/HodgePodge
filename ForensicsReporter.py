@@ -5,6 +5,7 @@
 
 import re
 import sys
+import docx # pip install python-docx
 import hashlib
 import datetime
 import argparse  # for menu system
@@ -14,10 +15,9 @@ from subprocess import call
 
 d = date.today()
 Day    = d.strftime("%d")
-Month = d.strftime("%B")
+Month = d.strftime("%m")    # %B = October
 Year  = d.strftime("%Y")        
 todaysDate = d.strftime("%m/%d/%Y")
-
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -25,7 +25,7 @@ todaysDate = d.strftime("%m/%d/%Y")
 author = 'LincolnLandForensics'
 description = "convert cls to written forensic report, print stickers, and convert imaging logs to xlsx"
 tech = 'LincolnLandForensics'  # change this to your name
-version = '2.0.0'
+version = '2.0.2'
 
 # Regex section
 regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
@@ -75,6 +75,11 @@ def main():
         global spreadsheet
         spreadsheet = args.output
         create_xlsx()
+        global outputFile   # docx actitivy report
+        outputFile = args.output
+        # global document
+        # document = ''
+
 
         if args.report:
             read_text()
@@ -96,6 +101,35 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+def create_docx():
+    print('creating a fresh document')  # temp
+    global document
+    document = docx.Document()
+    
+    caseNumber = "2022-0159"
+
+
+    #header section
+    section = document.sections[0]
+    header = section.header
+    header
+
+    header.is_linked_to_previous = False
+    # section.different_first_page_header_footer = True
+    paragraph = header.paragraphs[0]
+    paragraph.text = "Illinois Department of Revenue\n\nACTIVITY REPORT                                                             BUREAU OF CRIMINAL INVESTIGATIONS"
+
+    p = document.add_paragraph('\n')    # start with a blank line   # todo this line is too thick
+    p = document.add_paragraph('Activity Report:\t\t\t\tDate of Activity:')
+    p = document.add_paragraph('%s\t\t\t\t%s' %(caseNumber, todaysDate))
+
+    # insert a big line here
+
+    # p = document.add_paragraph('Subject of Activity:\t\t\t\tCase Agent:\t\tType By:')
+    # p = document.add_paragraph('%s\t\t\t\t%s\t\t%s' %(subjectBusinessName, caseAgent, forensicExaminer))
+
+    document.save(outputFile)
+    
 def create_xlsx():  # BCI output (Default)
     global workbook
     workbook = xlsxwriter.Workbook(spreadsheet)
@@ -542,6 +576,7 @@ def read_text():
     # global Row    #The magic to pass Row globally
     style = workbook.add_format()
     (header, report, date) = ('', '', '<insert date here>')
+    (body, executiveSummary, evidenceBlurb) = ('', '', '')
     # csv_file = open(filename) # UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d
     csv_file = open(filename, encoding='utf8')
     # with open(filename, encoding='utf8') as csv_file:
@@ -552,20 +587,10 @@ def read_text():
     output = open(outputFile, 'w+')
     (subject, vowel) = ('test', 'aeiou')
 
-    # footer = '''  
-
-    # The images of all the devices will be retained. The case agent may request additional analysis or files to be exported if new evidence of probative value is determined, at a future date.
-    
-# Evidence:
-    # Reports and supporting files were exported and given to the case agent.
-    # '''
-
-    footer = '''  
-
+    footer = '''
 Evidence:
     All digital images obtained pursuant to this investigation will be maintained on IDOR servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an exhibit in the case file. 
     '''
-    
     
     for each_line in csv_file:
         (caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType) = ('', '', '', '', '', '', '')
@@ -574,7 +599,7 @@ Evidence:
         (analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff) = ('', '', '', '', '', '')
         (notes, attachment, tempNotes, report) = ('', '', '', '')
         (tempNotes,inventoryDate,operation,Action,imageSHA256,OS,dateSeized) = ('', '', '', '', '', '', '')
-        (inventoryDate, operation, Action, imageSHA256, summary) = ('', '', '', '', '')
+        (inventoryDate, operation, Action, imageSHA256, summary, executiveSummary) = ('', '', '', '', '', '')
         if phoneNumber != '':
             print('_____________%s is from a phone extract') %(phoneNumber) #temp
             
@@ -652,31 +677,17 @@ Executive Summary
 
             output.write(header+'\n')
         
-        # if len(summary) != 0:
-            # summarize = ('''
-    # Summary
-# ''')            
-        
-        
-        # report = ('''
-        
-# Exhibit # %s
-    # ''') %(exhibit)
+        if executiveSummary == '':
+            executiveSummary = ('''
+%s                                    %s
 
-        # report = ('''
-        
-# Exhibit # %s, Case # %s %s
-    # ''') %(exhibit, caseNumber, )
+%s %s                           %s    %s 
 
-        # report = ('''
+Executive Summary 
+    Special Agent %s of the Illinois Department of Revenue, Bureau of Criminal Investigations, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
+''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseAgent, caseType, caseName, summary)
         
-# Case # %s Exhibit %s (%s)
-    # ''') %(caseNumber, exhibit, subjectBusinessName)
-
-        # report = ('''
-        
-# Case # %s Exhibit %s
-    # ''') %(caseNumber, exhibit)
+      
 
         report = ('''
         
@@ -772,7 +783,9 @@ Exhibit %s
         
         print(report)
         output.write(report)
-
+        # body = ("%s\n%s" %(body, report))
+        body = ("%s%s" %(body, report))
+        
         # Write excel
         write_report(caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType,
                 caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived,
@@ -780,7 +793,12 @@ Exhibit %s
                 analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff,
                 notes,attachment, tempNotes, inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary)
 
+    # write docx report
+    write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer)
+
+
     output.write(footer+'\n')
+
 
 def write_report(caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType,
                 caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived,
@@ -832,13 +850,39 @@ def write_report(caseNumber, exhibit, imagingStarted, imagingFinished, caseName,
 
     Row += 1
 
+def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer): 
+    outputDocx = ('ActivityReport_%s_%s_%s_DRAFT.docx' %(Month, Day, Year)) 
+
+    try:
+        document = docx.Document("ActivityReportTemplate.docx") # read in the template if it exists
+    except:
+        print("you are missing ActivityReportTemplate.docx")
+        create_docx()   # create a basic template file
+    
+    # if body == '':
+        # body = "testing 1,2,3"
+    
+    if executiveSummary != '':
+        document.add_paragraph(executiveSummary)    
+    
+    document.add_paragraph(body)  
+
+    if footer != '':
+        document.add_paragraph(footer) 
+        
+    
+    
+    document.save(outputDocx)   # print output to the new file
+    
+    print('your activity report is saved as %s' %(outputDocx))
+
 def write_sticker():
     # global Row    #The magic to pass Row globally
     style = workbook.add_format()
     (header, report, date) = ('', '', '<insert date here>')
     # csv_file = open(filename)
     csv_file = open(filename, encoding='utf8')
-    outputFile = "report.txt"
+    outputFile = "sticker.txt"
     output = open(outputFile, 'w+')
 
 
@@ -879,38 +923,40 @@ All digital images obtained pursuant to this investigation will be maintained on
             caseNumber = each_line[0]
             caseName = each_line[1]
             subjectBusinessName = each_line[2]
-            caseType = each_line[3]
+            caseType = each_line[3].lower()
             caseAgent = each_line[4]
             forensicExaminer = each_line[5]
             exhibit = each_line[6]
-            makeModel = each_line[7]
-            serial = each_line[8]
+            makeModel = each_line[7].strip()
+            serial = each_line[8].strip()
             phoneNumber = each_line[9]
             imagingStarted = each_line[10]
             imagingFinished = each_line[11]
             imagingTool = each_line[12]
-            imagingType = each_line[13]
-            storageLocation = each_line[14]
-            dateReceived = each_line[15]
-            removalDate = each_line[16]
-            exportedEvidence = each_line[17]
-            status = each_line[18]
-            analysisTool = each_line[19]
-            exportLocation = each_line[20]
-            imageMD5 = each_line[21]
-            locationOfCaseFile = each_line[22]
-            reasonForRemoval = each_line[23]
-            removalStaff = each_line[24]
-            notes = each_line[25]            
-            attachement = each_line[26]            
-            tempNotes = each_line[27]
-            inventoryDate = each_line[28]
+            imagingType = each_line[13].lower()
+            status = each_line[14]
+            exportLocation = each_line[15]
+            imageMD5 = each_line[16]
+            notes = each_line[17]            
+            summary = each_line[18]
+            OS = each_line[19]
+            analysisTool = each_line[20]
+            exportedEvidence = each_line[21]
+            storageLocation = each_line[22]
+            dateSeized = each_line[23]
+            dateReceived = each_line[24]
+            inventoryDate = each_line[25]
+            removalDate = each_line[26]
+            removalStaff = each_line[27]
+            reasonForRemoval = each_line[28]
             operation = each_line[29]
             Action = each_line[30]
             imageSHA256 = each_line[31]
-            OS = each_line[32]
-            dateSeized = each_line[33]
-            summary = each_line[34]
+            tempNotes = each_line[32]
+            report = each_line[33]
+            # thirtyfour = each_line[34]            
+            locationOfCaseFile = each_line[35]
+            attachement = each_line[36]  
             
         header = ('''Case#: %s  Ex: %s
 CaseName: %s
@@ -931,7 +977,7 @@ Agent: %s
                 analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff,
                 notes,attachment, tempNotes, inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary)
 
-        output.write(header+'\n')
+        output.write(header+'\n\n')
 
 
 def usage():
@@ -950,7 +996,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-2.0.0 - Reorginized column orders
+2.0.1 - Reorginized column orders, fixed serial #
 1.0.1 - Created a Tableau log parser
 1.0.0 - Created forensic report writer
 0.1.2 - converted tabs to 4 spaces for #pep8
@@ -964,7 +1010,6 @@ if __name__ == '__main__':
 """
 output to pdf or Docx?
 if ', serial # .', replace with .
-tableau log parser is importing notes but notes is blank in the sheet. 
 
 """
 
