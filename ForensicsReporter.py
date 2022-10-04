@@ -23,9 +23,9 @@ todaysDate = d.strftime("%m/%d/%Y")
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "convert cls to written forensic report, print stickers, and convert imaging logs to xlsx"
+description = "convert imaging logs to xlsx, print stickers and write activity report."
 tech = 'LincolnLandForensics'  # change this to your name
-version = '2.0.2'
+version = '2.0.3'
 
 # Regex section
 regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
@@ -996,6 +996,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.0.2 - ActivityReport....docx output works best from the template.
 2.0.1 - Reorginized column orders, fixed serial #
 1.0.1 - Created a Tableau log parser
 1.0.0 - Created forensic report writer
@@ -1008,7 +1009,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-output to pdf or Docx?
+figure out DocX tags or variables to insert data into the first fields
 if ', serial # .', replace with .
 
 """
