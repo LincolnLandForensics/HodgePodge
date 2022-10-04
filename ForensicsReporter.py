@@ -25,7 +25,7 @@ todaysDate = d.strftime("%m/%d/%Y")
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity report."
 tech = 'LincolnLandForensics'  # change this to your name
-version = '2.0.3'
+version = '2.0.4'
 
 # Regex section
 regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
@@ -129,6 +129,7 @@ def create_docx():
     # p = document.add_paragraph('%s\t\t\t\t%s\t\t%s' %(subjectBusinessName, caseAgent, forensicExaminer))
 
     document.save(outputFile)
+    return document
     
 def create_xlsx():  # BCI output (Default)
     global workbook
@@ -857,10 +858,7 @@ def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, 
         document = docx.Document("ActivityReportTemplate.docx") # read in the template if it exists
     except:
         print("you are missing ActivityReportTemplate.docx")
-        create_docx()   # create a basic template file
-    
-    # if body == '':
-        # body = "testing 1,2,3"
+        document = create_docx()   # create a basic template file
     
     if executiveSummary != '':
         document.add_paragraph(executiveSummary)    
