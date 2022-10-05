@@ -23,7 +23,7 @@ todaysDate = d.strftime("%m/%d/%Y")
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "convert imaging logs to xlsx, print stickers and write activity report."
+description = "convert imaging logs to xlsx, print stickers and write activity reports"
 tech = 'LincolnLandForensics'  # change this to your name
 version = '2.0.4'
 
@@ -273,17 +273,27 @@ def parse_log():
             print(imagingType)  #temp
         elif "Source Type: Physical" in each_line:
             imagingType = "disk to file"
+        elif "Image type :" in each_line: #recon imager
+            imagingType = re.split("Image type :", each_line, 0)
+            imagingType = str(imagingType[1]).strip().lower()
+            print("imagingType = %s" %(imagingType))  #temp
             
-        elif "Status: Ok" in each_line:
+        elif "Status: Ok" in each_line or "Imaging Status : Successful" in each_line:
             status = 'Imaged'
         elif "Status: Error/Failed" in each_line:
             status = 'Not imaged'
+
+
+
 
         elif "Evidence Number: " in each_line:      #FTK_parse
             exhibit = re.split("Evidence Number: ", each_line, 0)
             exhibit = str(exhibit[1]).strip()
         elif "Exhibit#" in each_line:      #cellebrite
             exhibit = re.split("Exhibit#", each_line, 0)
+            exhibit = str(exhibit[1]).strip()
+        elif "Evidence Number" in each_line:      #recon imager
+            exhibit = re.split("Evidence Number 	:", each_line, 0)
             exhibit = str(exhibit[1]).strip()
         
         elif "Started:" in each_line:
@@ -302,6 +312,10 @@ def parse_log():
             # imagingStarted = fix_date(imagingStarted)
             print(imagingStarted)   #temp
 
+        elif "Imaging Start Time :" in each_line:   # Recon imager
+            imagingStarted = re.split("Imaging Start Time :", each_line, 0)
+            imagingStarted = str(imagingStarted[1]).strip()
+            # imagingStarted = fix_date(imagingStarted) # todo
             
         elif "Closed:" in each_line:
             imagingFinished = re.split("Closed: ", each_line, 0)
@@ -317,8 +331,15 @@ def parse_log():
             imagingFinished = str(imagingFinished[1]).strip()
             imagingFinished = imagingFinished.replace("/time", "").replace(" -05:00", "").strip(':').strip().replace("(GMT-5)", "")
 
-            print(imagingFinished)   #temp
             # imagingFinished = fix_date(imagingFinished)
+
+        elif "Imaging End Time   :" in each_line: # Recon imager
+            imagingFinished = re.split("Imaging End Time   :", each_line, 0)
+            imagingFinished = str(imagingFinished[1]).strip()
+            # imagingFinished = fix_date(imagingFinished)
+            print(imagingFinished)   #temp
+
+
 
         elif "Unique description: " in each_line:
             makeModel = re.split("Unique description: ", each_line, 0)
@@ -363,10 +384,22 @@ def parse_log():
             serial = str(serial[1]).strip()
             if "number: " in serial:
                 serial = ''
+
+        elif "Machine Serial" in each_line: #RECON imager
+        # elif "Machine Serial" in each_line and serial != '': #RECON imager
+            serial = re.split(":", each_line, 0)
+            serial = str(serial[1]).strip()
+            print("serial= ",serial) 
             
+        elif "Drive Serial Number:" in each_line:
+            hddserial = re.split("Drive Serial Number:", each_line, 0)
+            hddserial = str(hddserial[1]).strip()
+            # serial = hddserial
+
+
+ 
         elif "Serial " in each_line and serial != '': #cellebrite
             serial = re.split("Serial ", each_line, 0)
-            print('hello world4' )   # temp
 
             print("serial=",serial[1].strip())      
             serial = str(serial[1]).strip()
@@ -374,13 +407,6 @@ def parse_log():
                 # serial = ''
             print("serial = %s" %(serial))  # temp
             
-            
-
-        elif "Drive Serial Number:" in each_line:
-            hddserial = re.split("Drive Serial Number:", each_line, 0)
-            hddserial = str(hddserial[1]).strip()
-            # serial = hddserial
-
 
 
         elif "MSISDN" in each_line: #cellebrite
@@ -413,11 +439,22 @@ def parse_log():
             print("forensicExaminer ", forensicExaminer[1].strip())      
             forensicExaminer = str(forensicExaminer[1]).strip()
             forensicExaminer =forensicExaminer.replace("CIA - ", "")
+        elif "Examiner 		:" in each_line: # recon imager
+            forensicExaminer = re.split("Examiner 		:", each_line, 0)
+            forensicExaminer = str(forensicExaminer[1]).strip()
+            print("forensicExaminer = ", forensicExaminer)      
+
+
 
         elif "Case ID:" in each_line:
             caseNumber = re.split("Case ID:", each_line, 0)
             caseNumber = str(caseNumber[1]).strip()
             caseNumber = caseNumber.replace("<<not entered>>", "")
+        elif "Case Number" in each_line:   # Recon imager and probably tablaue
+            caseNumber = re.split(":", each_line, 0)
+            caseNumber = str(caseNumber[1]).strip()
+            caseNumber = caseNumber.replace("<<not entered>>", "")
+
         elif "Case Number:" in each_line:
             caseNumber = re.split("Case Number:", each_line, 0)
             caseNumber = str(caseNumber[1]).strip()
@@ -426,6 +463,7 @@ def parse_log():
             caseNumber = re.split("CaseNumber", each_line, 0)
             caseNumber = str(caseNumber[1]).strip()
             print(caseNumber)   #temp
+
 
         elif "Case Notes:" in each_line:    # Tableau logs
             notes = re.split("Case Notes:", each_line, 0)
@@ -436,6 +474,25 @@ def parse_log():
             notes = str(notes[1]).strip()
             notes = notes.replace("<<not entered>>", "")
             # print("notes2 = %s" %(notes)) # temp
+
+        elif "Notes 		:" in each_line:    # recon imager
+            notes = re.split("Notes 		:", each_line, 0)
+            notes = str(notes[1]).strip()
+            # notes = ("%s %s" %(notes, notes2))
+
+        elif "Source Device :" in each_line:    # recon imager
+            (vol, partition, size, frmat) = ('', '', '', '')
+            sourcenotes = re.split("Source Device :", each_line, 0)
+            sourcenotes = str(sourcenotes[1]).strip()
+            details = re.split("  ", sourcenotes, 0)
+            vol = str(details[0]).strip()
+            partition = str(details[3]).strip()    
+            size = str(details[4]).strip()  
+            frmat = str(details[5]).strip()  
+            blurb1 = ("This image was from %s and was the %s %s %s volume." %(vol, partition, size, frmat))
+            notes = ("%s %s" %(notes, blurb1))
+
+
         elif "Imager App: " in each_line:
             imagingTool1 = re.split("Imager App: ", each_line, 0)
             imagingTool1 = str(imagingTool1[1]).strip()
@@ -468,8 +525,12 @@ def parse_log():
             imagingTool1 = ('Cellebrite Physical Analyzer %s' %(imagingTool1))
             print(imagingTool1) #temp
 
-        elif "Acquired using: ADI3" in each_line:
-            imagingTool = "FTK Imager"
+        elif "RECON Imager Version : " in each_line:    # Recon Imager
+            imagingTool = re.split("RECON Imager Version : ", each_line, 0)
+            imagingTool = str(imagingTool[1]).strip()
+            imagingTool = re.split(" ", imagingTool, 0)
+            imagingTool = str(imagingTool[0]).strip()
+            imagingTool = ('Recon Imager %s' %(imagingTool))
 
         elif "Capacity in bytes reported Pwr-ON: " in each_line:
             capacity = re.split("Capacity in bytes reported Pwr-ON: ", each_line, 0)
@@ -994,6 +1055,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.0.3 - Added Recon imager log parsing
 2.0.2 - ActivityReport....docx output works best from the template.
 2.0.1 - Reorginized column orders, fixed serial #
 1.0.1 - Created a Tableau log parser
