@@ -6,6 +6,7 @@
 import re
 import sys
 import docx # pip install python-docx
+import pdfrw    # pip install pdfrw
 import hashlib
 import datetime
 import argparse  # for menu system
@@ -19,27 +20,26 @@ Month = d.strftime("%m")    # %B = October
 Year  = d.strftime("%Y")        
 todaysDate = d.strftime("%m/%d/%Y")
 
+ANNOT_KEY = '/Annots'
+ANNOT_FIELD_KEY = '/T'
+ANNOT_VAL_KEY = '/V'
+ANNOT_RECT_KEY = '/Rect'
+SUBTYPE_KEY = '/Subtype'
+WIDGET_SUBTYPE_KEY = '/Widget'
+
+pdf_template = "EvidenceForm.pdf"   # call your agenices Evidence Form with matching variables
+
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports"
 tech = 'LincolnLandForensics'  # change this to your name
-version = '2.0.4'
+version = '2.1.0'
+pdf_template = "EvidenceForm.pdf"
 
 # Regex section
 regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
-
-# Color options
-if sys.platform == 'win32' or sys.platform == 'win64':
-    # if windows, don't use colors
-    (r, o, y, g, b) = ('', '', '', '', '')
-else:
-    r = '\033[31m'  # red
-    o = '\033[0m'  # off
-    y = '\033[33m'  # yellow
-    g = '\033[32m'  # green
-    b = '\033[34m'  # blue
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -50,6 +50,7 @@ def main():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
+    parser.add_argument('-c','--caseNotes', help='casenotes module', required=False, action='store_true')
     parser.add_argument('-r', '--report', help='write report', required=False, action='store_true')
     parser.add_argument('-P', '--phone', help='phone output', required=False, action='store_true')
     parser.add_argument('-s', '--sticker', help='write sticker', required=False, action='store_true')
@@ -82,6 +83,9 @@ def main():
 
 
         if args.report:
+            if args.caseNotes:                                  
+                global caseNotesStatus 
+                caseNotesStatus  = 'True'        
             read_text()
         elif args.logparse:
             parse_log()
@@ -149,8 +153,8 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(4, 4, 25)  # caseAgent
     Sheet1.set_column(5, 5, 15)  # forensicExaminer
     Sheet1.set_column(6, 6, 7)  # exhibit
-    Sheet1.set_column(7, 7, 30)  # make/Model
-    Sheet1.set_column(8, 8, 17)  # serial#
+    Sheet1.set_column(7, 7, 30)  # makeModel
+    Sheet1.set_column(8, 8, 17)  # serial
     Sheet1.set_column(9, 9, 16)  # phoneNumber
     Sheet1.set_column(10, 10, 16)  # imagingStarted
     Sheet1.set_column(11, 11, 16)  # imagingFinished
@@ -175,10 +179,24 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(30, 30, 10)  # Action
     Sheet1.set_column(31, 31, 25)  # imageSHA256
     Sheet1.set_column(32, 32, 25)  # tempNotes
-    Sheet1.set_column(33, 33, 7)  # report
-    Sheet1.set_column(34, 34, 5)  # ..
-    Sheet1.set_column(35, 35, 20)  # locationOfCaseFile
-    Sheet1.set_column(36, 36, 12)  # attachment
+    Sheet1.set_column(33, 33, 7)   # report
+    Sheet1.set_column(34, 34, 25)  # seizureAddress
+    Sheet1.set_column(35, 35, 13)  # seizureRoom
+    Sheet1.set_column(36, 36, 18)  # seizureStatus
+    Sheet1.set_column(37, 37, 20)  # seizedBy
+    Sheet1.set_column(38, 38, 12)  # exhibitType
+    Sheet1.set_column(39, 39, 15)  # shutdownMethod
+    Sheet1.set_column(40, 40, 16)  # shutdownTime
+    Sheet1.set_column(41, 41, 16)  # biosTime
+    Sheet1.set_column(42, 42, 16)  # currentTime
+    Sheet1.set_column(43, 43, 10)  # priority
+    Sheet1.set_column(44, 44, 10)  # timezone
+    Sheet1.set_column(45, 45, 12)  # adminUser
+    Sheet1.set_column(46, 46, 10)  # adminPwd
+    Sheet1.set_column(47, 47, 20)  # email
+    Sheet1.set_column(48, 48, 12)  # emailPwd
+    Sheet1.set_column(49, 49, 16)  # ip
+
     
     # Write column headers
 
@@ -216,11 +234,83 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.write(0, 31, 'imageSHA256', header_format)
     Sheet1.write(0, 32, 'tempNotes', header_format)
     Sheet1.write(0, 33, 'report', header_format)    
-    # Sheet1.write(0, 34, '..', header_format)    
-    # Sheet1.write(0, 35, 'locationOfCaseFile', header_format)      
-    # Sheet1.write(0, 36, 'attachment', header_format)      
+    Sheet1.write(0, 34, 'seizureAddress', header_format)
+    Sheet1.write(0, 35, 'seizureRoom', header_format)
+    Sheet1.write(0, 36, 'seizureStatus', header_format)
+    Sheet1.write(0, 37, 'seizedBy', header_format)
+    Sheet1.write(0, 38, 'exhibitType', header_format)
+    Sheet1.write(0, 39, 'shutdownMethod', header_format)
+    Sheet1.write(0, 40, 'shutdownTime', header_format)
+    Sheet1.write(0, 41, 'biosTime', header_format)
+    Sheet1.write(0, 42, 'currentTime', header_format)
+    Sheet1.write(0, 43, 'priority', header_format)
+    Sheet1.write(0, 44, 'timezone', header_format)
+    Sheet1.write(0, 45, 'adminUser', header_format)
+    Sheet1.write(0, 46, 'adminPwd', header_format)
+    Sheet1.write(0, 47, 'email', header_format)
+    Sheet1.write(0, 48, 'emailPwd', header_format)
+    Sheet1.write(0, 49, 'ip', header_format) 
     
+def dictionaryBuild(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
+                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
+                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
+                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
+                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
+                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip):    
+    my_dict = {}
+    my_dict['caseNumber']=caseNumber
+    my_dict['caseName']=caseName
+    my_dict['subjectBusinessName']=subjectBusinessName
+    my_dict['caseType']=caseType
+    my_dict['caseAgent']=caseAgent
+    my_dict['forensicExaminer']=forensicExaminer
+    my_dict['exhibit']=exhibit
+    my_dict['makeModel']=makeModel
+    my_dict['serial']=serial
+    my_dict['phoneNumber']=phoneNumber
+    my_dict['imagingStarted']=imagingStarted
+    my_dict['imagingFinished']=imagingFinished
+    my_dict['imagingTool']=imagingTool
+    my_dict['imagingType']=imagingType
+    my_dict['status']=status
+    my_dict['exportLocation']=exportLocation
+    my_dict['imageMD5']=imageMD5
+    my_dict['notes']=notes
+    my_dict['summary']=summary
+    my_dict['OS']=OS
+    my_dict['analysisTool']=analysisTool
+    my_dict['exportedEvidence']=exportedEvidence
+    my_dict['storageLocation']=storageLocation
+    my_dict['dateSeized']=dateSeized
+    my_dict['dateReceived']=dateReceived
+    my_dict['inventoryDate ']=inventoryDate 
+    my_dict['removalDate ']=removalDate 
+    my_dict['removalStaff']=removalStaff
+    my_dict['reasonForRemoval']=reasonForRemoval
+    my_dict['operation']=operation
+    my_dict['Action']=Action
+    my_dict['imageSHA256']=imageSHA256
+    my_dict['tempNotes']=tempNotes
+    my_dict['report']=report
+    my_dict['seizureAddress']=seizureAddress
+    my_dict['seizureRoom']=seizureRoom
+    my_dict['seizureStatus']=seizureStatus
+    my_dict['seizedBy']=seizedBy
+    my_dict['exhibitType']=exhibitType
+    my_dict['shutdownMethod']=shutdownMethod
+    my_dict['shutdownTime']=shutdownTime
+    my_dict['biosTime']=biosTime
+    my_dict['currentTime']=currentTime
+    my_dict['priority']=priority
+    my_dict['timezone']=timezone
+    my_dict['adminUser']=adminUser
+    my_dict['adminPwd']=adminPwd
+    my_dict['email']=email
+    my_dict['emailPwd']=emailPwd
+    my_dict['ip']=ip
 
+    return (my_dict)
+    
 def format_function(bg_color='white'):
     global format
     format = workbook.add_format({
@@ -256,7 +346,9 @@ def parse_log():
     (size, imagingTool1, imagingTool2) = ('', '', '')
     (inventoryDate, operation, Action, imageSHA256, OS, dateSeized) = ('', '', '', '', '', '')
     (hostname, timezone, os, ip, encryption, summary) = ('', '', '', '', '', '')
-    
+    (seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod) = ('', '', '', '', '', '')
+    (shutdownTime, biosTime, currentTime, priority, timezone, adminUser) = ('', '', '', '', '', '')
+    (adminPwd, email, emailPwd, ip) = ('', '', '', '')
     exhibit = str(input("exhibit : ")).strip()
     # read section
     for each_line in csv_file:
@@ -304,7 +396,6 @@ def parse_log():
             imagingStarted = re.split("Acquisition started: ", each_line, 0)
             imagingStarted = str(imagingStarted[1]).strip()
             imagingStarted = fix_date(imagingStarted)
-
 
         elif "Extraction start date/time" in each_line: #cellebrite
             imagingStarted = re.split("time", each_line, 0)
@@ -625,22 +716,50 @@ def parse_log():
     print(notes)
     print("status = %s" %(status))
 
-    # Write excel
-    # insert a color red if status = not imaged
-    write_report(caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType,
-                caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived,
-                serial, makeModel, storageLocation, removalDate, exportedEvidence, status,
-                analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff,
-                notes,attachment, tempNotes, inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary)
+    write_report(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
+                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
+                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
+                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
+                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
+                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip)
+
+def pdf_fill(input_pdf_path, output_pdf_path, data_dict):   # fill out EvidenceForm
+
+    template_pdf = pdfrw.PdfReader(input_pdf_path)
+    for page in template_pdf.pages:
+        annotations = page[ANNOT_KEY]
+        for annotation in annotations:
+            if annotation[SUBTYPE_KEY] == WIDGET_SUBTYPE_KEY:
+                if annotation[ANNOT_FIELD_KEY]:
+                    key = annotation[ANNOT_FIELD_KEY][1:-1]
+                    if key in data_dict.keys():
+                        if type(data_dict[key]) == bool:
+                            if data_dict[key] == True:
+                                annotation.update(pdfrw.PdfDict(
+                                    AS=pdfrw.PdfName('Yes')))
+                        else:
+                            annotation.update(
+                                pdfrw.PdfDict(V='{}'.format(data_dict[key]))
+                            )
+                            annotation.update(pdfrw.PdfDict(AP=''))
+    template_pdf.Root.AcroForm.update(pdfrw.PdfDict(NeedAppearances=pdfrw.PdfObject('true')))
+    pdfrw.PdfWriter().write(output_pdf_path, template_pdf)
 
 
 def read_text():
     # global Row    #The magic to pass Row globally
-    style = workbook.add_format()
+    # style = workbook.add_format()
     (header, report, date) = ('', '', '<insert date here>')
     (body, executiveSummary, evidenceBlurb) = ('', '', '')
+    (style) = ('')
     # csv_file = open(filename) # UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d
-    csv_file = open(filename, encoding='utf8')
+    # csv_file = open(filename, encoding='utf8')
+    # csv_file = open(inputFile, encoding='utf8') 
+    csv_file = open(filename, encoding='utf8') 
+
+
+
+    
     # with open(filename, encoding='utf8') as csv_file:
         # html = BeautifulSoup(csv_file, "html.parser")
         # csv_file = csv_file
@@ -662,13 +781,17 @@ Evidence:
         (notes, attachment, tempNotes, report) = ('', '', '', '')
         (tempNotes,inventoryDate,operation,Action,imageSHA256,OS,dateSeized) = ('', '', '', '', '', '', '')
         (inventoryDate, operation, Action, imageSHA256, summary, executiveSummary) = ('', '', '', '', '', '')
+        (seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod) = ('', '', '', '', '', '')
+        (shutdownTime, biosTime, currentTime, priority, timezone, adminUser) = ('', '', '', '', '', '')
+        (adminPwd, email, emailPwd, ip) = ('', '', '', '')
+
         if phoneNumber != '':
             print('_____________%s is from a phone extract') %(phoneNumber) #temp
             
 
         (color) = ('white')
-        style.set_bg_color('white')  # test
-        each_line = each_line +  "\t" * 27
+        # style.set_bg_color('white')  # test
+        each_line = each_line +  "\t" * 51
         each_line = each_line.split('\t')  # splits by tabs
 
         value = each_line
@@ -710,15 +833,28 @@ Evidence:
             imageSHA256 = each_line[31]
             tempNotes = each_line[32]
             report = each_line[33]
-            # thirtyfour = each_line[34]            
-            locationOfCaseFile = each_line[35]
-            attachement = each_line[36]            
+            seizureAddress = each_line[34]
+            seizureRoom = each_line[35]
+            seizureStatus = each_line[36]
+            seizedBy = each_line[37]
+            exhibitType = each_line[38]
+            shutdownMethod = each_line[39]
+            shutdownTime = each_line[40]
+            biosTime = each_line[41]
+            currentTime = each_line[42]
+            priority = each_line[43]
+            timezone = each_line[44]
+            adminUser = each_line[45]
+            adminPwd = each_line[46]
+            email = each_line[47]
+            emailPwd = each_line[48]
+            ip = each_line[49]
             
             if subject == 'test':
                 subject = subjectBusinessName
                 # future idea. if subjectBusinessName != subject: Exhibit # <Exhibit> <subjectBusinessName>
 
-
+        pdf_output = ("EvidenceForm_%s_Ex_%s.pdf" %(caseNumber, exhibit))
         if header == '':
             header = ('''
 ACTIVITY REPORT                              BUREAU OF CRIMINAL INVESTIGATIONS
@@ -849,24 +985,46 @@ Exhibit %s
         body = ("%s%s" %(body, report))
         
         # Write excel
-        write_report(caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType,
-                caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived,
-                serial, makeModel, storageLocation, removalDate, exportedEvidence, status,
-                analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff,
-                notes,attachment, tempNotes, inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary)
+        # write_report(caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType,
+                # caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived,
+                # serial, makeModel, storageLocation, removalDate, exportedEvidence, status,
+                # analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff,
+                # notes,attachment, tempNotes, inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary)
+        # write_report(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
+                # serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
+                # imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
+                # inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
+                # report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
+                # biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip)
+        # write_pdf(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
+                # serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
+                # imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
+                # inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
+                # report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
+                # biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip)
+        
+        if caseNotesStatus == 'True':
+            my_dict = dictionaryBuild(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
+                    serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
+                    imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
+                    inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
+                    report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
+                    biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip)
+            pdf_output = ("ExhibitNotes_%s_Ex%s.pdf" %(caseNumber, exhibit))
+            pdf_fill(pdf_template, pdf_output, my_dict)
 
     # write docx report
     write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer)
-
+    print('insert pdf report writer here')  # temp
 
     output.write(footer+'\n')
 
-
-def write_report(caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType,
-                caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived,
-                serial, makeModel, storageLocation, removalDate, exportedEvidence, status,
-                analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff,
-                notes,attachment, tempNotes, inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary):
+def write_report(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
+                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
+                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
+                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
+                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
+                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip):
 
     global Row
 
@@ -908,8 +1066,23 @@ def write_report(caseNumber, exhibit, imagingStarted, imagingFinished, caseName,
     Sheet1.write_string(Row, 30, Action)
     Sheet1.write_string(Row, 31, imageSHA256)
     Sheet1.write_string(Row, 32, tempNotes)
-    # Sheet1.write_string(Row, 33, report)
-
+    Sheet1.write_string(Row, 33, report)
+    Sheet1.write_string(Row, 34, seizureAddress)
+    Sheet1.write_string(Row, 35, seizureRoom)
+    Sheet1.write_string(Row, 36, seizureStatus)
+    Sheet1.write_string(Row, 37, seizedBy)
+    Sheet1.write_string(Row, 38, exhibitType)
+    Sheet1.write_string(Row, 39, shutdownMethod)
+    Sheet1.write_string(Row, 40, shutdownTime)
+    Sheet1.write_string(Row, 41, biosTime)
+    Sheet1.write_string(Row, 42, currentTime)
+    Sheet1.write_string(Row, 43, priority)
+    Sheet1.write_string(Row, 44, timezone)
+    Sheet1.write_string(Row, 45, adminUser)
+    Sheet1.write_string(Row, 46, adminPwd)
+    Sheet1.write_string(Row, 47, email)
+    Sheet1.write_string(Row, 48, emailPwd)
+    Sheet1.write_string(Row, 49, ip)
     Row += 1
 
 def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer): 
@@ -928,8 +1101,6 @@ def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, 
 
     if footer != '':
         document.add_paragraph(footer) 
-        
-    
     
     document.save(outputDocx)   # print output to the new file
     
@@ -1030,12 +1201,18 @@ Agent: %s
 # write it one line at at time. If phone isn't blank, include it
 
         # Write excel
-        write_report(header, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType,
-                caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived,
-                serial, makeModel, storageLocation, removalDate, exportedEvidence, status,
-                analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff,
-                notes,attachment, tempNotes, inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary)
-
+        # write_report(header, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType,
+                # caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived,
+                # serial, makeModel, storageLocation, removalDate, exportedEvidence, status,
+                # analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff,
+                # notes,attachment, tempNotes, inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary)
+        write_report(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
+                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
+                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
+                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
+                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
+                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip)
+                
         output.write(header+'\n\n')
 
 
@@ -1045,7 +1222,9 @@ def usage():
     print(file + " Version: %s by %s" % (version, author))
     print("\nExample:")
     # print("\t" + file + " -f -I input.txt -O out_log_.xlsx\t\t")
+    # print("\t" + file + " -c -I input.txt\t\t")    
     print("\t" + file + " -r -I input.txt -O out_cases_.xlsx\t\t")
+    print("\t" + file + " -r -c -I input.txt -O out_cases_.xlsx\t\t")
     print("\t" + file + " -s -I input.txt -O out_log_.xlsx\t\t")
     print("\t" + file + " -l -I input.txt -O out_log_.xlsx\t\t")
     
@@ -1055,6 +1234,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.1.0 - Added CaseNotes.pdf output if you add -c to -r
 2.0.3 - Added Recon imager log parsing
 2.0.2 - ActivityReport....docx output works best from the template.
 2.0.1 - Reorginized column orders, fixed serial #
