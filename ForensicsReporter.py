@@ -6,7 +6,10 @@
 import re
 import sys
 import docx # pip install python-docx
-import pdfrw    # pip install pdfrw
+try:
+    import pdfrw    # pip install pdfrw
+except:
+    print('you are missing pdfrw:    pip install pdfrw')
 import hashlib
 import datetime
 import argparse  # for menu system
@@ -35,7 +38,7 @@ pdf_template = "EvidenceForm.pdf"   # call your agenices Evidence Form with matc
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports"
 tech = 'LincolnLandForensics'  # change this to your name
-version = '2.1.0'
+version = '2.1.1'
 pdf_template = "EvidenceForm.pdf"
 
 # Regex section
@@ -65,7 +68,8 @@ def main():
     # Choose Sheet format
     global sheet_format
     sheet_format = ''
-
+    global caseNotesStatus
+    (caseNotesStatus) = ('False')
     if args.phone:
         sheet_format = "phone"
         print('this is a phone report') #temp
@@ -84,7 +88,7 @@ def main():
 
         if args.report:
             if args.caseNotes:                                  
-                global caseNotesStatus 
+                # global caseNotesStatus 
                 caseNotesStatus  = 'True'        
             read_text()
         elif args.logparse:
