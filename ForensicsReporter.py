@@ -514,10 +514,10 @@ def parse_log():
             print("makeModel=", makeModel[1].strip())      
             makeModel = str(makeModel[1]).strip()
 
-        elif "Model:" in each_line and len(model) == 0:
+        elif "Model:" in each_line and len(model) == 0: # tableau
             model = re.split("Model:", each_line, 0)
             model = str(model[1]).strip()
-            # makeModel = model
+            storageMakeModel = model
 
         elif "Revision:" in each_line: #cellebite
             os = re.split("Revision:", each_line, 0)
@@ -528,7 +528,7 @@ def parse_log():
         elif "S/N: " in each_line:  # tableau
             hddserial = re.split("S/N: ", each_line, 0)
             hddserial = str(hddserial[1]).strip()
-            # serial = hddserial
+            storageSerial = hddserial
 
         # elif "Serial Number:" in each_line and serial != '': #cellebrite
         elif "Serial Number:" in each_line: #cellebrite
@@ -700,6 +700,13 @@ def parse_log():
                     size = ''
                 # size = capacity
                 capacity = ('%s %s' %(capacity, size))
+                storageSize = capacity
+
+        elif "Cable/Interface type: " in each_line:
+            storageType = re.split("Cable/Interface type: ", each_line, 0)
+            storageType = str(storageType[1]).strip()
+            storageType
+ 
         elif "Source data size: " in each_line:
             capacity = re.split("Source data size: ", each_line, 0)
             capacity = str(capacity[1]).strip()
@@ -1357,6 +1364,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.1.2 - Added about a dozen columns for additional info (the columns need to be re-ordered one of these days.)
 2.1.1 - Added ISP pdf templates for pdf writing (just change agency = to agency = 'ISP'
 2.1.0 - Added CaseNotes.pdf output if you add -c to -r
 2.0.3 - Added Recon imager log parsing
@@ -1371,6 +1379,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+fix log parser to populate storageSize, storageMakeModel, storageSerial, storageSize
+(the columns need to be re-ordered one of these days.)
 figure out DocX tags or variables to insert data into the first fields
 if ', serial # .', replace with .
 
