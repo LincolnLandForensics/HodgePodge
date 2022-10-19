@@ -38,12 +38,11 @@ WIDGET_SUBTYPE_KEY = '/Widget'
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports"
 tech = 'LincolnLandForensics'  # change this to your name
-version = '2.1.4'
-# pdf_template = "EvidenceForm.pdf"
+version = '2.5.0'
 global agency
 agency = "IDOR" # IDOR, ISP
 # Regex section
-regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
+# regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -161,142 +160,151 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_selection('B2')
 
     # Excel column width
- 
-    Sheet1.set_column(0, 0, 15)  # caseNumber
-    Sheet1.set_column(1, 1, 16)  # caseName
-    Sheet1.set_column(2, 2, 20)  # subjectBusinessName
-    Sheet1.set_column(3, 3, 16)  # caseType
-    Sheet1.set_column(4, 4, 25)  # caseAgent
-    Sheet1.set_column(5, 5, 15)  # forensicExaminer
-    Sheet1.set_column(6, 6, 7)  # exhibit
-    Sheet1.set_column(7, 7, 30)  # makeModel
-    Sheet1.set_column(8, 8, 17)  # serial
-    Sheet1.set_column(9, 9, 16)  # phoneNumber
-    Sheet1.set_column(10, 10, 16)  # imagingStarted
-    Sheet1.set_column(11, 11, 16)  # imagingFinished
-    Sheet1.set_column(12, 12, 24)  # imagingTool
-    Sheet1.set_column(13, 13, 13)  # imagingType
-    Sheet1.set_column(14, 14, 12)  # status
-    Sheet1.set_column(15, 15, 25)  # exportLocation
-    Sheet1.set_column(16, 16, 16)  # imageMD5
-    Sheet1.set_column(17, 17, 25)  # notes
-    Sheet1.set_column(18, 18, 26)  # summary
-    Sheet1.set_column(19, 19, 15)  # OS
-    Sheet1.set_column(20, 20, 23)  # analysisTool
-    Sheet1.set_column(21, 21, 17)  # exportedEvidence
-    Sheet1.set_column(22, 22, 20)  # storageLocation
-    Sheet1.set_column(23, 23, 16)  # dateSeized
-    Sheet1.set_column(24, 24, 16)  # dateReceived
-    Sheet1.set_column(25, 25, 16)  # inventoryDate 
-    Sheet1.set_column(26, 26, 16)  # removalDate 
-    Sheet1.set_column(27, 27, 25)  # removalStaff
-    Sheet1.set_column(28, 28, 18)  # reasonForRemoval
-    Sheet1.set_column(29, 29, 15)  # operation
-    Sheet1.set_column(30, 30, 10)  # Action
-    Sheet1.set_column(31, 31, 25)  # imageSHA256
-    Sheet1.set_column(32, 32, 25)  # tempNotes
-    Sheet1.set_column(33, 33, 7)   # report
-    Sheet1.set_column(34, 34, 25)  # seizureAddress
-    Sheet1.set_column(35, 35, 13)  # seizureRoom
-    Sheet1.set_column(36, 36, 18)  # seizureStatus
-    Sheet1.set_column(37, 37, 20)  # seizedBy
-    Sheet1.set_column(38, 38, 12)  # exhibitType
-    Sheet1.set_column(39, 39, 15)  # shutdownMethod
-    Sheet1.set_column(40, 40, 16)  # shutdownTime
-    Sheet1.set_column(41, 41, 16)  # biosTime
-    Sheet1.set_column(42, 42, 16)  # currentTime
-    Sheet1.set_column(43, 43, 10)  # priority
-    Sheet1.set_column(44, 44, 10)  # timezone
-    Sheet1.set_column(45, 45, 12)  # adminUser
-    Sheet1.set_column(46, 46, 10)  # adminPwd
-    Sheet1.set_column(47, 47, 20)  # email
-    Sheet1.set_column(48, 48, 12)  # emailPwd
-    Sheet1.set_column(49, 49, 16)  # ip
-    Sheet1.set_column(50, 50, 15)  # phoneIMEI
-    Sheet1.set_column(51, 51, 15)  # mobileCarrier
-    Sheet1.set_column(52, 52, 15)  # writeBlocker
-    Sheet1.set_column(53, 53, 15)  # caseNumberOrig
-    Sheet1.set_column(54, 54, 15)  # storageType
-    Sheet1.set_column(55, 55, 15)  # storageMakeModel
-    Sheet1.set_column(56, 56, 15)  # storageSerial
-    Sheet1.set_column(57, 57, 15)  # storageSize
-    Sheet1.set_column(58, 58, 15)  # evidenceDataSize
-    Sheet1.set_column(59, 59, 15)  # analysisTool2
-    Sheet1.set_column(60, 60, 15)  # receivedBy
+    Sheet1.set_column(0, 0, 15) # caseNumber
+    Sheet1.set_column(1, 1, 7) # exhibit
+    Sheet1.set_column(2, 2, 16) # caseName
+    Sheet1.set_column(3, 3, 20) # subjectBusinessName
+    Sheet1.set_column(4, 4, 16) # caseType
+    Sheet1.set_column(5, 5, 25) # caseAgent
+    Sheet1.set_column(6, 6, 15) # forensicExaminer
+    Sheet1.set_column(7, 7, 7) # report
+    Sheet1.set_column(8, 8, 25) # notes
+    Sheet1.set_column(9, 9, 15) # summary
+    Sheet1.set_column(10, 10, 12) # exhibitType
+    Sheet1.set_column(11, 11, 30) # makeModel
+    Sheet1.set_column(12, 12, 17) # serial
+    Sheet1.set_column(13, 13, 15) # OS
+    Sheet1.set_column(14, 14, 16) # phoneNumber
+    Sheet1.set_column(15, 15, 15) # phoneIMEI
+    Sheet1.set_column(16, 16, 15) # mobileCarrier
+    Sheet1.set_column(17, 17, 16) # biosTime
+    Sheet1.set_column(18, 18, 16) # currentTime
+    Sheet1.set_column(19, 19, 12) # timezone
+    Sheet1.set_column(20, 20, 15) # shutdownMethod
+    Sheet1.set_column(21, 21, 16) # shutdownTime
+    Sheet1.set_column(22, 22, 12) # userName
+    Sheet1.set_column(23, 23, 12) # userPwd
+    Sheet1.set_column(24, 24, 20) # email
+    Sheet1.set_column(25, 25, 12) # emailPwd
+    Sheet1.set_column(26, 26, 16) # ip
+    Sheet1.set_column(27, 27, 15) # seizureAddress
+    Sheet1.set_column(28, 28, 13) # seizureRoom
+    Sheet1.set_column(29, 29, 16) # dateSeized
+    Sheet1.set_column(30, 30, 12) # seizedBy
+    Sheet1.set_column(31, 31, 16) # dateReceived
+    Sheet1.set_column(32, 32, 15) # receivedBy
+    Sheet1.set_column(33, 33, 16) # removalDate
+    Sheet1.set_column(34, 34, 25) # removalStaff
+    Sheet1.set_column(35, 35, 18) # reasonForRemoval
+    Sheet1.set_column(36, 36, 15) # inventoryDate
+    Sheet1.set_column(37, 37, 18) # seizureStatus
+    Sheet1.set_column(38, 38, 12) # status
+    Sheet1.set_column(39, 39, 24) # imagingTool
+    Sheet1.set_column(40, 40, 15) # imagingType
+    Sheet1.set_column(41, 41, 16) # imageMD5
+    Sheet1.set_column(42, 42, 15) # imageSHA1
+    Sheet1.set_column(43, 43, 15) # imageSHA256  #25
+    Sheet1.set_column(44, 44, 15) # writeBlocker
+    Sheet1.set_column(45, 45, 16) # imagingStarted
+    Sheet1.set_column(46, 46, 16) # imagingFinished
+    Sheet1.set_column(47, 47, 13) # storageType
+    Sheet1.set_column(48, 48, 23) # storageMakeModel
+    Sheet1.set_column(49, 49, 19) # storageSerial
+    Sheet1.set_column(50, 50, 14) # storageSize
+    Sheet1.set_column(51, 51, 15) # evidenceDataSize
+    Sheet1.set_column(52, 52, 23) # analysisTool
+    Sheet1.set_column(53, 53, 15) # analysisTool2
+    Sheet1.set_column(54, 54, 25) # exportLocation
+    Sheet1.set_column(55, 55, 15) # exportedEvidence
+    Sheet1.set_column(56, 56, 20) # storageLocation
+    Sheet1.set_column(57, 57, 15) # caseNumberOrig
+    Sheet1.set_column(58, 58, 9) # priority
+    Sheet1.set_column(59, 59, 15) # operation
+    Sheet1.set_column(60, 60, 10) # Action
+    Sheet1.set_column(61, 61, 15) # vaultCaseNumber
+    Sheet1.set_column(62, 62, 15) # vaultItem
+    Sheet1.set_column(63, 63, 15) # vaultTotal
+    Sheet1.set_column(64, 64, 15) # tempNotes
     
     # Write column headers
 
     Sheet1.write(0, 0, 'caseNumber', header_format)
-    Sheet1.write(0, 1, 'caseName', header_format)
-    Sheet1.write(0, 2, 'subjectBusinessName', header_format)
-    Sheet1.write(0, 3, 'caseType', header_format)
-    Sheet1.write(0, 4, 'caseAgent', header_format)
-    Sheet1.write(0, 5, 'forensicExaminer', header_format)
-    Sheet1.write(0, 6, 'exhibit', header_format)
-    Sheet1.write(0, 7, 'make/Model', header_format)
-    Sheet1.write(0, 8, 'serial#', header_format)
-    Sheet1.write(0, 9, 'phoneNumber', header_format)
-    Sheet1.write(0, 10, 'imagingStarted', header_format)
-    Sheet1.write(0, 11, 'imagingFinished', header_format)
-    Sheet1.write(0, 12, 'imagingTool', header_format)
-    Sheet1.write(0, 13, 'imagingType', header_format)
-    Sheet1.write(0, 14, 'status', header_format)
-    Sheet1.write(0, 15, 'exportLocation', header_format)
-    Sheet1.write(0, 16, 'imageMD5', header_format)
-    Sheet1.write(0, 17, 'notes', header_format)
-    Sheet1.write(0, 18, 'summary', header_format)
-    Sheet1.write(0, 19, 'OS', header_format)
-    Sheet1.write(0, 20, 'analysisTool', header_format)
-    Sheet1.write(0, 21, 'exportedEvidence', header_format)
-    Sheet1.write(0, 22, 'storageLocation', header_format)
-    Sheet1.write(0, 23, 'dateSeized', header_format)
-    Sheet1.write(0, 24, 'dateReceived', header_format)
-    Sheet1.write(0, 25, 'inventoryDate', header_format)
-    Sheet1.write(0, 26, 'removalDate', header_format)
-    Sheet1.write(0, 27, 'removalStaff', header_format)
-    Sheet1.write(0, 28, 'reasonForRemoval', header_format)
-    Sheet1.write(0, 29, 'operation', header_format)
-    Sheet1.write(0, 30, 'action', header_format)
-    Sheet1.write(0, 31, 'imageSHA256', header_format)
-    Sheet1.write(0, 32, 'tempNotes', header_format)
-    Sheet1.write(0, 33, 'report', header_format)    
-    Sheet1.write(0, 34, 'seizureAddress', header_format)
-    Sheet1.write(0, 35, 'seizureRoom', header_format)
-    Sheet1.write(0, 36, 'seizureStatus', header_format)
-    Sheet1.write(0, 37, 'seizedBy', header_format)
-    Sheet1.write(0, 38, 'exhibitType', header_format)
-    Sheet1.write(0, 39, 'shutdownMethod', header_format)
-    Sheet1.write(0, 40, 'shutdownTime', header_format)
-    Sheet1.write(0, 41, 'biosTime', header_format)
-    Sheet1.write(0, 42, 'currentTime', header_format)
-    Sheet1.write(0, 43, 'priority', header_format)
-    Sheet1.write(0, 44, 'timezone', header_format)
-    Sheet1.write(0, 45, 'adminUser', header_format)
-    Sheet1.write(0, 46, 'adminPwd', header_format)
-    Sheet1.write(0, 47, 'email', header_format)
-    Sheet1.write(0, 48, 'emailPwd', header_format)
-    Sheet1.write(0, 49, 'ip', header_format) 
-    Sheet1.write(0, 50, 'phoneIMEI', header_format)
-    Sheet1.write(0, 51, 'mobileCarrier', header_format)
-    Sheet1.write(0, 52, 'writeBlocker', header_format)
-    Sheet1.write(0, 53, 'caseNumberOrig', header_format)
-    Sheet1.write(0, 54, 'storageType', header_format)
-    Sheet1.write(0, 55, 'storageMakeModel', header_format)
-    Sheet1.write(0, 56, 'storageSerial', header_format)
-    Sheet1.write(0, 57, 'storageSize', header_format)
-    Sheet1.write(0, 58, 'evidenceDataSize', header_format)
-    Sheet1.write(0, 59, 'analysisTool2', header_format)
-    Sheet1.write(0, 60, 'receivedBy', header_format)
+    Sheet1.write(0, 1, 'exhibit', header_format)
+    Sheet1.write(0, 2, 'caseName', header_format)
+    Sheet1.write(0, 3, 'subjectBusinessName', header_format)
+    Sheet1.write(0, 4, 'caseType', header_format)
+    Sheet1.write(0, 5, 'caseAgent', header_format)
+    Sheet1.write(0, 6, 'forensicExaminer', header_format)
+    Sheet1.write(0, 7, 'report', header_format)
+    Sheet1.write(0, 8, 'notes', header_format)
+    Sheet1.write(0, 9, 'summary', header_format)
+    Sheet1.write(0, 10, 'exhibitType', header_format)
+    Sheet1.write(0, 11, 'makeModel', header_format)
+    Sheet1.write(0, 12, 'serial', header_format)
+    Sheet1.write(0, 13, 'OS', header_format)
+    Sheet1.write(0, 14, 'phoneNumber', header_format)
+    Sheet1.write(0, 15, 'phoneIMEI', header_format)
+    Sheet1.write(0, 16, 'mobileCarrier', header_format)
+    Sheet1.write(0, 17, 'biosTime', header_format)
+    Sheet1.write(0, 18, 'currentTime', header_format)
+    Sheet1.write(0, 19, 'timezone', header_format)
+    Sheet1.write(0, 20, 'shutdownMethod', header_format)
+    Sheet1.write(0, 21, 'shutdownTime', header_format)
+    Sheet1.write(0, 22, 'userName', header_format)
+    Sheet1.write(0, 23, 'userPwd', header_format)
+    Sheet1.write(0, 24, 'email', header_format)
+    Sheet1.write(0, 25, 'emailPwd', header_format)
+    Sheet1.write(0, 26, 'ip', header_format)
+    Sheet1.write(0, 27, 'seizureAddress', header_format)
+    Sheet1.write(0, 28, 'seizureRoom', header_format)
+    Sheet1.write(0, 29, 'dateSeized', header_format)
+    Sheet1.write(0, 30, 'seizedBy', header_format)
+    Sheet1.write(0, 31, 'dateReceived', header_format)
+    Sheet1.write(0, 32, 'receivedBy', header_format)
+    Sheet1.write(0, 33, 'removalDate', header_format)
+    Sheet1.write(0, 34, 'removalStaff', header_format)
+    Sheet1.write(0, 35, 'reasonForRemoval', header_format)
+    Sheet1.write(0, 36, 'inventoryDate', header_format)
+    Sheet1.write(0, 37, 'seizureStatus', header_format)
+    Sheet1.write(0, 38, 'status', header_format)
+    Sheet1.write(0, 39, 'imagingTool', header_format)
+    Sheet1.write(0, 40, 'imagingType', header_format)
+    Sheet1.write(0, 41, 'imageMD5', header_format)
+    Sheet1.write(0, 42, 'imageSHA1', header_format)
+    Sheet1.write(0, 43, 'imageSHA256', header_format)
+    Sheet1.write(0, 44, 'writeBlocker', header_format)
+    Sheet1.write(0, 45, 'imagingStarted', header_format)
+    Sheet1.write(0, 46, 'imagingFinished', header_format)
+    Sheet1.write(0, 47, 'storageType', header_format)
+    Sheet1.write(0, 48, 'storageMakeModel', header_format)
+    Sheet1.write(0, 49, 'storageSerial', header_format)
+    Sheet1.write(0, 50, 'storageSize', header_format)
+    Sheet1.write(0, 51, 'evidenceDataSize', header_format)
+    Sheet1.write(0, 52, 'analysisTool', header_format)
+    Sheet1.write(0, 53, 'analysisTool2', header_format)
+    Sheet1.write(0, 54, 'exportLocation', header_format)
+    Sheet1.write(0, 55, 'exportedEvidence', header_format)
+    Sheet1.write(0, 56, 'storageLocation', header_format)
+    Sheet1.write(0, 57, 'caseNumberOrig', header_format)
+    Sheet1.write(0, 58, 'priority', header_format)
+    Sheet1.write(0, 59, 'operation', header_format)
+    Sheet1.write(0, 60, 'Action', header_format)
+    Sheet1.write(0, 61, 'vaultCaseNumber', header_format)
+    Sheet1.write(0, 62, 'vaultItem', header_format)
+    Sheet1.write(0, 63, 'vaultTotal', header_format)
+    Sheet1.write(0, 64, 'tempNotes', header_format)
 
     
-def dictionaryBuild(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
-                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
-                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
-                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
-                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
-                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip,phoneIMEI, 
-                mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel, storageSerial, storageSize, 
-                evidenceDataSize, analysisTool2, receivedBy):    
+def dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
+    forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+    phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
+    userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
+    dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
+    seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
+    writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
+    storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
+    storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+    vaultTotal, tempNotes):    
     '''
     build a dictionary file of important columns for writing to a pdf
     '''
@@ -315,8 +323,8 @@ def dictionaryBuild(caseNumber, caseName, subjectBusinessName, caseType, caseAge
     my_dict['exhibitType']=exhibitType   
     my_dict['phoneNumber']=phoneNumber
     my_dict['phoneIMEI']=phoneIMEI
-    my_dict['adminUser']=adminUser
-    my_dict['adminPwd']=adminPwd
+    my_dict['userName']=userName
+    my_dict['userPwd']=userPwd
     my_dict['email']=email
     my_dict['emailPwd']=emailPwd
     my_dict['biosTime']=biosTime
@@ -330,6 +338,8 @@ def dictionaryBuild(caseNumber, caseName, subjectBusinessName, caseType, caseAge
     my_dict['seizureStatus']=seizureStatus
     my_dict['dateReceived']=dateReceived
     my_dict['receivedBy']=receivedBy
+    my_dict['removalDate ']=removalDate 
+    my_dict['removalStaff']=removalStaff
     my_dict['imagingTool']=imagingTool
     my_dict['imagingType']=imagingType
     my_dict['imageMD5']=imageMD5
@@ -344,24 +354,6 @@ def dictionaryBuild(caseNumber, caseName, subjectBusinessName, caseType, caseAge
     my_dict['analysisTool']=analysisTool
     my_dict['analysisTool2']=analysisTool2
     my_dict['notes']=notes
-    
-    # my_dict['caseType']=caseType
-    # my_dict['status']=status
-    # my_dict['exportLocation']=exportLocation  # the full path to the image file
-    # my_dict['exportLocation']=exportLocation.split('\\')[-1]   # just the image file name
-    # my_dict['summary']=summary
-    # my_dict['exportedEvidence']=exportedEvidence
-    # my_dict['inventoryDate ']=inventoryDate 
-    # my_dict['removalDate ']=removalDate 
-    # my_dict['removalStaff']=removalStaff
-    # my_dict['reasonForRemoval']=reasonForRemoval
-    # my_dict['operation']=operation
-    # my_dict['Action']=Action
-    # my_dict['tempNotes']=tempNotes
-    # my_dict['report']=report
-    # my_dict['exhibitType']=exhibitType
-    # my_dict['shutdownMethod']=shutdownMethod
-    # my_dict['shutdownTime']=shutdownTime
 
     return (my_dict)
     
@@ -402,19 +394,33 @@ def parse_log():
     csv_file = open(filename, encoding='utf8')
     outputFile = "logreport.txt"
     output = open(outputFile, 'w+')
-    (caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType) = ('', '', '', '', '', '', '')
-    (caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived) = ('', '', '', '', '', '')
-    (serial, makeModel, storageLocation, removalDate, exportedEvidence, status) = ('', '', '', '', '', '')
-    (analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff) = ('', '', '', '', '', '')
-    (notes, attachment, tempNotes, model, hddserial, capacity) = ('', '', '', '', '', '')
-    (size, imagingTool1, imagingTool2) = ('', '', '')
-    (inventoryDate, operation, Action, imageSHA256, OS, dateSeized) = ('', '', '', '', '', '')
-    (hostname, timezone, os, ip, encryption, summary) = ('', '', '', '', '', '')
-    (seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod) = ('', '', '', '', '', '')
-    (shutdownTime, biosTime, currentTime, priority, timezone, adminUser) = ('', '', '', '', '', '')
-    (adminPwd, email, emailPwd, ip) = ('', '', '', '')
-    (phoneIMEI, mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel) = ('', '', '', '', '', '')
-    (storageSerial, storageSize, evidenceDataSize, analysisTool2, receivedBy) = ('', '', '', '', '')
+
+    (caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent) = ('', '', '', '', '', '')
+    (forensicExaminer, report, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
+    (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
+    (currentTime, timezone, shutdownMethod, shutdownTime, userName, userPwd) = ('', '', '', '', '', '')
+    (email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized) = ('', '', '', '', '', '')
+    (seizedBy, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval) = ('', '', '', '', '', '')
+    (inventoryDate, seizureStatus, status, imagingTool, imagingType, imageMD5) = ('', '', '', '', '', '')
+    (imageSHA1, imageSHA256, writeBlocker, imagingStarted, imagingFinished, storageType) = ('', '', '', '', '', '')
+    (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
+    (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
+    (Action, vaultCaseNumber, vaultItem, vaultTotal, tempNotes) = ('', '', '', '', '')
+    # (model) = ('')
+    
+    # (caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType) = ('', '', '', '', '', '', '')
+    # (caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived) = ('', '', '', '', '', '')
+    # (serial, makeModel, storageLocation, removalDate, exportedEvidence, status) = ('', '', '', '', '', '')
+    # (analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff) = ('', '', '', '', '', '')
+    # (notes, attachment, tempNotes, model, hddserial, capacity) = ('', '', '', '', '', '')
+    # (size, imagingTool1, imagingTool2) = ('', '', '')
+    # (inventoryDate, operation, Action, imageSHA256, OS, dateSeized) = ('', '', '', '', '', '')
+    # (hostname, timezone, os, ip, encryption, summary) = ('', '', '', '', '', '')
+    # (seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod) = ('', '', '', '', '', '')
+    # (shutdownTime, biosTime, currentTime, priority, timezone, userName) = ('', '', '', '', '', '')
+    # (userPwd, email, emailPwd, ip) = ('', '', '', '')
+    # (phoneIMEI, mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel) = ('', '', '', '', '', '')
+    # (storageSerial, storageSize, evidenceDataSize, analysisTool2, receivedBy) = ('', '', '', '', '')
     
     exhibit = str(input("exhibit : ")).strip()
     # read section
@@ -514,10 +520,15 @@ def parse_log():
             print("makeModel=", makeModel[1].strip())      
             makeModel = str(makeModel[1]).strip()
 
-        elif "Model:" in each_line and len(model) == 0: # tableau
-            model = re.split("Model:", each_line, 0)
-            model = str(model[1]).strip()
-            storageMakeModel = model
+        elif "Model:" in each_line and len(storageMakeModel) == 0: # tableau
+            storageMakeModel = re.split("Model:", each_line, 0)
+            storageMakeModel = str(storageMakeModel[1]).strip()
+            # storageMakeModel = model
+
+        # elif "Model:" in each_line and len(model) == 0: # tableau
+            # model = re.split("Model:", each_line, 0)
+            # model = str(model[1]).strip()
+            # storageMakeModel = model
 
         elif "Revision:" in each_line: #cellebite
             os = re.split("Revision:", each_line, 0)
@@ -706,7 +717,10 @@ def parse_log():
             storageType = re.split("Cable/Interface type: ", each_line, 0)
             storageType = str(storageType[1]).strip()
             storageType
- 
+
+        elif "T356789iu" in each_line:  # fix me
+            writeBlocker = "Tableau T356789iu"
+
         elif "Source data size: " in each_line:
             capacity = re.split("Source data size: ", each_line, 0)
             capacity = str(capacity[1]).strip()
@@ -731,9 +745,11 @@ def parse_log():
         elif "E01" in each_line:
             exportLocation = each_line.strip()
 
-        elif "Disk MD5:  " in each_line:
+        elif "Disk MD5:  " in each_line:    # Tableau
             imageMD5 = re.split("Disk MD5:  ", each_line, 0)
             imageMD5 = str(imageMD5[1]).strip()
+
+
         elif "MD5 checksum:" in each_line:  # fix me
             imageMD5 = re.split("MD5 checksum:", each_line, 0)
             imageMD5 = str(imageMD5[1]).strip()
@@ -744,6 +760,10 @@ def parse_log():
                 imageMD5 = imageMD5.replace(' : verified','')
             else:
                 status = 'Not imaged'
+
+        elif "Disk SHA1: " in each_line:    # Tableau
+            imageSHA1 = re.split("Disk SHA1: ", each_line, 0)
+            imageSHA1 = str(imageSHA1[1]).strip()
 
         # _Triage_.txt parsing
         elif "Host Name: " in each_line:
@@ -772,8 +792,8 @@ def parse_log():
             email = re.split("Email: ", each_line, 0)
             email = str(email[1]).strip()
         elif "Currentuser:" in each_line:
-            adminUser = re.split("Currentuser:", each_line, 0)
-            adminUser = str(adminUser[1]).strip()
+            userName = re.split("Currentuser:", each_line, 0)
+            userName = str(userName[1]).strip()
 
 
     if len(imagingTool1) != 0:
@@ -781,7 +801,10 @@ def parse_log():
     
     
     if len(capacity) != 0:
-        notes = ("This had a %s drive, model %s, serial # %s. %s" %(capacity, model, hddserial, notes))
+        notes = ("This had a %s drive, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
+
+    # if len(capacity) != 0:
+        # notes = ("This had a %s drive, model %s, serial # %s. %s" %(capacity, model, hddserial, notes))
 
     if len(OS) != 0 and 'The operating system was' not in notes:
         notes = ("%s The operating system was %s." %(notes, OS)) 
@@ -793,14 +816,16 @@ def parse_log():
     print(notes)
     print("status = %s" %(status))
 
-    write_report(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
-                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
-                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
-                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
-                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
-                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip, phoneIMEI, 
-                mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel, storageSerial, storageSize, 
-                evidenceDataSize, analysisTool2, receivedBy)
+    write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
+        forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+        phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
+        userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
+        dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
+        seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
+        writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
+        storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
+        storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+        vaultTotal, tempNotes)
 
 def pdf_fill(input_pdf_path, output_pdf_path, data_dict):   
     '''
@@ -841,13 +866,6 @@ def read_text():
     (body, executiveSummary, evidenceBlurb) = ('', '', '')
     (style) = ('')
     csv_file = open(filename, encoding='utf8') 
-
-
-
-    
-    # with open(filename, encoding='utf8') as csv_file:
-        # html = BeautifulSoup(csv_file, "html.parser")
-        # csv_file = csv_file
     
     outputFile = "report.txt"
     output = open(outputFile, 'w+')
@@ -859,22 +877,20 @@ Evidence:
     '''
     
     for each_line in csv_file:
-        (caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType) = ('', '', '', '', '', '', '')
-        (caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived) = ('', '', '', '', '', '')
-        (serial, makeModel, storageLocation, removalDate, exportedEvidence, status) = ('', '', '', '', '', '')
-        (analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff) = ('', '', '', '', '', '')
-        (notes, attachment, tempNotes, report) = ('', '', '', '')
-        (tempNotes,inventoryDate,operation,Action,imageSHA256,OS,dateSeized) = ('', '', '', '', '', '', '')
-        (inventoryDate, operation, Action, imageSHA256, summary, executiveSummary) = ('', '', '', '', '', '')
-        (seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod) = ('', '', '', '', '', '')
-        (shutdownTime, biosTime, currentTime, priority, timezone, adminUser) = ('', '', '', '', '', '')
-        (adminPwd, email, emailPwd, ip) = ('', '', '', '')
-        (phoneIMEI, mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel) = ('', '', '', '', '', '')
-        (storageSerial, storageSize, evidenceDataSize, analysisTool2, receivedBy) = ('', '', '', '', '')
+        (caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent) = ('', '', '', '', '', '')
+        (forensicExaminer, report, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
+        (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
+        (currentTime, timezone, shutdownMethod, shutdownTime, userName, userPwd) = ('', '', '', '', '', '')
+        (email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized) = ('', '', '', '', '', '')
+        (seizedBy, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval) = ('', '', '', '', '', '')
+        (inventoryDate, seizureStatus, status, imagingTool, imagingType, imageMD5) = ('', '', '', '', '', '')
+        (imageSHA1, imageSHA256, writeBlocker, imagingStarted, imagingFinished, storageType) = ('', '', '', '', '', '')
+        (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
+        (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
+        (Action, vaultCaseNumber, vaultItem, vaultTotal, tempNotes) = ('', '', '', '', '')
 
         if phoneNumber != '':
             print('_____________%s is from a phone extract') %(phoneNumber) #temp
-            
 
         (color) = ('white')
         # style.set_bg_color('white')  # test
@@ -886,67 +902,74 @@ Evidence:
 
         if each_line[1]:                        ### checks to see if there is an each_line[1] before preceeding
             Value = note
+
             caseNumber = each_line[0]
-            caseName = each_line[1]
-            subjectBusinessName = each_line[2]
-            caseType = each_line[3].lower()
-            caseAgent = each_line[4]
-            forensicExaminer = each_line[5]
-            exhibit = each_line[6]
-            makeModel = each_line[7].strip()
-            serial = each_line[8].strip()
-            phoneNumber = each_line[9]
-            imagingStarted = each_line[10]
-            imagingFinished = each_line[11]
-            imagingTool = each_line[12]
-            imagingType = each_line[13].lower()
-            status = each_line[14]
-            exportLocation = each_line[15]
-            imageMD5 = each_line[16]
-            notes = each_line[17]            
-            summary = each_line[18]
-            OS = each_line[19]
-            analysisTool = each_line[20]
-            exportedEvidence = each_line[21]
-            storageLocation = each_line[22]
-            dateSeized = each_line[23]
-            dateReceived = each_line[24]
-            inventoryDate = each_line[25]
-            removalDate = each_line[26]
-            removalStaff = each_line[27]
-            reasonForRemoval = each_line[28]
-            operation = each_line[29]
-            Action = each_line[30]
-            imageSHA256 = each_line[31]
-            tempNotes = each_line[32]
-            report = each_line[33]
-            seizureAddress = each_line[34]
-            seizureRoom = each_line[35]
-            seizureStatus = each_line[36]
-            seizedBy = each_line[37]
-            exhibitType = each_line[38]
-            shutdownMethod = each_line[39]
-            shutdownTime = each_line[40]
-            biosTime = each_line[41]
-            currentTime = each_line[42]
-            priority = each_line[43]
-            timezone = each_line[44]
-            adminUser = each_line[45]
-            adminPwd = each_line[46]
-            email = each_line[47]
-            emailPwd = each_line[48]
-            ip = each_line[49]
-            phoneIMEI = each_line[50]
-            mobileCarrier = each_line[51]
-            writeBlocker = each_line[52]
-            caseNumberOrig = each_line[53]
-            storageType = each_line[54]
-            storageMakeModel = each_line[55]
-            storageSerial = each_line[56]
-            storageSize = each_line[57]
-            evidenceDataSize = each_line[58]
-            analysisTool2 = each_line[59]
-            receivedBy = each_line[60]
+            exhibit = each_line[1]
+            caseName = each_line[2]
+            subjectBusinessName = each_line[3]
+            caseType = each_line[4]         
+            # caseType = each_line[4].lower
+            caseAgent = each_line[5]
+            forensicExaminer = each_line[6]
+            report = each_line[7]
+            notes = each_line[8]
+            summary = each_line[9]
+            exhibitType = each_line[10]
+            makeModel = each_line[11].strip()
+            serial = each_line[12].strip()
+            OS = each_line[13]
+            phoneNumber = each_line[14]
+            phoneIMEI = each_line[15]
+            mobileCarrier = each_line[16]
+            biosTime = each_line[17]
+            currentTime = each_line[18]
+            timezone = each_line[19]
+            shutdownMethod = each_line[20]
+            shutdownTime = each_line[21]
+            userName = each_line[22]
+            userPwd = each_line[23]
+            email = each_line[24]
+            emailPwd = each_line[25]
+            ip = each_line[26]
+            seizureAddress = each_line[27]
+            seizureRoom = each_line[28]
+            dateSeized = each_line[29]
+            seizedBy = each_line[30]
+            dateReceived = each_line[31]
+            receivedBy = each_line[32]
+            removalDate = each_line[33]
+            removalStaff = each_line[34]
+            reasonForRemoval = each_line[35]
+            inventoryDate = each_line[36]
+            seizureStatus = each_line[37]
+            status = each_line[38]
+            imagingTool = each_line[39]
+            # imagingType = each_line[40].lower
+            imagingType = each_line[40]
+            imageMD5 = each_line[41]
+            imageSHA1 = each_line[42]
+            imageSHA256 = each_line[43]
+            writeBlocker = each_line[44]
+            imagingStarted = each_line[45]
+            imagingFinished = each_line[46]
+            storageType = each_line[47]
+            storageMakeModel = each_line[48]
+            storageSerial = each_line[49]
+            storageSize = each_line[50]
+            evidenceDataSize = each_line[51]
+            analysisTool = each_line[52]
+            analysisTool2 = each_line[53]
+            exportLocation = each_line[54]
+            exportedEvidence = each_line[55]
+            storageLocation = each_line[56]
+            caseNumberOrig = each_line[57]
+            priority = each_line[58]
+            operation = each_line[59]
+            Action = each_line[60]
+            vaultCaseNumber = each_line[61]
+            vaultItem = each_line[62]
+            vaultTotal = each_line[63]
+            tempNotes = each_line[64]
             
             if subject == 'test':
                 subject = subjectBusinessName
@@ -969,7 +992,7 @@ ________________________________________________________________________________
 
 Executive Summary 
     Special Agent %s of the Illinois Department of Revenue, Bureau of Criminal Investigations, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
-''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType.lower(), caseAgent, caseType, caseName, summary)
+''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, caseAgent, caseType, caseName, summary)
 
             output.write(header+'\n')
         
@@ -1015,7 +1038,8 @@ Exhibit %s
             report = ("%s On %s," %(report, imagingStarted.replace(" ", " at ", 1)))
         report = ("%s Digital Forensic Examiner %s" %(report, forensicExaminer))
         if len(imagingTool) != 0 and imagingType != '':
-            report = ("%s used %s to conduct a %s" %(report, imagingTool, imagingType.lower()))  
+            # report = ("%s used %s to conduct a %s" %(report, imagingTool, imagingType.lower()))  
+            report = ("%s used %s to conduct a %s" %(report, imagingTool, imagingType))  
         elif imagingTool != '':
             report = ("%s used %s to conduct " %(report, imagingTool))  
 
@@ -1027,7 +1051,7 @@ Exhibit %s
             report = ("%s conducted a" %(report))  
 
             
-        if phoneNumber != '':
+        if phoneNumber != '' and phoneNumber != 'NA' and phoneNumber != 'na' and phoneNumber != 'N/A':
             report = ("%s phone extraction." %(report))
             if phoneNumber.lower() != 'unknown':
                 report = ("%s The mobile Station International Subscriber Number (MSISDN) was %s." %(report, phoneNumber))
@@ -1041,7 +1065,7 @@ Exhibit %s
             report = ("%s The image, which had a MD5 hash of % s, was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
 
         # if len(imageSHA256) != 0 and exportLocation != '':
-        if len(imageSHA256) != 0:
+        if len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
             report = ("%s The image had a SHA256 hash of % s." %(report, imageSHA256))
 
         
@@ -1083,32 +1107,38 @@ Exhibit %s
         body = ("%s%s" %(body, report))
         
         # Write excel
-        write_report(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
-                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
-                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
-                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
-                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
-                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip, phoneIMEI, 
-                mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel, storageSerial, storageSize, 
-                evidenceDataSize, analysisTool2, receivedBy)
-        # write_pdf(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
-                # serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
-                # imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
-                # inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
-                # report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
-                # biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip, phoneIMEI, 
-                # mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel, storageSerial, storageSize, 
-                # evidenceDataSize, analysisTool2, receivedBy)
+        write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent,
+            forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber,
+            phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime,
+            userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy,
+            dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate,
+            seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256,
+            writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial,
+            storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence,
+            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem,
+            vaultTotal, tempNotes)
+        # write_pdf(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent,
+            # forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+            # phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
+            # userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
+            # dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
+            # seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
+            # writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
+            # storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
+            # storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+            # vaultTotal, tempNotes)
         
         if caseNotesStatus == 'True':
-            my_dict = dictionaryBuild(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
-                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
-                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
-                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
-                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
-                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip, phoneIMEI, 
-                mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel, storageSerial, storageSize, 
-                evidenceDataSize, analysisTool2, receivedBy)
+            my_dict = dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
+            forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+            phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
+            userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
+            dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
+            seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
+            writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
+            storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
+            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+            vaultTotal, tempNotes)
         # write an evidence form based on which agency you are from
             if agency == "IDOR":
                 pdf_output = ("ExhibitNotes_%s_Ex%s.pdf" %(caseNumber, exhibit))
@@ -1128,85 +1158,95 @@ Exhibit %s
 
     output.write(footer+'\n')
 
-def write_report(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
-                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
-                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
-                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
-                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
-                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip, phoneIMEI, 
-                mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel, storageSerial, storageSize, 
-                evidenceDataSize, analysisTool2, receivedBy):
+def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
+        forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+        phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
+        userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
+        dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
+        seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
+        writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
+        storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
+        storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+        vaultTotal, tempNotes):
     '''
     write out_log_.xlsx
     '''
     global Row
 
     Sheet1.write_string(Row, 0, caseNumber)
-    Sheet1.write_string(Row, 1, caseName)
-    Sheet1.write_string(Row, 2, subjectBusinessName)
-    Sheet1.write_string(Row, 3, caseType)
-    Sheet1.write_string(Row, 4, caseAgent)
-    Sheet1.write_string(Row, 5, forensicExaminer)
-    Sheet1.write_string(Row, 6, exhibit)
-    Sheet1.write_string(Row, 7, makeModel)
-    Sheet1.write_string(Row, 8, serial)
-    Sheet1.write_string(Row, 9, phoneNumber)
-    Sheet1.write_string(Row, 10, imagingStarted)
-    Sheet1.write_string(Row, 11, imagingFinished)
-    Sheet1.write_string(Row, 12, imagingTool)
-    Sheet1.write_string(Row, 13, imagingType)
-    Sheet1.write_string(Row, 14, status)
-    Sheet1.write_string(Row, 15, exportLocation) 
-    Sheet1.write_string(Row, 16, imageMD5)
-
-    Sheet1.write_string(Row, 17, notes)
-    # try:
-        # Sheet1.write_string(Row, 17, notes)
-    # except:pass    
-
-    Sheet1.write_string(Row, 18, summary)
-    Sheet1.write_string(Row, 19, OS)
-    Sheet1.write_string(Row, 20, analysisTool)
-    Sheet1.write_string(Row, 21, exportedEvidence)
-    Sheet1.write_string(Row, 22, storageLocation)
-    Sheet1.write_string(Row, 23, dateSeized)
-    Sheet1.write_string(Row, 24, dateReceived)
-    Sheet1.write_string(Row, 25, inventoryDate)
-    Sheet1.write_string(Row, 26, removalDate)
-    Sheet1.write_string(Row, 27, removalStaff)  
-    Sheet1.write_string(Row, 28, reasonForRemoval)
-    Sheet1.write_string(Row, 29, operation)
-    Sheet1.write_string(Row, 30, Action)
-    Sheet1.write_string(Row, 31, imageSHA256)
-    Sheet1.write_string(Row, 32, tempNotes)
-    Sheet1.write_string(Row, 33, report)
-    Sheet1.write_string(Row, 34, seizureAddress)
-    Sheet1.write_string(Row, 35, seizureRoom)
-    Sheet1.write_string(Row, 36, seizureStatus)
-    Sheet1.write_string(Row, 37, seizedBy)
-    Sheet1.write_string(Row, 38, exhibitType)
-    Sheet1.write_string(Row, 39, shutdownMethod)
-    Sheet1.write_string(Row, 40, shutdownTime)
-    Sheet1.write_string(Row, 41, biosTime)
-    Sheet1.write_string(Row, 42, currentTime)
-    Sheet1.write_string(Row, 43, priority)
-    Sheet1.write_string(Row, 44, timezone)
-    Sheet1.write_string(Row, 45, adminUser)
-    Sheet1.write_string(Row, 46, adminPwd)
-    Sheet1.write_string(Row, 47, email)
-    Sheet1.write_string(Row, 48, emailPwd)
-    Sheet1.write_string(Row, 49, ip)
-    Sheet1.write_string(Row, 50, phoneIMEI)
-    Sheet1.write_string(Row, 51, mobileCarrier)
-    Sheet1.write_string(Row, 52, writeBlocker)
-    Sheet1.write_string(Row, 53, caseNumberOrig)
-    Sheet1.write_string(Row, 54, storageType)
-    Sheet1.write_string(Row, 55, storageMakeModel)
-    Sheet1.write_string(Row, 56, storageSerial)
-    Sheet1.write_string(Row, 57, storageSize)
-    Sheet1.write_string(Row, 58, evidenceDataSize)
-    Sheet1.write_string(Row, 59, analysisTool2)    
-    Sheet1.write_string(Row, 60, receivedBy)       
+    Sheet1.write_string(Row, 1, exhibit)
+    Sheet1.write_string(Row, 2, caseName)
+    Sheet1.write_string(Row, 3, subjectBusinessName)
+    try:
+        Sheet1.write_string(Row, 4, caseType)       # with .lower()   <built-in method lower of str object at 0x0000020B6D23DA70>
+    except TypeError as error:
+        print(error)
+    Sheet1.write_string(Row, 5, caseAgent)
+    Sheet1.write_string(Row, 6, forensicExaminer)
+    Sheet1.write_string(Row, 7, report)
+    Sheet1.write_string(Row, 8, notes)
+    Sheet1.write_string(Row, 9, summary)
+    Sheet1.write_string(Row, 10, exhibitType)
+    Sheet1.write_string(Row, 11, makeModel)
+    Sheet1.write_string(Row, 12, serial)
+    Sheet1.write_string(Row, 13, OS)
+    Sheet1.write_string(Row, 14, phoneNumber)
+    Sheet1.write_string(Row, 15, phoneIMEI)
+    Sheet1.write_string(Row, 16, mobileCarrier)
+    Sheet1.write_string(Row, 17, biosTime)
+    Sheet1.write_string(Row, 18, currentTime)
+    Sheet1.write_string(Row, 19, timezone)
+    Sheet1.write_string(Row, 20, shutdownMethod)
+    Sheet1.write_string(Row, 21, shutdownTime)
+    Sheet1.write_string(Row, 22, userName)
+    Sheet1.write_string(Row, 23, userPwd)
+    Sheet1.write_string(Row, 24, email)
+    Sheet1.write_string(Row, 25, emailPwd)
+    Sheet1.write_string(Row, 26, ip)
+    Sheet1.write_string(Row, 27, seizureAddress)
+    Sheet1.write_string(Row, 28, seizureRoom)
+    Sheet1.write_string(Row, 29, dateSeized)
+    Sheet1.write_string(Row, 30, seizedBy)
+    Sheet1.write_string(Row, 31, dateReceived)
+    Sheet1.write_string(Row, 32, receivedBy)
+    Sheet1.write_string(Row, 33, removalDate)
+    Sheet1.write_string(Row, 34, removalStaff)
+    Sheet1.write_string(Row, 35, reasonForRemoval)
+    Sheet1.write_string(Row, 36, inventoryDate)
+    Sheet1.write_string(Row, 37, seizureStatus)
+    Sheet1.write_string(Row, 38, status)
+    Sheet1.write_string(Row, 39, imagingTool)
+    
+    try:
+        Sheet1.write_string(Row, 40, imagingType)   #errors with .lower() <built-in method lower of str object at 0x0000020B6D21EDF0>
+    except TypeError as error:
+        print(error)
+    
+    Sheet1.write_string(Row, 41, imageMD5)
+    Sheet1.write_string(Row, 42, imageSHA1)
+    Sheet1.write_string(Row, 43, imageSHA256)
+    Sheet1.write_string(Row, 44, writeBlocker)
+    Sheet1.write_string(Row, 45, imagingStarted)
+    Sheet1.write_string(Row, 46, imagingFinished)
+    Sheet1.write_string(Row, 47, storageType)
+    Sheet1.write_string(Row, 48, storageMakeModel)
+    Sheet1.write_string(Row, 49, storageSerial)
+    Sheet1.write_string(Row, 50, storageSize)
+    Sheet1.write_string(Row, 51, evidenceDataSize)
+    Sheet1.write_string(Row, 52, analysisTool)
+    Sheet1.write_string(Row, 53, analysisTool2)
+    Sheet1.write_string(Row, 54, exportLocation)
+    Sheet1.write_string(Row, 55, exportedEvidence)
+    Sheet1.write_string(Row, 56, storageLocation)
+    Sheet1.write_string(Row, 57, caseNumberOrig)
+    Sheet1.write_string(Row, 58, priority)
+    Sheet1.write_string(Row, 59, operation)
+    Sheet1.write_string(Row, 60, Action)
+    Sheet1.write_string(Row, 61, vaultCaseNumber)
+    Sheet1.write_string(Row, 62, vaultItem)
+    Sheet1.write_string(Row, 63, vaultTotal)
+    Sheet1.write_string(Row, 64, tempNotes)
+     
     Row += 1
 
 def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer): 
@@ -1262,12 +1302,24 @@ All digital images obtained pursuant to this investigation will be maintained on
     '''
     
     for each_line in csv_file:
-        (caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType) = ('', '', '', '', '', '', '')
-        (caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived) = ('', '', '', '', '', '')
-        (serial, makeModel, storageLocation, removalDate, exportedEvidence, status) = ('', '', '', '', '', '')
-        (analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff) = ('', '', '', '', '', '')
-        (notes, attachment, tempNotes) = ('', '', '')
-        (inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary) = ('', '', '', '', '', '', '')
+        (caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent) = ('', '', '', '', '', '')
+        (forensicExaminer, report, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
+        (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
+        (currentTime, timezone, shutdownMethod, shutdownTime, userName, userPwd) = ('', '', '', '', '', '')
+        (email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized) = ('', '', '', '', '', '')
+        (seizedBy, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval) = ('', '', '', '', '', '')
+        (inventoryDate, seizureStatus, status, imagingTool, imagingType, imageMD5) = ('', '', '', '', '', '')
+        (imageSHA1, imageSHA256, writeBlocker, imagingStarted, imagingFinished, storageType) = ('', '', '', '', '', '')
+        (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
+        (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
+        (Action, vaultCaseNumber, vaultItem, vaultTotal, tempNotes) = ('', '', '', '', '')
+
+        # (caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType) = ('', '', '', '', '', '', '')
+        # (caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived) = ('', '', '', '', '', '')
+        # (serial, makeModel, storageLocation, removalDate, exportedEvidence, status) = ('', '', '', '', '', '')
+        # (analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff) = ('', '', '', '', '', '')
+        # (notes, attachment, tempNotes) = ('', '', '')
+        # (inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary) = ('', '', '', '', '', '', '')
 
         if phoneNumber != '':
             print('_____________%s is from a phone extract') %(phoneNumber) #temp
@@ -1283,43 +1335,71 @@ All digital images obtained pursuant to this investigation will be maintained on
         if each_line[1]:                        ### checks to see if there is an each_line[1] before preceeding
             Value = note
             caseNumber = each_line[0]
-            caseName = each_line[1]
-            subjectBusinessName = each_line[2]
-            caseType = each_line[3].lower()
-            caseAgent = each_line[4]
-            forensicExaminer = each_line[5]
-            exhibit = each_line[6]
-            makeModel = each_line[7].strip()
-            serial = each_line[8].strip()
-            phoneNumber = each_line[9]
-            imagingStarted = each_line[10]
-            imagingFinished = each_line[11]
-            imagingTool = each_line[12]
-            imagingType = each_line[13].lower()
-            status = each_line[14]
-            exportLocation = each_line[15]
-            imageMD5 = each_line[16]
-            notes = each_line[17]            
-            summary = each_line[18]
-            OS = each_line[19]
-            analysisTool = each_line[20]
-            exportedEvidence = each_line[21]
-            storageLocation = each_line[22]
-            dateSeized = each_line[23]
-            dateReceived = each_line[24]
-            inventoryDate = each_line[25]
-            removalDate = each_line[26]
-            removalStaff = each_line[27]
-            reasonForRemoval = each_line[28]
-            operation = each_line[29]
-            Action = each_line[30]
-            imageSHA256 = each_line[31]
-            tempNotes = each_line[32]
-            report = each_line[33]
-            # thirtyfour = each_line[34]            
-            locationOfCaseFile = each_line[35]
-            attachement = each_line[36]  
-            
+            exhibit = each_line[1]
+            caseName = each_line[2]
+            subjectBusinessName = each_line[3]
+            caseType = each_line[4]
+            caseAgent = each_line[5]
+            forensicExaminer = each_line[6]
+            report = each_line[7]
+            notes = each_line[8]
+            summary = each_line[9]
+            exhibitType = each_line[10]
+            makeModel = each_line[11].strip()
+            serial = each_line[12].strip()
+            OS = each_line[13]
+            phoneNumber = each_line[14]
+            phoneIMEI = each_line[15]
+            mobileCarrier = each_line[16]
+            biosTime = each_line[17]
+            currentTime = each_line[18]
+            timezone = each_line[19]
+            shutdownMethod = each_line[20]
+            shutdownTime = each_line[21]
+            userName = each_line[22]
+            userPwd = each_line[23]
+            email = each_line[24]
+            emailPwd = each_line[25]
+            ip = each_line[26]
+            seizureAddress = each_line[27]
+            seizureRoom = each_line[28]
+            dateSeized = each_line[29]
+            seizedBy = each_line[30]
+            dateReceived = each_line[31]
+            receivedBy = each_line[32]
+            removalDate = each_line[33]
+            removalStaff = each_line[34]
+            reasonForRemoval = each_line[35]
+            inventoryDate = each_line[36]
+            seizureStatus = each_line[37]
+            status = each_line[38]
+            imagingTool = each_line[39]
+            imagingType = each_line[40]
+            imageMD5 = each_line[41]
+            imageSHA1 = each_line[42]
+            imageSHA256 = each_line[43]
+            writeBlocker = each_line[44]
+            imagingStarted = each_line[45]
+            imagingFinished = each_line[46]
+            storageType = each_line[47]
+            storageMakeModel = each_line[48]
+            storageSerial = each_line[49]
+            storageSize = each_line[50]
+            evidenceDataSize = each_line[51]
+            analysisTool = each_line[52]
+            analysisTool2 = each_line[53]
+            exportLocation = each_line[54]
+            exportedEvidence = each_line[55]
+            storageLocation = each_line[56]
+            caseNumberOrig = each_line[57]
+            priority = each_line[58]
+            operation = each_line[59]
+            Action = each_line[60]
+            vaultCaseNumber = each_line[61]
+            vaultItem = each_line[62]
+            vaultTotal = each_line[63]
+            tempNotes = each_line[64]
+           
         header = ('''Case#: %s  Ex: %s
 CaseName: %s
 Subject: %s
@@ -1333,14 +1413,16 @@ Agent: %s
 # write it one line at at time. If phone isn't blank, include it
 
         # Write excel
-        write_report(caseNumber, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, exhibit, makeModel, 
-                serial, phoneNumber, imagingStarted, imagingFinished, imagingTool, imagingType, status, exportLocation, 
-                imageMD5, notes, summary, OS, analysisTool, exportedEvidence, storageLocation, dateSeized, dateReceived, 
-                inventoryDate, removalDate, removalStaff, reasonForRemoval, operation, Action, imageSHA256, tempNotes, 
-                report, seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod, shutdownTime, 
-                biosTime, currentTime, priority, timezone, adminUser, adminPwd, email, emailPwd, ip, phoneIMEI, 
-                mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel, storageSerial, storageSize, 
-                evidenceDataSize, analysisTool2, receivedBy)
+        write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
+            forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+            phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
+            userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
+            dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
+            seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
+            writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
+            storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
+            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+            vaultTotal, tempNotes)
                 
         output.write(header+'\n\n')
 
@@ -1364,6 +1446,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.5.0 - Column Re-order to group like items together
 2.1.3 - fixed log parser to populate storageSize, storageMakeModel, storageSerial, storageSize (Tableau)
 2.1.2 - Added about a dozen columns for additional info (the columns need to be re-ordered one of these days.)
 2.1.1 - Added ISP pdf templates for pdf writing (just change agency = to agency = 'ISP'
@@ -1380,9 +1463,14 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+reorder color coded columns by case, description, lab chain of custody, acquisition, notes (move notes to the begining of acquisition
+add vaultCaseNumber,vaultItem,vaultTotal (for label making)
+add a brother label printer output to xlsx with QRcode
+
 (the columns need to be re-ordered one of these days.)
 figure out DocX tags or variables to insert data into the first fields
 if ', serial # .', replace with .
+fix to conduct a advanced logical (it used to change it to an (probably when it was "Advanced Logical"?
 
 """
 
