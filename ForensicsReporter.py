@@ -38,7 +38,7 @@ WIDGET_SUBTYPE_KEY = '/Widget'
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports"
 tech = 'LincolnLandForensics'  # change this to your name
-version = '2.1.1'
+version = '2.1.4'
 # pdf_template = "EvidenceForm.pdf"
 global agency
 agency = "IDOR" # IDOR, ISP
@@ -1364,6 +1364,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.1.3 - fixed log parser to populate storageSize, storageMakeModel, storageSerial, storageSize (Tableau)
 2.1.2 - Added about a dozen columns for additional info (the columns need to be re-ordered one of these days.)
 2.1.1 - Added ISP pdf templates for pdf writing (just change agency = to agency = 'ISP'
 2.1.0 - Added CaseNotes.pdf output if you add -c to -r
@@ -1379,7 +1380,6 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-fix log parser to populate storageSize, storageMakeModel, storageSerial, storageSize
 (the columns need to be re-ordered one of these days.)
 figure out DocX tags or variables to insert data into the first fields
 if ', serial # .', replace with .
