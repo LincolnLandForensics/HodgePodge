@@ -30,19 +30,14 @@ ANNOT_RECT_KEY = '/Rect'
 SUBTYPE_KEY = '/Subtype'
 WIDGET_SUBTYPE_KEY = '/Widget'
 
-# pdf_template = "EvidenceForm.pdf"   # call your agenices Evidence Form with matching variables
-
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports"
-tech = 'LincolnLandForensics'  # change this to your name
-version = '2.5.0'
+version = '2.5.3'
 global agency
 agency = "IDOR" # IDOR, ISP
-# Regex section
-# regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -55,57 +50,50 @@ def main():
     global Row
     Row = 1  # defines arguments
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-I', '--input', help='', required=False)
+    parser.add_argument('-I', '--input', help='default is input.txt', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
-    parser.add_argument('-c','--caseNotes', help='casenotes module', required=False, action='store_true')
-    parser.add_argument('-r', '--report', help='write report', required=False, action='store_true')
-    parser.add_argument('-P', '--phone', help='phone output', required=False, action='store_true')
-    parser.add_argument('-s', '--sticker', help='write sticker', required=False, action='store_true')
     parser.add_argument('-l', '--logparse', help='tableau or FTK log parser', required=False, action='store_true')
+    parser.add_argument('-r', '--report', help='write report', required=False, action='store_true')
+    parser.add_argument('-c','--caseNotes', help='casenotes module (optional) used with -r', required=False, action='store_true')
+    parser.add_argument('-s', '--sticker', help='write sticker', required=False, action='store_true')
+    # parser.add_argument('-P', '--phone', help='phone output', required=False, action='store_true')
 
     args = parser.parse_args()
 
-    if not args.input:  # this section might be redundant
-        parser.print_help() 
-        usage()
-        return 0
-    # Choose Sheet format
-    global sheet_format
-    sheet_format = ''
+    # global section
+
     global caseNotesStatus
     (caseNotesStatus) = ('False')
-    if args.phone:
-        sheet_format = "phone"
-        print('this is a phone report') #temp
+    global filename
+    filename = ('input.txt')
+    global outputFile   # docx actitivy report
+    outputFile = ('output_.docx')
+    global spreadsheet
+    spreadsheet = ('out_log_.xlsx')
+    global sheet_format
+    sheet_format = ('')
 
-    if args.input and args.output:
-        global filename
+    # input section
+    
+    if args.input:  # in case you don't want to start with input.txt
         filename = args.input
-        global spreadsheet
-        spreadsheet = args.output
+    
+    if args.report or args.logparse or args.sticker:
         create_xlsx()
-        global outputFile   # docx actitivy report
-        outputFile = args.output
-        # global document
-        # document = ''
 
-
-        if args.report:
-            if args.caseNotes:                                  
-                # global caseNotesStatus 
-                caseNotesStatus  = 'True'        
-            read_text()
-        elif args.logparse:
-            parse_log() # parse tableau, and FTK logs
-        elif args.sticker:
-            write_sticker()
-        
-
-    # set linux ownership    
-    if sys.platform == 'win32' or sys.platform == 'win64':
-        pass
+    if args.report:
+        if args.caseNotes:  # if you add -c                                  
+            caseNotesStatus  = ('True')      
+        read_text()
+    elif args.logparse:
+        parse_log() # parse tableau, and FTK logs
+    elif args.sticker:
+        write_sticker() 
     else:
-        call(["chown %s.%s *.xlsx" % (tech.lower(), tech.lower())], shell=True)
+        if not args.input:  # this section might be redundant
+            parser.print_help() 
+            usage()
+            return 0
 
     workbook.close()
     return 0
@@ -222,7 +210,7 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(59, 59, 15) # operation
     Sheet1.set_column(60, 60, 10) # Action
     Sheet1.set_column(61, 61, 15) # vaultCaseNumber
-    Sheet1.set_column(62, 62, 15) # vaultItem
+    Sheet1.set_column(62, 62, 15) # qrCode
     Sheet1.set_column(63, 63, 15) # vaultTotal
     Sheet1.set_column(64, 64, 15) # tempNotes
     
@@ -290,8 +278,8 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.write(0, 59, 'operation', header_format)
     Sheet1.write(0, 60, 'Action', header_format)
     Sheet1.write(0, 61, 'vaultCaseNumber', header_format)
-    Sheet1.write(0, 62, 'vaultItem', header_format)
-    Sheet1.write(0, 63, 'vaultTotal', header_format)
+    Sheet1.write(0, 62, 'qrCode', header_format)
+    Sheet1.write(0, 63, 'vaultTotal', header_format) # redundant with exhibit
     Sheet1.write(0, 64, 'tempNotes', header_format)
 
     
@@ -303,7 +291,7 @@ def dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType
     seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
     writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
     storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-    storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+    storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
     vaultTotal, tempNotes):    
     '''
     build a dictionary file of important columns for writing to a pdf
@@ -405,24 +393,10 @@ def parse_log():
     (imageSHA1, imageSHA256, writeBlocker, imagingStarted, imagingFinished, storageType) = ('', '', '', '', '', '')
     (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
     (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
-    (Action, vaultCaseNumber, vaultItem, vaultTotal, tempNotes) = ('', '', '', '', '')
-    # (model) = ('')
-    
-    # (caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType) = ('', '', '', '', '', '', '')
-    # (caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived) = ('', '', '', '', '', '')
-    # (serial, makeModel, storageLocation, removalDate, exportedEvidence, status) = ('', '', '', '', '', '')
-    # (analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff) = ('', '', '', '', '', '')
-    # (notes, attachment, tempNotes, model, hddserial, capacity) = ('', '', '', '', '', '')
-    # (size, imagingTool1, imagingTool2) = ('', '', '')
-    # (inventoryDate, operation, Action, imageSHA256, OS, dateSeized) = ('', '', '', '', '', '')
-    # (hostname, timezone, os, ip, encryption, summary) = ('', '', '', '', '', '')
-    # (seizureAddress, seizureRoom, seizureStatus, seizedBy, exhibitType, shutdownMethod) = ('', '', '', '', '', '')
-    # (shutdownTime, biosTime, currentTime, priority, timezone, userName) = ('', '', '', '', '', '')
-    # (userPwd, email, emailPwd, ip) = ('', '', '', '')
-    # (phoneIMEI, mobileCarrier, writeBlocker, caseNumberOrig, storageType, storageMakeModel) = ('', '', '', '', '', '')
-    # (storageSerial, storageSize, evidenceDataSize, analysisTool2, receivedBy) = ('', '', '', '', '')
+    (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
     
     exhibit = str(input("exhibit : ")).strip()
+
     # read section
     for each_line in csv_file:
 
@@ -470,7 +444,7 @@ def parse_log():
             imagingStarted = re.split("time", each_line, 0)
             imagingStarted = str(imagingStarted[1]).strip().replace(" -05:00", "").strip(':').strip().replace("(GMT-5)", "")
             # imagingStarted = fix_date(imagingStarted)
-            print(imagingStarted)   #temp
+            # print(imagingStarted)   #temp
 
         elif "Imaging Start Time :" in each_line:   # Recon imager
             imagingStarted = re.split("Imaging Start Time :", each_line, 0)
@@ -497,9 +471,7 @@ def parse_log():
             imagingFinished = re.split("Imaging End Time   :", each_line, 0)
             imagingFinished = str(imagingFinished[1]).strip()
             # imagingFinished = fix_date(imagingFinished)
-            print(imagingFinished)   #temp
-
-
+            # print(imagingFinished)   #temp
 
         elif "Unique description: " in each_line:
             makeModel = re.split("Unique description: ", each_line, 0)
@@ -523,12 +495,6 @@ def parse_log():
         elif "Model:" in each_line and len(storageMakeModel) == 0: # tableau
             storageMakeModel = re.split("Model:", each_line, 0)
             storageMakeModel = str(storageMakeModel[1]).strip()
-            # storageMakeModel = model
-
-        # elif "Model:" in each_line and len(model) == 0: # tableau
-            # model = re.split("Model:", each_line, 0)
-            # model = str(model[1]).strip()
-            # storageMakeModel = model
 
         elif "Revision:" in each_line: #cellebite
             os = re.split("Revision:", each_line, 0)
@@ -559,9 +525,6 @@ def parse_log():
         elif "Drive Serial Number:" in each_line:
             hddserial = re.split("Drive Serial Number:", each_line, 0)
             hddserial = str(hddserial[1]).strip()
-            # serial = hddserial
-
-
  
         elif "Serial " in each_line and serial != '': #cellebrite
             serial = re.split("Serial ", each_line, 0)
@@ -570,9 +533,7 @@ def parse_log():
             serial = str(serial[1]).strip()
             # if "number: " in each_line:
                 # serial = ''
-            print("serial = %s" %(serial))  # temp
-            
-
+            # print("serial = %s" %(serial))  # temp
 
         elif "MSISDN" in each_line: #cellebrite
             phoneNumber = re.split("MSISDN", each_line, 0)
@@ -609,8 +570,6 @@ def parse_log():
             forensicExaminer = str(forensicExaminer[1]).strip()
             print("forensicExaminer = ", forensicExaminer)      
 
-
-
         elif "Case ID:" in each_line:
             caseNumber = re.split("Case ID:", each_line, 0)
             caseNumber = str(caseNumber[1]).strip()
@@ -629,7 +588,6 @@ def parse_log():
             caseNumber = str(caseNumber[1]).strip()
             print(caseNumber)   #temp
 
-
         elif "Case Notes:" in each_line:    # Tableau logs
             notes = re.split("Case Notes:", each_line, 0)
             notes = str(notes[1]).strip()
@@ -638,12 +596,10 @@ def parse_log():
             notes = re.split("Notes: ", each_line, 0)
             notes = str(notes[1]).strip()
             notes = notes.replace("<<not entered>>", "")
-            # print("notes2 = %s" %(notes)) # temp
 
         elif "Notes 		:" in each_line:    # recon imager
             notes = re.split("Notes 		:", each_line, 0)
             notes = str(notes[1]).strip()
-            # notes = ("%s %s" %(notes, notes2))
 
         elif "Source Device :" in each_line:    # recon imager
             (vol, partition, size, frmat) = ('', '', '', '')
@@ -656,7 +612,6 @@ def parse_log():
             frmat = str(details[5]).strip()  
             blurb1 = ("This image was from %s and was the %s %s %s volume." %(vol, partition, size, frmat))
             notes = ("%s %s" %(notes, blurb1))
-
 
         elif "Imager App: " in each_line:
             imagingTool1 = re.split("Imager App: ", each_line, 0)
@@ -697,7 +652,7 @@ def parse_log():
             imagingTool = str(imagingTool[0]).strip()
             imagingTool = ('Recon Imager %s' %(imagingTool))
 
-        elif "Capacity in bytes reported Pwr-ON: " in each_line:
+        elif "Capacity in bytes reported Pwr-ON: " in each_line: # todo swap storageSize from capacity
             capacity = re.split("Capacity in bytes reported Pwr-ON: ", each_line, 0)
             capacity = str(capacity[1]).strip()
             if "(" in capacity:
@@ -795,16 +750,14 @@ def parse_log():
             userName = re.split("Currentuser:", each_line, 0)
             userName = str(userName[1]).strip()
 
-
+    qrCode = ("%s_%s" %(caseNumber, exhibit))
+    
     if len(imagingTool1) != 0:
         imagingTool = ('%s %s' %(imagingTool1.strip(), imagingTool2.strip()))
     
-    
-    if len(capacity) != 0:
+    if len(storageSize) != 0:
         notes = ("This had a %s drive, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
 
-    # if len(capacity) != 0:
-        # notes = ("This had a %s drive, model %s, serial # %s. %s" %(capacity, model, hddserial, notes))
 
     if len(OS) != 0 and 'The operating system was' not in notes:
         notes = ("%s The operating system was %s." %(notes, OS)) 
@@ -824,7 +777,7 @@ def parse_log():
         seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
         writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
         storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-        storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+        storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
         vaultTotal, tempNotes)
 
 def pdf_fill(input_pdf_path, output_pdf_path, data_dict):   
@@ -887,7 +840,7 @@ Evidence:
         (imageSHA1, imageSHA256, writeBlocker, imagingStarted, imagingFinished, storageType) = ('', '', '', '', '', '')
         (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
         (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
-        (Action, vaultCaseNumber, vaultItem, vaultTotal, tempNotes) = ('', '', '', '', '')
+        (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
 
         if phoneNumber != '':
             print('_____________%s is from a phone extract') %(phoneNumber) #temp
@@ -967,13 +920,15 @@ Evidence:
             operation = each_line[59]
             Action = each_line[60]
             vaultCaseNumber = each_line[61]
-            vaultItem = each_line[62]
+            qrCode = each_line[62]
             vaultTotal = each_line[63]
             tempNotes = each_line[64]
             
             if subject == 'test':
                 subject = subjectBusinessName
                 # future idea. if subjectBusinessName != subject: Exhibit # <Exhibit> <subjectBusinessName>
+
+            qrCode = ("%s_%s" %(caseNumber, exhibit))
 
         pdf_output = ("EvidenceForm_%s_Ex_%s.pdf" %(caseNumber, exhibit))
         if header == '':
@@ -1055,7 +1010,6 @@ Exhibit %s
             report = ("%s phone extraction." %(report))
             if phoneNumber.lower() != 'unknown':
                 report = ("%s The mobile Station International Subscriber Number (MSISDN) was %s." %(report, phoneNumber))
-        # else:
         elif imagingStarted != '':        
             report = ("%s forensic extraction." %(report))
         else:        
@@ -1115,7 +1069,7 @@ Exhibit %s
             seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256,
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial,
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence,
-            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem,
+            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode,
             vaultTotal, tempNotes)
         # write_pdf(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent,
             # forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
@@ -1125,7 +1079,7 @@ Exhibit %s
             # seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
             # writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             # storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-            # storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+            # storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             # vaultTotal, tempNotes)
         
         if caseNotesStatus == 'True':
@@ -1137,12 +1091,12 @@ Exhibit %s
             seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes)
         # write an evidence form based on which agency you are from
             if agency == "IDOR":
                 pdf_output = ("ExhibitNotes_%s_Ex%s.pdf" %(caseNumber, exhibit))
-                pdf_template = "EvidenceForm.pdf"
+                pdf_template = "Blank_EvidenceForm.pdf"
             elif agency == "ISP":            
                 if exhibitType == 'phone':  # lower(exhibitType)
                     pdf_template = "EvidenceForm_MDIS.pdf"  # Mobile Device Evidence Sheet
@@ -1166,7 +1120,7 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
         writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
         storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-        storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+        storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
         vaultTotal, tempNotes):
     '''
     write out_log_.xlsx
@@ -1243,7 +1197,7 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     Sheet1.write_string(Row, 59, operation)
     Sheet1.write_string(Row, 60, Action)
     Sheet1.write_string(Row, 61, vaultCaseNumber)
-    Sheet1.write_string(Row, 62, vaultItem)
+    Sheet1.write_string(Row, 62, qrCode)
     Sheet1.write_string(Row, 63, vaultTotal)
     Sheet1.write_string(Row, 64, tempNotes)
      
@@ -1251,10 +1205,10 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
 
 def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer): 
     '''
-    write ActivityReport_%s_%s_%s_DRAFT.docx, one per exhibit
+    write ActivityReport_%s__%s_%s_%s_DRAFT.docx
     '''
     
-    outputDocx = ('ActivityReport_%s_%s_%s_DRAFT.docx' %(Month, Day, Year)) 
+    outputDocx = ('ActivityReport_%s__%s_%s_%s_DRAFT.docx' %(caseNumber, Month, Day, Year)) 
 
     try:
         document = docx.Document("ActivityReportTemplate.docx") # read in the template if it exists
@@ -1312,14 +1266,7 @@ All digital images obtained pursuant to this investigation will be maintained on
         (imageSHA1, imageSHA256, writeBlocker, imagingStarted, imagingFinished, storageType) = ('', '', '', '', '', '')
         (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
         (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
-        (Action, vaultCaseNumber, vaultItem, vaultTotal, tempNotes) = ('', '', '', '', '')
-
-        # (caseNumber, exhibit, imagingStarted, imagingFinished, caseName, subjectBusinessName, caseType) = ('', '', '', '', '', '', '')
-        # (caseAgent, forensicExaminer, imagingTool, imagingType, phoneNumber, dateReceived) = ('', '', '', '', '', '')
-        # (serial, makeModel, storageLocation, removalDate, exportedEvidence, status) = ('', '', '', '', '', '')
-        # (analysisTool, exportLocation, imageMD5, locationOfCaseFile, reasonForRemoval, removalStaff) = ('', '', '', '', '', '')
-        # (notes, attachment, tempNotes) = ('', '', '')
-        # (inventoryDate, operation, Action, imageSHA256, OS, dateSeized, summary) = ('', '', '', '', '', '', '')
+        (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
 
         if phoneNumber != '':
             print('_____________%s is from a phone extract') %(phoneNumber) #temp
@@ -1396,7 +1343,7 @@ All digital images obtained pursuant to this investigation will be maintained on
             operation = each_line[59]
             Action = each_line[60]
             vaultCaseNumber = each_line[61]
-            vaultItem = each_line[62]
+            qrCode = each_line[62]
             vaultTotal = each_line[63]
             tempNotes = each_line[64]
            
@@ -1421,7 +1368,7 @@ Agent: %s
             seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, vaultItem, 
+            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes)
                 
         output.write(header+'\n\n')
@@ -1434,11 +1381,14 @@ def usage():
     file = sys.argv[0].split('\\')[-1]
     print("\nDescription: " + description)
     print(file + " Version: %s by %s" % (version, author))
+    print("\n\tinsert your input into input.txt")
     print("\nExample:")
-    print("\t" + file + " -r -I input.txt -O out_cases_.xlsx\t\t")
-    print("\t" + file + " -r -c -I input.txt -O out_cases_.xlsx\t\t")
-    print("\t" + file + " -s -I input.txt -O out_log_.xlsx\t\t")
-    print("\t" + file + " -l -I input.txt -O out_log_.xlsx\t\t")
+    print("\t" + file + " -l     \t\t")
+    print("\t" + file + " -r     \t\t")
+    print("\t" + file + " -r -c  \t\t")
+    print("\t" + file + " -s     \t\t")
+
+
     
 if __name__ == '__main__':
     main()
@@ -1446,7 +1396,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-2.5.0 - Column Re-order to group like items together
+
+2.5.0 - Column Re-order to group like items together (case, description, lab chain of custody, acquisition, notes)
 2.1.3 - fixed log parser to populate storageSize, storageMakeModel, storageSerial, storageSize (Tableau)
 2.1.2 - Added about a dozen columns for additional info (the columns need to be re-ordered one of these days.)
 2.1.1 - Added ISP pdf templates for pdf writing (just change agency = to agency = 'ISP'
@@ -1463,11 +1414,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-reorder color coded columns by case, description, lab chain of custody, acquisition, notes (move notes to the begining of acquisition
-add vaultCaseNumber,vaultItem,vaultTotal (for label making)
-add a brother label printer output to xlsx with QRcode
+add a brother label printer output to xlsx with qrCode
+qrCode could be caseNumber_exhibit_serial (it depends on what the evidence staff want displayed on their inventory scanner)
 
-(the columns need to be re-ordered one of these days.)
 figure out DocX tags or variables to insert data into the first fields
 if ', serial # .', replace with .
 fix to conduct a advanced logical (it used to change it to an (probably when it was "Advanced Logical"?
@@ -1477,8 +1426,8 @@ fix to conduct a advanced logical (it used to change it to an (probably when it 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-if you have log output (like GrayKey) you want parsed, send it my way.
-If you want your agencies forms filled, send it my way.
+if you have log output (like GrayKey) you want parsed, send it my way. As long as there is a key:value pair on one line, I can do it.
+If you want your agencies forms filled, send it my way, we just need to insert these variables into your pdf.
 
 """
 
