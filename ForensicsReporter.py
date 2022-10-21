@@ -11,17 +11,19 @@ try:
 except:
     print('you are missing pdfrw:    pip install pdfrw')
 import hashlib
-import datetime
 import argparse  # for menu system
 import xlsxwriter
 from datetime import date
 from subprocess import call
+from datetime import datetime
 
-d = date.today()
+d = datetime.today()
+
 Day    = d.strftime("%d")
 Month = d.strftime("%m")    # %B = October
 Year  = d.strftime("%Y")        
 todaysDate = d.strftime("%m/%d/%Y")
+todaysDateTime = d.strftime("%m_%d_%Y_%H-%M-%S")
 
 ANNOT_KEY = '/Annots'
 ANNOT_FIELD_KEY = '/T'
@@ -35,7 +37,7 @@ WIDGET_SUBTYPE_KEY = '/Widget'
 
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports"
-version = '2.5.4'
+version = '2.5.6'
 global agency
 agency = "IDOR" # IDOR, ISP
 
@@ -52,7 +54,7 @@ def main():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='default is input.txt', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
-    parser.add_argument('-l', '--logparse', help='tableau or FTK log parser', required=False, action='store_true')
+    parser.add_argument('-l', '--logparse', help='Berla, Cellebrite, FTK, tableau log parser', required=False, action='store_true')
     parser.add_argument('-r', '--report', help='write report', required=False, action='store_true')
     parser.add_argument('-c','--caseNotes', help='casenotes module (optional) used with -r', required=False, action='store_true')
     parser.add_argument('-s', '--sticker', help='write sticker', required=False, action='store_true')
@@ -69,7 +71,8 @@ def main():
     global outputFile   # docx actitivy report
     outputFile = ('output_.docx')
     global spreadsheet
-    spreadsheet = ('out_log_.xlsx')
+    spreadsheet = ('log_%s.xlsx' %(todaysDateTime)) # uniq naming for -l module
+    
     global sheet_format
     sheet_format = ('')
 
@@ -388,8 +391,8 @@ def parse_log():
     style = workbook.add_format()
     (header, report, date) = ('', '', '<insert date here>')
     csv_file = open(filename, encoding='utf8')
-    outputFile = "logreport.txt"
-    output = open(outputFile, 'w+')
+    # outputFile = "logreport.txt"
+    # output = open(outputFile, 'w+')
 
     (caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent) = ('', '', '', '', '', '')
     (forensicExaminer, report, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
@@ -402,7 +405,8 @@ def parse_log():
     (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
     (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
     (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
-
+    
+    (vehicleYear, vehicleManufacturer, vehicleModel) = ('', '', '') # BerlaIVe Acquisition
     (imagingTool1, imagingTool2, make, model) = ('', '', '', '')
     exhibit = str(input("exhibit : ")).strip()
 
@@ -438,8 +442,11 @@ def parse_log():
         elif "Acquisition Successfully Completed" in each_line: # BerlaIVe AcquisitionLog_001.txt
             status = "Imaged"
 
+        elif "Acquisition Failed To Complete" in each_line: # BerlaIVe AcquisitionLog.txt
+            status = "Not imaged"
+
         # exhibit      
-        elif "Evidence Number: " in each_line:      #FTK_parse
+        elif "Evidence Number: " in each_line:      #FTK_parse, magnet
             exhibit = re.split("Evidence Number: ", each_line, 0)
             exhibit = str(exhibit[1]).strip()
         elif "Exhibit#" in each_line:      #cellebrite
@@ -490,7 +497,14 @@ def parse_log():
         elif "Device / Media Name:" in each_line: # SumuriReconImager.txt
             storageMakeModel = each_line.replace("Device / Media Name:", "").strip()
 
+        elif "Vehicle Year:" in each_line: # BerlaIVe AcquisitionLog.txt
+            vehicleYear = each_line.replace("Vehicle Year:", "").strip()
 
+        elif "Vehicle Manufacturer:" in each_line: # BerlaIVe AcquisitionLog.txt
+            vehicleManufacturer = each_line.replace("Vehicle Manufacturer:", "").strip()
+
+        elif "Vehicle Model:" in each_line: # BerlaIVe AcquisitionLog.txt
+            vehicleModel = each_line.replace("Vehicle Model:", "").strip()
 
 
         # OS
@@ -511,17 +525,21 @@ def parse_log():
 
         elif "Operating System:" in each_line: # MagnetAXIOM Case Information.txt
             OS = each_line.replace("Operating System:", "").strip()
+
+        elif "Vehicle ECU:" in each_line: # BerlaIVe AcquisitionLog.txt
+            OS = each_line.replace("Vehicle ECU:", "").strip()
             
         # serial
 
         # elif "Serial Number:" in each_line and serial != '': #cellebrite
         elif "Serial Number:" in each_line: #cellebrite
-
-            serial = re.split("Serial Number:", each_line, 0)
-            print("serial=",serial[1].strip())      
-            serial = str(serial[1]).strip()
+            serial = each_line.replace("Serial Number:", "").strip()
+            # serial = re.split("Serial Number:", each_line, 0)
+                  
+            # serial = str(serial[1]).strip()
             if "number: " in serial:
                 serial = ''
+            print("serial= %s" %(serial))    # temp
 
         elif "Machine Serial" in each_line: #RECON imager
         # elif "Machine Serial" in each_line and serial != '': #RECON imager
@@ -529,28 +547,27 @@ def parse_log():
             serial = str(serial[1]).strip()
             # print("serial= ",serial) # temp
 
-        # storageSerial    
-
-        elif "S/N: " in each_line:  # tableau
-            storageSerial = re.split("S/N: ", each_line, 0)
-            storageSerial = str(storageSerial[1]).strip()
-
-        elif "Drive Serial Number:" in each_line: # FTKImager Image.E01.txt # fix me
-            storageSerial = each_line.replace("Drive Serial Number:", "").strip()
-
- 
-        elif "Serial " in each_line and storageSerial != '': #cellebrite
-            storageSerial = re.split("Serial ", each_line, 0)
-            print("storageSerial=",storageSerial[1].strip())      
-            storageSerial = str(storageSerial[1]).strip()
-
+        elif "Vehicle VIN:" in each_line: # BerlaIVe AcquisitionLog.txt
+            serial = each_line.replace("Vehicle VIN:", "").strip()
+            if serial == ('unknown'):
+                serial = ''
         # elif "Serial " in each_line and serial != '': #cellebrite
             # serial = re.split("Serial ", each_line, 0)
             # print("serial=",serial[1].strip())      
             # serial = str(serial[1]).strip()
- 
-        elif "Vehicle VIN: " in each_line: # BerlaIVe AcquisitionLog_001.txt
-            storageSerial = each_line.replace("Vehicle VIN: ", "").strip() 
+
+        # storageSerial    
+
+        elif "Drive Serial Number:" in each_line: # FTKImager Image.E01.txt # fix me
+            storageSerial = each_line.replace("Drive Serial Number:", "").strip()
+
+        elif "S/N:" in each_line and storageSerial != '': # TableauImager
+            storageSerial = each_line.replace("S/N:", "").strip()
+            # storageSerial = re.split("Serial ", each_line, 0)
+            print("storageSerial=",storageSerial[1].strip())      
+            # storageSerial = str(storageSerial[1]).strip()
+
+
 
         elif "Unique Identifier:" in each_line: # MagnetAcquire image_info.txt
             storageSerial = each_line.replace("Unique Identifier:", "").strip() 
@@ -697,9 +714,9 @@ def parse_log():
         elif "AcquisitionTool=" in each_line: #cellebrite *.ufd log file
             imagingTool = each_line.replace("AcquisitionTool=", "").strip()
 
-        elif "Created by iVe " in each_line: # BerlaIVe AcquisitionLog_001.txt 
+        elif "Created by iVe " in each_line and "Acquisition finished" not in each_line: # BerlaIVe AcquisitionLog_001.txt 
             imagingTool = each_line.replace("Created by iVe ", "Berla iVe ").strip()
-            if " built on" in imagingTool:
+            if " built on" in imagingTool and "Acquisition finished" not in imagingTool:
                 imagingTool = imagingTool.split(' built on')[0].strip()
 
         elif "Imager Product:" in each_line: # MagnetAcquire image_info.txt
@@ -709,6 +726,9 @@ def parse_log():
             imagingToolVer = each_line.replace("Imager Version:", "").strip() 
             imagingTool = ('%s %s' %(imagingTool, imagingToolVer))	
 
+        elif "ExtractionSoftwareVersion=" in each_line: # CellebritePA_FFS.txt
+            imagingToolTemp = each_line.replace("ExtractionSoftwareVersion=", "").strip()
+            imagingTool = ('Cellebrite PA %s' %(imagingToolTemp))
 
         # storageSize
         elif "Capacity in bytes reported Pwr-ON: " in each_line: # todo swap storageSize from capacity
@@ -937,6 +957,7 @@ def parse_log():
 
         elif "EndTime=" in each_line: #cellebrite *.ufd log file
             imagingFinished = each_line.replace("EndTime=", "").strip()
+            status = ('Imaged')
             # try:
                 # imagingStarted = fix_date(imagingFinished)
             # except:pass    
@@ -945,6 +966,21 @@ def parse_log():
         elif "Description:" in each_line: # MagnetAcquire image_info.txt
             description = each_line.replace("Description:", "").strip() 
             tempNotes = ('%s %s' %(tempNotes, description))
+
+        elif "Chipset:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
+
+        elif "Device Bluetooth Name:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
+
+        elif "Encryption Type:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
+
+        elif "Number Of Installed Applications:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
+
+        elif "Live encryption state:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
 
 
             
@@ -957,6 +993,10 @@ def parse_log():
         # makeModel = ('%s %s' %(make, model))    # test
     makeModel = ('%s %s' %(make, model))    # test
 
+    if vehicleYear != '' : # BerlaIVe AcquisitionLog.txt
+    # if vehicleYear != '' and vehicleManufacturer != '' and vehicleModel != '': # BerlaIVe AcquisitionLog.txt
+        makeModel = ("%s %s %s" %(vehicleYear, vehicleManufacturer, vehicleModel))
+
     if caseNumber != '' and exhibit != '':
         qrCode = ("%s_%s" %(caseNumber, exhibit))
     # if qrCode == '_': 
@@ -965,7 +1005,12 @@ def parse_log():
     if len(imagingTool1) != 0:
         imagingTool = ('%s %s' %(imagingTool1.strip(), imagingTool2.strip()))
     
-    if len(storageSize) != 0:
+    if len(storageSize) != 0 and storageSerial == "" and len(storageType) != 0:
+        notes = ("This had a %s model %s, %s drive. %s" %(storageSize, storageMakeModel, storageType, notes))   # test
+    elif len(storageSize) != 0 and len(storageType) != 0: 
+        notes = ("This had a %s, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
+
+    elif len(storageSize) != 0:
         notes = ("This had a %s drive, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
 
 
@@ -1606,7 +1651,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-2.5.6 - Logs: CellebritePremium DeviceInfo.txt
+2.5.6 - Logs: CellebritePremium DeviceInfo.txt, Berla iVE
 2.5.0 - Column Re-order to group like items together (case, description, lab chain of custody, acquisition, notes)
 2.1.3 - fixed log parser to populate storageSize, storageMakeModel, storageSerial, storageSize (Tableau)
 2.1.2 - Added about a dozen columns for additional info (the columns need to be re-ordered one of these days.)
@@ -1624,16 +1669,22 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+fix serial and storageSerial for TableauImager_21-41803200001_Ex1_Seagate3TBHDD.txt 
+
+
 add a brother label printer output to xlsx with qrCode
 qrCode could be caseNumber_exhibit_serial (it depends on what the evidence staff want displayed on their inventory scanner)
 
 figure out DocX tags or variables to insert data into the first fields
-if ', serial # .', replace with .
 fix to conduct a advanced logical (it used to change it to an (probably when it was "Advanced Logical"?
-parse: BerlaVE, GrayKey, MagentAcuire, MagnetAxiom, SumuriReconImager, TableauTX1 (MS shared samples)
-BerlaVE breaks fixTime
+parse: GrayKey, MagentAcuire, MagnetAxiom, SumuriReconImager, TableauTX1 (MS shared samples)
+
 if qrCode = '_': qrCode = ''
 -L bulk log parse
+
+
+
+
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
