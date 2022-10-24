@@ -4,6 +4,7 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 import re
+import os
 import sys
 import docx # pip install python-docx
 try:
@@ -36,10 +37,15 @@ WIDGET_SUBTYPE_KEY = '/Widget'
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "convert imaging logs to xlsx, print stickers and write activity reports"
-version = '2.5.6'
+description = "convert imaging logs to xlsx, print stickers and write activity reports/ Case Notes"
+version = '2.6.0'
 global agency
 agency = "IDOR" # IDOR, ISP
+
+# Regex section
+regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
+regex_sha1 = re.compile(r'^([a-fA-F\d]{40})$')    #regex_sha1
+regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -54,7 +60,9 @@ def main():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='default is input.txt', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
+    parser.add_argument('-d', '--details', help='manually enter details like exhibit number', required=False, action='store_true')
     parser.add_argument('-l', '--logparse', help='Berla, Cellebrite, FTK, tableau log parser', required=False, action='store_true')
+    parser.add_argument('-L', '--logs_parse', help='dump all your logs into Logs\ folder', required=False, action='store_true')
     parser.add_argument('-r', '--report', help='write report', required=False, action='store_true')
     parser.add_argument('-c','--caseNotes', help='casenotes module (optional) used with -r', required=False, action='store_true')
     parser.add_argument('-s', '--sticker', help='write sticker', required=False, action='store_true')
@@ -62,38 +70,51 @@ def main():
 
     args = parser.parse_args()
 
+    global inputDetails
+    inputDetails = 'no'
     # global section
-
-    global caseNotesStatus
-    (caseNotesStatus) = ('False')
     global filename
     filename = ('input.txt')
+    global logsFolder
+    logsFolder = ('Logs\\')   # or D:\Forensics\scripts\python\Logs\
+    global logsList
+    logsList = ['']
+    global log_type
     global outputFile   # docx actitivy report
     outputFile = ('output_.docx')
     global spreadsheet
     spreadsheet = ('log_%s.xlsx' %(todaysDateTime)) # uniq naming for -l module
-    
     global sheet_format
     sheet_format = ('')
 
+    
+    
     # input section
-    
-    if args.input:  # in case you don't want to start with input.txt
-        filename = args.input
-    
-    if args.report or args.logparse or args.sticker:
+    if args.details:
+        inputDetails = ("yes")
+    if args.report or args.logparse or args.logs_parse or args.sticker:
         create_xlsx()
 
     if args.report:
+        global caseNotesStatus
         if args.caseNotes:  # if you add -c                                  
-            caseNotesStatus  = ('True')      
+            caseNotesStatus  = ('True')
+        else:
+            (caseNotesStatus) = ('False')            
         read_text()
     elif args.logparse:
-        parse_log() # parse tableau, and FTK logs
+        log_type = ('file')
+        if args.input:  # in case you don't want a different input file
+            filename = args.input        
+        parse_log() # parse image log
+    elif args.logs_parse:
+        log_type = ('folder')
+        parse_log() # parse imager logs
+
     elif args.sticker:
         write_sticker() 
     else:
-        if not args.input:  # this section might be redundant
+        if not args.input:  
             parser.print_help() 
             usage()
             return 0
@@ -147,7 +168,7 @@ def create_xlsx():  # BCI output (Default)
     global Sheet1
     Sheet1 = workbook.add_worksheet('Forensics')
     header_format = workbook.add_format({'bold': True, 'border': 1})
-    Sheet1.freeze_panes(1, 1)  # Freeze cells
+    Sheet1.freeze_panes(1, 2)  # Freeze cells
     Sheet1.set_selection('B2')
 
     # Excel column width
@@ -360,11 +381,13 @@ def format_function(bg_color='white'):
 
 def fix_date(date):
     '''
-    standardize date formatting
+    standardize date formatting, Tableau
     '''
+    
     (mo, dy, yr, tm) = ('', '', '', '')
     date = date.strip()
     date = date.replace("  ", " ")  # test
+    # date = ('%s      ' %(date)) # test
     date = date.split(' ')     # Fri Jun 04 07:55:41 2021
     mo = date[1]    # convert month to a number
     mo = mo.replace("Jan", "1").replace("Feb", "2").replace("Mar", "3").replace("Apr", "4")
@@ -382,658 +405,787 @@ def fix_date(date):
     yr = date[4]
     date = ('%s/%s/%s %s' %(mo, dy, yr, tm))  # 3/4/2021 9:17
     return date
+
+def fix_date2(date):
+    '''
+    standardize date formatting
+    2022-07-14 21:15:11
+    
+    31/07/2022 11:48:57 (-5)
+    
+    
+    '''
+    print('fix_date2')  # temp
+    (mo, dy, yr, tm) = ('', '', '', '')
+    date = date.strip()
+    # date = date.replace("  ", " ")  # test
+    # date = ('%s      ' %(date)) # test
+    # date = date.split(' ')     # Fri Jun 04 07:55:41 2021
+    # mo = date[1]    # convert month to a number
+    # mo = mo.replace("Jan", "1").replace("Feb", "2").replace("Mar", "3").replace("Apr", "4")
+    # mo = mo.replace("May", "5").replace("Jun", "6").replace("Jul", "7").replace("Aug", "8")
+    # mo = mo.replace("Sep", "9").replace("Oct", "10").replace("Nov", "11").replace("Dec", "12")
+    # try:    
+        # dy = date[2].lstrip('0')
+    # except TypeError as error:
+        # print(error)
+    # try:
+        # tm = date[3].lstrip('0')
+        # tm = date[3]
+    # except TypeError as error:
+        # print(error)
+    # yr = date[4]
+    # date = ('%s/%s/%s %s' %(mo, dy, yr, tm))  # 3/4/2021 9:17
+    return date
+
+def fix_date3(date):
+    '''
+    standardize date formatting from Cellebrite
+    
+    31/07/2022 11:48:57 (-5) to 7/31/2022 11:48
+
+    '''
+
+    (mo, dy, yr, tm) = ('', '', '', '')
+    date = date.strip()
+    # date = date.replace("  ", " ")  # test
+    # date = ('%s      ' %(date)) # test
+    date = date.split(' ')     # 31/07/2022 11:48:57 (-5)
+    tempDate = date[0]
+    tm = date[1]
+    tempDate = tempDate.split('/')
+    dy = tempDate[0]    
+    mo = tempDate[1]
+    yr = tempDate[2]
+    # try:    
+        # dy = tempDate[2].lstrip('0')
+    # except TypeError as error:
+        # print(error)
+    # try:
+        # tm = tempDate[3].lstrip('0')
+        # tm = tempDate[3]
+    # except TypeError as error:
+        # print(error)
+    # yr = tempDate[4]
+    date = ('%s/%s/%s %s' %(mo, dy, yr, tm)).lstrip('0')  # 3/4/2021 9:17
+    print('fix_date_, %s %s' %(date, tempDate))  # temp
+
+    return date
     
 def parse_log():
     '''
     parse tableau, recon imager, cellebrite triage_windows.cmd and FTK logs
     '''
-    
-    style = workbook.add_format()
-    (header, report, date) = ('', '', '<insert date here>')
-    csv_file = open(filename, encoding='utf8')
-    # outputFile = "logreport.txt"
-    # output = open(outputFile, 'w+')
 
-    (caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent) = ('', '', '', '', '', '')
-    (forensicExaminer, report, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
-    (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
-    (currentTime, timezone, shutdownMethod, shutdownTime, userName, userPwd) = ('', '', '', '', '', '')
-    (email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized) = ('', '', '', '', '', '')
-    (seizedBy, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval) = ('', '', '', '', '', '')
-    (inventoryDate, seizureStatus, status, imagingTool, imagingType, imageMD5) = ('', '', '', '', '', '')
-    (imageSHA1, imageSHA256, writeBlocker, imagingStarted, imagingFinished, storageType) = ('', '', '', '', '', '')
-    (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
-    (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
-    (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
-    
-    (vehicleYear, vehicleManufacturer, vehicleModel) = ('', '', '') # BerlaIVe Acquisition
-    (imagingTool1, imagingTool2, make, model) = ('', '', '', '')
-    exhibit = str(input("exhibit : ")).strip()
+    import os
+    (caseNumber, caseName, exhibit) = ('', '', '')
+    if log_type == 'file':  # only ask for exhibit number if it's a single log
+        if inputDetails == "yes":
+            caseNumber = str(input("caseNumber : ")).strip()
+            caseName = str(input("caseName : ")).strip()
+            exhibit = str(input("exhibit : ")).strip()
+        logsList = [filename]
+    elif log_type == 'folder':
+        print('Reading logs from %s folder' %(logsFolder))
+        if inputDetails == "yes":
+            caseNumber = str(input("caseNumber : ")).strip()
+            caseName = str(input("caseName : ")).strip()
+        logsList = os.listdir(logsFolder)
+        logsList2 = []
+        for logFile in logsList:
+            logFile = ("%s%s" %(logsFolder, logFile))
+            logsList2.append(logFile)
+            # print('logsFolder = %s  logFile = %s   logsList = %s    logsList2 = %s' %(logsFolder, logFile, logsList, logsList2)) # temp
+        logsList = logsList2
 
-    # read section
-    for each_line in csv_file:
+        # read section
+    for logFile in logsList:
+        print('<<<<<< %s >>>>>>' %(logFile))
+        style = workbook.add_format()
+        (header, report, date) = ('', '', '<insert date here>')
 
-        # imagingType
-        if "Task:" in each_line:
-            imagingType = re.split("Task: ", each_line, 0)
-            imagingType = str(imagingType[1]).strip().lower()
-
-        elif " Extraction type " in each_line: #cellebrite xls
-            imagingType = re.split(" Extraction type ", each_line, 0)
-            imagingType = str(imagingType[1]).strip().lower()
-            print(imagingType)  #temp
-        elif "Source Type: Physical" in each_line:
-            imagingType = "disk to file"
-        elif "Image type :" in each_line: #recon imager
-            imagingType = re.split("Image type :", each_line, 0)
-            imagingType = str(imagingType[1]).strip().lower()
-            print("imagingType = %s" %(imagingType))  #temp
-
-        elif "ExtractionType=" in each_line: #cellebrite *.ufd log file
-            imagingType = each_line.replace("ExtractionType=", "").strip()
-            if imagingType == "AdvancedLogical":
-                imagingType = "advanced logical"
+        # (caseNumber, exhibit, caseName) = ('', '', '')
+        (subjectBusinessName, caseType, caseAgent) = ('', '', '')
+        (forensicExaminer, report, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
+        (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
+        (currentTime, timezone, shutdownMethod, shutdownTime, userName, userPwd) = ('', '', '', '', '', '')
+        (email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized) = ('', '', '', '', '', '')
+        (seizedBy, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval) = ('', '', '', '', '', '')
+        (inventoryDate, seizureStatus, status, imagingTool, imagingType, imageMD5) = ('', '', '', '', '', '')
+        (imageSHA1, imageSHA256, writeBlocker, imagingStarted, imagingFinished, storageType) = ('', '', '', '', '', '')
+        (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
+        (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
+        (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
         
-        # status
-        elif "Status: Ok" in each_line or "Imaging Status : Successful" in each_line:
-            status = 'Imaged'
-        elif "Status: Error/Failed" in each_line:
-            status = 'Not imaged'
-        elif "Acquisition Successfully Completed" in each_line: # BerlaIVe AcquisitionLog_001.txt
-            status = "Imaged"
+        # bonus variables
+        (vehicleYear, vehicleManufacturer, vehicleModel) = ('', '', '') # BerlaIVe Acquisition
+        (imagingTool1, imagingTool2, make, model) = ('', '', '', '')
 
-        elif "Acquisition Failed To Complete" in each_line: # BerlaIVe AcquisitionLog.txt
-            status = "Not imaged"
-
-        # exhibit      
-        elif "Evidence Number: " in each_line:      #FTK_parse, magnet
-            exhibit = re.split("Evidence Number: ", each_line, 0)
-            exhibit = str(exhibit[1]).strip()
-        elif "Exhibit#" in each_line:      #cellebrite
-            exhibit = re.split("Exhibit#", each_line, 0)
-            exhibit = str(exhibit[1]).strip()
-        elif "Evidence Number" in each_line:      #recon imager
-            exhibit = re.split("Evidence Number 	:", each_line, 0)
-            exhibit = str(exhibit[1]).strip()
-
-        # makeModel
-        elif "Unique description: " in each_line:
-            makeModel = re.split("Unique description: ", each_line, 0)
-            print("makeModel=", makeModel[1].strip())      
-            makeModel = str(makeModel[1]).strip()
-
-        elif "Device	" in each_line: #cellebrite excel
-            makeModel = re.split("Device	", each_line, 0)
-            print("makeModel=", makeModel[1].strip())      
-            makeModel = str(makeModel[1]).strip()
-        elif "Selected device name" in each_line: #cellebrite
-            makeModel = re.split("Selected device name", each_line, 0)
-            print("makeModel=", makeModel[1].strip())      
-            makeModel = str(makeModel[1]).strip()
-
-        elif "Selected Model:" in each_line:
-            makeModel = re.split("Selected Model:", each_line, 0)
-            print("makeModel=", makeModel[1].strip())      
-            makeModel = str(makeModel[1]).strip()
-
-        elif "Case Name: " in each_line: # BerlaIVe AcquisitionLog_001.txt      # broken
-            makeModel = each_line.replace("Case Name: ", "").strip()
-
-        elif "Model=" in each_line: #cellebrite *.ufd log file
-            model = each_line.replace("Model=", "").strip()
-
-        elif "Vendor=" in each_line: #cellebrite *.ufd log file
-            make = each_line.replace("Vendor=", "").strip()
-
-        elif "Device Model:" in each_line: # CellebritePremium DeviceInfo.txt
-            model = each_line.replace("Device Model:", "").strip()
-
-        elif "Vendor:" in each_line: # CellebritePremium DeviceInfo.txt
-            make = each_line.replace("Vendor:", "").strip()
-
-        elif "Model:" in each_line and len(storageMakeModel) == 0: # tableau
-            storageMakeModel = re.split("Model:", each_line, 0)
-            storageMakeModel = str(storageMakeModel[1]).strip()
-        elif "Device / Media Name:" in each_line: # SumuriReconImager.txt
-            storageMakeModel = each_line.replace("Device / Media Name:", "").strip()
-
-        elif "Vehicle Year:" in each_line: # BerlaIVe AcquisitionLog.txt
-            vehicleYear = each_line.replace("Vehicle Year:", "").strip()
-
-        elif "Vehicle Manufacturer:" in each_line: # BerlaIVe AcquisitionLog.txt
-            vehicleManufacturer = each_line.replace("Vehicle Manufacturer:", "").strip()
-
-        elif "Vehicle Model:" in each_line: # BerlaIVe AcquisitionLog.txt
-            vehicleModel = each_line.replace("Vehicle Model:", "").strip()
-
-
-        # OS
-        elif "Revision:" in each_line: #cellebite
-            os = re.split("Revision:", each_line, 0)
-            os = str(os[1]).strip()
-            if 'iPhone' in makeModel:
-                os = ('iOS %s' %(os))
-
-        elif "OS=" in each_line: # cellebrite *.ufd log file
-            OS = each_line.replace("OS=", "").strip()
-
-        elif "OS Version:" in each_line: # CellebritePremium DeviceInfo.txt
-            OS = each_line.replace("OS Version:", "").strip()
-
-        elif "Operating System Version:" in each_line: #cellebrite *.ufd log file
-            OS = each_line.replace("Operating System Version:", "").strip()
-
-        elif "Operating System:" in each_line: # MagnetAXIOM Case Information.txt
-            OS = each_line.replace("Operating System:", "").strip()
-
-        elif "Vehicle ECU:" in each_line: # BerlaIVe AcquisitionLog.txt
-            OS = each_line.replace("Vehicle ECU:", "").strip()
+        if logFile.lower().endswith('.pdf'):
+            print('Can\'t process .pdf files at this time, sorry: %s' %(logFile))
+            csv_file = ''
+            tempNotes = ("failed %s" %(logFile))
+        else:
+            csv_file = open(logFile)
+            # csv_file = open(logFile, encoding='utf8')
             
-        # serial
+            # with open(logFile, 'rb') as f:
+              # csv_file = f.read()
+        
+        for each_line in csv_file:
 
-        # elif "Serial Number:" in each_line and serial != '': #cellebrite
-        elif "Serial Number:" in each_line: #cellebrite
-            serial = each_line.replace("Serial Number:", "").strip()
-            # serial = re.split("Serial Number:", each_line, 0)
-                  
-            # serial = str(serial[1]).strip()
-            if "number: " in serial:
-                serial = ''
-            print("serial= %s" %(serial))    # temp
+            if "Task:" in each_line:
+                imagingType = re.split("Task: ", each_line, 0)
+                imagingType = str(imagingType[1]).strip().lower()
 
-        elif "Machine Serial" in each_line: #RECON imager
-        # elif "Machine Serial" in each_line and serial != '': #RECON imager
-            serial = re.split(":", each_line, 0)
-            serial = str(serial[1]).strip()
-            # print("serial= ",serial) # temp
+            elif " Extraction type " in each_line: #cellebrite xls
+                imagingType = re.split(" Extraction type ", each_line, 0)
+                imagingType = str(imagingType[1]).strip().lower()
+            elif "Source Type: Physical" in each_line:
+                imagingType = "disk to file"
+            elif "Image type :" in each_line: #recon imager
+                imagingType = re.split("Image type :", each_line, 0)
+                imagingType = str(imagingType[1]).strip().lower()
 
-        elif "Vehicle VIN:" in each_line: # BerlaIVe AcquisitionLog.txt
-            serial = each_line.replace("Vehicle VIN:", "").strip()
-            if serial == ('unknown'):
-                serial = ''
-        # elif "Serial " in each_line and serial != '': #cellebrite
-            # serial = re.split("Serial ", each_line, 0)
-            # print("serial=",serial[1].strip())      
-            # serial = str(serial[1]).strip()
+            elif "ExtractionType=" in each_line: #cellebrite *.ufd log file
+                imagingType = each_line.replace("ExtractionType=", "").strip()
+                if imagingType == "AdvancedLogical":
+                    imagingType = "advanced logical"
+                elif imagingType == "Logical":
+                    imagingType = "logical"            
 
-        # storageSerial    
 
-        elif "Drive Serial Number:" in each_line: # FTKImager Image.E01.txt # fix me
-            storageSerial = each_line.replace("Drive Serial Number:", "").strip()
-
-        elif "S/N:" in each_line and storageSerial != '': # TableauImager
-            storageSerial = each_line.replace("S/N:", "").strip()
-            # storageSerial = re.split("Serial ", each_line, 0)
-            print("storageSerial=",storageSerial[1].strip())      
-            # storageSerial = str(storageSerial[1]).strip()
+            elif "Start of Tableau Imager" in each_line: # tableau imager
+                imagingTool = each_line.replace("Start of ", "").strip()
 
 
 
-        elif "Unique Identifier:" in each_line: # MagnetAcquire image_info.txt
-            storageSerial = each_line.replace("Unique Identifier:", "").strip() 
+            # status
+            elif "Status: Ok" in each_line or "Imaging Status : Successful" in each_line:
+                status = 'Imaged'
+            elif "Status: Error/Failed" in each_line:
+                status = 'Not imaged'
+            elif "Acquisition Successfully Completed" in each_line: # BerlaIVe AcquisitionLog_001.txt
+                status = "Imaged"
 
- 
-        # phoneIMEI
-        elif "IMEI:" in each_line: # CellebritePremium DeviceInfo.txt
-            phoneIMEI = each_line.replace("IMEI:", "").strip()
+            elif "Acquisition Failed To Complete" in each_line: # BerlaIVe AcquisitionLog.txt
+                status = "Not imaged"
 
-        elif "IMEI1=" in each_line: # CELLEBRITEPREMIUM EXTRACTION_FFS.TXT
-            phoneIMEI = each_line.replace("IMEI1=", "").strip()
+            # exhibit      
+            elif "Evidence Number: " in each_line:      #FTK_parse, magnet
+                exhibit = re.split("Evidence Number: ", each_line, 0)
+                exhibit = str(exhibit[1]).strip()
+            elif "Exhibit#" in each_line:      #cellebrite
+                exhibit = re.split("Exhibit#", each_line, 0)
+                exhibit = str(exhibit[1]).strip()
+            elif "Exhibit Number=" in each_line: # CellebriteUFED4PC.txt
+                makeModel = each_line.replace("Exhibit Number=", "").strip()
 
-        # phoneNumber
-        elif "MSISDN" in each_line: #cellebrite
-            phoneNumber = re.split("MSISDN", each_line, 0)
-            phoneNumber = str(phoneNumber[1]).strip()
-            if ')' in phoneNumber:
-                phoneNumber = phoneNumber.replace("+1 (", "1-").replace(") ", "-")
-            print("phoneNumber=",phoneNumber)
-            (exportedEvidence, status) = ('', 'Imaged')
+            elif "Evidence Number" in each_line:      #recon imager
+                exhibit = re.split("Evidence Number 	:", each_line, 0)
+                exhibit = str(exhibit[1]).strip()
+
+            # makeModel
+            elif "Unique description: " in each_line:
+                makeModel = re.split("Unique description: ", each_line, 0)
+                makeModel = str(makeModel[1]).strip()
+
+            elif "Device	" in each_line: #cellebrite excel
+                makeModel = re.split("Device	", each_line, 0)
+                makeModel = str(makeModel[1]).strip()
+            elif "Selected device name" in each_line: #cellebrite
+                makeModel = re.split("Selected device name", each_line, 0)
+                makeModel = str(makeModel[1]).strip()
+
+            elif "Selected Model:" in each_line:
+                makeModel = re.split("Selected Model:", each_line, 0)
+                makeModel = str(makeModel[1]).strip()
+
+            elif "Case Name: " in each_line: # BerlaIVe AcquisitionLog_001.txt      # broken
+                makeModel = each_line.replace("Case Name: ", "").strip()
+
+            elif "Model=" in each_line: #cellebrite *.ufd log file
+                model = each_line.replace("Model=", "").strip()
+
+            elif "Vendor=" in each_line: #cellebrite *.ufd log file
+                make = each_line.replace("Vendor=", "").strip()
+
+            elif "Device Model:" in each_line: # CellebritePremium DeviceInfo.txt
+                model = each_line.replace("Device Model:", "").strip()
+
+            elif "Vendor:" in each_line: # CellebritePremium DeviceInfo.txt
+                make = each_line.replace("Vendor:", "").replace("Tableau", "").strip()
+            elif "Model:" in each_line and len(storageMakeModel) == 0: # tableau
+                storageMakeModel = re.split("Model:", each_line, 0)
+                storageMakeModel = str(storageMakeModel[1]).strip()
+            elif "Device / Media Name:" in each_line: # SumuriReconImager.txt
+                storageMakeModel = each_line.replace("Device / Media Name:", "").strip()
+
+            elif "Vehicle Year:" in each_line: # BerlaIVe AcquisitionLog.txt
+                vehicleYear = each_line.replace("Vehicle Year:", "").strip()
+
+            elif "Vehicle Manufacturer:" in each_line: # BerlaIVe AcquisitionLog.txt
+                vehicleManufacturer = each_line.replace("Vehicle Manufacturer:", "").strip()
+
+            elif "Vehicle Model:" in each_line: # BerlaIVe AcquisitionLog.txt
+                vehicleModel = each_line.replace("Vehicle Model:", "").strip()
 
 
+            # OS
+            elif "Revision:" in each_line: #cellebite
+                os = re.split("Revision:", each_line, 0)
+                os = str(os[1]).strip()
+                if 'iPhone' in makeModel:
+                    os = ('iOS %s' %(os))
 
-        elif " Username" in each_line: #cellebrite xls
-            phoneNumber = re.split(" Username", each_line, 0)
-            phoneNumber = str(phoneNumber[1]).strip()
-            if ')' in phoneNumber:
-                phoneNumber = phoneNumber.replace("+1 (", "1-").replace(") ", "-")
-            print("phoneNumber=",phoneNumber)
-            (exportedEvidence, status) = ('', 'Imaged')
+            elif "OS=" in each_line: # cellebrite *.ufd log file
+                OS = each_line.replace("OS=", "").strip()
 
-        # forensicExaminer
-        elif "User: " in each_line:
-            forensicExaminer = re.split("User: ", each_line, 0)
-            print("forensicExaminer ", forensicExaminer[1].strip())      
-            forensicExaminer = str(forensicExaminer[1]).strip()
-        elif "Examiner:" in each_line:
-            forensicExaminer = re.split("Examiner:", each_line, 0)
-            print("forensicExaminer=", forensicExaminer[1].strip())      
-            forensicExaminer = str(forensicExaminer[1]).strip()
-            forensicExaminer =forensicExaminer.replace("CIA - ", "")
-        elif "Examiner name" in each_line:  #cellebrite
-            forensicExaminer = re.split("Examiner name", each_line, 0)
-            print("forensicExaminer ", forensicExaminer[1].strip())      
-            forensicExaminer = str(forensicExaminer[1]).strip()
-            forensicExaminer =forensicExaminer.replace("CIA - ", "")
-        elif "Examiner 		:" in each_line: # recon imager
-            forensicExaminer = re.split("Examiner 		:", each_line, 0)
-            forensicExaminer = str(forensicExaminer[1]).strip()
-            print("forensicExaminer = ", forensicExaminer)      
-        elif "Examiner Name:" in each_line: # MagnetAcquire image_info_001.txt
-            forensicExaminer = each_line.replace("Examiner Name:", "").strip()
+            elif "OS Version:" in each_line: # CellebritePremium DeviceInfo.txt
+                OS = each_line.replace("OS Version:", "").strip()
 
-        # caseNumber
-        elif "Case ID:" in each_line:
-            caseNumber = re.split("Case ID:", each_line, 0)
-            caseNumber = str(caseNumber[1]).strip()
-            caseNumber = caseNumber.replace("<<not entered>>", "")
-        elif "Case Number" in each_line:   # Recon imager and probably tablaue
-            caseNumber = re.split(":", each_line, 0)
-            caseNumber = str(caseNumber[1]).strip()
-            caseNumber = caseNumber.replace("<<not entered>>", "")
+            elif "Operating System Version:" in each_line: #cellebrite *.ufd log file
+                OS = each_line.replace("Operating System Version:", "").strip()
 
-        elif "Case Number:" in each_line:
-            caseNumber = re.split("Case Number:", each_line, 0)
-            caseNumber = str(caseNumber[1]).strip()
-            caseNumber = caseNumber.replace("<<not entered>>", "")
-        elif "CaseNumber" in each_line:   #cellebrite
-            caseNumber = re.split("CaseNumber", each_line, 0)
-            caseNumber = str(caseNumber[1]).strip()
-            print(caseNumber)   #temp
+            elif "Operating System:" in each_line: # MagnetAXIOM Case Information.txt
+                OS = each_line.replace("Operating System:", "").strip()
 
-        elif "Case Notes:" in each_line:    # Tableau logs
-            notes = re.split("Case Notes:", each_line, 0)
-            notes = str(notes[1]).strip()
-            notes = notes.replace("<<not entered>>", "")
-        elif "Notes: " in each_line:
-            notes = re.split("Notes: ", each_line, 0)
-            notes = str(notes[1]).strip()
-            notes = notes.replace("<<not entered>>", "")
+            elif "Vehicle ECU:" in each_line: # BerlaIVe AcquisitionLog.txt
+                OS = each_line.replace("Vehicle ECU:", "").strip()
+            elif "Android_ID=" in each_line: # Cellebrite .ufd
+                OS = ('Android %s' %(OS))
+            elif "Apple" in makeModel: # Cellebrite .ufd    # test
+                OS = ('iOS %s' %(OS))
 
-        elif "Notes 		:" in each_line:    # recon imager
-            notes = re.split("Notes 		:", each_line, 0)
-            notes = str(notes[1]).strip()
 
-        elif "Source Device :" in each_line:    # recon imager
-            (vol, partition, size, frmat) = ('', '', '', '')
-            sourcenotes = re.split("Source Device :", each_line, 0)
-            sourcenotes = str(sourcenotes[1]).strip()
-            # append 7 spaces for fault tollerance  # to do
-            details = re.split("  ", sourcenotes, 0)
-            vol = str(details[0]).strip()
-            
-            try:
-                partition = str(details[3]).strip()    
-                size = str(details[4]).strip()  
-                frmat = str(details[5]).strip()  
-                blurb1 = ("This image was from %s and was the %s %s %s volume." %(vol, partition, size, frmat))
-                notes = ("%s %s" %(notes, blurb1))
-            except:pass
-            # except TypeError as error:    
-                # print(error)
                 
-        # imagingTool
-        elif "Imager App: " in each_line:
-            imagingTool1 = re.split("Imager App: ", each_line, 0)
-            imagingTool1 = str(imagingTool1[1]).strip()
-        elif "Created By AccessData" in each_line:
-            imagingTool1 = each_line.replace("Created By AccessData", "").replace("®", "").strip()
-            # imagingTool = re.split(" ", each_line, 0)
-            # imagingTool = str(imagingTool[5]).strip()
-            # imagingTool = ('FTK Imager %s' %(imagingTool))
-            
-        elif "Imager Ver: " in each_line:
-            imagingTool2 = re.split("Imager Ver: ", each_line, 0)
-            imagingTool2 = str(imagingTool2[1]).strip()
+            # serial
 
-        elif "UFED Version:	Product Version: " in each_line:    #cellebrite
-            imagingTool = re.split("UFED Version:	Product Version: ", each_line, 0)
-            imagingTool = str(imagingTool[1]).strip()
-            imagingTool = re.split(" ", imagingTool, 0)
-            imagingTool = str(imagingTool[0]).strip()
-            imagingTool = ('Cellebrite UFED %s' %(imagingTool))
-        elif "UFED version" in each_line:    #cellebrite
-            imagingTool = re.split("UFED version", each_line, 0)
-            imagingTool = str(imagingTool[1]).strip()
-            imagingTool = re.split(" ", imagingTool, 0)
-            imagingTool = str(imagingTool[0]).strip()
-            imagingTool = ('Cellebrite UFED %s' %(imagingTool))
+            # elif "Serial Number:" in each_line and serial != '': #cellebrite
+            elif "Serial Number:" in each_line: #cellebrite
+                # serial = each_line.replace("Serial Number:", "").strip()
+                serial = re.split("Serial Number:", each_line, 0)
+                      
+                serial = str(serial[1]).strip()
+                if "number: " in serial:
+                    serial = ''
+                storageSerial = serial
+                serial = ''
+                
+            elif "Machine Serial" in each_line: #RECON imager
+            # elif "Machine Serial" in each_line and serial != '': #RECON imager
+                serial = re.split(":", each_line, 0)
+                serial = str(serial[1]).strip()
 
-        elif "Cellebrite Physical Analyzer version" in each_line: #cellebrite xls
-            imagingTool1 = re.split("Cellebrite Physical Analyzer version", each_line, 0)
-            imagingTool1 = str(imagingTool1[1]).strip()
-            imagingTool1 = ('Cellebrite Physical Analyzer %s' %(imagingTool1))
-            print(imagingTool1) #temp
+            elif "Vehicle VIN:" in each_line: # BerlaIVe AcquisitionLog.txt
+                serial = each_line.replace("Vehicle VIN:", "").strip()
+                if serial == ('unknown'):
+                    serial = ''
+            # elif "Serial " in each_line and serial != '': #cellebrite
+                # serial = re.split("Serial ", each_line, 0)
+                # print("serial=",serial[1].strip())      
+                # serial = str(serial[1]).strip()
 
-        elif "RECON Imager Version : " in each_line:    # Recon Imager
-            imagingTool = re.split("RECON Imager Version : ", each_line, 0)
-            imagingTool = str(imagingTool[1]).strip()
-            imagingTool = re.split(" ", imagingTool, 0)
-            imagingTool = str(imagingTool[0]).strip()
-            imagingTool = ('Recon Imager %s' %(imagingTool))
+            # storageSerial    
 
-        elif "AcquisitionTool=" in each_line: #cellebrite *.ufd log file
-            imagingTool = each_line.replace("AcquisitionTool=", "").strip()
+            elif "Serial Number:" in each_line: # FTKImager Image.E01.txt # fix me
+                storageSerial = each_line.replace("Drive Serial Number:", "").strip()
+            elif "Serial number:" in each_line: # Tableau imager
+                storageSerial = each_line.replace("Drive Serial number:", "").replace("Serial number:", "").strip()
 
-        elif "Created by iVe " in each_line and "Acquisition finished" not in each_line: # BerlaIVe AcquisitionLog_001.txt 
-            imagingTool = each_line.replace("Created by iVe ", "Berla iVe ").strip()
-            if " built on" in imagingTool and "Acquisition finished" not in imagingTool:
-                imagingTool = imagingTool.split(' built on')[0].strip()
+            # elif "Drive Serial Number:" in each_line: # FTKImager Image.E01.txt # fix me
+                # storageSerial = each_line.replace("Drive Serial Number:", "").strip()
 
-        elif "Imager Product:" in each_line: # MagnetAcquire image_info.txt
-            imagingTool = each_line.replace("Imager Product:", "").strip() 
+            elif "S/N:" in each_line and storageSerial != '': # TableauImager
+                storageSerial = each_line.replace("S/N:", "").strip()
 
-        elif "Imager Version:" in each_line: # MagnetAcquire image_info.txt
-            imagingToolVer = each_line.replace("Imager Version:", "").strip() 
-            imagingTool = ('%s %s' %(imagingTool, imagingToolVer))	
 
-        elif "ExtractionSoftwareVersion=" in each_line: # CellebritePA_FFS.txt
-            imagingToolTemp = each_line.replace("ExtractionSoftwareVersion=", "").strip()
-            imagingTool = ('Cellebrite PA %s' %(imagingToolTemp))
+            elif "Unique Identifier:" in each_line: # MagnetAcquire image_info.txt
+                storageSerial = each_line.replace("Unique Identifier:", "").strip() 
 
-        # storageSize
-        elif "Capacity in bytes reported Pwr-ON: " in each_line: # todo swap storageSize from capacity
-            capacity = re.split("Capacity in bytes reported Pwr-ON: ", each_line, 0)
-            capacity = str(capacity[1]).strip()
-            if "(" in capacity:
-                capacity = re.split("\(", each_line, 0)
+     
+            # phoneIMEI
+            elif "IMEI:" in each_line: # CellebritePremium DeviceInfo.txt
+                phoneIMEI = each_line.replace("IMEI:", "").strip()
+
+            elif "IMEI1=" in each_line: # CELLEBRITEPREMIUM EXTRACTION_FFS.TXT
+                phoneIMEI = each_line.replace("IMEI1=", "").strip()
+
+            # phoneNumber
+            elif "MSISDN" in each_line: #cellebrite
+                phoneNumber = re.split("MSISDN", each_line, 0)
+                phoneNumber = str(phoneNumber[1]).strip()
+                if ')' in phoneNumber:
+                    phoneNumber = phoneNumber.replace("+1 (", "1-").replace(") ", "-")
+                (exportedEvidence, status) = ('', 'Imaged')
+
+            elif " Username" in each_line: #cellebrite xls
+                phoneNumber = re.split(" Username", each_line, 0)
+                phoneNumber = str(phoneNumber[1]).strip()
+                if ')' in phoneNumber:
+                    phoneNumber = phoneNumber.replace("+1 (", "1-").replace(") ", "-")
+                (exportedEvidence, status) = ('', 'Imaged')
+            elif "UserName=" in each_line: # CELLEBRITE AdvancedLogical.ufd
+                phoneNumber = each_line.replace("UserName=", "").strip()
+                # userName = phoneNumber
+
+            # forensicExaminer
+            elif "User: " in each_line:
+                forensicExaminer = re.split("User: ", each_line, 0)
+                forensicExaminer = str(forensicExaminer[1]).strip()
+            elif "Examiner:" in each_line:
+                forensicExaminer = re.split("Examiner:", each_line, 0)
+                forensicExaminer = str(forensicExaminer[1]).strip()
+                forensicExaminer =forensicExaminer.replace("CIA - ", "")
+            elif "Examiner Name:" in each_line: # MagnetAcquire image_info_001.txt
+                forensicExaminer = each_line.replace("Examiner Name:", "").strip()
+            elif "Examiner Name=" in each_line: # CellebriteUFED4PC.txt
+                forensicExaminer = each_line.replace("Examiner Name=", "").strip()
+
+            elif "Examiner 		:" in each_line: # recon imager
+                forensicExaminer = re.split("Examiner 		:", each_line, 0)
+                forensicExaminer = str(forensicExaminer[1]).strip()
+            elif "Examiner name" in each_line:  #cellebrite
+                forensicExaminer = re.split("Examiner name", each_line, 0)
+                forensicExaminer = str(forensicExaminer[1]).strip()
+                forensicExaminer =forensicExaminer.replace("CIA - ", "")
+
+            # caseNumber
+            elif "Case ID:" in each_line:
+                caseNumber = re.split("Case ID:", each_line, 0)
+                caseNumber = str(caseNumber[1]).strip()
+                caseNumber = caseNumber.replace("<<not entered>>", "")
+            elif "Case Number:" in each_line:
+                caseNumber = re.split("Case Number:", each_line, 0)
+                caseNumber = str(caseNumber[1]).strip()
+                caseNumber = caseNumber.replace("<<not entered>>", "")
+            elif "Case Number=" in each_line:   # CellebriteUFED4PC.txt
+                caseNumber = each_line.replace("Case Number=", "").strip()
+
+            elif "Case Number 		:" in each_line:   # Recon imager and probably tablaue
+                caseNumber = each_line.replace("Case Number 		:", "").strip()
+                caseNumber = caseNumber.replace("<<not entered>>", "")
+
+
+
+
+            elif "CaseNumber" in each_line:   #cellebrite
+                caseNumber = re.split("CaseNumber", each_line, 0)
+                caseNumber = str(caseNumber[1]).strip()
+
+
+            # notes
+            elif "Case Notes:" in each_line:    # Tableau logs
+                notes = re.split("Case Notes:", each_line, 0)
+                notes = str(notes[1]).strip()
+                notes = notes.replace("<<not entered>>", "")
+            elif "Notes: " in each_line:
+                notes = re.split("Notes: ", each_line, 0)
+                notes = str(notes[1]).strip()
+                notes = notes.replace("<<not entered>>", "")
+
+            elif "Notes 		:" in each_line:    # recon imager
+                notes = re.split("Notes 		:", each_line, 0)
+                notes = str(notes[1]).strip()
+
+            elif "Source Device :" in each_line:    # recon imager
+                (vol, partition, size, frmat) = ('', '', '', '')
+                sourcenotes = re.split("Source Device :", each_line, 0)
+                sourcenotes = str(sourcenotes[1]).strip()
+                # append 7 spaces for fault tollerance  # to do
+                details = re.split("  ", sourcenotes, 0)
+                vol = str(details[0]).strip()
+                
+                try:
+                    partition = str(details[3]).strip()    
+                    size = str(details[4]).strip()  
+                    frmat = str(details[5]).strip()  
+                    blurb1 = ("This image was from %s and was the %s %s %s volume." %(vol, partition, size, frmat))
+                    notes = ("%s %s" %(notes, blurb1))
+                except:pass
+                    
+            # imagingTool
+            elif "Imager App: " in each_line:
+                imagingTool1 = re.split("Imager App: ", each_line, 0)
+                imagingTool1 = str(imagingTool1[1]).strip()
+            elif "Created By AccessData® FTK® Imager" in each_line:
+                imagingTool1 = each_line.replace("Created By AccessData® FTK® Imager", "").replace("®", "").replace("Â", "").strip()
+
+
+
+            elif "Created By AccessData" in each_line:
+                imagingTool1 = each_line.replace("Created By AccessData", "").replace("®", "").strip()
+
+
+                
+            elif "Imager Ver: " in each_line:
+                imagingTool2 = re.split("Imager Ver: ", each_line, 0)
+                imagingTool2 = str(imagingTool2[1]).strip()
+
+            elif "UFED Version:	Product Version: " in each_line:    #cellebrite
+                imagingTool = re.split("UFED Version:	Product Version: ", each_line, 0)
+                imagingTool = str(imagingTool[1]).strip()
+                imagingTool = re.split(" ", imagingTool, 0)
+                imagingTool = str(imagingTool[0]).strip()
+                imagingTool = ('Cellebrite UFED %s' %(imagingTool))
+            elif "UFED version" in each_line:    #cellebrite
+                imagingTool = re.split("UFED version", each_line, 0)
+                imagingTool = str(imagingTool[1]).strip()
+                imagingTool = re.split(" ", imagingTool, 0)
+                imagingTool = str(imagingTool[0]).strip()
+                imagingTool = ('Cellebrite UFED %s' %(imagingTool))
+
+            elif "Cellebrite Physical Analyzer version" in each_line: #cellebrite xls
+                imagingTool1 = re.split("Cellebrite Physical Analyzer version", each_line, 0)
+                imagingTool1 = str(imagingTool1[1]).strip()
+                imagingTool1 = ('Cellebrite Physical Analyzer %s' %(imagingTool1))
+
+            elif "RECON Imager Version : " in each_line:    # Recon Imager
+                imagingTool = re.split("RECON Imager Version : ", each_line, 0)
+                imagingTool = str(imagingTool[1]).strip()
+                imagingTool = re.split(" ", imagingTool, 0)
+                imagingTool = str(imagingTool[0]).strip()
+                imagingTool = ('Recon Imager %s' %(imagingTool))
+
+            elif "AcquisitionTool=" in each_line: #cellebrite *.ufd log file
+                imagingTool = each_line.replace("AcquisitionTool=", "").strip()
+
+            elif "Created by iVe " in each_line and "Acquisition finished" not in each_line: # BerlaIVe AcquisitionLog_001.txt 
+                imagingTool = each_line.replace("Created by iVe ", "Berla iVe ").strip()
+                if " built on" in imagingTool and "Acquisition finished" not in imagingTool:
+                    imagingTool = imagingTool.split(' built on')[0].strip()
+
+            elif "Imager Product:" in each_line: # MagnetAcquire image_info.txt
+                imagingTool = each_line.replace("Imager Product:", "").strip() 
+
+            elif "Imager Version:" in each_line: # MagnetAcquire image_info.txt
+                imagingToolVer = each_line.replace("Imager Version:", "").strip() 
+                imagingTool = ('%s %s' %(imagingTool, imagingToolVer))	
+
+            elif "ExtractionSoftwareVersion=" in each_line: # CellebritePA_FFS.txt
+                imagingToolTemp = each_line.replace("ExtractionSoftwareVersion=", "").strip()
+                imagingTool = ('Cellebrite PA %s' %(imagingToolTemp))
+
+            # storageSize
+            elif "Capacity in bytes reported Pwr-ON: " in each_line: # todo swap storageSize from capacity
+                capacity = re.split("Capacity in bytes reported Pwr-ON: ", each_line, 0)
                 capacity = str(capacity[1]).strip()
-                capcty = capacity.replace(")", "")
-                capacity = capcty.split('.')[0]
-                if ' ' in capcty:
-                    size = capcty.split(' ')[1]
+                if "(" in capacity:
+                    capacity = re.split("\(", each_line, 0)
+                    capacity = str(capacity[1]).strip()
+                    capcty = capacity.replace(")", "")
+                    capacity = capcty.split('.')[0]
+                    if ' ' in capcty:
+                        size = capcty.split(' ')[1]
+                    else:
+                        size = ''
+                    # size = capacity
+                    capacity = ('%s %s' %(capacity, size))
+                    storageSize = capacity
+
+            elif "Source data size: " in each_line: # FTKImager Image.E01.txt
+                storageSize = each_line.replace("Source data size: ", "").strip()
+            elif "Device Size:" in each_line: # MagnetAcquire image_info.txt
+                storageSize = each_line.replace("Device Size:", "").strip() 
+
+            elif "Disk Size:" in each_line: # SumuriReconImager.txt
+                storageSize = each_line.replace("Disk Size:", "").strip()
+                storageSize = storageSize.split(' (')[0]
+
+
+            # storageType
+            elif "Cable/Interface type: " in each_line:
+                storageType = re.split("Cable/Interface type: ", each_line, 0)
+                storageType = str(storageType[1]).strip()
+                storageType
+
+            elif "Drive Interface Type: " in each_line: # FTKImager Image.E01.txt
+                storageType = each_line.replace("Drive Interface Type: ", "").strip()
+
+            elif "Media Type:" in each_line: # MagnetAcquire image_info.txt
+                storageType = each_line.replace("Media Type:", "").strip() 
+
+            elif "T356789iu" in each_line:  # fix me  T356789i
+                writeBlocker = "Tableau T356789iu"
+            elif "T356789i" in each_line:  # fix me  
+                writeBlocker = "Tableau T356789i"
+
+            elif "Source data size: " in each_line:
+                capacity = re.split("Source data size: ", each_line, 0)
+                capacity = str(capacity[1]).strip()
+                if "(" in capacity:
+                    capacity = re.split("\(", each_line, 0)
+                    capacity = str(capacity[1]).strip()
+                    capcty = capacity.replace(")", "")
+                    capacity = capcty.split('.')[0]
+                    if ' ' in capcty:
+                        size = capcty.split(' ')[1]
+                    # size = capacity
+                    capacity = ('%s %s' %(capacity, size))
+            
+            # exportLocation        
+            elif "Filename of first chunk: " in each_line:
+                exportLocation = re.split("Filename of first chunk: ", each_line, 0)
+                exportLocation = str(exportLocation[1]).strip()
+            elif "Information for " in each_line:       # ftk_parse
+                exportLocation = re.split("Information for ", each_line, 0)
+                exportLocation = str(exportLocation[1]).strip()
+            # elif "E01" in each_line:
+                # exportLocation = each_line.strip()
+
+            elif "FileDump=" in each_line: # CellebritePremium EXTRACTION_FFS.txt
+                exportLocation = each_line.replace("FileDump=", "").strip()
+            elif "File Path: " in each_line: # BerlaIVe AcquisitionLog_001.txt
+                exportLocation = each_line.replace("File Path: ", "").strip()
+                exportedEvidence = 'Y'
+
+            # imageMD5
+            elif "Disk MD5:  " in each_line:    # Tableau
+                imageMD5 = re.split("Disk MD5:  ", each_line, 0)
+                imageMD5 = str(imageMD5[1]).strip()
+
+
+            elif "MD5 checksum:" in each_line:  # fix me
+                imageMD5 = re.split("MD5 checksum:", each_line, 0)
+                imageMD5 = str(imageMD5[1]).strip()
+                imageMD5 = re.split(": ", each_line, 0)
+                imageMD5 = str(imageMD5[1]).strip()
+                if "verified" in each_line:
+                    status = "Imaged"
+                    imageMD5 = imageMD5.replace(' : verified','')
                 else:
-                    size = ''
-                # size = capacity
-                capacity = ('%s %s' %(capacity, size))
-                storageSize = capacity
+                    status = 'Not imaged'
+            elif "MD5 Acquisition Hash:" in each_line: # MagnetAcquire image_info.txt
+                imageMD5 = each_line.replace("MD5 Acquisition Hash:", "").strip()
+                status = "Imaged"
+            elif "MD5 hash calculated over data:" in each_line: # SumuriReconImager.txt
+                imageMD5 = each_line.replace("MD5 hash calculated over data:", "").strip()
+                
+            # imageSHA1
+            elif "Disk SHA1: " in each_line:    # Tableau
+                imageSHA1 = re.split("Disk SHA1: ", each_line, 0)
+                imageSHA1 = str(imageSHA1[1]).strip()
 
-        elif "Source data size: " in each_line: # FTKImager Image.E01.txt
-            storageSize = each_line.replace("Source data size: ", "").strip()
-        elif "Device Size:" in each_line: # MagnetAcquire image_info.txt
-            storageSize = each_line.replace("Device Size:", "").strip() 
+            elif "SHA1 checksum:" in each_line:  # FTKImager Image.E01.txt
+                imageSHA1 = re.split("SHA1 checksum:", each_line, 0)
+                imageSHA1 = str(imageSHA1[1]).strip()
+                imageSHA1 = re.split(": ", each_line, 0)
+                imageSHA1 = str(imageSHA1[1]).strip()
+                if "verified" in each_line:
+                    status = "Imaged"
+                    imageSHA1 = imageSHA1.replace(' : verified','')
+                else:
+                    status = 'Not imaged'
+            elif "SHA1 hash calculated over data:" in each_line: # SumuriReconImager.txt
+                imageSHA1 = each_line.replace("SHA1 hash calculated over data:", "").strip()
 
-        elif "Disk Size:" in each_line: # SumuriReconImager.txt
-            storageSize = each_line.replace("Disk Size:", "").strip()
-            storageSize = storageSize.split(' (')[0]
+            elif ".zip=" in each_line: # cellebrite .ufd
+                hashTemp = re.split("=", each_line, 0)
+                exportLocation = hashTemp[0]
+                hashTemp = str(hashTemp[1]).strip()
+
+                if  re.match(regex_sha256, hashTemp):    #regex SHA256 hash
+                    imageSHA256 = hashTemp
+                elif  re.match(regex_md5, hashTemp):    #regex md5 hash
+                    imageMD5 = hashTemp
+                elif  re.match(regex_sha1, hashTemp):    #regex SHA1 hash
+                    imageSHA1 = hashTemp
+                
+            # _Triage_.txt parsing
+            elif "Host Name: " in each_line:
+                hostname = re.split("Host Name: ", each_line, 0)
+                hostname = str(hostname[1]).strip()
+                notes = ("%s The hostname is %s." %(notes, hostname))
+            elif "Timezone: " in each_line:
+                timezone = re.split("Timezone: ", each_line, 0)
+                timezone = str(timezone[1]).strip()
+                notes = ("%s The system timezone is set to %s." %(notes, timezone))
+            elif "OS Name: " in each_line:
+                OS = re.split("OS Name: ", each_line, 0)
+                OS = str(OS[1]).strip()
+                notes = ("%s The operating system was %s." %(notes, OS)) 
+            elif "   IPv4 Address" in each_line:
+                ip = re.split("   IPv4 Address. . . . . . . . . . . : ", each_line, 0)
+                ip = str(ip[1]).strip()
+                notes = ("%s The IP address is %s." %(notes, ip))
+            elif "    Lock Status:" in each_line:
+                encryption = re.split("    Lock Status:", each_line, 0)
+                encryption = str(encryption[1]).strip()
+                if 'Locked' in encryption:
+                    encryption = 'BitLocker Encrypted'
+                    notes = ("%s BitLocker encryption is enabled." %(notes)) 
+            elif "Email:" in each_line:
+                email = re.split("Email: ", each_line, 0)
+                email = str(email[1]).strip()
+            elif "Currentuser:" in each_line:
+                userName = re.split("Currentuser:", each_line, 0)
+                userName = str(userName[1]).strip()
 
 
-        # storageType
-        elif "Cable/Interface type: " in each_line:
-            storageType = re.split("Cable/Interface type: ", each_line, 0)
-            storageType = str(storageType[1]).strip()
-            storageType
+            # imagingStarted
+            elif "Acquisition started:" in each_line:
+                imagingStarted = re.split("Acquisition started: ", each_line, 0)
+                imagingStarted = str(imagingStarted[1]).strip()
+                try:
+                    imagingStarted = fix_date(imagingStarted)
+                except:pass    
 
-        elif "Drive Interface Type: " in each_line: # FTKImager Image.E01.txt
-            storageType = each_line.replace("Drive Interface Type: ", "").strip()
+            elif "Acquisition Started:" in each_line: # MagnetAcquire image_info.txt
+                imagingStarted = each_line.replace("Acquisition Started:", "").strip()
+                imagingStarted = fix_date2(imagingStarted)  # test
 
-        elif "Media Type:" in each_line: # MagnetAcquire image_info.txt
-            storageType = each_line.replace("Media Type:", "").strip() 
+            elif "Extraction start date/time" in each_line: #cellebrite
+                imagingStarted = re.split("time", each_line, 0)
+                imagingStarted = str(imagingStarted[1]).strip().replace(" -05:00", "").strip(':').strip().replace("(GMT-5)", "")
+                # try:
+                    # imagingStarted = fix_date(imagingStarted)
+                # except:pass    
 
-        elif "T356789iu" in each_line:  # fix me  T356789i
-            writeBlocker = "Tableau T356789iu"
-        elif "T356789i" in each_line:  # fix me  
-            writeBlocker = "Tableau T356789i"
+            elif "Imaging Start Time :" in each_line:   # Recon imager
+                imagingStarted = re.split("Imaging Start Time :", each_line, 0)
+                imagingStarted = str(imagingStarted[1]).strip()
+                # try:
+                    # imagingStarted = fix_date(imagingStarted)
+                # except:pass    
 
-        elif "Source data size: " in each_line:
-            capacity = re.split("Source data size: ", each_line, 0)
-            capacity = str(capacity[1]).strip()
-            if "(" in capacity:
-                capacity = re.split("\(", each_line, 0)
-                capacity = str(capacity[1]).strip()
-                capcty = capacity.replace(")", "")
-                capacity = capcty.split('.')[0]
-                if ' ' in capcty:
-                    size = capcty.split(' ')[1]
-                # size = capacity
-                capacity = ('%s %s' %(capacity, size))
+            elif "Date=" in each_line: #cellebrite *.ufd log file
+                imagingStarted = each_line.replace("Date=", "").strip()
+                imagingStarted = fix_date3(imagingStarted)
+                # try:
+                    # imagingStarted = fix_date3(imagingStarted)
+                # except:pass    
+
+            elif "Date and time:" in each_line: # CELLEBRITEPREMIUM DEVICEINFO.TXT
+                imagingStarted = each_line.replace("Date and time:", "").strip()
+                biosTime = imagingStarted
+
+            elif "Started: " in each_line:
+                imagingStarted = re.split("Started: ", each_line, 0)
+                imagingStarted = str(imagingStarted[1]).strip()
+                if "Cellebrite" in imagingTool or "Tableau" in imagingTool: 
+                    # imagingStarted = fix_date(imagingStarted)
+                    try:
+                        imagingStarted = fix_date(imagingStarted)
+                    except:pass    
+
+               
+            # imagingFinished
+                
+            elif "Closed:" in each_line:
+                imagingFinished = re.split("Closed: ", each_line, 0)
+                imagingFinished = str(imagingFinished[1]).strip()
+                imagingFinished = fix_date(imagingFinished)
+                try:
+                    imagingStarted = fix_date(imagingFinished)
+                except:pass    
+                
+            elif "Acquisition finished:" in each_line:
+                imagingFinished = re.split("Acquisition finished:", each_line, 0)
+                imagingFinished = str(imagingFinished[1]).strip()
+                try:
+                    imagingStarted = fix_date(imagingFinished)
+                except:pass    
+
+            elif "Acquisition Finished:" in each_line: # MagnetAcquire image_info.txt
+                imagingFinished = each_line.replace("Acquisition Finished:", "").strip()
+                imagingFinished = fix_date2(imagingFinished)    # test
+
+
+            elif "Extraction end date" in each_line:     #cellebrite
+                imagingFinished = re.split("Extraction end date", each_line, 0)
+                imagingFinished = str(imagingFinished[1]).strip()
+                imagingFinished = imagingFinished.replace("/time", "").replace(" -05:00", "").strip(':').strip().replace("(GMT-5)", "")
+
+                # try:
+                    # imagingStarted = fix_date(imagingFinished)
+                # except:pass    
+
+            elif "Imaging End Time   :" in each_line: # Recon imager
+                imagingFinished = re.split("Imaging End Time   :", each_line, 0)
+                imagingFinished = str(imagingFinished[1]).strip()
+                # try:
+                    # imagingStarted = fix_date(imagingFinished)
+                # except:pass    
+
+            elif "EndTime=" in each_line: #cellebrite *.ufd log file
+                imagingFinished = each_line.replace("EndTime=", "").strip()
+                status = ('Imaged')
+                imagingFinished = fix_date3(imagingFinished)
+                print('imagingStarted = %s' %(imagingFinished))   # temp
+                # try:
+                    # imagingFinished = fix_date(imagingFinished)
+                # except:pass    
+
+            # tempnotes
+            elif "Description:" in each_line: # MagnetAcquire image_info.txt
+                description = each_line.replace("Description:", "").strip() 
+                tempNotes = ('%s %s' %(tempNotes, description))
+
+            elif "Chipset:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+                tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
+
+            elif "Device Bluetooth Name:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+                tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
+
+            elif "Encryption Type:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+                tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
+
+            elif "Number Of Installed Applications:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+                tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
+
+            elif "Live encryption state:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
+                tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
+
+
+                
+        # tempNotes save the input file name for bulk uploads. delete if it's input.txt
+        tempNotes = ('%s %s' %(logFile, tempNotes)).strip()
+        if tempNotes == 'input.txt':
+            tempNotes = ''
+            
+        # if makeModel == '':
+            # makeModel = ('%s %s' %(make, model))    # test
+        makeModel = ('%s %s' %(make, model))    # test
+
+        if vehicleYear != '' : # BerlaIVe AcquisitionLog.txt
+        # if vehicleYear != '' and vehicleManufacturer != '' and vehicleModel != '': # BerlaIVe AcquisitionLog.txt
+            makeModel = ("%s %s %s" %(vehicleYear, vehicleManufacturer, vehicleModel))
+
+        if caseNumber != '' and exhibit != '':
+            qrCode = ("%s_%s" %(caseNumber, exhibit))
+        # if qrCode == '_': 
+            # qrCode = ''
         
-        # exportLocation        
-        elif "Filename of first chunk: " in each_line:
-            exportLocation = re.split("Filename of first chunk: ", each_line, 0)
-            exportLocation = str(exportLocation[1]).strip()
-        elif "Information for " in each_line:       # ftk_parse
-            exportLocation = re.split("Information for ", each_line, 0)
-            exportLocation = str(exportLocation[1]).strip()
-        elif "E01" in each_line:
-            exportLocation = each_line.strip()
+        if len(imagingTool1) != 0:
+            imagingTool = ('%s %s' %(imagingTool1.strip(), imagingTool2.strip()))
+        
+        if len(storageSize) != 0 and storageSerial == "" and len(storageType) != 0:
+            notes = ("This had a %s model %s, %s drive. %s" %(storageSize, storageMakeModel, storageType, notes))   # test
+        elif len(storageSize) != 0 and len(storageType) != 0: 
+            notes = ("This had a %s, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
 
-        elif "FileDump=" in each_line: # CellebritePremium EXTRACTION_FFS.txt
-            exportLocation = each_line.replace("FileDump=", "").strip()
-        elif "File Path: " in each_line: # BerlaIVe AcquisitionLog_001.txt
-            exportLocation = each_line.replace("File Path: ", "").strip()
-            exportedEvidence = 'Y'
-
-        # imageMD5
-        elif "Disk MD5:  " in each_line:    # Tableau
-            imageMD5 = re.split("Disk MD5:  ", each_line, 0)
-            imageMD5 = str(imageMD5[1]).strip()
+        elif len(storageSize) != 0:
+            notes = ("This had a %s drive, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
 
 
-        elif "MD5 checksum:" in each_line:  # fix me
-            imageMD5 = re.split("MD5 checksum:", each_line, 0)
-            imageMD5 = str(imageMD5[1]).strip()
-            imageMD5 = re.split(": ", each_line, 0)
-            imageMD5 = str(imageMD5[1]).strip()
-            if "verified" in each_line:
-                status = "Imaged"
-                imageMD5 = imageMD5.replace(' : verified','')
-            else:
-                status = 'Not imaged'
-        elif "MD5 Acquisition Hash:" in each_line: # MagnetAcquire image_info.txt
-            imageMD5 = each_line.replace("MD5 Acquisition Hash:", "").strip()
-            status = "Imaged"
-        elif "MD5 hash calculated over data:" in each_line: # SumuriReconImager.txt
-            imageMD5 = each_line.replace("MD5 hash calculated over data:", "").strip()
-            
-        # imageSHA1
-        elif "Disk SHA1: " in each_line:    # Tableau
-            imageSHA1 = re.split("Disk SHA1: ", each_line, 0)
-            imageSHA1 = str(imageSHA1[1]).strip()
-
-        elif "SHA1 checksum:" in each_line:  # FTKImager Image.E01.txt
-            imageSHA1 = re.split("SHA1 checksum:", each_line, 0)
-            imageSHA1 = str(imageSHA1[1]).strip()
-            imageSHA1 = re.split(": ", each_line, 0)
-            imageSHA1 = str(imageSHA1[1]).strip()
-            if "verified" in each_line:
-                status = "Imaged"
-                imageSHA1 = imageSHA1.replace(' : verified','')
-            else:
-                status = 'Not imaged'
-        elif "SHA1 hash calculated over data:" in each_line: # SumuriReconImager.txt
-            imageSHA1 = each_line.replace("SHA1 hash calculated over data:", "").strip()
-            
-        # _Triage_.txt parsing
-        elif "Host Name: " in each_line:
-            hostname = re.split("Host Name: ", each_line, 0)
-            hostname = str(hostname[1]).strip()
-            notes = ("%s The hostname is %s." %(notes, hostname))
-        elif "Timezone: " in each_line:
-            timezone = re.split("Timezone: ", each_line, 0)
-            timezone = str(timezone[1]).strip()
-            notes = ("%s The system timezone is set to %s." %(notes, timezone))
-        elif "OS Name: " in each_line:
-            OS = re.split("OS Name: ", each_line, 0)
-            OS = str(OS[1]).strip()
+        if len(OS) != 0 and 'The operating system was' not in notes:
             notes = ("%s The operating system was %s." %(notes, OS)) 
-        elif "   IPv4 Address" in each_line:
-            ip = re.split("   IPv4 Address. . . . . . . . . . . : ", each_line, 0)
-            ip = str(ip[1]).strip()
-            notes = ("%s The IP address is %s." %(notes, ip))
-        elif "    Lock Status:" in each_line:
-            encryption = re.split("    Lock Status:", each_line, 0)
-            encryption = str(encryption[1]).strip()
-            if 'Locked' in encryption:
-                encryption = 'BitLocker Encrypted'
-                notes = ("%s BitLocker encryption is enabled." %(notes)) 
-        elif "Email:" in each_line:
-            email = re.split("Email: ", each_line, 0)
-            email = str(email[1]).strip()
-        elif "Currentuser:" in each_line:
-            userName = re.split("Currentuser:", each_line, 0)
-            userName = str(userName[1]).strip()
 
 
-        # imagingStarted
-        elif "Started:" in each_line:
-            imagingStarted = re.split("Started: ", each_line, 0)
-            imagingStarted = str(imagingStarted[1]).strip()
-            # if "Cellebrite" in imagingTool or "Tableau" in imagingTool: 
-            try:
-                imagingStarted = fix_date(imagingStarted)
-            except:pass    
-        elif "Acquisition started:" in each_line:
-            imagingStarted = re.split("Acquisition started: ", each_line, 0)
-            imagingStarted = str(imagingStarted[1]).strip()
-            try:
-                imagingStarted = fix_date(imagingStarted)
-            except:pass    
+        if status == 'Not imaged':
+            notes = ("%s This drive could not be imaged." %(notes))
 
-        elif "Acquisition Started:" in each_line: # MagnetAcquire image_info.txt
-            imagingStarted = each_line.replace("Acquisition Started:", "").strip()
-
-
-        elif "Extraction start date/time" in each_line: #cellebrite
-            imagingStarted = re.split("time", each_line, 0)
-            imagingStarted = str(imagingStarted[1]).strip().replace(" -05:00", "").strip(':').strip().replace("(GMT-5)", "")
-            # try:
-                # imagingStarted = fix_date(imagingStarted)
-            # except:pass    
-
-        elif "Imaging Start Time :" in each_line:   # Recon imager
-            imagingStarted = re.split("Imaging Start Time :", each_line, 0)
-            imagingStarted = str(imagingStarted[1]).strip()
-            # try:
-                # imagingStarted = fix_date(imagingStarted)
-            # except:pass    
-
-        elif "Date=" in each_line: #cellebrite *.ufd log file
-            imagingStarted = each_line.replace("Date=", "").strip()
-            # try:
-                # imagingStarted = fix_date(imagingStarted)
-            # except:pass    
-
-        elif "Date and time:" in each_line: # CELLEBRITEPREMIUM DEVICEINFO.TXT
-            imagingStarted = each_line.replace("Date and time:", "").strip()
-            biosTime = imagingStarted
-           
-        # imagingFinished
-            
-        elif "Closed:" in each_line:
-            imagingFinished = re.split("Closed: ", each_line, 0)
-            imagingFinished = str(imagingFinished[1]).strip()
-            imagingFinished = fix_date(imagingFinished)
-            try:
-                imagingStarted = fix_date(imagingFinished)
-            except:pass    
-            
-            
-            
-        elif "Acquisition finished:" in each_line:
-            imagingFinished = re.split("Acquisition finished: ", each_line, 0)
-            imagingFinished = str(imagingFinished[1]).strip()
-            try:
-                imagingStarted = fix_date(imagingFinished)
-            except:pass    
-
-        elif "Acquisition Finished:" in each_line: # MagnetAcquire image_info.txt
-            imagingFinished = each_line.replace("Acquisition Finished:", "").strip()
-
-        elif "Extraction end date" in each_line:     #cellebrite
-            imagingFinished = re.split("Extraction end date", each_line, 0)
-            imagingFinished = str(imagingFinished[1]).strip()
-            imagingFinished = imagingFinished.replace("/time", "").replace(" -05:00", "").strip(':').strip().replace("(GMT-5)", "")
-
-            # try:
-                # imagingStarted = fix_date(imagingFinished)
-            # except:pass    
-
-        elif "Imaging End Time   :" in each_line: # Recon imager
-            imagingFinished = re.split("Imaging End Time   :", each_line, 0)
-            imagingFinished = str(imagingFinished[1]).strip()
-            # try:
-                # imagingStarted = fix_date(imagingFinished)
-            # except:pass    
-
-        elif "EndTime=" in each_line: #cellebrite *.ufd log file
-            imagingFinished = each_line.replace("EndTime=", "").strip()
-            status = ('Imaged')
-            # try:
-                # imagingStarted = fix_date(imagingFinished)
-            # except:pass    
-
-        # tempnotes
-        elif "Description:" in each_line: # MagnetAcquire image_info.txt
-            description = each_line.replace("Description:", "").strip() 
-            tempNotes = ('%s %s' %(tempNotes, description))
-
-        elif "Chipset:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
-            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
-
-        elif "Device Bluetooth Name:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
-            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
-
-        elif "Encryption Type:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
-            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
-
-        elif "Number Of Installed Applications:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
-            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
-
-        elif "Live encryption state:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
-            tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
-
-
-            
-    # tempNotes save the input file name for bulk uploads. delete if it's input.txt
-    tempNotes = ('%s %s' %(filename, tempNotes)).strip()
-    if tempNotes == 'input.txt':
-        tempNotes = ''
-        
-    # if makeModel == '':
-        # makeModel = ('%s %s' %(make, model))    # test
-    makeModel = ('%s %s' %(make, model))    # test
-
-    if vehicleYear != '' : # BerlaIVe AcquisitionLog.txt
-    # if vehicleYear != '' and vehicleManufacturer != '' and vehicleModel != '': # BerlaIVe AcquisitionLog.txt
-        makeModel = ("%s %s %s" %(vehicleYear, vehicleManufacturer, vehicleModel))
-
-    if caseNumber != '' and exhibit != '':
-        qrCode = ("%s_%s" %(caseNumber, exhibit))
-    # if qrCode == '_': 
-        # qrCode = ''
-    
-    if len(imagingTool1) != 0:
-        imagingTool = ('%s %s' %(imagingTool1.strip(), imagingTool2.strip()))
-    
-    if len(storageSize) != 0 and storageSerial == "" and len(storageType) != 0:
-        notes = ("This had a %s model %s, %s drive. %s" %(storageSize, storageMakeModel, storageType, notes))   # test
-    elif len(storageSize) != 0 and len(storageType) != 0: 
-        notes = ("This had a %s, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
-
-    elif len(storageSize) != 0:
-        notes = ("This had a %s drive, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
-
-
-    if len(OS) != 0 and 'The operating system was' not in notes:
-        notes = ("%s The operating system was %s." %(notes, OS)) 
-
-
-    if status == 'Not imaged':
-        notes = ("%s This drive could not be imaged." %(notes))
-
-    print(notes)
-    print("status = %s" %(status))
-
-    write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-        forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
-        phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
-        userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
-        dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
-        seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
-        writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
-        storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-        storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-        vaultTotal, tempNotes)
+        print('%s\t%s\t%s\t\t\t%s\t\t\t%s\t%s\t%s\t\t%s\t%s\t%s' %(caseNumber, exhibit, caseName, subjectBusinessName, forensicExaminer, exhibitType, makeModel, serial, OS, phoneNumber))
+        write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
+            forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+            phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
+            userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
+            dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
+            seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
+            writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
+            storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
+            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
+            vaultTotal, tempNotes)
 
 def pdf_fill(input_pdf_path, output_pdf_path, data_dict):   
     '''
@@ -1636,9 +1788,12 @@ def usage():
     file = sys.argv[0].split('\\')[-1]
     print("\nDescription: " + description)
     print(file + " Version: %s by %s" % (version, author))
-    print("\n\tinsert your input into input.txt")
+    print("\n\tinsert your info into input.txt")
+    print("\n\t or insert logs into Logs folder")
     print("\nExample:")
     print("\t" + file + " -l     \t\t")
+    print("\t" + file + " -l -d     \t\t")
+    print("\t" + file + " -L     \t\t")
     print("\t" + file + " -r     \t\t")
     print("\t" + file + " -r -c  \t\t")
     print("\t" + file + " -s     \t\t")
@@ -1651,6 +1806,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.6.0 - added -L option to parse a folder full of logs all at once. -I and -O are optional now
 2.5.6 - Logs: CellebritePremium DeviceInfo.txt, Berla iVE
 2.5.0 - Column Re-order to group like items together (case, description, lab chain of custody, acquisition, notes)
 2.1.3 - fixed log parser to populate storageSize, storageMakeModel, storageSerial, storageSize (Tableau)
@@ -1682,7 +1838,10 @@ parse: GrayKey, MagentAcuire, MagnetAxiom, SumuriReconImager, TableauTX1 (MS sha
 if qrCode = '_': qrCode = ''
 -L bulk log parse
 
-
+can't parse:
+CellebriteUFED4PC_log.txt   # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+MagnetAXIOM_Case Information_001.txt
+MagnetAXIOM_Case Information_002.txt
 
 
 """
