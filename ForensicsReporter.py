@@ -1,8 +1,18 @@
 #!/usr/bin/python
 # coding: utf-8
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+# <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
+# change this section with your details
+global agency
+agency = "MWW" # ISP
+global agencyFull
+agencyFull = "Ministry of Wacky Walks"   # 
+global divisionFull
+divisionFull = "Bureau of Criminal Investigations"
+
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 try:
     import docx # pip install python-docx
@@ -46,15 +56,6 @@ regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports/ case notes"
 version = '2.6.4'
-
-# change this section with your details
-global agency
-agency = "MWW" # ISP
-
-global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # 
-global divisionFull
-divisionFull = "Bureau of Criminal Investigations"
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
