@@ -45,7 +45,7 @@ regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports/ case notes"
-version = '2.6.3'
+version = '2.6.4'
 
 # change this section with your details
 global agency
@@ -74,14 +74,12 @@ def main():
     parser.add_argument('-r', '--report', help='write report', required=False, action='store_true')
     parser.add_argument('-c','--caseNotes', help='casenotes module (optional) used with -r', required=False, action='store_true')
     parser.add_argument('-s', '--sticker', help='write sticker', required=False, action='store_true')
-    # parser.add_argument('-P', '--phone', help='phone output', required=False, action='store_true')
 
     args = parser.parse_args()
 
+    # global section
     global inputDetails
     inputDetails = 'no'
-
-    # global section
     global filename
     filename = ('input.txt')
     global logsFolder
@@ -247,6 +245,15 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(62, 62, 15) # qrCode
     Sheet1.set_column(63, 63, 15) # vaultTotal
     Sheet1.set_column(64, 64, 15) # tempNotes
+
+    # hidden columns
+    Sheet1.set_column(57, 57, None, None, {'hidden': 1}) # caseNumberOrig
+    Sheet1.set_column(58, 58, None, None, {'hidden': 1}) # priority
+    Sheet1.set_column(59, 59, None, None, {'hidden': 1}) # operation
+    Sheet1.set_column(60, 60, None, None, {'hidden': 1}) # Action
+    Sheet1.set_column(61, 61, None, None, {'hidden': 1}) # vaultCaseNumber
+    Sheet1.set_column(62, 62, None, None, {'hidden': 1}) # qrCode
+    Sheet1.set_column(63, 63, None, None, {'hidden': 1}) # vaultTotal
     
     # Write column headers
 
@@ -315,6 +322,12 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.write(0, 62, 'qrCode', header_format)
     Sheet1.write(0, 63, 'vaultTotal', header_format) # redundant with exhibit
     Sheet1.write(0, 64, 'tempNotes', header_format)
+
+def FormatFunction(bg_color = 'white'):
+	global Format
+	Format=workbook.add_format({
+	'bg_color' : bg_color
+	}) 
 
     
 def dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
@@ -565,7 +578,7 @@ def parse_log():
                 makeModel = each_line.replace("Exhibit Number=", "").strip()
 
             elif "Evidence Number" in each_line:      #recon imager
-                exhibit = re.split("Evidence Number 	:", each_line, 0)
+                exhibit = re.split("Evidence Number     :", each_line, 0)
                 exhibit = str(exhibit[1]).strip()
 
             # makeModel
@@ -573,8 +586,8 @@ def parse_log():
                 makeModel = re.split("Unique description: ", each_line, 0)
                 makeModel = str(makeModel[1]).strip()
 
-            elif "Device	" in each_line: #cellebrite excel
-                makeModel = re.split("Device	", each_line, 0)
+            elif "Device    " in each_line: #cellebrite excel
+                makeModel = re.split("Device    ", each_line, 0)
                 makeModel = str(makeModel[1]).strip()
             elif "Selected device name" in each_line: #cellebrite
                 makeModel = re.split("Selected device name", each_line, 0)
@@ -725,8 +738,8 @@ def parse_log():
             elif "Examiner Name=" in each_line: # CellebriteUFED4PC.txt
                 forensicExaminer = each_line.replace("Examiner Name=", "").strip()
 
-            elif "Examiner 		:" in each_line: # recon imager
-                forensicExaminer = re.split("Examiner 		:", each_line, 0)
+            elif "Examiner         :" in each_line: # recon imager
+                forensicExaminer = re.split("Examiner         :", each_line, 0)
                 forensicExaminer = str(forensicExaminer[1]).strip()
             elif "Examiner name" in each_line:  #cellebrite
                 forensicExaminer = re.split("Examiner name", each_line, 0)
@@ -745,8 +758,8 @@ def parse_log():
             elif "Case Number=" in each_line:   # CellebriteUFED4PC.txt
                 caseNumber = each_line.replace("Case Number=", "").strip()
 
-            elif "Case Number 		:" in each_line:   # Recon imager and probably tablaue
-                caseNumber = each_line.replace("Case Number 		:", "").strip()
+            elif "Case Number         :" in each_line:   # Recon imager and probably tablaue
+                caseNumber = each_line.replace("Case Number         :", "").strip()
                 caseNumber = caseNumber.replace("<<not entered>>", "")
 
 
@@ -767,8 +780,8 @@ def parse_log():
                 notes = str(notes[1]).strip()
                 notes = notes.replace("<<not entered>>", "")
 
-            elif "Notes 		:" in each_line:    # recon imager
-                notes = re.split("Notes 		:", each_line, 0)
+            elif "Notes         :" in each_line:    # recon imager
+                notes = re.split("Notes         :", each_line, 0)
                 notes = str(notes[1]).strip()
 
             elif "Source Device :" in each_line:    # recon imager
@@ -805,8 +818,8 @@ def parse_log():
                 imagingTool2 = re.split("Imager Ver: ", each_line, 0)
                 imagingTool2 = str(imagingTool2[1]).strip()
 
-            elif "UFED Version:	Product Version: " in each_line:    #cellebrite
-                imagingTool = re.split("UFED Version:	Product Version: ", each_line, 0)
+            elif "UFED Version:    Product Version: " in each_line:    #cellebrite
+                imagingTool = re.split("UFED Version:    Product Version: ", each_line, 0)
                 imagingTool = str(imagingTool[1]).strip()
                 imagingTool = re.split(" ", imagingTool, 0)
                 imagingTool = str(imagingTool[0]).strip()
@@ -843,7 +856,7 @@ def parse_log():
 
             elif "Imager Version:" in each_line: # MagnetAcquire image_info.txt
                 imagingToolVer = each_line.replace("Imager Version:", "").strip() 
-                imagingTool = ('%s %s' %(imagingTool, imagingToolVer))	
+                imagingTool = ('%s %s' %(imagingTool, imagingToolVer))    
 
             elif "ExtractionSoftwareVersion=" in each_line: # CellebritePA_FFS.txt
                 imagingToolTemp = each_line.replace("ExtractionSoftwareVersion=", "").strip()
@@ -1449,6 +1462,19 @@ Exhibit %s
         output.write(report)
         # body = ("%s\n%s" %(body, report))
         body = ("%s%s" %(body, report))
+
+
+        #Colors
+        if 'Final' in  reportStatus or 'final' in  reportStatus or reportStatus == 'Y' or reportStatus == 'y' :        
+            # FormatFunction(bg_color = 'green')
+            FormatFunction(bg_color = '#92D050')  # green #92D050
+            
+        elif 'Draft' in  reportStatus or 'draft' in  reportStatus:        
+            # FormatFunction(bg_color = 'orange')
+            FormatFunction(bg_color = '#FFc000')         # orange       
+        else:
+            FormatFunction(bg_color = 'white')
+
         
         # Write excel
         write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent,
@@ -1533,6 +1559,7 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     Sheet1.write_string(Row, 5, caseAgent)
     Sheet1.write_string(Row, 6, forensicExaminer)
     Sheet1.write_string(Row, 7, reportStatus)
+    Sheet1.write_string(Row, 7, reportStatus,Format)    # test color
     Sheet1.write_string(Row, 8, notes)
     Sheet1.write_string(Row, 9, summary)
     Sheet1.write_string(Row, 10, exhibitType)
@@ -1794,6 +1821,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.6.2 - reportStatus gets colored if it's marked Finalized, Draft or Y
 2.6.1 - if you change agency, agencyFull and divisionFull it writes a more customized report
 2.6.0 - added -L option to parse a folder full of logs all at once. -I and -O are optional now
 2.5.6 - Logs: CellebritePremium DeviceInfo.txt, Berla iVE
