@@ -3,17 +3,20 @@
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+
+try:
+    import docx # pip install python-docx
+    import pdfrw    # pip install pdfrw
+    import hashlib
+    import xlsxwriter
+except:
+    print('install missing modules:    pip install -r requirements_ForensicsReporter.txt')
+    exit()
 import re
 import os
-import sys
-import docx # pip install python-docx
-try:
-    import pdfrw    # pip install pdfrw
-except:
-    print('you are missing pdfrw:    pip install pdfrw')
-import hashlib
+import sys    
+import time # for wait line
 import argparse  # for menu system
-import xlsxwriter
 from datetime import date
 from subprocess import call
 from datetime import datetime
@@ -33,20 +36,25 @@ ANNOT_RECT_KEY = '/Rect'
 SUBTYPE_KEY = '/Subtype'
 WIDGET_SUBTYPE_KEY = '/Widget'
 
-
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
-
-author = 'LincolnLandForensics'
-description = "convert imaging logs to xlsx, print stickers and write activity reports/ Case Notes"
-version = '2.6.0'
-global agency
-agency = "IDOR" # IDOR, ISP
-
 # Regex section
 regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
 regex_sha1 = re.compile(r'^([a-fA-F\d]{40})$')    #regex_sha1
 regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+author = 'LincolnLandForensics'
+description = "convert imaging logs to xlsx, print stickers and write activity reports/ case notes"
+version = '2.6.3'
+
+# change this section with your details
+global agency
+agency = "MWW" # ISP
+
+global agencyFull
+agencyFull = "Ministry of Wacky Walks"   # 
+global divisionFull
+divisionFull = "Bureau of Criminal Investigations"
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -72,11 +80,12 @@ def main():
 
     global inputDetails
     inputDetails = 'no'
+
     # global section
     global filename
     filename = ('input.txt')
     global logsFolder
-    logsFolder = ('Logs\\')   # or D:\Forensics\scripts\python\Logs\
+    logsFolder = ('Logs\\')   # s subfolder full of logs
     global logsList
     logsList = ['']
     global log_type
@@ -144,7 +153,8 @@ def create_docx():
     header.is_linked_to_previous = False
     # section.different_first_page_header_footer = True
     paragraph = header.paragraphs[0]
-    paragraph.text = "Illinois Department of Revenue\n\nACTIVITY REPORT                                                             BUREAU OF CRIMINAL INVESTIGATIONS"
+    paragraph.text = ("%s\n\nACTIVITY REPORT                                                             %s" %(agencyFull,divisionFull))
+
 
     p = document.add_paragraph('\n')    # start with a blank line   # todo this line is too thick
     p = document.add_paragraph('Activity Report:\t\t\t\tDate of Activity:')
@@ -179,7 +189,7 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(4, 4, 16) # caseType
     Sheet1.set_column(5, 5, 25) # caseAgent
     Sheet1.set_column(6, 6, 15) # forensicExaminer
-    Sheet1.set_column(7, 7, 7) # report
+    Sheet1.set_column(7, 7, 13) # reportStatus
     Sheet1.set_column(8, 8, 25) # notes
     Sheet1.set_column(9, 9, 15) # summary
     Sheet1.set_column(10, 10, 12) # exhibitType
@@ -247,7 +257,7 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.write(0, 4, 'caseType', header_format)
     Sheet1.write(0, 5, 'caseAgent', header_format)
     Sheet1.write(0, 6, 'forensicExaminer', header_format)
-    Sheet1.write(0, 7, 'report', header_format)
+    Sheet1.write(0, 7, 'reportStatus', header_format)
     Sheet1.write(0, 8, 'notes', header_format)
     Sheet1.write(0, 9, 'summary', header_format)
     Sheet1.write(0, 10, 'exhibitType', header_format)
@@ -308,7 +318,7 @@ def create_xlsx():  # BCI output (Default)
 
     
 def dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-    forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+    forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
     phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
     userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
     dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
@@ -412,30 +422,12 @@ def fix_date2(date):
     2022-07-14 21:15:11
     
     31/07/2022 11:48:57 (-5)
-    
-    
+ 
     '''
     print('fix_date2')  # temp
     (mo, dy, yr, tm) = ('', '', '', '')
     date = date.strip()
-    # date = date.replace("  ", " ")  # test
-    # date = ('%s      ' %(date)) # test
-    # date = date.split(' ')     # Fri Jun 04 07:55:41 2021
-    # mo = date[1]    # convert month to a number
-    # mo = mo.replace("Jan", "1").replace("Feb", "2").replace("Mar", "3").replace("Apr", "4")
-    # mo = mo.replace("May", "5").replace("Jun", "6").replace("Jul", "7").replace("Aug", "8")
-    # mo = mo.replace("Sep", "9").replace("Oct", "10").replace("Nov", "11").replace("Dec", "12")
-    # try:    
-        # dy = date[2].lstrip('0')
-    # except TypeError as error:
-        # print(error)
-    # try:
-        # tm = date[3].lstrip('0')
-        # tm = date[3]
-    # except TypeError as error:
-        # print(error)
-    # yr = date[4]
-    # date = ('%s/%s/%s %s' %(mo, dy, yr, tm))  # 3/4/2021 9:17
+
     return date
 
 def fix_date3(date):
@@ -457,16 +449,7 @@ def fix_date3(date):
     dy = tempDate[0]    
     mo = tempDate[1]
     yr = tempDate[2]
-    # try:    
-        # dy = tempDate[2].lstrip('0')
-    # except TypeError as error:
-        # print(error)
-    # try:
-        # tm = tempDate[3].lstrip('0')
-        # tm = tempDate[3]
-    # except TypeError as error:
-        # print(error)
-    # yr = tempDate[4]
+
     date = ('%s/%s/%s %s' %(mo, dy, yr, tm)).lstrip('0')  # 3/4/2021 9:17
     print('fix_date_, %s %s' %(date, tempDate))  # temp
 
@@ -502,11 +485,11 @@ def parse_log():
     for logFile in logsList:
         print('<<<<<< %s >>>>>>' %(logFile))
         style = workbook.add_format()
-        (header, report, date) = ('', '', '<insert date here>')
+        (header, reportStatus, date) = ('', '', '<insert date here>')
 
         # (caseNumber, exhibit, caseName) = ('', '', '')
         (subjectBusinessName, caseType, caseAgent) = ('', '', '')
-        (forensicExaminer, report, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
+        (forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
         (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
         (currentTime, timezone, shutdownMethod, shutdownTime, userName, userPwd) = ('', '', '', '', '', '')
         (email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized) = ('', '', '', '', '', '')
@@ -1177,7 +1160,7 @@ def parse_log():
 
         print('%s\t%s\t%s\t\t\t%s\t\t\t%s\t%s\t%s\t\t%s\t%s\t%s' %(caseNumber, exhibit, caseName, subjectBusinessName, forensicExaminer, exhibitType, makeModel, serial, OS, phoneNumber))
         write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-            forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+            forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
             phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
             userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
             dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
@@ -1222,7 +1205,7 @@ def read_text():
     this will read in each line and write a report 
     it then makes a backup of copy xlsx of the lines you tossed in
     '''
-    (header, report, date) = ('', '', '<insert date here>')
+    (header, reportStatus, date) = ('', '', '<insert date here>')
     (body, executiveSummary, evidenceBlurb) = ('', '', '')
     (style) = ('')
     csv_file = open(filename, encoding='utf8') 
@@ -1231,14 +1214,14 @@ def read_text():
     output = open(outputFile, 'w+')
     (subject, vowel) = ('test', 'aeiou')
 
-    footer = '''
+    footer = ('''
 Evidence:
-    All digital images obtained pursuant to this investigation will be maintained on IDOR servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an exhibit in the case file. 
-    '''
+    All digital images obtained pursuant to this investigation will be maintained on %s servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an exhibit in the case file. 
+    ''') %(agency)
     
     for each_line in csv_file:
         (caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent) = ('', '', '', '', '', '')
-        (forensicExaminer, report, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
+        (forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
         (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
         (currentTime, timezone, shutdownMethod, shutdownTime, userName, userPwd) = ('', '', '', '', '', '')
         (email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized) = ('', '', '', '', '', '')
@@ -1271,7 +1254,7 @@ Evidence:
             # caseType = each_line[4].lower
             caseAgent = each_line[5]
             forensicExaminer = each_line[6]
-            report = each_line[7]
+            reportStatus = each_line[7]
             notes = each_line[8]
             summary = each_line[9]
             exhibitType = each_line[10]
@@ -1353,8 +1336,8 @@ ________________________________________________________________________________
 
 
 Executive Summary 
-    Special Agent %s of the Illinois Department of Revenue, Bureau of Criminal Investigations, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
-''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, caseAgent, caseType, caseName, summary)
+    Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
+''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, caseAgent, agencyFull, divisionFull, caseType, caseName, summary)
 
             output.write(header+'\n')
         
@@ -1365,8 +1348,8 @@ Executive Summary
 %s %s                           %s    %s 
 
 Executive Summary 
-    Special Agent %s of the Illinois Department of Revenue, Bureau of Criminal Investigations, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
-''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseAgent, caseType, caseName, summary)
+    Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
+''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseAgent, agencyFull, divisionFull, caseType, caseName, summary)
         
       
 
@@ -1469,7 +1452,7 @@ Exhibit %s
         
         # Write excel
         write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent,
-            forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber,
+            forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber,
             phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime,
             userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy,
             dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate,
@@ -1479,7 +1462,7 @@ Exhibit %s
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode,
             vaultTotal, tempNotes)
         # write_pdf(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent,
-            # forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+            # forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
             # phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
             # userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
             # dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
@@ -1491,7 +1474,7 @@ Exhibit %s
         
         if caseNotesStatus == 'True':
             my_dict = dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-            forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+            forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
             phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
             userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
             dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
@@ -1501,17 +1484,22 @@ Exhibit %s
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes)
         # write an evidence form based on which agency you are from
-            if agency == "IDOR":
-                pdf_output = ("ExhibitNotes_%s_Ex%s.pdf" %(caseNumber, exhibit))
-                pdf_template = "Blank_EvidenceForm.pdf"
-            elif agency == "ISP":            
+            
+            if exhibit != '':
+                pdf_output = ("ExhibitNotes_%s_Ex%s.pdf" %(caseNumber, exhibit))    # output
+            else:
+                pdf_output = ("ExhibitNotes_%s_%s.pdf" %(caseNumber, todaysDateTime))    # output in case exhibit is empty
+                time.sleep(2)  # wait 2 seconds so the name is uniq
+                
+            # choose which form you fill out based on agency acronym
+            if agency == "ISP":            
                 if exhibitType == 'phone':  # lower(exhibitType)
                     pdf_template = "EvidenceForm_MDIS.pdf"  # Mobile Device Evidence Sheet
-                    pdf_output = ("ExhibitNotes_%s_Ex%s.pdf" %(caseNumber, exhibit))    # mobile Device output
                 else:
                     pdf_template = "EvidenceForm_EDIS.pdf"  # Electronic Device Evidence Sheet
-                    pdf_output = ("ExhibitNotes_%s_Ex%s.pdf" %(caseNumber, exhibit))    # output
-
+            else:   
+                pdf_template = "Blank_EvidenceForm.pdf"
+            pdf_fill(pdf_template, pdf_output, my_dict)
             pdf_fill(pdf_template, pdf_output, my_dict)
 
     # write docx report
@@ -1520,7 +1508,7 @@ Exhibit %s
     output.write(footer+'\n')
 
 def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-        forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+        forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
         phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
         userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
         dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
@@ -1544,7 +1532,7 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         print(error)
     Sheet1.write_string(Row, 5, caseAgent)
     Sheet1.write_string(Row, 6, forensicExaminer)
-    Sheet1.write_string(Row, 7, report)
+    Sheet1.write_string(Row, 7, reportStatus)
     Sheet1.write_string(Row, 8, notes)
     Sheet1.write_string(Row, 9, summary)
     Sheet1.write_string(Row, 10, exhibitType)
@@ -1642,7 +1630,7 @@ def write_sticker():
     '''
 
     style = workbook.add_format()
-    (header, report, date) = ('', '', '<insert date here>')
+    (header, reportStatus, date) = ('', '', '<insert date here>')
     # csv_file = open(filename)
     csv_file = open(filename, encoding='utf8')
     outputFile = "sticker.txt"
@@ -1659,12 +1647,12 @@ def write_sticker():
 
     footer = '''  
 
-All digital images obtained pursuant to this investigation will be maintained on IDOR servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an exhibit in the case file. 
-    '''
+All digital images obtained pursuant to this investigation will be maintained on %s servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an exhibit in the case file. 
+    ''' %(agency)
     
     for each_line in csv_file:
         (caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent) = ('', '', '', '', '', '')
-        (forensicExaminer, report, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
+        (forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
         (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
         (currentTime, timezone, shutdownMethod, shutdownTime, userName, userPwd) = ('', '', '', '', '', '')
         (email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized) = ('', '', '', '', '', '')
@@ -1695,7 +1683,7 @@ All digital images obtained pursuant to this investigation will be maintained on
             caseType = each_line[4]
             caseAgent = each_line[5]
             forensicExaminer = each_line[6]
-            report = each_line[7]
+            reportStatus = each_line[7]
             notes = each_line[8]
             summary = each_line[9]
             exhibitType = each_line[10]
@@ -1768,7 +1756,7 @@ Agent: %s
 
         # Write excel
         write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-            forensicExaminer, report, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
+            forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
             phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
             userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
             dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
@@ -1806,6 +1794,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.6.1 - if you change agency, agencyFull and divisionFull it writes a more customized report
 2.6.0 - added -L option to parse a folder full of logs all at once. -I and -O are optional now
 2.5.6 - Logs: CellebritePremium DeviceInfo.txt, Berla iVE
 2.5.0 - Column Re-order to group like items together (case, description, lab chain of custody, acquisition, notes)
@@ -1826,7 +1815,6 @@ if __name__ == '__main__':
 
 """
 fix serial and storageSerial for TableauImager_21-41803200001_Ex1_Seagate3TBHDD.txt 
-
 
 add a brother label printer output to xlsx with qrCode
 qrCode could be caseNumber_exhibit_serial (it depends on what the evidence staff want displayed on their inventory scanner)
@@ -1849,8 +1837,10 @@ MagnetAXIOM_Case Information_002.txt
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+change the agency, agencyFull, divisionFull to your agencies info
+
 if you have log output (like GrayKey) you want parsed, send it my way. As long as there is a key:value pair on one line, I can do it.
-If you want your agencies forms filled, send it my way, we just need to insert these variables into your pdf.
+If you want your agencies forms filled, you just need to insert these variables into your pdf.
 
 """
 
