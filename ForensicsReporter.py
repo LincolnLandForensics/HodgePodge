@@ -55,7 +55,7 @@ regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports/ case notes"
-version = '2.6.4'
+version = '2.6.5'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -177,6 +177,13 @@ def create_xlsx():  # BCI output (Default)
     global Sheet1
     Sheet1 = workbook.add_worksheet('Forensics')
     header_format = workbook.add_format({'bold': True, 'border': 1})
+    header_formatCase = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#FFc000'})   # orange Case items
+    header_formatDescription = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'yellow'})   # yellow Description items
+    header_formatNotes = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#CCCCFF'})   # purple Notes items
+    header_formatCustody = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#92D050'})   # green Custody items
+    header_formatAcquisition = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#66CCFF'})   # blue Acquisition items
+    header_formatExtra = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#FF99FF'})   # pink Extra items
+
     Sheet1.freeze_panes(1, 2)  # Freeze cells
     Sheet1.set_selection('B2')
 
@@ -226,7 +233,7 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(42, 42, 15) # imageSHA1
     Sheet1.set_column(43, 43, 15) # imageSHA256  #25
     Sheet1.set_column(44, 44, 15) # writeBlocker
-    Sheet1.set_column(45, 45, 16) # imagingStarted
+    Sheet1.set_column(45, 45, 22) # imagingStarted
     Sheet1.set_column(46, 46, 16) # imagingFinished
     Sheet1.set_column(47, 47, 13) # storageType
     Sheet1.set_column(48, 48, 23) # storageMakeModel
@@ -238,14 +245,14 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(54, 54, 25) # exportLocation
     Sheet1.set_column(55, 55, 15) # exportedEvidence
     Sheet1.set_column(56, 56, 20) # storageLocation
-    Sheet1.set_column(57, 57, 15) # caseNumberOrig
+    Sheet1.set_column(57, 57, 19) # caseNumberOrig
     Sheet1.set_column(58, 58, 9) # priority
     Sheet1.set_column(59, 59, 15) # operation
     Sheet1.set_column(60, 60, 10) # Action
-    Sheet1.set_column(61, 61, 15) # vaultCaseNumber
+    Sheet1.set_column(61, 61, 19) # vaultCaseNumber
     Sheet1.set_column(62, 62, 15) # qrCode
     Sheet1.set_column(63, 63, 15) # vaultTotal
-    Sheet1.set_column(64, 64, 15) # tempNotes
+    Sheet1.set_column(64, 64, 40) # tempNotes
 
     # hidden columns
     Sheet1.set_column(57, 57, None, None, {'hidden': 1}) # caseNumberOrig
@@ -258,70 +265,70 @@ def create_xlsx():  # BCI output (Default)
     
     # Write column headers
 
-    Sheet1.write(0, 0, 'caseNumber', header_format)
-    Sheet1.write(0, 1, 'exhibit', header_format)
-    Sheet1.write(0, 2, 'caseName', header_format)
-    Sheet1.write(0, 3, 'subjectBusinessName', header_format)
-    Sheet1.write(0, 4, 'caseType', header_format)
-    Sheet1.write(0, 5, 'caseAgent', header_format)
-    Sheet1.write(0, 6, 'forensicExaminer', header_format)
-    Sheet1.write(0, 7, 'reportStatus', header_format)
-    Sheet1.write(0, 8, 'notes', header_format)
-    Sheet1.write(0, 9, 'summary', header_format)
-    Sheet1.write(0, 10, 'exhibitType', header_format)
-    Sheet1.write(0, 11, 'makeModel', header_format)
-    Sheet1.write(0, 12, 'serial', header_format)
-    Sheet1.write(0, 13, 'OS', header_format)
-    Sheet1.write(0, 14, 'phoneNumber', header_format)
-    Sheet1.write(0, 15, 'phoneIMEI', header_format)
-    Sheet1.write(0, 16, 'mobileCarrier', header_format)
-    Sheet1.write(0, 17, 'biosTime', header_format)
-    Sheet1.write(0, 18, 'currentTime', header_format)
-    Sheet1.write(0, 19, 'timezone', header_format)
-    Sheet1.write(0, 20, 'shutdownMethod', header_format)
-    Sheet1.write(0, 21, 'shutdownTime', header_format)
-    Sheet1.write(0, 22, 'userName', header_format)
-    Sheet1.write(0, 23, 'userPwd', header_format)
-    Sheet1.write(0, 24, 'email', header_format)
-    Sheet1.write(0, 25, 'emailPwd', header_format)
-    Sheet1.write(0, 26, 'ip', header_format)
-    Sheet1.write(0, 27, 'seizureAddress', header_format)
-    Sheet1.write(0, 28, 'seizureRoom', header_format)
-    Sheet1.write(0, 29, 'dateSeized', header_format)
-    Sheet1.write(0, 30, 'seizedBy', header_format)
-    Sheet1.write(0, 31, 'dateReceived', header_format)
-    Sheet1.write(0, 32, 'receivedBy', header_format)
-    Sheet1.write(0, 33, 'removalDate', header_format)
-    Sheet1.write(0, 34, 'removalStaff', header_format)
-    Sheet1.write(0, 35, 'reasonForRemoval', header_format)
-    Sheet1.write(0, 36, 'inventoryDate', header_format)
-    Sheet1.write(0, 37, 'seizureStatus', header_format)
-    Sheet1.write(0, 38, 'status', header_format)
-    Sheet1.write(0, 39, 'imagingTool', header_format)
-    Sheet1.write(0, 40, 'imagingType', header_format)
-    Sheet1.write(0, 41, 'imageMD5', header_format)
-    Sheet1.write(0, 42, 'imageSHA1', header_format)
-    Sheet1.write(0, 43, 'imageSHA256', header_format)
-    Sheet1.write(0, 44, 'writeBlocker', header_format)
-    Sheet1.write(0, 45, 'imagingStarted', header_format)
-    Sheet1.write(0, 46, 'imagingFinished', header_format)
-    Sheet1.write(0, 47, 'storageType', header_format)
-    Sheet1.write(0, 48, 'storageMakeModel', header_format)
-    Sheet1.write(0, 49, 'storageSerial', header_format)
-    Sheet1.write(0, 50, 'storageSize', header_format)
-    Sheet1.write(0, 51, 'evidenceDataSize', header_format)
-    Sheet1.write(0, 52, 'analysisTool', header_format)
-    Sheet1.write(0, 53, 'analysisTool2', header_format)
-    Sheet1.write(0, 54, 'exportLocation', header_format)
-    Sheet1.write(0, 55, 'exportedEvidence', header_format)
-    Sheet1.write(0, 56, 'storageLocation', header_format)
-    Sheet1.write(0, 57, 'caseNumberOrig', header_format)
-    Sheet1.write(0, 58, 'priority', header_format)
-    Sheet1.write(0, 59, 'operation', header_format)
-    Sheet1.write(0, 60, 'Action', header_format)
-    Sheet1.write(0, 61, 'vaultCaseNumber', header_format)
-    Sheet1.write(0, 62, 'qrCode', header_format)
-    Sheet1.write(0, 63, 'vaultTotal', header_format) # redundant with exhibit
+    Sheet1.write(0, 0, 'caseNumber', header_formatCase)
+    Sheet1.write(0, 1, 'exhibit', header_formatDescription)
+    Sheet1.write(0, 2, 'caseName', header_formatCase)
+    Sheet1.write(0, 3, 'subjectBusinessName', header_formatCase)
+    Sheet1.write(0, 4, 'caseType', header_formatCase)
+    Sheet1.write(0, 5, 'caseAgent', header_formatCase)
+    Sheet1.write(0, 6, 'forensicExaminer', header_formatCase)
+    Sheet1.write(0, 7, 'reportStatus', header_formatCase)
+    Sheet1.write(0, 8, 'notes', header_formatNotes)
+    Sheet1.write(0, 9, 'summary', header_formatNotes)
+    Sheet1.write(0, 10, 'exhibitType', header_formatDescription)
+    Sheet1.write(0, 11, 'makeModel', header_formatDescription)
+    Sheet1.write(0, 12, 'serial', header_formatDescription)
+    Sheet1.write(0, 13, 'OS', header_formatDescription)
+    Sheet1.write(0, 14, 'phoneNumber', header_formatDescription)
+    Sheet1.write(0, 15, 'phoneIMEI', header_formatDescription)
+    Sheet1.write(0, 16, 'mobileCarrier', header_formatDescription)
+    Sheet1.write(0, 17, 'biosTime', header_formatDescription)
+    Sheet1.write(0, 18, 'currentTime', header_formatDescription)
+    Sheet1.write(0, 19, 'timezone', header_formatDescription)
+    Sheet1.write(0, 20, 'shutdownMethod', header_formatDescription)
+    Sheet1.write(0, 21, 'shutdownTime', header_formatDescription)
+    Sheet1.write(0, 22, 'userName', header_formatDescription)
+    Sheet1.write(0, 23, 'userPwd', header_formatDescription)
+    Sheet1.write(0, 24, 'email', header_formatDescription)
+    Sheet1.write(0, 25, 'emailPwd', header_formatDescription)
+    Sheet1.write(0, 26, 'ip', header_formatDescription)
+    Sheet1.write(0, 27, 'seizureAddress', header_formatCustody)
+    Sheet1.write(0, 28, 'seizureRoom', header_formatCustody)
+    Sheet1.write(0, 29, 'dateSeized', header_formatCustody)
+    Sheet1.write(0, 30, 'seizedBy', header_formatCustody)
+    Sheet1.write(0, 31, 'dateReceived', header_formatCustody)
+    Sheet1.write(0, 32, 'receivedBy', header_formatCustody)
+    Sheet1.write(0, 33, 'removalDate', header_formatCustody)
+    Sheet1.write(0, 34, 'removalStaff', header_formatCustody)
+    Sheet1.write(0, 35, 'reasonForRemoval', header_formatCustody)
+    Sheet1.write(0, 36, 'inventoryDate', header_formatCustody)
+    Sheet1.write(0, 37, 'seizureStatus', header_formatCustody)
+    Sheet1.write(0, 38, 'status', header_formatAcquisition)
+    Sheet1.write(0, 39, 'imagingTool', header_formatAcquisition)
+    Sheet1.write(0, 40, 'imagingType', header_formatAcquisition)
+    Sheet1.write(0, 41, 'imageMD5', header_formatAcquisition)
+    Sheet1.write(0, 42, 'imageSHA1', header_formatAcquisition)
+    Sheet1.write(0, 43, 'imageSHA256', header_formatAcquisition)
+    Sheet1.write(0, 44, 'writeBlocker', header_formatAcquisition)
+    Sheet1.write(0, 45, 'imagingStarted', header_formatAcquisition)
+    Sheet1.write(0, 46, 'imagingFinished', header_formatAcquisition)
+    Sheet1.write(0, 47, 'storageType', header_formatAcquisition)
+    Sheet1.write(0, 48, 'storageMakeModel', header_formatAcquisition)
+    Sheet1.write(0, 49, 'storageSerial', header_formatAcquisition)
+    Sheet1.write(0, 50, 'storageSize', header_formatAcquisition)
+    Sheet1.write(0, 51, 'evidenceDataSize', header_formatAcquisition)
+    Sheet1.write(0, 52, 'analysisTool', header_formatAcquisition)
+    Sheet1.write(0, 53, 'analysisTool2', header_formatAcquisition)
+    Sheet1.write(0, 54, 'exportLocation', header_formatAcquisition)
+    Sheet1.write(0, 55, 'exportedEvidence', header_formatAcquisition)
+    Sheet1.write(0, 56, 'storageLocation', header_formatAcquisition)
+    Sheet1.write(0, 57, 'caseNumberOrig', header_formatExtra)
+    Sheet1.write(0, 58, 'priority', header_formatExtra)
+    Sheet1.write(0, 59, 'operation', header_formatExtra)
+    Sheet1.write(0, 60, 'Action', header_formatExtra)
+    Sheet1.write(0, 61, 'vaultCaseNumber', header_formatExtra)
+    Sheet1.write(0, 62, 'qrCode', header_formatExtra)
+    Sheet1.write(0, 63, 'vaultTotal', header_formatExtra) # redundant with exhibit
     Sheet1.write(0, 64, 'tempNotes', header_format)
 
 def FormatFunction(bg_color = 'white'):
@@ -579,8 +586,10 @@ def parse_log():
                 makeModel = each_line.replace("Exhibit Number=", "").strip()
 
             elif "Evidence Number" in each_line:      #recon imager
-                exhibit = re.split("Evidence Number     :", each_line, 0)
-                exhibit = str(exhibit[1]).strip()
+                exhibit = re.split("Evidence Number", each_line, 0)
+
+                # exhibit = re.split("Evidence Number     :", each_line, 0)
+                exhibit = str(exhibit[1]).replace(":", "").strip()
 
             # makeModel
             elif "Unique description: " in each_line:
@@ -1377,28 +1386,50 @@ Exhibit %s
                 report = ('''%sAn %s''') %(report, makeModel)
             else:
                 report = ('''%sA %s''') %(report, makeModel)
+        if len(exhibitType) != 0:
+            report = ("%s %s" %(report, exhibitType))
 
-        if len(OS) != 0:
-            if OS[0].lower() in vowel:
-                report = ("%s, with an %s OS" %(report, OS))
-            else:
-                report = ("%s, with a %s OS" %(report, OS))          
+        if phoneNumber != '' and phoneNumber != 'NA' and phoneNumber != 'na' and phoneNumber != 'N/A':
+            report = ("%s (MSISDN: %s)" %(report, phoneNumber))
+
+        if phoneIMEI != '' and phoneIMEI != 'NA' and phoneIMEI != 'na' and phoneIMEI != 'N/A':
+            report = ("%s (IMEI: %s)" %(report, phoneIMEI))
+
 
         if len(serial) != 0:
-            report = ("%s, serial # %s" %(report, serial))
+            report = ("%s (S/N: %s)" %(report, serial))
+            # report = ("%s, serial # %s" %(report, serial))
+
+        if len(OS) != 0:
+            report = ("%s (OS: %s)" %(report, OS))
+            # if OS[0].lower() in vowel:
+                # report = ("%s, with an %s OS" %(report, OS))
+            # else:
+                # report = ("%s, with a %s OS" %(report, OS))          
+
         if len(dateReceived) != 0:
-            report = ("%s, was received on %s" %(report, dateReceived.replace(" ", " at ", 1)))
+            report = ("%s was received on %s" %(report, dateReceived.replace(" ", " at ", 1)))
         else:
-            report = ("%s, was received" %(report))
+            report = ("%s was received" %(report))
         report = ("%s." %(report))
         
         # if len(imagingStarted) != 0:
         if len(imagingStarted) != 0 and status != "Not imaged":
             report = ("%s On %s," %(report, imagingStarted.replace(" ", " at ", 1)))
         report = ("%s Digital Forensic Examiner %s" %(report, forensicExaminer))
-        if len(imagingTool) != 0 and imagingType != '':
-            # report = ("%s used %s to conduct a %s" %(report, imagingTool, imagingType.lower()))  
-            report = ("%s used %s to conduct a %s" %(report, imagingTool, imagingType))  
+
+        if len(imagingTool) != 0 and imagingType != '' and writeBlocker != '': # 
+            if imagingType[0].lower() in vowel:
+                report = ("%s used %s, utilizing a %s write blocker, to conduct an %s" %(report, imagingTool, writeBlocker, imagingType))  
+            elif imagingType[0].lower() not in vowel:
+                report = ("%s used %s, utilizing a %s write blocker, to conduct a %s" %(report, imagingTool, writeBlocker, imagingType))  
+
+        elif len(imagingTool) != 0 and imagingType != '':
+            if imagingType[0].lower() in vowel:
+                report = ("%s used %s to conduct an %s" %(report, imagingTool, imagingType))  
+            elif imagingType[0].lower() not in vowel:
+                report = ("%s used %s to conduct a %s" %(report, imagingTool, imagingType))  
+
         elif imagingTool != '':
             report = ("%s used %s to conduct " %(report, imagingTool))  
 
@@ -1412,24 +1443,37 @@ Exhibit %s
             
         if phoneNumber != '' and phoneNumber != 'NA' and phoneNumber != 'na' and phoneNumber != 'N/A':
             report = ("%s phone extraction." %(report))
-            if phoneNumber.lower() != 'unknown':
-                report = ("%s The mobile Station International Subscriber Number (MSISDN) was %s." %(report, phoneNumber))
+            # if phoneNumber.lower() != 'unknown':
+                # report = ("%s The Mobile Station International Subscriber Number (MSISDN) was %s." %(report, phoneNumber))
         elif imagingStarted != '':        
             report = ("%s forensic extraction." %(report))
         else:        
             report = ("%s manual analysis." %(report))
 
         if len(imageMD5) != 0 and exportLocation != '':
-            report = ("%s The image, which had a MD5 hash of % s, was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
+            # report = ("%s The image, which had a MD5 hash of % s, was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
+            report = ("%s The image (MD5 Hash: % s) was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
+
 
         # if len(imageSHA256) != 0 and exportLocation != '':
         if len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
             report = ("%s The image had a SHA256 hash of % s." %(report, imageSHA256))
 
-        
         if analysisTool != '':
             report = ("%s The image was processed with %s." %(report, analysisTool))
-        
+
+        # add username and password to report
+        if len(userName) != 0 and userPwd != '' and exhibitType != '': 
+            report = ("%s \"%s\" with a password of \"%s\" was the login to this %s." %(report, userName, userPwd, exhibitType)) 
+        elif len(userName) != 0 and userPwd != '': 
+            report = ("%s \"%s\", with a password of \"%s\", was the login to this device." %(report, userName, userPwd)) 
+
+        # add email / password to report
+        if len(email) != 0 and emailPwd != '' and exhibitType != '':  
+            report = ("%s \"%s\", with a password of \"%s\", was an email configured on this %s." %(report, email, userPwd, exhibitType)) 
+        elif len(email) != 0 and emailPwd != '':  
+            report = ("%s \"%s\", with a password of \"%s\", was an email configured on this device." %(report, email, userPwd)) 
+ 
         if notes != '':
             report = ("%s %s" %(report, notes))
           
@@ -1560,7 +1604,9 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     Sheet1.write_string(Row, 5, caseAgent)
     Sheet1.write_string(Row, 6, forensicExaminer)
     Sheet1.write_string(Row, 7, reportStatus)
-    Sheet1.write_string(Row, 7, reportStatus,Format)    # test color
+    Sheet1.write_string(Row, 7, reportStatus)   
+    # Sheet1.write_string(Row, 7, reportStatus, {'validate': 'list', 'source': ['Finalized', 'Draft', '']})  
+
     Sheet1.write_string(Row, 8, notes)
     Sheet1.write_string(Row, 9, summary)
     Sheet1.write_string(Row, 10, exhibitType)
