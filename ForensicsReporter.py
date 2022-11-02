@@ -5,11 +5,12 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP
+agency = "MWW" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # 
+agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
-divisionFull = "Bureau of Criminal Investigations"
+divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
+
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -55,7 +56,7 @@ regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports/ case notes"
-version = '2.6.5'
+version = '2.6.7'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -636,9 +637,8 @@ def parse_log():
             elif "Vehicle Model:" in each_line: # BerlaIVe AcquisitionLog.txt
                 vehicleModel = each_line.replace("Vehicle Model:", "").strip()
 
-
             # OS
-            elif "Revision:" in each_line: #cellebite
+            elif "Revision:" in each_line: #cellebite 
                 os = re.split("Revision:", each_line, 0)
                 os = str(os[1]).strip()
                 if 'iPhone' in makeModel:
@@ -1009,11 +1009,10 @@ def parse_log():
             elif "OS Name: " in each_line:
                 OS = re.split("OS Name: ", each_line, 0)
                 OS = str(OS[1]).strip()
-                notes = ("%s The operating system was %s." %(notes, OS)) 
             elif "   IPv4 Address" in each_line:
                 ip = re.split("   IPv4 Address. . . . . . . . . . . : ", each_line, 0)
                 ip = str(ip[1]).strip()
-                notes = ("%s The IP address is %s." %(notes, ip))
+                notes = ("%s The IP address was %s." %(notes, ip))
             elif "    Lock Status:" in each_line:
                 encryption = re.split("    Lock Status:", each_line, 0)
                 encryption = str(encryption[1]).strip()
@@ -1174,8 +1173,8 @@ def parse_log():
             notes = ("This had a %s drive, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
 
 
-        if len(OS) != 0 and 'The operating system was' not in notes:
-            notes = ("%s The operating system was %s." %(notes, OS)) 
+        # if len(OS) != 0 and 'The operating system was' not in notes:
+            # notes = ("%s The operating system was %s." %(notes, OS)) 
 
 
         if status == 'Not imaged':
@@ -1337,9 +1336,13 @@ Evidence:
             vaultTotal = each_line[63]
             tempNotes = each_line[64]
             
-            if subject == 'test':
-                subject = subjectBusinessName
-                # future idea. if subjectBusinessName != subject: Exhibit # <Exhibit> <subjectBusinessName>
+            # Summary writer, put a blank space or write your own summary if you don't want one auto generated
+            if summary == '' and dateSeized != '' and forensicExaminer != '' and seizureAddress != '' and agency != "ISP":
+                summary = ('On %s forensic examiner %s attended the warrant at %s.' %(dateSeized, forensicExaminer, seizureAddress))
+            elif summary != '':
+                summary == summary
+            # else:
+                # summary = ' ' 
 
             qrCode = ("%s_%s" %(caseNumber, exhibit))
 
@@ -1352,11 +1355,11 @@ ________________________________________________________________________________
 Activity Number:                             Date of Activity:
 %s                               %s
 ____________________________________________________________________________________
+____________________________________________________________________________________
 Subject of Activity:                         Case Agent:             Typed by:
 %s %s                           %s    %s
 %s
 ____________________________________________________________________________________
-
 
 Executive Summary 
     Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
@@ -1373,8 +1376,7 @@ Executive Summary
 Executive Summary 
     Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
 ''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseAgent, agencyFull, divisionFull, caseType, caseName, summary)
-        
-      
+
 
         report = ('''
         
@@ -1386,6 +1388,14 @@ Exhibit %s
                 report = ('''%sAn %s''') %(report, makeModel)
             else:
                 report = ('''%sA %s''') %(report, makeModel)
+        if len(mobileCarrier) != 0:
+            if exhibitType == 'phone':
+                report = ("%s %s" %(report, mobileCarrier))
+            else:
+                report = ("%s (Carrier: %s)" %(report, mobileCarrier))
+
+
+
         if len(exhibitType) != 0:
             report = ("%s %s" %(report, exhibitType))
 
@@ -1418,7 +1428,7 @@ Exhibit %s
             report = ("%s On %s," %(report, imagingStarted.replace(" ", " at ", 1)))
         report = ("%s Digital Forensic Examiner %s" %(report, forensicExaminer))
 
-        if len(imagingTool) != 0 and imagingType != '' and writeBlocker != '': # 
+        if len(imagingTool) != 0 and imagingType != '' and writeBlocker != '': 
             if imagingType[0].lower() in vowel:
                 report = ("%s used %s, utilizing a %s write blocker, to conduct an %s" %(report, imagingTool, writeBlocker, imagingType))  
             elif imagingType[0].lower() not in vowel:
@@ -1443,36 +1453,43 @@ Exhibit %s
             
         if phoneNumber != '' and phoneNumber != 'NA' and phoneNumber != 'na' and phoneNumber != 'N/A':
             report = ("%s phone extraction." %(report))
-            # if phoneNumber.lower() != 'unknown':
-                # report = ("%s The Mobile Station International Subscriber Number (MSISDN) was %s." %(report, phoneNumber))
         elif imagingStarted != '':        
-            report = ("%s forensic extraction." %(report))
+            report = ("%s forensic extraction" %(report))
+
         else:        
-            report = ("%s manual analysis." %(report))
+            report = ("%s manual analysis" %(report))
 
-        if len(imageMD5) != 0 and exportLocation != '':
-            # report = ("%s The image, which had a MD5 hash of % s, was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
+        if len(storageType) != 0 and storageMakeModel != '' and storageSerial != '' and storageSize != '': 
+            report = ("%s on the %s (S/N: %s) %s %s drive." %(report, storageMakeModel, storageSerial, storageSize, storageType))  
+        # else: 
+            # report = ("%s." %(report))  
+    
+        # image hash
+        if len(imageMD5) != 0 and exportLocation != '' and len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
+            report = ("%s The image (SHA256 Hash: % s) (MD5 Hash: % s) was saved as %s." %(report, imageSHA256, imageMD5, exportLocation.split('\\')[-1])) 
+        elif len(imageMD5) != 0 and exportLocation != '':
             report = ("%s The image (MD5 Hash: % s) was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
-
-
-        # if len(imageSHA256) != 0 and exportLocation != '':
-        if len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
+        elif len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
             report = ("%s The image had a SHA256 hash of % s." %(report, imageSHA256))
 
-        if analysisTool != '':
+        # analysisTool
+        if analysisTool != '' and analysisTool2 != '':      # analysisTool2
+            report = ("%s The image was processed with %s and further analyzed with %s." %(report, analysisTool, analysisTool2))
+
+        elif analysisTool != '':
             report = ("%s The image was processed with %s." %(report, analysisTool))
 
         # add username and password to report
         if len(userName) != 0 and userPwd != '' and exhibitType != '': 
             report = ("%s \"%s\" with a password of \"%s\" was the login to this %s." %(report, userName, userPwd, exhibitType)) 
         elif len(userName) != 0 and userPwd != '': 
-            report = ("%s \"%s\", with a password of \"%s\", was the login to this device." %(report, userName, userPwd)) 
+            report = ("%s \"%s\" with a password of \"%s\" was the login to this device." %(report, userName, userPwd)) 
 
         # add email / password to report
         if len(email) != 0 and emailPwd != '' and exhibitType != '':  
-            report = ("%s \"%s\", with a password of \"%s\", was an email configured on this %s." %(report, email, userPwd, exhibitType)) 
+            report = ("%s \"%s\" with a password of \"%s\" was an email configured on this %s." %(report, email, userPwd, exhibitType)) 
         elif len(email) != 0 and emailPwd != '':  
-            report = ("%s \"%s\", with a password of \"%s\", was an email configured on this device." %(report, email, userPwd)) 
+            report = ("%s \"%s\" with a password of \"%s\" was an email configured on this device." %(report, email, userPwd)) 
  
         if notes != '':
             report = ("%s %s" %(report, notes))
@@ -1868,6 +1885,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+
+2.6.5 - changed report writing output and summary writer (add a space in summary if you don't want it to write anything.)
 2.6.2 - reportStatus gets colored if it's marked Finalized, Draft or Y
 2.6.1 - if you change agency, agencyFull and divisionFull it writes a more customized report
 2.6.0 - added -L option to parse a folder full of logs all at once. -I and -O are optional now
@@ -1895,11 +1914,9 @@ add a brother label printer output to xlsx with qrCode
 qrCode could be caseNumber_exhibit_serial (it depends on what the evidence staff want displayed on their inventory scanner)
 
 figure out DocX tags or variables to insert data into the first fields
-fix to conduct a advanced logical (it used to change it to an (probably when it was "Advanced Logical"?
 parse: GrayKey, MagentAcuire, MagnetAxiom, SumuriReconImager, TableauTX1 (MS shared samples)
 
 if qrCode = '_': qrCode = ''
--L bulk log parse
 
 can't parse:
 CellebriteUFED4PC_log.txt   # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
