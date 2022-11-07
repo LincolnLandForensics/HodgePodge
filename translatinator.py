@@ -5,6 +5,7 @@
 
 import sys
 import xlrd # read xlsx
+import os.path
 import argparse  # for menu system
 import xlsxwriter
 import googletrans		# pip install googletrans
@@ -15,7 +16,7 @@ from googletrans import Translator
 
 author = 'LincolnLandForensics'
 description = "Read input.xlsx filled with another language and translate it to english"
-version = '0.1.0'
+version = '0.2.0'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -57,28 +58,32 @@ def main():
     create_xlsx()
 
     if args.arabic:
+        print('Translating Arabic from %s' %(filename))
         detectedLanguage = 'ar'  # arabic?
         read_language()
     elif args.chinese:
+        print('Translating Chinese from %s' %(filename))
         detectedLanguage = 'zh-CN'  # chinese (simplified)
         read_language()
     elif args.french:
+        print('Translating French from %s' %(filename))
         detectedLanguage = 'fr'  # french
         read_language()
     elif args.german:
+        print('Translating German from %s' %(filename))
         detectedLanguage = 'de'  # german
+        read_language()
+    elif args.spanish: 
+        print('Translating Spanish from %s' %(filename))
+        detectedLanguage = 'es'  # spanish
         read_language()
     elif args.multi:
         detectedLanguage = ''  # unknown language?
         read_language()
-    elif args.spanish: 
-        detectedLanguage = 'es'  # spanish
-        read_language()
     else:
-        parser.print_help()
-        usage()
-        return 0        
-        
+        print('Translating from %s' %(filename))
+        detectedLanguage = ''  # unknown language?
+        read_language()        
         
     workbook.close()
     return 0
@@ -98,7 +103,7 @@ def create_xlsx():
     # Excel column width
     Sheet1.set_column(0, 0, 75)  # original
     Sheet1.set_column(1, 1, 75)  # english
-    Sheet1.set_column(2, 2, 15)  # detectedLanguage
+    Sheet1.set_column(2, 2, 25)  # detectedLanguage
 
     # Write column headers
     Sheet1.write(0, 0, 'original', header_format)
@@ -113,13 +118,12 @@ def format_function(bg_color='white'):
     })
 
 def read_language():
-
-    try:
+    file_exists = os.path.exists(filename)
+    if file_exists == True:
         workbook = xlrd.open_workbook(filename)
-    except TypeError as error:
-        print("missing %s" %(filename))
-        print(error)
-        return 0 
+    else:
+        print('%s does not exist' %(filename))
+        exit()
 
     # Open the worksheet
     worksheet = workbook.sheet_by_index(0)
@@ -185,6 +189,7 @@ if __name__ == '__main__':
 
 """
 
+0.2.0 - removed any switch requirements to make the exe version easier
 0.1.0 - read xlsx, translate, export to xlsx
 """
 
@@ -199,7 +204,7 @@ detectedLanguage = translator.detect(original[0])  # fix me
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-if you know it's one of the specified languages, select that, otherwise select -m for unknown or mixed languages
+if you know it's one of the specified languages, select that, otherwise select -m or no switches for unknown or mixed languages
 
 
 """
