@@ -11,19 +11,20 @@ Convert forensic imaging logs to xlsx, print stickers and write activity reports
 * Tableau
 
 
-Usage:
+Usage:\
 process one log at a time by putting your log into input.txt
 ```
 python ForensicsReporter.py -l
 ```
-or do many logs at once by putting log into /Logs folder
+or do many at once by putting many logs into /Logs folder
 ```
-python ForensicsReporter.py -L # process many logs at once, by putting logs into the Logs folder
+python ForensicsReporter.py -L
 ```
 ![Case Example](images/CaseExamples.png)
 
 ### -s # print stickers
-paste 1 or more lines from the spreadsheet into input.txt, print out stickers for labeling evidence
+paste 1 or more rows from the spreadsheet into input.txt, print out stickers for labeling evidence\
+(future plan: print avery labels with QR codes)
 
 Usage:
 ```
