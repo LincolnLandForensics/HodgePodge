@@ -62,6 +62,8 @@ Language switches:
 *   -g  # german 2 english
 *   -s  # spanish 2 english
 
+![translation.exe output](images/translation.png)
+![This is an image](https://myoctocat.com/assets/images/base-octocat.svg)
 
 
 
