@@ -1,4 +1,4 @@
----
+
 ## ForensicsReporter.py 
 Convert forensic imaging logs to xlsx, print stickers and write activity reports/ case notes
 
@@ -52,7 +52,7 @@ python ForensicsReporter.py -r -c
 ```
 ![Case Notes Example](images/CaseNotesExample.png)
 
----
+
 
 ## translatinator.py
 Read input.xlsx filled with another language and translate it to english using Google Translate. 
