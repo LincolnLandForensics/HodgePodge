@@ -1,4 +1,4 @@
-
+---
 ## ForensicsReporter.py 
 Convert forensic imaging logs to xlsx, print stickers and write activity reports/ case notes
 
@@ -52,9 +52,7 @@ python ForensicsReporter.py -r -c
 ```
 ![Case Notes Example](images/CaseNotesExample.png)
 
-
-
-
+---
 
 ## translatinator.py
 Read input.xlsx filled with another language and translate it to english using Google Translate. 
@@ -83,9 +81,7 @@ Language switches:
 
 ![translation.exe output](images/translation.png)
 
-
-
-
+---
 
 ## youtube_download.py
 Download a list of Youtube videos from videos.txt, save list in xlsx file
