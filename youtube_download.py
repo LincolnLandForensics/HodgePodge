@@ -29,8 +29,8 @@ todaysDateTime = d.strftime("%m_%d_%Y_%H-%M-%S")
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "Download a list of Youtube videos from videos.txt"
-version = '1.0.2'
+description = "Download a list of Youtube videos from videos.txt, save list in xlsx file"
+version = '1.0.3'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -55,7 +55,6 @@ def main():
         exit()
     else:
         create_xlsx()    
-        print('downloading youtube videos')
 
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='', required=False)
@@ -71,10 +70,10 @@ def main():
         outputFile = args.output
 
     if args.youtube:
-        print('reading from %s\n\n' %(filename))
+        # print('reading from %s\n\n' %(filename))
         youtube()
     else:
-        print('Reading from %s\n\n' %(filename))
+        # print('Reading from %s\n\n' %(filename))
         youtube()
 
     workbook.close()
@@ -84,7 +83,7 @@ def main():
 
 def create_xlsx():  
     '''
-    Creates an xlsx database file with formatting
+    Creates an xlsx file with formatting
     '''
   
     global workbook
@@ -93,11 +92,6 @@ def create_xlsx():
     Sheet1 = workbook.add_worksheet('videos')
     header_format = workbook.add_format({'bold': True, 'border': 1})
     header_formatUrl = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#FFc000'})   # orange Case items
-    # header_formatDescription = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'yellow'})   # yellow Description items
-    # header_formatNotes = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#CCCCFF'})   # purple Notes items
-    # header_formatCustody = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#92D050'})   # green Custody items
-    # header_formatAcquisition = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#66CCFF'})   # blue Acquisition items
-    # header_formatExtra = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#FF99FF'})   # pink Extra items
 
     Sheet1.freeze_panes(1, 1)  # Freeze cells
     Sheet1.set_selection('B2')
@@ -156,7 +150,7 @@ def finalMessage():
       
     w = Label(window, text ='Youtube Downloader', font = "100") 
     w.pack()
-    print('\nDownloaded all Youtube videos from %s  \n\nSaved to current folder\n\nSaved info to %s  \n' %(filename, spreadsheet))
+    print('\nSaved to current folder\n\nSaved info to %s  \n' %(spreadsheet))
     messagebox.showinfo('information', '\nDownloaded all Youtube videos from %s  \n\nSaved to current folder\n\nSaved info to %s  \n' %(filename, spreadsheet))
     
     
@@ -197,6 +191,12 @@ def noVideos():
     messagebox.showwarning("Warning", ("you are missing youtube videos in %s" %(filename)))
     
 def youtube():
+    '''
+    read youtube url's, download them and create an xlsx of details
+    of the videos
+    '''
+
+    print('Downloading a list of Youtube videos from %s.\n\nThis can take a bit'%(filename))
     try:
         csv_file = open(filename)
     except:
@@ -248,10 +248,8 @@ def youtube():
         # Write excel
             write_xlsx(link, title, description, views, author, publish_date, length, rating, thumbnail_url , dateDownloaded, owner, owner_id, owner_url, captions, caption_tracks, note)
         else:
-        # Write excel
             write_xlsx(link, title, description, views, author, publish_date, length, rating, thumbnail_url , dateDownloaded, owner, owner_id, owner_url, captions, caption_tracks, note)
-        
-        
+      
     if count == 0:
         noVideos()
         exit()
@@ -265,17 +263,19 @@ def write_xlsx(link, title, description, views, author, publish_date, length, ra
     '''
     global Row
 
-    Sheet1.write_string(Row, 0 , link)  # url
-    Sheet1.write_string(Row, 1 , title) # 
-    Sheet1.write_string(Row, 2 , description) # 
+    Sheet1.write_string(Row, 0 , link) 
+    Sheet1.write_string(Row, 1 , title) 
+    Sheet1.write_string(Row, 2 , description) 
     Sheet1.write_string(Row, 3 , str(views)) # errors was integer
-    Sheet1.write_string(Row, 4 , author) # 
+    Sheet1.write_string(Row, 4 , author) 
     Sheet1.write_string(Row, 5 , str(publish_date))
-    Sheet1.write_string(Row, 6 , length)    # convert to str
-    Sheet1.write_string(Row, 7 , note) # 
-    Sheet1.write_string(Row, 8 , str(rating))  # 
+    Sheet1.write_string(Row, 6 , length)    
+    Sheet1.write_string(Row, 7 , note) 
+    Sheet1.write_string(Row, 8 , str(rating))  
     Sheet1.write_string(Row, 9 , thumbnail_url)
-    Sheet1.write_string(Row, 10 , todaysDate) # dateDownloaded
+    if title != '':
+        Sheet1.write_string(Row, 10 , todaysDate) # dateDownloaded
+
     # Sheet1.write_string(Row, 11 , owner)
     # Sheet1.write_string(Row, 12 , owner_id)
     # Sheet1.write_string(Row, 13 , owner_url)
@@ -303,6 +303,7 @@ if __name__ == '__main__':
 1.0.1 - export details to videos_<datestamp>.xlsx
 1.0.0 - gui error messages. works without any switches
 0.9.0 - you can specify a different input file with -I (ex. -I input.txt)
+0.8.0 - internet check. It shows an error window if you aren't connected
 0.1.0 - read vidoes.txt, downloud youtube videos and output to xlsx
 """
 
