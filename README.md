@@ -10,6 +10,10 @@ Convert forensic imaging logs to xlsx, print stickers and write activity reports
 * FTK
 * Tableau
 
+Installation:
+```
+python pip install -r requirements_ForensicsReporter.txt
+```
 
 Usage:\
 process one log at a time by putting your log into input.txt
@@ -48,6 +52,10 @@ python ForensicsReporter.py -r -c
 ```
 ![Case Notes Example](images/CaseNotesExample.png)
 
+
+
+
+
 ## translatinator.py
 Read input.xlsx filled with another language and translate it to english using Google Translate. 
 The default is any language but if you know it's Chinese, for example, add a -c.
@@ -74,6 +82,8 @@ Language switches:
 *   -s  # spanish 2 english
 
 ![translation.exe output](images/translation.png)
+
+
 
 
 
