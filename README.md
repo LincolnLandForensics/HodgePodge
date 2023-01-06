@@ -35,6 +35,8 @@ Usage:
 python ForensicsReporter.py -s
 ```
 
+![Stickers.docx Example](images/stickers.png)
+
 ### -r or -r -c
 print out a report. You can replace Blank_ActivityReport.docx with your report template. (sorry it doesn't print data into the header area)\
 if you do the -c option you can also replace Blank_EvidenceForm.pdf with your case notes pdf as long as you replace the variables.
