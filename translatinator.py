@@ -1,6 +1,13 @@
 #!/usr/bin/python
 # coding: utf-8
 
+'''
+This script is used to translate the contents of an Excel spreadsheet from many 
+languages to English. It uses the xlrd library to read the input file, googletrans 
+to perform the translation, and xlsxwriter to write the translated contents to a new Excel file.
+'''
+
+
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 import sys

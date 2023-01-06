@@ -5,32 +5,40 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
-
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 try:
     import docx # pip install python-docx
+    import xlrd # read xlsx
     import pdfrw    # pip install pdfrw
-    import hashlib
-    import xlsxwriter
+    import hashlib # pip install hashlib
+    import openpyxl # pip install openpyxl
+    import xlsxwriter   
+    import pdfplumber   # pip install pdfplumber
+
 except:
     print('install missing modules:    pip install -r requirements_ForensicsReporter.txt')
     exit()
 import re
 import os
-import sys    
+import sys  
 import time # for wait line
 import argparse  # for menu system
 from datetime import date
 from subprocess import call
 from datetime import datetime
+
+from tkinter import *   # -t  # Frame is not defined if this is missing
+import tkinter  # -d
+from tkinter import ttk # -d
+from tkinter import messagebox # -d
 
 d = datetime.today()
 
@@ -56,7 +64,7 @@ regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports/ case notes"
-version = '2.6.7'
+version = '2.7.2'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -71,6 +79,7 @@ def main():
     parser.add_argument('-I', '--input', help='default is input.txt', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
     parser.add_argument('-d', '--details', help='manually enter details like exhibit number', required=False, action='store_true')
+    parser.add_argument('-g', '--guidataentry', help='data entry GUI', required=False, action='store_true')
     parser.add_argument('-l', '--logparse', help='Berla, Cellebrite, FTK, tableau log parser', required=False, action='store_true')
     parser.add_argument('-L', '--logs_parse', help='dump all your logs into Logs\ folder', required=False, action='store_true')
     parser.add_argument('-r', '--report', help='write report', required=False, action='store_true')
@@ -89,14 +98,22 @@ def main():
     global logsList
     logsList = ['']
     global log_type
-    global outputFile   # docx actitivy report
-    outputFile = ('output_.docx')
+    global outputFileXlsx   # docx actitivy report
+    outputFileXlsx = ('output_.docx')
     global spreadsheet
     spreadsheet = ('log_%s.xlsx' %(todaysDateTime)) # uniq naming for -l module
     global sheet_format
     sheet_format = ('')
 
-    
+    # global outputFileXlsx
+    outputFileXlsx = "output.xlsx"
+    win = Frame()
+    win.grid(sticky=N+S+E+W)
+
+
+    if args.output:
+        outputFileXlsx = args.input
+        
     
     # input section
     if args.details:
@@ -122,13 +139,17 @@ def main():
 
     elif args.sticker:
         write_sticker() 
+    elif args.guidataentry:
+        guiDataEntry()
     else:
         if not args.input:  
             parser.print_help() 
             usage()
             return 0
-
-    workbook.close()
+    try:
+        workbook.close()
+    except:
+        pass
     return 0
 
 
@@ -165,7 +186,7 @@ def create_docx():
     # p = document.add_paragraph('Subject of Activity:\t\t\t\tCase Agent:\t\tType By:')
     # p = document.add_paragraph('%s\t\t\t\t%s\t\t%s' %(subjectBusinessName, caseAgent, forensicExaminer))
 
-    document.save(outputFile)
+    document.save(outputFileXlsx)
     return document
     
 def create_xlsx():  # BCI output (Default)
@@ -332,6 +353,119 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.write(0, 63, 'vaultTotal', header_formatExtra) # redundant with exhibit
     Sheet1.write(0, 64, 'tempNotes', header_format)
 
+def enter_data():
+    # accepted = accept_var.get()
+    if 1==1:
+    # if accepted=="Accepted":
+        # (caseNumber, caseName) = ('', '')
+        (exhibit, subjectBusinessName, caseType, caseAgent) = ('', '', '', '')
+        (forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
+        (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
+        (currentTime, timezone, shutdownMethod, shutdownTime, userName, userPwd) = ('', '', '', '', '', '')
+        (email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized) = ('', '', '', '', '', '')
+        (seizedBy, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval) = ('', '', '', '', '', '')
+        (inventoryDate, seizureStatus, status, imagingTool, imagingType, imageMD5) = ('', '', '', '', '', '')
+        (imageSHA1, imageSHA256, writeBlocker, imagingStarted, imagingFinished, storageType) = ('', '', '', '', '', '')
+        (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
+        (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
+        (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
+
+
+        caseNumber = caseNumber_entry.get()
+        caseName = caseName_entry.get()
+        
+        if 1==1:
+        # if caseNumber and caseName:
+            # Case
+            subjectBusinessName = subjectBusinessName_entry.get()
+            caseAgent = caseAgent_combobox.get()
+            forensicExaminer = forensicExaminer_combobox.get()
+            
+            # Description
+            exhibit = exhibit_entry.get()
+            makeModel = makeModel_entry.get()
+            serial = serial_entry.get()
+            exhibitType = exhibitType_combobox.get()
+            phoneNumber = phoneNumber_entry.get()
+            phoneIMEI = phoneIMEI_entry.get()
+            userName = userName_entry.get()
+            userPwd = userPwd_entry.get()
+
+            # Lab Chain of Custody
+            seizureAddress = seizureAddress_entry.get()
+            seizureRoom = seizureRoom_entry.get()
+            dateSeized = dateSeized_entry.get()
+            # seizedBy = seizedBy_entry.get()
+            seizedBy = seizedBy_combobox.get()
+            # dateReceived = dateReceived_entry.get()
+
+            # notes
+            tempNotes = tempNotes_entry.get()
+
+
+            # print out sticker format
+            print("Case:", caseNumber, "Ex:", exhibit)
+            print("CaseName:", caseName)
+            print("Subject:", subjectBusinessName)
+            print("Make:", makeModel)
+            print("Serial:", serial)
+            print("Agent:", caseAgent)
+            # if status != '':
+                # print(status)
+            print("------------------------")
+
+            filepath = "ForensicCasesTemp2.xlsx"
+            
+            if not os.path.exists(filepath):
+                workbook = openpyxl.Workbook()
+                sheet = workbook.active
+
+                heading = ["caseNumber", "exhibit", "caseName", "subjectBusinessName",
+                    "caseType", "caseAgent", "forensicExaminer", "reportStatus", "notes",
+                    "summary", "exhibitType", "makeModel", "serial", "OS", "phoneNumber",
+                    "phoneIMEI", "mobileCarrier", "biosTime", "currentTime", "timezone",
+                    "shutdownMethod", "shutdownTime", "userName", "userPwd", "email",
+                    "emailPwd", "ip", "seizureAddress", "seizureRoom", "dateSeized",
+                    "seizedBy", "dateReceived", "receivedBy", "removalDate", "removalStaff",
+                    "reasonForRemoval", "inventoryDate", "seizureStatus", "status", "imagingTool",
+                    "imagingType", "imageMD5", "imageSHA1", "imageSHA256", "writeBlocker",
+                    "imagingStarted", "imagingFinished", "storageType", "storageMakeModel",
+                    "storageSerial", "storageSize", "evidenceDataSize", "analysisTool",
+                    "analysisTool2", "exportLocation", "exportedEvidence", "storageLocation",
+                    "caseNumberOrig", "priority", "operation", "Action", "vaultCaseNumber",
+                    "qrCode", "vaultTotal", "tempNotes"]
+
+                sheet.append(heading)
+                workbook.save(filepath)
+            workbook = openpyxl.load_workbook(filepath)
+            sheet = workbook.active
+
+            sheet.append([caseNumber, exhibit, caseName, subjectBusinessName,
+                    caseType, caseAgent, forensicExaminer, reportStatus, notes,
+                    summary, exhibitType, makeModel, serial, OS, phoneNumber,
+                    phoneIMEI, mobileCarrier, biosTime, currentTime, timezone,
+                    shutdownMethod, shutdownTime, userName, userPwd, email,
+                    emailPwd, ip, seizureAddress, seizureRoom, dateSeized,
+                    seizedBy, dateReceived, receivedBy, removalDate, removalStaff,
+                    reasonForRemoval, inventoryDate, seizureStatus, status, imagingTool,
+                    imagingType, imageMD5, imageSHA1, imageSHA256, writeBlocker,
+                    imagingStarted, imagingFinished, storageType, storageMakeModel,
+                    storageSerial, storageSize, evidenceDataSize, analysisTool,
+                    analysisTool2, exportLocation, exportedEvidence, storageLocation,
+                    caseNumberOrig, priority, operation, Action, vaultCaseNumber,
+                    qrCode, vaultTotal, tempNotes])
+
+
+
+
+            workbook.save(filepath)
+                
+        else:
+            tkinter.messagebox.showwarning(title="Error", message="Case Number and Case Name are required.")
+    else:
+        tkinter.messagebox.showwarning(title= "Error", message="You have not verified the info")
+
+
 def FormatFunction(bg_color = 'white'):
 	global Format
 	Format=workbook.add_format({
@@ -476,6 +610,206 @@ def fix_date3(date):
     print('fix_date_, %s %s' %(date, tempDate))  # temp
 
     return date
+
+def guiDataEntry():
+    win = Frame()
+    # win.title('Evidence Form')  # test
+    # win = Frame().title("Evidence form")  # todo
+    win.grid(sticky=N+S+E+W) 
+    # win.geometry("700x350") # test
+    # Frame labels
+    case_info_frame = LabelFrame(win, text='Case', padx=5, pady=5)
+    description_frame = LabelFrame(win, text='Description', padx=5, pady=5)
+    custody_frame = LabelFrame(win, text='Chain of Custody', padx=5, pady=5)
+    notes_frame = LabelFrame(win, text='Notes', padx=5, pady=5)
+    
+    # stick notes
+    case_info_frame.grid(sticky=W+W)
+    description_frame.grid(sticky=E+W)
+    custody_frame.grid(sticky=E+W)
+    notes_frame.grid(sticky=E+W)   
+
+    ## create multiple frames
+
+    for frame in case_info_frame, description_frame, custody_frame, notes_frame:
+        for col in 0, 1, 2:
+            frame.columnconfigure(col, weight=1)
+
+
+    ########## case section ##########
+
+    ## row 0 labels (caseNumber, caseNumber, subjectBusinessName)
+    caseNumber_label = tkinter.Label(case_info_frame, text="Case Number")
+    caseNumber_label.grid(row=0, column=0)
+
+    caseName_label = tkinter.Label(case_info_frame, text="Case Name")    
+    caseName_label.grid(row=0, column=1)
+
+    subjectBusinessName_label = tkinter.Label(case_info_frame, text="Subject or d/b/a")    
+    subjectBusinessName_label.grid(row=0, column=2)
+
+    ## global section
+    global caseNumber_entry
+    global caseName_entry
+    global subjectBusinessName_entry
+    global exhibit_entry
+    global makeModel_entry
+    global serial_entry
+    global exhibitType_entry
+    global phoneNumber_entry
+    global phoneIMEI_entry
+    global userName_entry
+    global userPwd_entry
+    global seizureAddress_entry
+    global seizureRoom_entry
+    global dateSeized_entry
+    # global seizedBy_entry
+    global seizedBy_combobox    
+    global dateReceived_entry
+    global tempNotes_entry
+    global caseAgent_combobox
+    global forensicExaminer_combobox
+    global exhibitType_combobox
+
+
+    ## row 1 Entry (caseNumber, caseNumber, subjectBusinessName)
+    caseNumber_entry = tkinter.Entry(case_info_frame)
+    caseName_entry = tkinter.Entry(case_info_frame)
+    subjectBusinessName_entry = tkinter.Entry(case_info_frame, width = 24)
+    caseNumber_entry.grid(row=1, column=0)
+    caseName_entry.grid(row=1, column=1)    # test
+    subjectBusinessName_entry.grid(row=1, column=2)
+
+    ## row 2 & 3 label (caseAgent, forensicExaminer)
+    caseAgent_label = tkinter.Label(case_info_frame, text="Case Agent")
+    caseAgent_combobox = ttk.Combobox(case_info_frame, values=["", "SA April Moore", "Road Runner", "Sherlock Holmes"])
+    caseAgent_label.grid(row=2, column=0)
+    caseAgent_combobox.grid(row=3, column=0)
+
+    forensicExaminer_label = tkinter.Label(case_info_frame, text="Forensic Examiner")   # works
+    forensicExaminer_combobox = ttk.Combobox(case_info_frame, values=["", "Sherlock Holmes", "Elliott Ness"], width = 24)
+    forensicExaminer_label.grid(row=2, column=1)    # was 0, 2
+    forensicExaminer_combobox.grid(row=3, column=1) # works
+
+    ########## Description section ##########
+
+    ## row 0 label (exhibit, makeModel, serial)
+    exhibit_label = tkinter.Label(description_frame, text="Exhibit")  
+    exhibit_label.grid(row=0, column=0)
+
+    makeModel_label = tkinter.Label(description_frame, text="Make/Model")    
+    makeModel_label.grid(row=0, column=1)
+
+    serial_label = tkinter.Label(description_frame, text="Serial #")    
+    serial_label.grid(row=0, column=2)
+
+    ## row 1 entry (exhibit, makeModel, serial)
+    exhibit_entry = tkinter.Entry(description_frame, width = 7)
+    # exhibit_entry = tkinter.Entry(description_frame, width= 40) # sets windows frame size
+
+    exhibit_entry.grid(row=1, column=0)
+
+    makeModel_entry = tkinter.Entry(description_frame)
+    makeModel_entry.grid(row=1, column=1)
+
+    serial_entry = tkinter.Entry(description_frame)
+    serial_entry.grid(row=1, column=2)
+
+    ## row 2 label (exhibitType, phoneNumber, phoneIMEI)
+
+    exhibitType_label = tkinter.Label(description_frame, text="Exhibit Type")
+    exhibitType_combobox = ttk.Combobox(description_frame, values=["", "DVR", "desktop", "laptop", "phone", "POS", "router", "server", "switch" , "vehicle"], width = 10)
+    exhibitType_label.grid(row=2, column=0)
+
+    phoneNumbe_label = tkinter.Label(description_frame, text="Phone Number")    
+    phoneNumbe_label.grid(row=2, column=1)
+
+    phoneIMEI = tkinter.Label(description_frame, text="Phone IMEI #")    
+    phoneIMEI.grid(row=2, column=2)
+
+
+    ## row 3 entry (exhibitType, phoneNumber, phoneIMEI)
+    ## exhibitType_entry = tkinter.Entry(description_frame)
+    ## exhibitType_combobox = ttk.Combobox(description_frame, values=["", "DVR", "desktop", "phone", "POS", "router", "server", "switch" , "vehicle"])
+
+    ## exhibitType_entry.grid(row=8, column=0)
+    exhibitType_combobox.grid(row=3, column=0)
+
+    phoneNumber_entry = tkinter.Entry(description_frame, width = 16)
+    phoneNumber_entry.grid(row=3, column=1)
+
+    phoneIMEI_entry = tkinter.Entry(description_frame, width = 17)
+    phoneIMEI_entry.grid(row=3, column=2)
+
+    ## row 4 label (userName, userPwd)
+    userName_label = tkinter.Label(description_frame, text="User Name")    
+    userName_label.grid(row=4, column=0)
+    userPwd_label = tkinter.Label(description_frame, text="User Password")    
+    userPwd_label.grid(row=4, column=1)
+
+    ## row 5 entry (userName, userPwd)
+    userName_entry = tkinter.Entry(description_frame)
+    userName_entry.grid(row=5, column=0)
+
+    userPwd_entry = tkinter.Entry(description_frame)
+    userPwd_entry.grid(row=5, column=1)
+
+    ########## chain of custody section ##########
+
+    ## row 0 label (seizureAddress, seizureRoom)
+    seizureAddress_label = tkinter.Label(custody_frame, text="Seizure Address")    
+    seizureAddress_label.grid(row=0, column=0)
+
+    seizureRoom_label = tkinter.Label(custody_frame, text="Seizure Room")    
+    seizureRoom_label.grid(row=0, column=1)
+
+    ## row 1 entry (seizureAddress, seizureRoom)
+    seizureAddress_entry = tkinter.Entry(custody_frame, width = 50)    # test
+    seizureRoom_entry = tkinter.Entry(custody_frame, width = 5)
+    seizureAddress_entry.grid(row=1, column=0)
+    seizureRoom_entry.grid(row=1, column=1)
+
+
+    ## row 2 label (dateSeized, seizedBy, dateReceived)
+    dateSeized_label = tkinter.Label(custody_frame, text="Date Seized")    
+    dateSeized_label.grid(row=2, column=0)
+
+
+    # dateReceived = tkinter.Label(custody_frame, text="Date Received")    
+    # dateReceived.grid(row=2, column=2)
+
+    ## row 3 entry (dateSeized, seizedBy, dateReceived)
+    dateSeized_entry = tkinter.Entry(custody_frame, width = 19)
+    dateSeized_entry.grid(row=3, column=0)
+
+    seizedBy_label = tkinter.Label(custody_frame, text="Seized_By")     
+    seizedBy_label.grid(row=2, column=1)
+    seizedBy_entry = tkinter.Entry(custody_frame, width = 25)
+    seizedBy_entry.grid(row=3, column=1)
+    seizedBy_combobox = ttk.Combobox(case_info_frame, values=["", "SA Herby Hancock", "SSA John Doe", "Sherlock Holmes"])
+
+
+    # dateReceived_entry = tkinter.Entry(custody_frame)
+    # dateReceived_entry.grid(row=3, column=2)
+
+    ########## tempNotes section ##########
+
+    
+    ## row 0 label (tempNotes)
+    tempNotes_label = tkinter.Label(notes_frame, text="Temp Notes")  
+    tempNotes_label.grid(row=0, column=0)
+
+    ## row 1 entry (tempNotes)
+    tempNotes_entry = tkinter.Entry(notes_frame, width = 75)
+    tempNotes_entry.grid(row=1, column=0)
+
+    ## Button
+    button = tkinter.Button(frame, text="Enter Data", command= enter_data, bg='#0052cc', fg='#ffffff')
+    # button = tkinter.Button(frame, text="Enter Data", command= enter_data_DB, bg='#0052cc', fg='#ffffff')
+
+    button.grid(row=3, column=0, sticky="news", padx=20, pady=10)
+
+    win.mainloop()
     
 def parse_log():
     '''
@@ -527,9 +861,11 @@ def parse_log():
         (imagingTool1, imagingTool2, make, model) = ('', '', '', '')
 
         if logFile.lower().endswith('.pdf'):
-            print('Can\'t process .pdf files at this time, sorry: %s' %(logFile))
+            # print('Can\'t process .pdf files at this time, sorry: %s' %(logFile))
             csv_file = ''
-            tempNotes = ("failed %s" %(logFile))
+            # tempNotes = ("failed %s" %(logFile))
+            (forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes) = pdfExtract(logFile)
+            csv_file = tempNotes.split('\\n')
         else:
             csv_file = open(logFile)
             # csv_file = open(logFile, encoding='utf8')
@@ -538,7 +874,7 @@ def parse_log():
               # csv_file = f.read()
         
         for each_line in csv_file:
-
+            print(each_line)    # temp
             if "Task:" in each_line:
                 imagingType = re.split("Task: ", each_line, 0)
                 imagingType = str(imagingType[1]).strip().lower()
@@ -660,7 +996,7 @@ def parse_log():
                 OS = each_line.replace("Vehicle ECU:", "").strip()
             elif "Android_ID=" in each_line: # Cellebrite .ufd
                 OS = ('Android %s' %(OS))
-            elif "Apple" in makeModel: # Cellebrite .ufd    # test
+            elif "Apple" in makeModel and OS != '': # Cellebrite .ufd    # test
                 OS = ('iOS %s' %(OS))
 
 
@@ -693,17 +1029,15 @@ def parse_log():
                 # serial = str(serial[1]).strip()
 
             # storageSerial    
-
-            elif "Serial Number:" in each_line: # FTKImager Image.E01.txt # fix me
-                storageSerial = each_line.replace("Drive Serial Number:", "").strip()
-            elif "Serial number:" in each_line: # Tableau imager
-                storageSerial = each_line.replace("Drive Serial number:", "").replace("Serial number:", "").strip()
-
             # elif "Drive Serial Number:" in each_line: # FTKImager Image.E01.txt # fix me
                 # storageSerial = each_line.replace("Drive Serial Number:", "").strip()
 
-            elif "S/N:" in each_line and storageSerial != '': # TableauImager
+            elif "S/N:" in each_line: # TableauImager 000ecc45 0067205e
                 storageSerial = each_line.replace("S/N:", "").strip()
+            elif "Serial Number:" in each_line and storageSerial != '': # FTKImager Image.E01.txt # fix me
+                storageSerial = each_line.replace("Drive Serial Number:", "").strip()
+            elif "Serial number:" in each_line and storageSerial == '': # Tableau imager 
+                storageSerial = each_line.replace("Drive Serial number:", "").replace("Serial number:", "").strip()
 
 
             elif "Unique Identifier:" in each_line: # MagnetAcquire image_info.txt
@@ -1164,13 +1498,13 @@ def parse_log():
         if len(imagingTool1) != 0:
             imagingTool = ('%s %s' %(imagingTool1.strip(), imagingTool2.strip()))
         
-        if len(storageSize) != 0 and storageSerial == "" and len(storageType) != 0:
-            notes = ("This had a %s model %s, %s drive. %s" %(storageSize, storageMakeModel, storageType, notes))   # test
-        elif len(storageSize) != 0 and len(storageType) != 0: 
-            notes = ("This had a %s, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
-
-        elif len(storageSize) != 0:
-            notes = ("This had a %s drive, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
+        # if len(storageSize) != 0 and storageSerial == "" and len(storageType) != 0:
+            # notes = ("This had a %s (S/N: %s) %s, %s drive. %s" %(storageMakeModel, storageSerial, storageSize, storageType, notes))   # test
+        # elif len(storageMakeModel) != 0 and len(storageSerial) != 0 and len(storageSize) != 0 and len(storageType) != 0: 
+            ##notes = ("This had a %s, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
+            # notes = ("This had a %s (S/N: %s) %s, %s drive. %s" %(storageMakeModel, storageSerial, storageSize, storageType, notes))   # test
+        # elif len(storageSize) != 0:
+            # notes = ("This had a %s drive, model %s, serial #%s, %s drive. %s" %(storageSize, storageMakeModel, storageSerial, storageType, notes))   # test
 
 
         # if len(OS) != 0 and 'The operating system was' not in notes:
@@ -1191,6 +1525,71 @@ def parse_log():
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes)
+
+def pdfExtract(filename):
+    (forensicExaminer, exhibitType, makeModel, serial, OS, phoneNumber) = ('', '', '', '', '', '')
+    (phoneIMEI, email, status, imagingType, imageMD5, imageSHA256) = ('', '', '', '', '', '')
+    (imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool) = ('', '', '', '', '', '')
+    (tempNotes, exhibit) = ('', '')
+
+    with pdfplumber.open(filename) as pdf:
+        totalpages = len(pdf.pages)
+        for i in range(0 ,totalpages):
+            page = pdf.pages[i]
+            tempNotes = ('''%s %s''') %(tempNotes, page.extract_text())
+            phoneIMEI = 'Duncan Donuts'
+            forensicExaminer = re.search(r'Examiner Name:(.*?)\n', tempNotes)
+            forensicExaminer = str(forensicExaminer[1]).strip()
+
+            exhibit = re.search(r'Evidence ID:(.*?)\n', tempNotes)
+            exhibit = str(exhibit[1]).strip()
+
+            makeModel = re.search(r'Model(.*?)\n', tempNotes)   # todo
+            makeModel = str(makeModel[1]).strip()
+
+            serial = re.search(r'Serial Number (.*?)\n', tempNotes)
+            serial = str(serial[1]).strip()
+
+            imagingTool = re.search(r'GrayKey Software: OS Version:(.*?),', tempNotes)
+            imagingTool = str(imagingTool[1]).strip()
+            imagingTool = ('GrayKey %s' %(imagingTool))
+
+            imagingStarted = re.search(r'Report generation time:(.*?)\n', tempNotes)
+            imagingStarted = str(imagingStarted[1]).strip()
+
+            # OS = re.search(r'Software Version (.*?)\n', tempNotes)  # this gets overwritten
+            # OS = str(OS[1]).strip()
+
+            # phoneNumber = re.search(r'Phone Number \+(.*?)\n', tempNotes)   # todo don't grab +
+            # phoneNumber = str(phoneNumber[1]).strip()
+            
+            try:
+                phoneIMEI = re.search(r'IMEI(.*?)\n', tempNotes)
+                phoneIMEI = str(phoneIMEI[1]).strip()
+            except:
+                pass
+
+            # try:
+                # email = re.search(r'Accounts (.*?)\n', tempNotes)
+                # email = str(email[1]).strip()
+            # except:
+                # pass
+            
+            # try:
+                # evidenceDataSize = re.search(r'Extraction size(.*?)\n', tempNotes)
+                # evidenceDataSize = evidenceDataSize
+            # except:
+                # pass
+            # imageSHA256 = re.search(r'SHA256 (.*?)\n', tempNotes)
+            # imageSHA256 = str(imageSHA256[1]).strip()
+            
+            # imageMD5 = re.search(r'MD5 (.*?)\n', tempNotes)
+            # imageMD5 = str(imageMD5[1]).strip()
+            
+                    
+        
+    return(forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes)
+
 
 def pdf_fill(input_pdf_path, output_pdf_path, data_dict):   
     '''
@@ -1232,8 +1631,8 @@ def read_text():
     (style) = ('')
     csv_file = open(filename, encoding='utf8') 
     
-    outputFile = "report.txt"
-    output = open(outputFile, 'w+')
+    outputFileXlsx = "report.txt"
+    output = open(outputFileXlsx, 'w+')
     (subject, vowel) = ('test', 'aeiou')
 
     footer = ('''
@@ -1338,7 +1737,7 @@ Evidence:
             
             # Summary writer, put a blank space or write your own summary if you don't want one auto generated
             if summary == '' and dateSeized != '' and forensicExaminer != '' and seizureAddress != '' and agency != "ISP":
-                summary = ('On %s forensic examiner %s attended the warrant at %s.' %(dateSeized, forensicExaminer, seizureAddress))
+                summary = ('On %s %s attended the warrant at %s.' %(dateSeized, forensicExaminer, seizureAddress))
             elif summary != '':
                 summary == summary
             # else:
@@ -1357,7 +1756,7 @@ Activity Number:                             Date of Activity:
 ____________________________________________________________________________________
 ____________________________________________________________________________________
 Subject of Activity:                         Case Agent:             Typed by:
-%s %s                           %s    %s
+%s %s                               %s        %s
 %s
 ____________________________________________________________________________________
 
@@ -1461,8 +1860,14 @@ Exhibit %s
 
         if len(storageType) != 0 and storageMakeModel != '' and storageSerial != '' and storageSize != '': 
             report = ("%s on the %s (S/N: %s) %s %s drive." %(report, storageMakeModel, storageSerial, storageSize, storageType))  
-        # else: 
-            # report = ("%s." %(report))  
+        elif storageMakeModel != '' and storageSerial != '' and storageSize != '': 
+            report = ("%s on the %s (S/N: %s) %s drive." %(report, storageMakeModel, storageSerial, storageSize))  
+        elif storageMakeModel != '' and storageSize != '': 
+            report = ("%s on the %s %s drive." %(report, storageMakeModel, storageSize))  
+
+
+        else: 
+            report = ("%s." %(report))  
     
         # image hash
         if len(imageMD5) != 0 and exportLocation != '' and len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
@@ -1481,13 +1886,19 @@ Exhibit %s
 
         # add username and password to report
         if len(userName) != 0 and userPwd != '' and exhibitType != '': 
-            report = ("%s \"%s\" with a password of \"%s\" was the login to this %s." %(report, userName, userPwd, exhibitType)) 
+            report = ("%s \"%s\" with a password of \"%s\" was a login to this %s." %(report, userName, userPwd, exhibitType)) 
         elif len(userName) != 0 and userPwd != '': 
-            report = ("%s \"%s\" with a password of \"%s\" was the login to this device." %(report, userName, userPwd)) 
+            report = ("%s \"%s\" with a password of \"%s\" was a login to this device." %(report, userName, userPwd)) 
 
         # add email / password to report
         if len(email) != 0 and emailPwd != '' and exhibitType != '':  
-            report = ("%s \"%s\" with a password of \"%s\" was an email configured on this %s." %(report, email, userPwd, exhibitType)) 
+            report = ("%s \"%s\" with a password of \"%s\" was an email configured on this %s." %(report, email, emailPwd, exhibitType)) 
+        elif len(email) != 0 and exhibitType != '':  
+            if " and " in email:
+                report = ("%s %s were email addresses configured on this %s." %(report, email, exhibitType)) 
+            else:
+                report = ("%s %s was an email configured on this %s." %(report, email, exhibitType)) 
+
         elif len(email) != 0 and emailPwd != '':  
             report = ("%s \"%s\" with a password of \"%s\" was an email configured on this device." %(report, email, userPwd)) 
  
@@ -1502,15 +1913,18 @@ Exhibit %s
             report = ("%s A search for relevant files was made and no files were found." %(report.rstrip()))
 
         # evidence return
-        if "2" in removalDate and "returned" in storageLocation:
+        if "2" in removalDate and "eturned" in storageLocation: # returned or Returned
             
             if " " in removalDate:
                 removalDate2 = removalDate.split(' ')[0]
             else:
                 removalDate2 = removalDate
-            report = ("%s This item was returned to the owner on %s." %(report, removalDate2))  # test
 
-        
+            if exhibitType != '':
+                report = ("%s This %s was returned to the owner on %s." %(report, exhibitType, removalDate2)) # test
+            else:
+                report = ("%s This item was returned to the owner on %s." %(report, removalDate2))  
+    
         report = report.replace("    , was received. ", "    ")
         report = report.replace("This was a DVR system was not imaged.","This was a DVR system and was not imaged.")
         report = report.replace("Digital Forensic Examiner Casey Karaffa did not conduct a forensic extraction.","This was not imaged.")
@@ -1519,7 +1933,9 @@ Exhibit %s
         notes = notes.replace("This had a  drive, model , serial # .","")  # fixme
         report = report.replace(", serial # .",".") # fixme 
         notes = notes.replace(", serial # .",".") # fixme 
-        
+        if storageSerial == "000ecc45 0067205e":   # fixme  
+            storageSerial = ' '
+
         print(report)
         output.write(report)
         # body = ("%s\n%s" %(body, report))
@@ -1722,11 +2138,29 @@ def write_sticker():
 
     style = workbook.add_format()
     (header, reportStatus, date) = ('', '', '<insert date here>')
-    # csv_file = open(filename)
+    (headers) = []
     csv_file = open(filename, encoding='utf8')
-    outputFile = "sticker.txt"
-    output = open(outputFile, 'w+')
+    outputFileXlsx = "sticker.txt"
+    output = open(outputFileXlsx, 'w+')
 
+    if not os.path.exists('Avery2x4Labels.docx'):
+        print('you are missing Avery2x4Labels.docx.... so Im making a lame version')
+        # Create a new Word document
+        document = docx.Document()
+        # Set the side margins to 0.25 inches
+        section = document.sections[0]
+        section.margin_left = docx.shared.Inches(0.25)
+        section.margin_right = docx.shared.Inches(0.25)
+        table = document.add_table(rows=5, cols=3)
+    else:
+        document = docx.Document('Avery2x4Labels.docx')
+        # Find the first table in the document
+        table = document.tables[0]
+
+    # Change the default font size for the document
+    for style in document.styles:
+        style.font.size = docx.shared.Pt(14)
+    
 
     # footer = '''  
 
@@ -1758,7 +2192,7 @@ All digital images obtained pursuant to this investigation will be maintained on
             print('_____________%s is from a phone extract') %(phoneNumber) #temp
 
         (color) = ('white')
-        style.set_bg_color('white')  # test
+        # style.set_bg_color('white')  # test
         each_line = each_line +  "\t" * 27
         each_line = each_line.split('\t')  # splits by tabs
 
@@ -1832,17 +2266,28 @@ All digital images obtained pursuant to this investigation will be maintained on
             qrCode = each_line[62]
             vaultTotal = each_line[63]
             tempNotes = each_line[64]
-           
-        header = ('''Case#: %s  Ex: %s
-CaseName: %s
-Subject: %s
-Make: %s 
-Serial: %s
-Agent: %s
-%s
-''') %(caseNumber, exhibit, caseName, subjectBusinessName, makeModel, serial, caseAgent, status)
-        header = header.strip()
 
+        if status == 'Imaged':    
+            header = ('''   Case#: %s      Ex: %s
+   CaseName: %s
+   Subject: %s
+   Make: %s 
+   Serial: %s
+   Agent: %s
+   %s
+''') %(caseNumber, exhibit, caseName, subjectBusinessName, makeModel, serial, caseAgent, status)
+        else:
+            header = ('''  Case#: %s      Ex: %s
+  CaseName: %s
+  Subject: %s
+  Make: %s 
+  Serial: %s
+  Agent: %s
+''') %(caseNumber, exhibit, caseName, subjectBusinessName, makeModel, serial, caseAgent)
+
+        header = header.strip()
+        headers.append(header)
+        
 # write it one line at at time. If phone isn't blank, include it
 
         # Write excel
@@ -1856,8 +2301,23 @@ Agent: %s
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes)
-                
+        
+        # write to stickers.txt
         output.write(header+'\n\n')
+        
+    # write to stickers.docx
+    l = 0
+    for i in range(5):
+        try:
+            cell = table.cell(i, 0)
+            cell.text = headers[l]
+            l += 1
+            cell = table.cell(i, 2)
+            cell.text = headers[l]
+            l += 1
+        except:
+            pass
+    document.save('stickers.docx')
 
 
 def usage():
@@ -1870,6 +2330,7 @@ def usage():
     print("\n\tinsert your info into input.txt")
     print("\n\t or insert logs into Logs folder")
     print("\nExample:")
+    print("\t" + file + " -g     \t\t")
     print("\t" + file + " -l     \t\t")
     print("\t" + file + " -l -d     \t\t")
     print("\t" + file + " -L     \t\t")
@@ -1885,7 +2346,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+2.7.2 - sticker maker prints out avery 2 x 4" labels now
+2.7.0 - added -g for GUI interface for data enty
+2.6.7 - fixed Tableau storageSerial being the Tableau serial number (I think)
 2.6.5 - changed report writing output and summary writer (add a space in summary if you don't want it to write anything.)
 2.6.2 - reportStatus gets colored if it's marked Finalized, Draft or Y
 2.6.1 - if you change agency, agencyFull and divisionFull it writes a more customized report
@@ -1933,6 +2396,9 @@ change the agency, agencyFull, divisionFull to your agencies info
 
 if you have log output (like GrayKey) you want parsed, send it my way. As long as there is a key:value pair on one line, I can do it.
 If you want your agencies forms filled, you just need to insert these variables into your pdf.
+
+
+“black iPhone 11 currently stored as item number x under case number 22-xxxx which was located on master bedroom nightstand….”
 
 """
 

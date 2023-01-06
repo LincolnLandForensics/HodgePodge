@@ -1,4 +1,5 @@
 hashlib
 pdfrw
+openpyxl
 python-docx
 xlsxwriter
