@@ -1,5 +1,8 @@
-hashlib
+docx
+xlrd
 pdfrw
+hashlib
 openpyxl
 python-docx
 xlsxwriter
+pdfplumber
