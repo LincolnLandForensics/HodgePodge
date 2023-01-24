@@ -48,6 +48,9 @@ python ForensicsReporter.py -r
 ```
 ![Activity Report Example](images/ActivityReportExample.png)
 
+![Activity Report Example](images/CheckList.png)
+
+
 or do -r -c for case notes output (and activity report)
 ```
 python ForensicsReporter.py -r -c
