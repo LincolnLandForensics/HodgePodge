@@ -5,7 +5,7 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" 
+agency = "MWW" # ISP, MWW
 global agencyFull
 agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
@@ -64,7 +64,7 @@ regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 
 author = 'LincolnLandForensics'
 description = "convert imaging logs to xlsx, print stickers and write activity reports/ case notes"
-version = '2.7.2'
+version = '2.7.3'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -75,6 +75,11 @@ def main():
     
     global Row
     Row = 1  # defines arguments
+    global Row2
+    Row2 = 7  #     
+    global caseMain
+    caseMain = ''    
+    
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='default is input.txt', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
@@ -198,6 +203,9 @@ def create_xlsx():  # BCI output (Default)
     workbook = xlsxwriter.Workbook(spreadsheet)
     global Sheet1
     Sheet1 = workbook.add_worksheet('Forensics')
+    global Sheet2   
+    Sheet2 = workbook.add_worksheet('Checklist')    # .set_landscape()
+    
     header_format = workbook.add_format({'bold': True, 'border': 1})
     header_formatCase = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#FFc000'})   # orange Case items
     header_formatDescription = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'yellow'})   # yellow Description items
@@ -206,8 +214,22 @@ def create_xlsx():  # BCI output (Default)
     header_formatAcquisition = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#66CCFF'})   # blue Acquisition items
     header_formatExtra = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#FF99FF'})   # pink Extra items
 
+    header_checklist = workbook.add_format({'bold': True, 'border': 1})
+    header_checklist.set_rotation(45)
+
+    header_checklist2 = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#FFc000'})
+    header_checklist2.set_rotation(45)
+
+
+    global cell_format
+    cell_format = workbook.add_format({'bold': False, 'border': 1})
+
+
     Sheet1.freeze_panes(1, 2)  # Freeze cells
     Sheet1.set_selection('B2')
+    
+    Sheet2.freeze_panes(7, 1)  # Freeze cells
+    Sheet2.set_selection('D2')    
 
     # Excel column width
     Sheet1.set_column(0, 0, 15) # caseNumber
@@ -224,8 +246,8 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(11, 11, 30) # makeModel
     Sheet1.set_column(12, 12, 17) # serial
     Sheet1.set_column(13, 13, 15) # OS
-    Sheet1.set_column(14, 14, 16) # phoneNumber
-    Sheet1.set_column(15, 15, 15) # phoneIMEI
+    Sheet1.set_column(14, 14, 14) # phoneNumber
+    Sheet1.set_column(15, 15, 16) # phoneIMEI
     Sheet1.set_column(16, 16, 15) # mobileCarrier
     Sheet1.set_column(17, 17, 16) # biosTime
     Sheet1.set_column(18, 18, 16) # currentTime
@@ -236,9 +258,9 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(23, 23, 12) # userPwd
     Sheet1.set_column(24, 24, 20) # email
     Sheet1.set_column(25, 25, 12) # emailPwd
-    Sheet1.set_column(26, 26, 16) # ip
+    Sheet1.set_column(26, 26, 14) # ip
     Sheet1.set_column(27, 27, 15) # seizureAddress
-    Sheet1.set_column(28, 28, 13) # seizureRoom
+    Sheet1.set_column(28, 28, 12) # seizureRoom
     Sheet1.set_column(29, 29, 16) # dateSeized
     Sheet1.set_column(30, 30, 12) # seizedBy
     Sheet1.set_column(31, 31, 16) # dateReceived
@@ -275,6 +297,24 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.set_column(62, 62, 15) # qrCode
     Sheet1.set_column(63, 63, 15) # vaultTotal
     Sheet1.set_column(64, 64, 40) # tempNotes
+
+    Sheet2.set_column(0, 0, 5) # exhibit
+    Sheet2.set_column(1, 1, 7) # type
+    Sheet2.set_column(2, 2, 3) # 
+    Sheet2.set_column(3, 3, 3) # 
+    Sheet2.set_column(4, 4, 3) # 
+    Sheet2.set_column(5, 5, 3) # 
+    Sheet2.set_column(6, 6, 3) # 
+    Sheet2.set_column(7, 7, 3) # 
+    Sheet2.set_column(8, 8, 3) # 
+    Sheet2.set_column(9, 9, 3) # 
+    Sheet2.set_column(10, 10, 3) # 
+    Sheet2.set_column(11, 11, 3) # 
+    Sheet2.set_column(12, 12, 3) 
+    Sheet2.set_column(13, 13, 9) 
+    Sheet2.set_column(14, 14, 24) # case details
+    
+    Sheet2.set_row(6, 100)  # Set the height of Row 1 to 100.
 
     # hidden columns
     Sheet1.set_column(57, 57, None, None, {'hidden': 1}) # caseNumberOrig
@@ -352,6 +392,27 @@ def create_xlsx():  # BCI output (Default)
     Sheet1.write(0, 62, 'qrCode', header_formatExtra)
     Sheet1.write(0, 63, 'vaultTotal', header_formatExtra) # redundant with exhibit
     Sheet1.write(0, 64, 'tempNotes', header_format)
+
+    Sheet2.write(6, 0, 'exhibit#', header_checklist)
+    Sheet2.write(6, 1, 'type', header_checklist)
+    Sheet2.write(6, 2, 'evidence sheet (in)', header_checklist2)
+    Sheet2.write(6, 3, 'evidence sheet (out)', header_checklist2)
+    Sheet2.write(6, 4, 'label (all separate pieces)', header_checklist)
+    Sheet2.write(6, 5, 'imaged', header_checklist)
+    Sheet2.write(6, 6, 'image backup', header_checklist)
+    Sheet2.write(6, 7, 'analyzed', header_checklist)
+    Sheet2.write(6, 8, 'report (sign, print, forward)', header_checklist2)
+    Sheet2.write(6, 9, 'case notes printed', header_checklist2)
+    Sheet2.write(6, 10, 'digital evidence', header_checklist)
+    Sheet2.write(6, 11, 'digital evidence backup', header_checklist)
+    Sheet2.write(6, 12, 'digital evidence to agent', header_checklist)
+
+    Sheet2.write(1, 13, 'case#', header_format)
+    Sheet2.write(2, 13, 'caseName', header_format)
+    Sheet2.write(3, 13, 'subject', header_format)
+    Sheet2.write(4, 13, 'agent', header_format)
+    Sheet2.write(5, 13, 'forensics', header_format)
+
 
 def enter_data():
     # accepted = accept_var.get()
@@ -2025,7 +2086,20 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     write out_log_.xlsx
     '''
     global Row
-
+    global Row2
+    global caseMain
+    
+    # if caseMain == '':
+    if Row == 1:
+    
+        caseMain = caseNumber
+        print('caseMain = %s' %(caseMain))
+    elif caseMain != caseNumber:
+        caseMain = caseNumber
+        print('hello world')    # temp
+        Row2 += 2
+        print('caseMain 2 = %s' %(caseMain))
+        
     Sheet1.write_string(Row, 0, caseNumber)
     Sheet1.write_string(Row, 1, exhibit)
     Sheet1.write_string(Row, 2, caseName)
@@ -2102,9 +2176,54 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     Sheet1.write_string(Row, 62, qrCode)
     Sheet1.write_string(Row, 63, vaultTotal)
     Sheet1.write_string(Row, 64, tempNotes)
-     
-    Row += 1
 
+    Sheet2.write_string(1, 14, caseNumber, cell_format)
+    Sheet2.write_string(2, 14, caseName, cell_format)
+    Sheet2.write_string(3, 14, subjectBusinessName, cell_format)
+    Sheet2.write_string(4, 14, caseAgent, cell_format)
+    Sheet2.write_string(5, 14, forensicExaminer, cell_format)
+
+    Sheet2.write_string(Row2, 0, exhibit, cell_format)
+    Sheet2.write_string(Row2, 1, exhibitType, cell_format)
+    if dateReceived != "":
+        Sheet2.write_string(Row2, 2, '..', cell_format)    
+    else:
+        Sheet2.write_string(Row2, 2, '', cell_format)    
+
+    if removalDate != "":
+        Sheet2.write_string(Row2, 3, '..', cell_format)    
+    else:
+        Sheet2.write_string(Row2, 3, '', cell_format)    
+
+    
+    Sheet2.write_string(Row2, 4, '', cell_format)    
+
+    if status == "Imaged":
+        Sheet2.write_string(Row2, 5, 'Y', cell_format)
+    elif status == "Not Imaged":         
+        Sheet2.write_string(Row2, 5, 'N', cell_format)
+    else:
+        Sheet2.write_string(Row2, 5, '', cell_format)
+    Sheet2.write_string(Row2, 6, '', cell_format)    
+
+    if analysisTool != "" and exportedEvidence != "":
+        Sheet2.write_string(Row2, 7, 'Y', cell_format)
+    else:
+        Sheet2.write_string(Row2, 7, '', cell_format)        
+    if reportStatus == "Finalized":
+        Sheet2.write_string(Row2, 8, 'Y', cell_format)
+    else:
+        Sheet2.write_string(Row2, 8, '', cell_format)
+    Sheet2.write_string(Row2, 9, '', cell_format)    
+    Sheet2.write_string(Row2, 10, exportedEvidence, cell_format)    
+    Sheet2.write_string(Row2, 11, '', cell_format)    
+    Sheet2.write_string(Row2, 12, '', cell_format)    
+    Sheet2.write_string(Row2, 14, caseNumber, cell_format) 
+
+
+    Row += 1
+    Row2 += 1
+    
 def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer): 
     '''
     write ActivityReport_%s__%s_%s_%s_DRAFT.docx
@@ -2346,6 +2465,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+2.7.3 - added checklist to xlsx
 2.7.2 - sticker maker prints out avery 2 x 4" labels now
 2.7.0 - added -g for GUI interface for data enty
 2.6.7 - fixed Tableau storageSerial being the Tableau serial number (I think)
@@ -2371,6 +2491,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+fix: forensicsreporter.exe -h blows an unhandled exception in script line 2344
 fix serial and storageSerial for TableauImager_21-41803200001_Ex1_Seagate3TBHDD.txt 
 
 add a brother label printer output to xlsx with qrCode
