@@ -1,8 +1,7 @@
 docx
-xlrd
 pdfrw
-hashlib
 openpyxl
+pandas
 python-docx
-xlsxwriter
 pdfplumber
+tkinter
