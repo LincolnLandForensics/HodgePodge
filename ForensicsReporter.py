@@ -1,45 +1,50 @@
 #!/usr/bin/python
 # coding: utf-8
 
+
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
+author = 'LincolnLandForensics'
+description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
+version = '3.0.1'
+
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 try:
     import docx # pip install python-docx
     import pdfrw    # pip install pdfrw
     import openpyxl # pip install openpyxl
+    import tkinter  # -d
     import pdfplumber   # pip install pdfplumber
     import pandas as pd # new module
 except TypeError as error:
-    print(error)
-    print('install missing modules:    pip install -r requirements_ForensicsReporter.txt')
+    print(f'{error}')
+    print(f'install missing modules:    pip install -r requirements_ForensicsReporter.txt')
     exit()
 import re
 import os
 import sys  
-# import hashlib # pip install hashlib ( might have to hand load the module
 import time # for wait line
 import argparse  # for menu system
-from datetime import date
+from datetime import date, datetime
 from subprocess import call
-from datetime import datetime
+# from datetime import datetime
 
 from tkinter import *   # -t  # Frame is not defined if this is missing
-import tkinter  # -d
-from openpyxl import Workbook
-from openpyxl.styles import PatternFill, Font, Border, Side, Alignment
-# from openpyxl.worksheet.page import PageSetup
-
 from tkinter import ttk # -d
 from tkinter import messagebox # -d
+
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Font, Border, Side, Alignment
 
 d = datetime.today()
 
@@ -61,11 +66,32 @@ regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/
 regex_sha1 = re.compile(r'^([a-fA-F\d]{40})$')    #regex_sha1
 regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
+# Colorize section
+global color_red
+global color_yellow
+global color_green
+global color_blue
+global color_purple
+global color_reset
 
-author = 'LincolnLandForensics'
-description = "convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '2.9.3'
+if sys.version_info > (3, 7, 9):
+    import colorama # pip install colorama
+    from colorama import Fore, Back, Style  
+    print(f'{Back.BLACK}') # make sure background is black
+    color_red = Fore.RED
+    color_yellow = Fore.YELLOW
+    color_green = Fore.GREEN
+    color_blue = Fore.BLUE
+    color_purple = Fore.MAGENTA
+    color_reset = Style.RESET_ALL
+else:
+    color_red = ''
+    color_yellow = ''
+    color_green = ''
+    color_blue = ''
+    color_purple = ''
+    color_reset = ''
+
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -164,6 +190,7 @@ def main():
 
     if not any([args.guidataentry, args.logparse, args.logs_parse, args.report, args.caseNotes, args.checklist, args.sticker]):
         parser.print_help()
+        banner_print()
         usage()
         return 0
 
@@ -175,6 +202,15 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+def banner_print():
+    art = """  
+  _   _   _   _   _   _   _   _   _     _   _   _   _   _   _   _   _  
+ / \ / \ / \ / \ / \ / \ / \ / \ / \   / \ / \ / \ / \ / \ / \ / \ / \ 
+( F | o | r | e | n | s | i | c | s ) ( R | e | p | o | r | t | e | r )
+ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/   \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ 
+    """
+    print(art)
+    
 def create_docx():
     '''
     if there isn't a template to read, 
@@ -206,7 +242,7 @@ def create_docx():
     # p = document.add_paragraph('%s\t\t\t\t%s\t\t%s' %(subjectBusinessName, caseAgent, forensicExaminer))
 
     document.save(output_docx)   # was outputFileXlsx
-    print('created ', output_docx)
+    print(f'{color_green}created {output_docx}{color_reset}')       
     return document
     
 
@@ -239,7 +275,7 @@ def enter_data():
             forensicExaminer = forensicExaminer_combobox.get()
             
             # Description
-            exhibit = exhibit_entry.get()
+            exhibit = str(exhibit_entry.get())
             makeModel = makeModel_entry.get()
             serial = serial_entry.get()
             exhibitType = exhibitType_combobox.get()
@@ -261,15 +297,13 @@ def enter_data():
 
 
             # print out sticker format
-            print("Case:", caseNumber, "Ex:", exhibit)
-            print("CaseName:", caseName)
-            print("Subject:", subjectBusinessName)
-            print("Make:", makeModel)
-            print("Serial:", serial)
-            print("Agent:", caseAgent)
-            # if status != '':
-                # print(status)
-            print("------------------------")
+            print(f'Case: {caseNumber} Ex:{exhibit}')
+            print(f'CaseName: {caseName}')
+            print(f'Subject: {subjectBusinessName}')
+            print(f'Make: {makeModel}')
+            print(f'Serial: {serial}')
+            print(f'Agent: {caseAgent}')
+            print(f'------------------------') 
 
             filepath = "log_case.xlsx"
             
@@ -419,7 +453,7 @@ def fix_date2(date):
     31/07/2022 11:48:57 (-5)
  
     '''
-    print('fix_date2')  # temp
+    print(f'{color_red}fix_date2{color_reset}')  
     (mo, dy, yr, tm) = ('', '', '', '')
     date = date.strip()
 
@@ -446,8 +480,6 @@ def fix_date3(date):
     yr = tempDate[2]
 
     date = ('%s/%s/%s %s' %(mo, dy, yr, tm)).lstrip('0')  # 3/4/2021 9:17
-    print('fix_date_, %s %s' %(date, tempDate))  # temp
-
     return date
 
 def guiDataEntry():
@@ -647,7 +679,7 @@ def guiDataEntry():
     button.grid(row=3, column=0, sticky="news", padx=20, pady=10)
 
     win.mainloop()
-    print(f"Data written to log_case.xlsx")
+    print(f'{color_green}Data written to log_case.xlsx{color_reset}')
     
 def parse_log():
     '''
@@ -663,21 +695,29 @@ def parse_log():
             exhibit = str(input("exhibit : ")).strip()
         logsList = [filename]
     elif log_type == 'folder':
-        print('Reading logs from %s folder' %(logsFolder))
+        print('')
+        
         if inputDetails == "yes":
             caseNumber = str(input("caseNumber : ")).strip()
             caseName = str(input("caseName : ")).strip()
-        logsList = os.listdir(logsFolder)
+
+        if not os.path.exists(logsFolder):
+            print(f'{color_red}{logsFolder} folder does not exist{color_reset}')
+            print(f'{color_yellow}create a {logsFolder} folder and fill it with logs to parse{color_reset}')            
+            exit() 
+        else:
+                logsList = os.listdir(logsFolder)
+
         logsList2 = []
         for logFile in logsList:
             logFile = ("%s%s" %(logsFolder, logFile))
             logsList2.append(logFile)
-            # print('logsFolder = %s  logFile = %s   logsList = %s    logsList2 = %s' %(logsFolder, logFile, logsList, logsList2)) # temp
         logsList = logsList2
 
         # read section
     for logFile in logsList:
-        print('<<<<<< reading %s >>>>>>' %(logFile))
+        print(f'{color_green}Reading {logFile}{color_reset}')         
+
         # style = workbook.add_format()
         # style = Workbook.add_format()        
         (header, reportStatus, date) = ('', '', '<insert date here>')
@@ -701,19 +741,19 @@ def parse_log():
         (imagingTool1, imagingTool2, make, model) = ('', '', '', '')
 
         if logFile.lower().endswith('.pdf'):
-            # print('Can\'t process .pdf files at this time, sorry: %s' %(logFile))
+            # print(f'Cant process .pdf files at this time, sorry: {logFile}')
             csv_file = ''
-            # tempNotes = ("failed %s" %(logFile))
             (forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes) = pdfExtract(logFile)
             csv_file = tempNotes.split('\\n')
-        # elif not os.path.exists(logFile):
-            # print(logFile, "does not exist")
-            # exit()
         else:
-            csv_file = open(logFile)
+            if not os.path.exists(logFile):
+                print(f'{color_red}{logFile} does not exist{color_reset}')
+                # exit() 
+            else:
+                csv_file = open(logFile)
         
         for each_line in csv_file:
-            print(each_line)    # temp
+            # print(f'{color_yellow}{each_line}{color_reset}')    # temp
             if "Task:" in each_line:
                 imagingType = re.split("Task: ", each_line, 0)
                 imagingType = str(imagingType[1]).strip().lower()
@@ -888,6 +928,9 @@ def parse_log():
                 phoneIMEI = each_line.replace("IMEI:", "").strip()
 
             elif "IMEI1=" in each_line: # CELLEBRITEPREMIUM EXTRACTION_FFS.TXT
+                phoneIMEI = each_line.replace("IMEI1=", "").strip()
+
+            elif "IMEI " in each_line: # GrayKey_R5CR8147V0A.pdf
                 phoneIMEI = each_line.replace("IMEI1=", "").strip()
 
             # phoneNumber
@@ -1139,7 +1182,11 @@ def parse_log():
                 status = "Imaged"
             elif "MD5 hash calculated over data:" in each_line: # SumuriReconImager.txt
                 imageMD5 = each_line.replace("MD5 hash calculated over data:", "").strip()
-                
+
+            elif "MD5 " in each_line:    # GrayKey_R5CR8147V0A.pdf
+                imageMD5 = each_line.lstrip("MD5 ")
+                print(f'{color_yellow}<<<<<<<<<<<   testing  >>>>>>>>>>>>>{color_reset}')    # task
+
             # imageSHA1
             elif "Disk SHA1: " in each_line:    # Tableau
                 imageSHA1 = re.split("Disk SHA1: ", each_line, 0)
@@ -1289,7 +1336,6 @@ def parse_log():
                 imagingFinished = each_line.replace("EndTime=", "").strip()
                 status = ('Imaged')
                 imagingFinished = fix_date3(imagingFinished)
-                print('imagingStarted = %s' %(imagingFinished))   # temp
                 # try:
                     # imagingFinished = fix_date(imagingFinished)
                 # except:pass    
@@ -1353,8 +1399,16 @@ def parse_log():
         if status == 'Not imaged':
             notes = ("%s This drive could not be imaged." %(notes))
 
-        print('%s\t%s\t%s\t\t\t%s\t\t\t%s\t%s\t%s\t\t%s\t%s\t%s' %(caseNumber, exhibit, caseName, subjectBusinessName, forensicExaminer, exhibitType, makeModel, serial, OS, phoneNumber))
-
+        print(f'''
+        caseNumber = {caseNumber}
+        subjectBusinessName = {subjectBusinessName}
+        forensicExaminer = {forensicExaminer}
+        exhibitType = {exhibitType}
+        makeModel = {makeModel}
+        serial = {serial}
+        OS = {OS}
+        phoneNumber = {phoneNumber}\n
+        ''')
         write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
             forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
             phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
@@ -1365,7 +1419,7 @@ def parse_log():
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes, hostname, phoneIMEI2)
-    print('Exporting logs as ', spreadsheet)     
+    print(f'{color_green}Exporting logs as {spreadsheet}{color_reset}')    
         
 def pdfExtract(filename):
     (forensicExaminer, exhibitType, makeModel, serial, OS, phoneNumber) = ('', '', '', '', '', '')
@@ -1468,14 +1522,13 @@ def read_xlsx():
     sheet_name = "Forensics"
 
     if not os.path.exists(input_file):
-        print(input_file, "does not exist")
+        print(f'{color_red}{input_file} does not exist{color_reset}')
         exit() 
     else:
         dftemp = pd.read_excel(input_file, sheet_name=sheet_name)
         df = dftemp.fillna('')  # Replace NaN with empty string
  
-        print(f"reading {input_file}")
-
+        print(f'{color_green}Reading {input_file}{color_reset}') 
     (header, reportStatus, date) = ('', '', '<insert date here>')
     (body, executiveSummary, evidenceBlurb) = ('', '', '')
     (style) = ('')
@@ -1493,6 +1546,7 @@ Evidence:
     for index, row in df.iterrows():
         caseNumber = str(row['caseNumber'])
         exhibit = str(row['exhibit'])
+        exhibit = exhibit.rstrip('.0')
         caseName = str(row['caseName'])
         subjectBusinessName = str(row['subjectBusinessName'])
         caseType = str(row['caseType'])
@@ -1787,6 +1841,7 @@ Exhibit %s
             vaultTotal, tempNotes, hostname, phoneIMEI2)
 
         if caseNotesStatus == 'True':
+            print(f'exhibit temp = {exhibit}')  # temp
             my_dict = dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
             forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
             phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
@@ -1949,10 +2004,12 @@ def write_checklist():  # panda edition
     # df = pd.read_excel(input_file)
     
     if not os.path.exists(input_file):
-        print(input_file, "does not exist")
+        print(f'{color_red}{input_file} does not exist{color_reset}')
+        
         exit()    
     else:
-        print('reading ', input_file)
+        print(f'{color_green}Reading {input_file}{color_reset}')
+        
         dftemp = pd.read_excel(input_file, sheet_name=sheet_name)
         df = dftemp.fillna('')  # Replace NaN with empty string
 
@@ -1963,16 +2020,15 @@ def write_checklist():  # panda edition
         (exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup) = ('', '', '', '', '', '')
         (analyzed, report, caseNotes, de, deBackup, deAgent) = ('', '', '', '', '', '')
         (memory, triage, edd, password, kape, photo) = ('', '', '', '', '', '')
-        (OS, ipIMEI, host, arsenal, ip, phoneIMEI) = ('', '', '', '', '', '')
+        (OS, ipIMEI, hostname, arsenal, ip, phoneIMEI) = ('', '', '', '', '', '')
         (dateReceived, exportedEvidence, analysisTool) = ('', '', '')
         caseNumber = row['caseNumber'] 
         caseName = row['caseName']
         subjectBusinessName = row['subjectBusinessName']
         caseAgent = row['caseAgent']
         forensicExaminer = row['forensicExaminer'] 
-        exhibit = row['exhibit']
+        exhibit = str(row['exhibit']).rstrip('.0')
         exhibitType = str(row['exhibitType'])
-
         if "nan" in exhibitType.lower():
             exhibitType = ''
         sheetIn = str(row['dateReceived'])
@@ -1984,7 +2040,7 @@ def write_checklist():  # panda edition
         sheetOut = str(row['removalDate'])
         if "nan" in sheetOut:
             sheetOut = "" 
-            print('nan exists')        
+            print(f'{color_red}nan exists{color_reset}')
         elif sheetOut != "":
             sheetOut = ".."
        
@@ -2060,13 +2116,13 @@ def write_checklist():  # panda edition
             ipIMEI = 'Y' 
 
         try:
-            host = str(row['hostname'])
-            if host == 'nan':
-                host = ''
-            if len(host) >=2:
-                host = 'Y' 
-            if host != "":
-                host = 'Y' 
+            hostname = str(row['hostname'])
+            if hostname == 'nan':
+                hostname = ''
+            if len(hostname) >=2:
+                hostname = 'Y' 
+            if hostname != "":
+                hostname = 'Y' 
         except TypeError as error:
             print(error)
     
@@ -2081,7 +2137,7 @@ def write_checklist():  # panda edition
         cell = checklist_sheet.cell(row=5, column=15, value=forensicExaminer)
 
         # Define your data values
-        data_values = [exhibit, exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup, analyzed, report, caseNotes, de, deBackup, deAgent, "", caseNumber, "", memory, triage, edd, password, kape, photo, OS, ipIMEI, host, arsenal]
+        data_values = [exhibit, exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup, analyzed, report, caseNotes, de, deBackup, deAgent, "", caseNumber, "", memory, triage, edd, password, kape, photo, OS, ipIMEI, hostname, arsenal]
 
         # Find the next available row index
         next_row = checklist_sheet.max_row + 1
@@ -2091,8 +2147,9 @@ def write_checklist():  # panda edition
             cell = checklist_sheet.cell(row=next_row, column=col, value=value)
             cell.border = cell_border
 
-        # checklist_sheet.append([exhibit, exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup, analyzed, report, caseNotes, de, deBackup, deAgent, "", "", "", memory, triage, edd, password, kape, photo, OS, ipIMEI, host, arsenal])
-    print(f"Data written to {output_file}")
+        # checklist_sheet.append([exhibit, exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup, analyzed, report, caseNotes, de, deBackup, deAgent, "", "", "", memory, triage, edd, password, kape, photo, OS, ipIMEI, hostname, arsenal])
+    print(f'{color_green}Data written to {output_file}{color_reset}')    
+
     # Save the workbook to the output file
     book.save(output_file)
 
@@ -2277,7 +2334,6 @@ def create_and_write_xlsx():
     '''
     Creates an xlsx database file with formatting and writes data to it
     '''
-    print('hello world this is a test') # temp
     # DataFrame to store the data
     data = {
         'caseNumber': [],
@@ -2504,7 +2560,8 @@ def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, 
     try:
         document = docx.Document("Blank_ActivityReport.docx") # read in the template if it exists
     except:
-        print("you are missing Blank_ActivityReport.docx")
+        print(f'{color_red}You are missing Blank_ActivityReport.docx{color_reset}')        
+
         document = create_docx()   # create a basic template file
     
     if executiveSummary != '':
@@ -2516,10 +2573,10 @@ def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, 
         document.add_paragraph(footer) 
     
     document.save(output_docx)   # print output to the new file
-    
-    print('your activity report is saved as %s' %(output_docx))   # temp
 
-def write_sticker():  # panda edition
+    print(f'{color_green}Activity report written to {output_docx}{color_reset}')        
+
+def write_sticker():
     output_docx = "stickers.docx"
     output = open(output_docx, 'w+')
 
@@ -2527,7 +2584,8 @@ def write_sticker():  # panda edition
     (headers) = []
 
     if not os.path.exists('Avery2x4Labels.docx'):
-        print('you are missing Avery2x4Labels.docx.... so Im making a lame version')
+        print(f'{color_red}you are missing Avery2x4Labels.docx.... so Im making a lame version{color_reset}')        
+        
         # Create a new Word document
         document = docx.Document()
         # Set the side margins to 0.25 inches
@@ -2550,43 +2608,48 @@ def write_sticker():  # panda edition
     # Read the Excel file and load the specified sheet into a DataFrame
 
     if not os.path.exists(input_file):
-        print(input_file, "does not exist")
+        print(f'{color_red}{input_file} does not exist{color_reset}')    
         exit()
     else:
-        print(f"reading {input_file}")
+        print(f'{color_green}Reading {input_file}{color_reset}')    
+
         dftemp = pd.read_excel(input_file, sheet_name=sheet_name)
-        df = dftemp.fillna('').sort_values(by='exhibit')  # Replace NaN with empty string and sort by exhibit
+        # df = dftemp.fillna('').sort_values(by='exhibit')  # Replace NaN with empty string and sort by exhibit
+        df = dftemp.fillna('') # Replace NaN with empty string
 
     for index, row in df.iterrows():
         (caseNumber, caseName, subjectBusinessName, caseAgent, exhibit, makeModel) = ('', '', '', '', '', '')
         (serial, status) = ('', '')
 
-        caseNumber = row['caseNumber'] 
+        caseNumber = str(row['caseNumber'])
         caseName = row['caseName']
         subjectBusinessName = row['subjectBusinessName']
         caseAgent = row['caseAgent']
-        exhibit = row['exhibit']
+        exhibit = str(row['exhibit']).rstrip('.0')
+        # print(f'exhibit = type: {type(exhibit)}')   # temp
+        print(f'exhibit = {exhibit}')    # temp
+       
         makeModel = row['makeModel']
         serial = str(row['serial'])       
         status = row['status']
 
         if status == 'Imaged':    
-            header = ('''   Case#: %s      Ex: %s
-   CaseName: %s
-   Subject: %s
-   Make: %s 
-   Serial: %s
-   Agent: %s
-   %s
-''') %(caseNumber, exhibit, caseName, subjectBusinessName, makeModel, serial, caseAgent, status)
+            header = (f'''Case#: {caseNumber}      Ex: {exhibit}
+   CaseName: {caseName}
+   Subject: {subjectBusinessName}
+   Make: {makeModel} 
+   Serial: {serial}
+   Agent: {caseAgent}
+   {status}
+''')
         else:
-            header = ('''  Case#: %s      Ex: %s
-  CaseName: %s
-  Subject: %s
-  Make: %s 
-  Serial: %s
-  Agent: %s
-''') %(caseNumber, exhibit, caseName, subjectBusinessName, makeModel, serial, caseAgent)
+            header = (f'''Case#: {caseNumber}      Ex: {exhibit}
+   CaseName: {caseName}
+   Subject: {subjectBusinessName}
+   Make: {makeModel} 
+   Serial: {serial}
+   Agent: {caseAgent}
+''')
 
         header = header.strip()
         headers.append(header)
@@ -2604,35 +2667,37 @@ def write_sticker():  # panda edition
         except:
             pass
     document.save(output_docx)
-    print(f"Data written to {output_docx}")
+    print(f'{color_green}Data written to {output_docx}')
 
 def usage():
     '''
     working examples of syntax
     '''
     file = sys.argv[0].split('\\')[-1]
-    print("\nDescription: " + description)
-    print(file + " Version: %s by %s" % (version, author))
-    print("\n\tinsert your info into input_case.xlsx")
-    print("\n\t or insert logs into Logs folder")
-    print("\nExample:")
-    print("\t" + file + " -C     \t\t")
-    print("\t" + file + " -g     \t\t")
-    print("\t" + file + " -l     \t\t")
-    # print("\t" + file + " -l -d     \t\t")
-    print("\t" + file + " -L     \t\t")
-    print("\t" + file + " -r     \t\t")
-    print("\t" + file + " -r -c  \t\t")
-    print("\t" + file + " -s     \t\t")
-
-
     
+
+
+    print(f'\nDescription: {color_green}{description}{color_reset}')
+    print(f'{file} Version: {version} by {author}')
+    print(f'\n    {color_yellow}insert your info into input_case.xlsx')
+    print(f'\n    or insert logs into Logs folder{color_reset}')
+    print(f'\nExample:')
+    print(f'    {file} -C')
+    print(f'    {file} -g')
+    print(f'    {file} -l')
+    print(f'    {file} -L')
+    print(f'    {file} -r')
+    print(f'    {file} -r -c -C -s -I ForensicCasesExample.xlsx')
+    print(f'    {file} -s')
+
+ 
 if __name__ == '__main__':
     main()
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+3.0.0 - added color & error checking
 2.9.4 - converted from (xlxriter and xlxreader) to pandas to support multiple lines in Notes column
 2.7.3 - added checklist to xlsx
 2.7.2 - sticker maker prints out avery 2 x 4" labels now
@@ -2660,7 +2725,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-figure out DocX tags or variables to insert data into the first fields
+figure out DocX tags or variables to insert data into the header fields
 
 fix: forensicsreporter.exe -h blows an unhandled exception in script line 2344
 fix serial and storageSerial for TableauImager_21-41803200001_Ex1_Seagate3TBHDD.txt 
