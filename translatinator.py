@@ -3,194 +3,178 @@
 
 '''
 This script is used to translate the contents of an Excel spreadsheet from many 
-languages to English. It uses the xlrd library to read the input file, googletrans 
-to perform the translation, and xlsxwriter to write the translated contents to a new Excel file.
+languages to English. It uses the openypyl library to read the input file, googletrans 
+to perform the translation, and openypyl to write the translated contents to a new Excel file.
 '''
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 import sys
-import xlrd # read xlsx
+import time
 import os.path
+import openpyxl
 import argparse  # for menu system
-import xlsxwriter
-import googletrans		# pip install googletrans
+import googletrans		# pip install googletrans   # redunant?
 from googletrans import Translator
-
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description = "Read input.xlsx filled with another language and translate it to english"
-version = '0.2.0'
+version = '0.4.6'
 
+LANGUAGES = {
+    'arabic': 'ar',
+    'chinese': 'zh-CN',
+    'french': 'fr',
+    'german': 'de',
+    'spanish': 'es',
+    'multi': ''
+}
+
+# Colorize section
+global color_red
+global color_yellow
+global color_green
+global color_blue
+global color_purple
+global color_reset
+color_red = ''
+color_yellow = ''
+color_green = ''
+color_blue = ''
+color_purple = ''
+color_reset = ''
+
+if sys.version_info > (3, 7, 9) and os.name == "nt":
+    version_info = os.sys.getwindowsversion()
+    major_version = version_info.major
+    build_version = version_info.build
+    # print(f'major version = {major_version} Build= {build_version} {version_info}')   # temp
+
+    if major_version >= 10 and build_version >= 22000: # Windows 11 and above
+        import colorama
+        from colorama import Fore, Back, Style  
+        print(f'{Back.BLACK}') # make sure background is black
+        color_red = Fore.RED
+        color_yellow = Fore.YELLOW
+        color_green = Fore.GREEN
+        color_blue = Fore.BLUE
+        color_purple = Fore.MAGENTA
+        color_reset = Style.RESET_ALL
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
-
 def main():
-    # global variables
-    global Row
-    # Row = 0  # defines arguments
-    Row = 1  # defines arguments   # if you want to add headers 
-    global detectedLanguage
-    detectedLanguage = '' 
-    global filename
-    filename = ('input.xlsx')
-    global spreadsheet
-    spreadsheet = ('out_english_.xlsx')
-    global sheet_format
-    sheet_format = ''
-    sheet_format = "Translation"
-
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-I', '--input', help='', required=False)
-    parser.add_argument('-O', '--output', help='', required=False)
-    parser.add_argument('-a', '--arabic', help='arabic 2 english', required=False, action='store_true')
-    parser.add_argument('-c', '--chinese', help='chinese 2 english', required=False, action='store_true')
-    parser.add_argument('-f', '--french', help='french 2 english', required=False, action='store_true')
-    parser.add_argument('-g', '--german', help='german 2 english', required=False, action='store_true')
-
-    parser.add_argument('-m', '--multi', help='multi language 2 english when you dont know', required=False, action='store_true')
-    parser.add_argument('-s', '--spanish', help='spanish 2 english', required=False, action='store_true')
-
-
+    parser = argparse.ArgumentParser(description='Translate Excel contents from various languages to English')
+    parser.add_argument('-I', '--input', help='Input Excel file', required=False)
+    parser.add_argument('-O', '--output', help='Output Excel file', required=False, default='out_english.xlsx')
+    parser.add_argument('-l', '--language', help='Source language for translation', choices=LANGUAGES.keys(), required=False)
     args = parser.parse_args()
+    
+    # global variables
+    # global Row
+    # Row = 0  # defines arguments
+    # Row = 1  # defines arguments   # if you want to add headers 
+    # global source_language
+    source_language = '' 
+    # global input_xlsx
+    input_xlsx = ('input_translate.xlsx')
+    # global output_xlsx
+    output_xlsx = ('out_english_.xlsx')
+    # global sheet_format
+    # sheet_format = ''
+    # sheet_format = "Translation"    
 
-    if args.input:  # defaults to index.xlsx
-        filename = args.input
-    if args.output: # defaults to out_english_.xlsx
-        spreadsheet = args.output
+    if args.input:  # defaults to input_translate.xlsx
+        input_xlsx = args.input
+    if args.output:  # defaults to out_english_.xlsx
+        output_xlsx = args.output   
+    if args.language:  # defaults to input_translate.xlsx
+        source_language = args.language
 
-    create_xlsx()
-
-    if args.arabic:
-        print('Translating Arabic from %s' %(filename))
-        detectedLanguage = 'ar'  # arabic?
-        read_language()
-    elif args.chinese:
-        print('Translating Chinese from %s' %(filename))
-        detectedLanguage = 'zh-CN'  # chinese (simplified)
-        read_language()
-    elif args.french:
-        print('Translating French from %s' %(filename))
-        detectedLanguage = 'fr'  # french
-        read_language()
-    elif args.german:
-        print('Translating German from %s' %(filename))
-        detectedLanguage = 'de'  # german
-        read_language()
-    elif args.spanish: 
-        print('Translating Spanish from %s' %(filename))
-        detectedLanguage = 'es'  # spanish
-        read_language()
-    elif args.multi:
-        detectedLanguage = ''  # unknown language?
-        read_language()
-    else:
-        print('Translating from %s' %(filename))
-        detectedLanguage = ''  # unknown language?
-        read_language()        
-        
-    workbook.close()
-    return 0
+    translate_excel(input_xlsx, output_xlsx, source_language)
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-def create_xlsx():  
-    global workbook
-    workbook = xlsxwriter.Workbook(spreadsheet)
-    global Sheet1
-    Sheet1 = workbook.add_worksheet('Sheet1')
-    header_format = workbook.add_format({'bold': True, 'border': 1})
-    Sheet1.freeze_panes(1, 1)  # Freeze cells
-    Sheet1.set_selection('B2')
-
-    # Excel column width
-    Sheet1.set_column(0, 0, 75)  # original
-    Sheet1.set_column(1, 1, 75)  # english
-    Sheet1.set_column(2, 2, 25)  # detectedLanguage
-
-    # Write column headers
-    Sheet1.write(0, 0, 'original', header_format)
-    Sheet1.write(0, 1, 'english', header_format)
-    Sheet1.write(0, 2, 'language', header_format)
-
-
-def format_function(bg_color='white'):
-    global format
-    format = workbook.add_format({
-        'bg_color': bg_color
-    })
-
-def read_language():
-    file_exists = os.path.exists(filename)
+def translate_excel(input_xlsx, output_xlsx, source_language):
+    translator = Translator()
+    print(f'{color_yellow}You selected {source_language} as your language{color_reset}')
+    file_exists = os.path.exists(input_xlsx)
     if file_exists == True:
-        workbook = xlrd.open_workbook(filename)
+        print(f'{color_green}Reading {input_xlsx} {color_reset}')
+        workbook = openpyxl.load_workbook(input_xlsx)
+        sheet = workbook.active
     else:
-        print('%s does not exist' %(filename))
+        print(f'{color_red}{input_xlsx} does not exist{color_reset}')
         exit()
 
-    # Open the worksheet
-    worksheet = workbook.sheet_by_index(0)
 
-    # determine how many columns wide this xlsx is
-    columns = worksheet.ncols
+    # Add columns for translated content and language. Maintains any extra input from the source
+    sheet.insert_cols(2)
+    sheet.insert_cols(3)
+    sheet.cell(row=1, column=2, value='english')
+    sheet.cell(row=1, column=3, value='language')
+    sheet.cell(row=1, column=4, value='note')    
 
-    # determine how many rows deep this xlsx is 
-    rows = worksheet.nrows
+    for row in sheet.iter_rows(min_row=2):
+        (translation, note, e) = ('', '', '')
+        original_content = row[0].value
 
-    # Iterate the rows and columns
+        try:
+            detected_language = LANGUAGES.get(source_language, '')
+        except:
+            detected_language = source_language # statically assign till detection works
+    
+        if original_content is not None:
+            if isinstance(original_content, (int, float)):
+                # print("Original content is a number:", original_content)
+                translation = original_content
+            elif len(str(original_content)) >= 1:
+                retries = 1 # 3
+                for _ in range(retries):
+                    try:
+                        translation_result = translator.translate(original_content, lang_src=detected_language, lang_tgt='en')
+                        if translation_result and translation_result.text:
+                            translation = translation_result.text
+                            break  # Exit the loop on successful translation
+                    except Exception as e:
+                        print(f"Error translating: {e}")
+                        # Retry after a short delay
+                        time.sleep(2)
 
-    for r in range(0, rows):   # rows 18
-        for c in range(0, columns):   # columns 5
-            (original, english) = ('', '')
-            original = worksheet.cell_value(r, 0)
+                if not translation:
+                    # print(f"Translation failed for: {original_content}")
+                    note = "Translation failed"
 
-        if len(original) >= 1:
-            translator = Translator()
-            # if detectedLanguage == '':
-                # detectedLanguage = translator.detect(original[0])  # fix me
-                # print("DetectedLanguage = %s" %(detectedLanguage))
-         
-            try:
-                english = translator.translate(original, lang_src=detectedLanguage, lang_tgt='en').text 
-            except TypeError as error:
-                print(error)
+        print(f'{color_blue}{original_content}  {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
 
-            print('%s\t=\t%s' %(original, english))
-
-        else:
-            print('This line >%s< is too short' %(original))  # temp
-
-        # Write excel
-        write_xlsx(original, english, detectedLanguage)
-
-def write_xlsx(original, english, detectedLanguage):
-    global Row
-    Sheet1.write_string(Row, 0, original)
-    Sheet1.write_string(Row, 1, english)
-    Sheet1.write_string(Row, 2, detectedLanguage)
-
-    Row += 1
-
+        # Update the translated content and language columns
+        sheet.cell(row=row[0].row, column=2, value=translation)
+        sheet.cell(row=row[0].row, column=3, value=detected_language)
+        sheet.cell(row=row[0].row, column=4, value=note)
+        
+    workbook.save(output_xlsx)
+    print(f'{color_green}Translated content saved to {output_xlsx}{color_reset}')
+    
 def usage():
     file = sys.argv[0].split('\\')[-1]
-    print("\nDescription: " + description)
-    print(file + " Version: %s by %s" % (version, author))
-    print("\nExample:")
 
-    print("\t" + file + " -a -I input.xlsx -O out_english_.xlsx\t\t")
-    print("\t" + file + " -c\t\t")
-    print("\t" + file + " -f\t\t")
-    print("\t" + file + " -g\t\t")
-    print("\t" + file + " -m\t\t")
-    print("\t" + file + " -s\t\t")
+    print(f'\nDescription: {color_green}{description}{color_reset}')
+    print(f'{file} Version: {version} by {author}')
+    print(f'\n    {color_yellow}insert your info into input_translate.xlsx')
+    print(f'\nExample:')
+    print(f'    {file} -c')
+    print(f'    {file} -f')
+    print(f'    {file} -g')
+    print(f'    {file} -m')
+    print(f'    {file} -s')
 
-  
+
 if __name__ == '__main__':
     main()
+
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -206,6 +190,13 @@ if __name__ == '__main__':
 
 detectedLanguage = translator.detect(original[0])  # fix me
 
+[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1007)
+
+if len(original_content) >= 1:
+TypeError: object of type 'NoneType' has no len()
+
+if input is just a number or is blank, skip it
+
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -213,12 +204,14 @@ detectedLanguage = translator.detect(original[0])  # fix me
 """
 if you know it's one of the specified languages, select that, otherwise select -m or no switches for unknown or mixed languages
 
+GoogleTrans is either rate limiting or they are using an API now
+
 
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Copyright        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-# Copyright (C) 2022 LincolnLandForensics
+# Copyright (C) 2023 LincolnLandForensics
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License version 2, as published by the
