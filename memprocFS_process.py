@@ -1,12 +1,27 @@
 #!/usr/bin/env python3
 # coding: utf-8
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<     Copyright        >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# Copyright (C) 2023 LincolnLandForensics
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License version 2, as published by the
+# Free Software Foundation
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details (http://www.gnu.org/licenses/gpl.txt).
+
+
 '''
 https://github.com/ufrisk/MemProcFS
 cd C:\Forensics\scripts\python\git-repo\MemProcFS_files_and_binaries_v5.8.1-win_x64-20230910> 
 .\MemProcFS.exe -device C:\temp\memdump.raw  -forensic 1
 maps it all as M:\
 
-pull out all the cool pits and throw them into a spreadsheet
+pulls out all the cool bits and throw them into a spreadsheet for a quick triage and case notes
 '''
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
