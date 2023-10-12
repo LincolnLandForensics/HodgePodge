@@ -17,7 +17,7 @@
 
 '''
 https://github.com/ufrisk/MemProcFS
-cd C:\Forensics\scripts\python\git-repo\MemProcFS_files_and_binaries_v5.8.1-win_x64-20230910> 
+cd C:\Forensics\scripts\python\git-repo\MemProcFS_files_and_binaries_v5.8.1-win_x64-20230910
 .\MemProcFS.exe -device C:\temp\memdump.raw  -forensic 1
 maps it all as M:\
 
@@ -101,7 +101,12 @@ def csv_dumps():
     csv_files = [
         r'M:\forensic\csv\findevil.csv',
         r'M:\forensic\csv\timeline_web.csv',
-        r'M:\forensic\csv\timeline_net.csv'
+        r'M:\forensic\csv\timeline_net.csv',
+        r'M:\forensic\csv\timeline_process.csv',
+        r'M:\forensic\csv\timeline_task.csv',
+        r'M:\forensic\csv\files.csv',        
+        r'M:\forensic\csv\process.csv',          
+        r'M:\forensic\csv\services.csv'
     ]
 
     # Iterate through each CSV file and create a worksheet for each
@@ -282,7 +287,7 @@ def memprocfs():
     try:
         with open(file_web, 'r') as file:
             web = file.read().strip()
-            tempNotes = (f'Web history: M:\misc\web\web.txt\n%s\n\n%s\n' %(web, tempNotes))
+            tempNotes = (f'Web history: \n%s\n\n%s\n' %(web, tempNotes))
 
             # print(f"tempNotes:   {tempNotes}")
     except Exception as e:
@@ -296,8 +301,8 @@ def memprocfs():
             storage = file.read().strip()
             storage = str(storage)
             # print(f'{storage}')
-            print(f'\nSee tempNotes for list of usb storage devices\n')
-            tempNotes = (r'usb storage: M:\py\reg\usb\usb_devices.txt\n%s\n\n%s\n' %(tempNotes, storage))
+            print('\nSee tempNotes for list of usb storage devices\n')
+            tempNotes = (f'\n{tempNotes}\n usb storage: \n{storage}\n\n') 
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
