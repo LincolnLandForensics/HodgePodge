@@ -22,7 +22,7 @@ from googletrans import Translator
 
 author = 'LincolnLandForensics'
 description = "Read input.xlsx filled with another language and translate it to english"
-version = '0.4.6'
+version = '0.4.7'
 
 LANGUAGES = {
     'arabic': 'ar',
@@ -149,6 +149,8 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
                     note = "Translation failed"
 
         print(f'{color_blue}{original_content}  {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
+
+        time.sleep(5) #will sleep for 5 seconds
 
         # Update the translated content and language columns
         sheet.cell(row=row[0].row, column=2, value=translation)
