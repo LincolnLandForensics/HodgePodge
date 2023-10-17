@@ -63,7 +63,7 @@ python ForensicsReporter.py -r -c
 <div style="background-color: red; color: white; padding: 10px;">
     Note: Google Translate module stops working every once in a while.
 </div>
-Read input_translate.xlsx filled with another language and translate it to english using Google Translate. 
+Read input_translate.xlsx filled with another language and translate it to English using Google Translate. 
 The default is any language but if you know it's Chinese, for example, add a -c.
 
 Usage:
