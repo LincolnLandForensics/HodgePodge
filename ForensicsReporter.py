@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.0.1'
+version = '3.0.2'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -73,24 +73,31 @@ global color_green
 global color_blue
 global color_purple
 global color_reset
+color_red = ''
+color_yellow = ''
+color_green = ''
+color_blue = ''
+color_purple = ''
+color_reset = ''
 
-if sys.version_info > (3, 7, 9):
-    import colorama # pip install colorama
-    from colorama import Fore, Back, Style  
-    print(f'{Back.BLACK}') # make sure background is black
-    color_red = Fore.RED
-    color_yellow = Fore.YELLOW
-    color_green = Fore.GREEN
-    color_blue = Fore.BLUE
-    color_purple = Fore.MAGENTA
-    color_reset = Style.RESET_ALL
-else:
-    color_red = ''
-    color_yellow = ''
-    color_green = ''
-    color_blue = ''
-    color_purple = ''
-    color_reset = ''
+if sys.version_info > (3, 7, 9) and os.name == "nt":
+    version_info = os.sys.getwindowsversion()
+    major_version = version_info.major
+    build_version = version_info.build
+
+    # print(f'major version = {major_version} Build= {build_version} {version_info}')   # temp
+
+    if major_version >= 10 and build_version >= 22000: # Windows 11 and above
+        # print(f'major version = {major_version}')   # temp
+        import colorama
+        from colorama import Fore, Back, Style  
+        print(f'{Back.BLACK}') # make sure background is black
+        color_red = Fore.RED
+        color_yellow = Fore.YELLOW
+        color_green = Fore.GREEN
+        color_blue = Fore.BLUE
+        color_purple = Fore.MAGENTA
+        color_reset = Style.RESET_ALL
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -209,7 +216,7 @@ def banner_print():
 ( F | o | r | e | n | s | i | c | s ) ( R | e | p | o | r | t | e | r )
  \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/   \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ 
     """
-    print(art)
+    print(f'{color_blue}{art}{color_reset}')
     
 def create_docx():
     '''
@@ -262,7 +269,7 @@ def enter_data():
         (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
         (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
         (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
-        (hostame, phoneIMEI2) = ('', '')
+        (temp, hostame, phoneIMEI2) = ('', '', '')
 
         caseNumber = caseNumber_entry.get()
         caseName = caseName_entry.get()
@@ -365,7 +372,7 @@ def dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType
     writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
     storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
     storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-    vaultTotal, tempNotes, hostname, phoneIMEI2):    
+    vaultTotal, tempNotes, temp, hostname, phoneIMEI2):    
     '''
     build a dictionary file of important columns for writing to a pdf
     '''
@@ -686,7 +693,7 @@ def parse_log():
     parse tableau, recon imager, cellebrite triage_windows.cmd and FTK logs
     '''
 
-    import os
+    # import os
     (caseNumber, caseName, exhibit) = ('', '', '')
     if log_type == 'file':  # only ask for exhibit number if it's a single log
         if inputDetails == "yes":
@@ -734,7 +741,7 @@ def parse_log():
         (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
         (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
         (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
-        (hostname, phoneIMEI2) = ('', '')
+        (temp, hostname, phoneIMEI2) = ('', '', '')
         
         # bonus variables
         (vehicleYear, vehicleManufacturer, vehicleModel) = ('', '', '') # BerlaIVe Acquisition
@@ -746,11 +753,14 @@ def parse_log():
             (forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes) = pdfExtract(logFile)
             csv_file = tempNotes.split('\\n')
         else:
-            if not os.path.exists(logFile):
-                print(f'{color_red}{logFile} does not exist{color_reset}')
-                # exit() 
-            else:
-                csv_file = open(logFile)
+            csv_file = open(logFile) 
+            # if os.path.exists(logFile):
+                # csv_file = open(logFile)         
+
+            # if not os.path.exists(logFile):
+                # print(f'{color_red}{logFile} does not exist{color_reset}')
+            # else:
+                # csv_file = open(logFile)
         
         for each_line in csv_file:
             # print(f'{color_yellow}{each_line}{color_reset}')    # temp
@@ -1418,7 +1428,7 @@ def parse_log():
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-            vaultTotal, tempNotes, hostname, phoneIMEI2)
+            vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
     print(f'{color_green}Exporting logs as {spreadsheet}{color_reset}')    
         
 def pdfExtract(filename):
@@ -1536,7 +1546,7 @@ def read_xlsx():
     (subject, vowel) = ('test', 'aeiou')
 
     footer = ('''
-This report contains digital examination of the exhibits provided based on the investigative information and tools available to the analyst at the time of the analysis. Additional artifacts may be provided upon further analysis or additional request.
+    This report contains digital examination of the exhibits provided based on the investigative information and tools available to the analyst at the time of the analysis. Additional artifacts may be provided upon further analysis or additional request.
 
 Evidence:
     All digital images obtained pursuant to this investigation will be maintained on %s servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an exhibit in the case file. 
@@ -1610,7 +1620,10 @@ Evidence:
         qrCode = str(row['qrCode'])
         vaultTotal = str(row['vaultTotal'])
         tempNotes = str(row['tempNotes'])
-
+        try:
+            temp = str(row['temp'])
+        except:
+            temp = ''
         try:
             hostname = str(row['hostname'])
         except:
@@ -1692,8 +1705,7 @@ Exhibit %s
 
         if len(serial) != 0:
             report = ("%s (S/N: %s)" %(report, serial))
-            # report = ("%s, serial # %s" %(report, serial))
-
+            
         if len(OS) != 0:
             report = ("%s (OS: %s)" %(report, OS))
             # if OS[0].lower() in vowel:
@@ -1838,7 +1850,7 @@ Exhibit %s
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-            vaultTotal, tempNotes, hostname, phoneIMEI2)
+            vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
 
         if caseNotesStatus == 'True':
             print(f'exhibit temp = {exhibit}')  # temp
@@ -1851,7 +1863,7 @@ Exhibit %s
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-            vaultTotal, tempNotes, hostname, phoneIMEI2)
+            vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
         # write an evidence form based on which agency you are from
             
             if exhibit != '':
@@ -2162,7 +2174,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
     storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
     storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-    vaultTotal, tempNotes, hostname, phoneIMEI2):
+    vaultTotal, tempNotes, temp, hostname, phoneIMEI2):
     
     # Check if the output file already exists
     if os.path.exists(output_file):
@@ -2192,16 +2204,16 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
             # sheet_checklist.column_dimensions['D'].width = 15
 
         # Set headers for the "Forensics" sheet
-        headers = ["caseNumber", "exhibit", "caseName", "subjectBusinessName", "caseType", "caseAgent",
-            "forensicExaminer", "reportStatus", "notes", "summary", "exhibitType", "makeModel", "serial", "OS", "phoneNumber",
-            "phoneIMEI", "mobileCarrier", "biosTime", "currentTime", "timezone", "shutdownMethod", "shutdownTime",
-            "userName", "userPwd", "email", "emailPwd", "ip", "seizureAddress", "seizureRoom", "dateSeized", "seizedBy",
-            "dateReceived", "receivedBy", "removalDate", "removalStaff", "reasonForRemoval", "inventoryDate",
-            "seizureStatus", "status", "imagingTool", "imagingType", "imageMD5", "imageSHA1", "imageSHA256",
-            "writeBlocker", "imagingStarted", "imagingFinished", "storageType", "storageMakeModel", "storageSerial",
-            "storageSize", "evidenceDataSize", "analysisTool", "analysisTool2", "exportLocation", "exportedEvidence",
-            "storageLocation", "caseNumberOrig", "priority", "operation", "Action", "vaultCaseNumber", "qrCode",
-            "vaultTotal", "tempNotes", "hostname", "phoneIMEI2"]
+        headers = ["caseNumber", "exhibit", "caseName", "subjectBusinessName", "caseType", "caseAgent"
+        , "forensicExaminer", "reportStatus", "notes", "summary", "exhibitType", "makeModel", "serial", "OS", "phoneNumber"
+        , "phoneIMEI", "mobileCarrier", "biosTime", "currentTime", "timezone", "shutdownMethod", "shutdownTime"
+        , "userName", "userPwd", "email", "emailPwd", "ip", "seizureAddress", "seizureRoom", "dateSeized", "seizedBy"
+        , "dateReceived", "receivedBy", "removalDate", "removalStaff", "reasonForRemoval", "inventoryDate"
+        , "seizureStatus", "status", "imagingTool", "imagingType", "imageMD5", "imageSHA1", "imageSHA256"
+        , "writeBlocker", "imagingStarted", "imagingFinished", "storageType", "storageMakeModel", "storageSerial"
+        , "storageSize", "evidenceDataSize", "analysisTool", "analysisTool2", "exportLocation", "exportedEvidence"
+        , "storageLocation", "caseNumberOrig", "priority", "operation", "Action", "vaultCaseNumber", "qrCode"
+        , "vaultTotal", "tempNotes", "temp", "hostname", "phoneimei2"]
         sheet.append(headers)
 
         # Set the header row cell colors
@@ -2211,7 +2223,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='FFc000', end_color='FFc000', fill_type='solid')    #orange
 
-        yellow_columns = ['B', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BN', 'BO']
+        yellow_columns = ['B', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BO', 'BP']
         for col in yellow_columns:
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
@@ -2305,8 +2317,9 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         sheet.column_dimensions['BK'].width = 15 #  qrCode
         sheet.column_dimensions['BL'].width = 15 #  vaultTotal
         sheet.column_dimensions['BM'].width = 40 #  tempNotes
-        sheet.column_dimensions['BN'].width = 18 #  hostname
-        sheet.column_dimensions['BO'].width = 16 #  phoneIMEI2
+        sheet.column_dimensions['BN'].width = 5 #  temp
+        sheet.column_dimensions['BO'].width = 18 #  hostname        
+        sheet.column_dimensions['BP'].width = 16 #  phoneIMEI2
 
     # Write data to the "Forensics" sheet
     row_data = [caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
@@ -2318,7 +2331,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
         storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
         storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-        vaultTotal, tempNotes, hostname, phoneIMEI2]    
+        vaultTotal, tempNotes, temp, hostname, phoneIMEI2]    
     
     sheet.append(row_data)
 
@@ -2725,6 +2738,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+parse .ufdx logs 
+
 figure out DocX tags or variables to insert data into the header fields
 
 fix: forensicsreporter.exe -h blows an unhandled exception in script line 2344
