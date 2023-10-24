@@ -5,17 +5,17 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "IDOR" # ISP, MWW
+agency = "MWW" # ISP, MWW
 global agencyFull
-agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
+agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
-divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
+divisionFull = "Criminal Investigation Division" # Criminal Investigation Division
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.0.2'
+version = '3.0.3'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -104,7 +104,8 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 def main():
     '''
-    main menu
+        main menu
+        Sets up the menu system and global variables
     '''
     
     global Row
@@ -130,17 +131,17 @@ def main():
     args = parser.parse_args()
 
     # global section
-    global inputDetails
-    inputDetails = 'no'
+    global input_details
+    input_details = 'no'
     global filename
     filename = ('input.txt')
     global input_file
     input_file = ('input_case.xlsx')
 
-    global logsFolder
-    logsFolder = ('Logs\\')   # s subfolder full of logs
-    global logsList
-    logsList = ['']
+    global logs_folder
+    logs_folder = ('Logs\\')   # s subfolder full of logs
+    global logs_list
+    logs_list = ['']
     global log_type
 
     global output_docx   # docx actitivy report
@@ -154,8 +155,8 @@ def main():
     global sheet_format
     sheet_format = ('')
 
-    global outputFileXlsx
-    outputFileXlsx = "output.xlsx"
+    global output_xlsx
+    output_xlsx = "output.xlsx"
     
     global output_file
     output_file = spreadsheet    # duplicate 
@@ -164,18 +165,18 @@ def main():
     win.grid(sticky=N+S+E+W)
 
     if args.output:
-        outputFileXlsx = args.output
+        output_xlsx = args.output
 
     if args.input:  # in case you don't want a different input file
         filename = args.input  
         input_file = args.input  
         
     if args.report:
-        global caseNotesStatus
+        global case_notes_status
         if args.caseNotes:  # if you add -c                                  
-            caseNotesStatus  = ('True')
+            case_notes_status  = ('True')
         else:
-            (caseNotesStatus) = ('False')            
+            (case_notes_status) = ('False')            
         read_xlsx()
 
     if args.checklist:
@@ -193,7 +194,7 @@ def main():
     elif args.sticker:
         write_sticker() 
     elif args.guidataentry:
-        guiDataEntry()
+        gui_data_entry()
 
     if not any([args.guidataentry, args.logparse, args.logs_parse, args.report, args.caseNotes, args.checklist, args.sticker]):
         parser.print_help()
@@ -210,6 +211,9 @@ def main():
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 def banner_print():
+    """
+        prints an ASCII banner
+    """
     art = """  
   _   _   _   _   _   _   _   _   _     _   _   _   _   _   _   _   _  
  / \ / \ / \ / \ / \ / \ / \ / \ / \   / \ / \ / \ / \ / \ / \ / \ / \ 
@@ -220,13 +224,13 @@ def banner_print():
     
 def create_docx():
     '''
-    if there isn't a template to read, 
-    this creates an activity report from scratch
+        if there isn't a template to read, 
+        this creates an activity report from scratch
     '''
     global document
     document = docx.Document()
     
-    caseNumber = "blah-blah"
+    caseNumber = ""
 
     #header section
     section = document.sections[0]
@@ -248,12 +252,17 @@ def create_docx():
     # p = document.add_paragraph('Subject of Activity:\t\t\t\tCase Agent:\t\tType By:')
     # p = document.add_paragraph('%s\t\t\t\t%s\t\t%s' %(subjectBusinessName, caseAgent, forensicExaminer))
 
-    document.save(output_docx)   # was outputFileXlsx
+    document.save(output_docx)   # was output_xlsx
     print(f'{color_green}created {output_docx}{color_reset}')       
     return document
     
 
 def enter_data():
+    """
+        GUI data input section using tkinter
+    """
+    
+    
     # accepted = accept_var.get()
     if 1==1:
     # if accepted=="Accepted":
@@ -363,7 +372,7 @@ def enter_data():
     else:
         tkinter.messagebox.showwarning(title= "Error", message="You have not verified the info")
     
-def dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
+def dictionary_build(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
     forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
     phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
     userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
@@ -374,7 +383,7 @@ def dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType
     storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
     vaultTotal, tempNotes, temp, hostname, phoneIMEI2):    
     '''
-    build a dictionary file of important columns for writing to a pdf
+        build a dictionary file of important columns for writing to a pdf
     '''
     
     my_dict = {}
@@ -427,7 +436,7 @@ def dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType
     
 def fix_date(date):
     '''
-    standardize date formatting, Tableau
+        standardize date formatting, Tableau
     '''
     
     (mo, dy, yr, tm) = ('', '', '', '')
@@ -454,11 +463,10 @@ def fix_date(date):
 
 def fix_date2(date):
     '''
-    standardize date formatting
-    2022-07-14 21:15:11
-    
-    31/07/2022 11:48:57 (-5)
- 
+        standardize date formatting
+        2022-07-14 21:15:11
+        
+        31/07/2022 11:48:57 (-5)
     '''
     print(f'{color_red}fix_date2{color_reset}')  
     (mo, dy, yr, tm) = ('', '', '', '')
@@ -468,9 +476,9 @@ def fix_date2(date):
 
 def fix_date3(date):
     '''
-    standardize date formatting from Cellebrite
-    
-    31/07/2022 11:48:57 (-5) to 7/31/2022 11:48
+        standardize date formatting from Cellebrite
+        
+        31/07/2022 11:48:57 (-5) to 7/31/2022 11:48
 
     '''
 
@@ -489,7 +497,10 @@ def fix_date3(date):
     date = ('%s/%s/%s %s' %(mo, dy, yr, tm)).lstrip('0')  # 3/4/2021 9:17
     return date
 
-def guiDataEntry():
+def gui_data_entry():
+    """
+        GUI data entry function
+    """
     win = Frame()
     # win.title('Evidence Form')  # test
     # win = Frame().title("Evidence form")  # todo
@@ -690,39 +701,39 @@ def guiDataEntry():
     
 def parse_log():
     '''
-    parse tableau, recon imager, cellebrite triage_windows.cmd and FTK logs
+        parse tableau, recon imager, cellebrite triage_windows.cmd and FTK logs
     '''
 
     # import os
     (caseNumber, caseName, exhibit) = ('', '', '')
     if log_type == 'file':  # only ask for exhibit number if it's a single log
-        if inputDetails == "yes":
+        if input_details == "yes":
             caseNumber = str(input("caseNumber : ")).strip()
             caseName = str(input("caseName : ")).strip()
             exhibit = str(input("exhibit : ")).strip()
-        logsList = [filename]
+        logs_list = [filename]
     elif log_type == 'folder':
         print('')
         
-        if inputDetails == "yes":
+        if input_details == "yes":
             caseNumber = str(input("caseNumber : ")).strip()
             caseName = str(input("caseName : ")).strip()
 
-        if not os.path.exists(logsFolder):
-            print(f'{color_red}{logsFolder} folder does not exist{color_reset}')
-            print(f'{color_yellow}create a {logsFolder} folder and fill it with logs to parse{color_reset}')            
+        if not os.path.exists(logs_folder):
+            print(f'{color_red}{logs_folder} folder does not exist{color_reset}')
+            print(f'{color_yellow}create a {logs_folder} folder and fill it with logs to parse{color_reset}')            
             exit() 
         else:
-                logsList = os.listdir(logsFolder)
+                logs_list = os.listdir(logs_folder)
 
-        logsList2 = []
-        for logFile in logsList:
-            logFile = ("%s%s" %(logsFolder, logFile))
-            logsList2.append(logFile)
-        logsList = logsList2
+        logs_list2 = []
+        for logFile in logs_list:
+            logFile = ("%s%s" %(logs_folder, logFile))
+            logs_list2.append(logFile)
+        logs_list = logs_list2
 
         # read section
-    for logFile in logsList:
+    for logFile in logs_list:
         print(f'{color_green}Reading {logFile}{color_reset}')         
 
         # style = workbook.add_format()
@@ -750,7 +761,7 @@ def parse_log():
         if logFile.lower().endswith('.pdf'):
             # print(f'Cant process .pdf files at this time, sorry: {logFile}')
             csv_file = ''
-            (forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes) = pdfExtract(logFile)
+            (forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes) = pdf_extract(logFile)
             csv_file = tempNotes.split('\\n')
         else:
             csv_file = open(logFile) 
@@ -1431,7 +1442,10 @@ def parse_log():
             vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
     print(f'{color_green}Exporting logs as {spreadsheet}{color_reset}')    
         
-def pdfExtract(filename):
+def pdf_extract(filename):
+    """
+        Extract data from a pdf
+    """
     (forensicExaminer, exhibitType, makeModel, serial, OS, phoneNumber) = ('', '', '', '', '', '')
     (phoneIMEI, email, status, imagingType, imageMD5, imageSHA256) = ('', '', '', '', '', '')
     (imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool) = ('', '', '', '', '', '')
@@ -1490,18 +1504,16 @@ def pdfExtract(filename):
             
             # imageMD5 = re.search(r'MD5 (.*?)\n', tempNotes)
             # imageMD5 = str(imageMD5[1]).strip()
-            
-                    
-        
+
     return(forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes)
 
 def pdf_fill(input_pdf_path, output_pdf_path, data_dict):   
-    '''
-    # fill out EvidenceForm
-    receives input template based on agency and itemType
-    receives output template with a uniq name
-    data_dict is my_dict which is many of the columns needed to write pdf reports
-    '''
+    """
+        # fill out EvidenceForm
+        receives input template based on agency and itemType
+        receives output template with a uniq name
+        data_dict is my_dict which is many of the columns needed to write pdf reports
+    """
     
     template_pdf = pdfrw.PdfReader(input_pdf_path)
     for page in template_pdf.pages:
@@ -1524,11 +1536,11 @@ def pdf_fill(input_pdf_path, output_pdf_path, data_dict):
     pdfrw.PdfWriter().write(output_pdf_path, template_pdf)
 
 def read_xlsx():
-    '''
-    reads input_case.xlsx by default
-    this will read in each line and write a report 
-    it then makes a backup of copy xlsx of the lines you tossed in
-    '''
+    """
+        reads input_case.xlsx by default
+        this will read in each line and write a report 
+        it then makes a backup of copy xlsx of the lines you tossed in
+    """
     sheet_name = "Forensics"
 
     if not os.path.exists(input_file):
@@ -1852,9 +1864,9 @@ Exhibit %s
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
 
-        if caseNotesStatus == 'True':
+        if case_notes_status == 'True':
             print(f'exhibit temp = {exhibit}')  # temp
-            my_dict = dictionaryBuild(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
+            my_dict = dictionary_build(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
             forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
             phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
             userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
@@ -1891,6 +1903,10 @@ Exhibit %s
     # output.write(footer+'\n') # output to text
     
 def write_checklist():  # panda edition
+    """
+        create a checklist based on Panda
+        Warning: Panda Creates a very big file when you convert it to exe
+    """
     # Check if the output file already exists
     if os.path.exists(output_file):
         # Open the existing workbook
@@ -2175,6 +2191,10 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
     storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
     vaultTotal, tempNotes, temp, hostname, phoneIMEI2):
+    """
+        Write the output file (xlsx)
+    """
+    
     
     # Check if the output file already exists
     if os.path.exists(output_file):
@@ -2344,9 +2364,9 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     book.save(output_file)
 
 def create_and_write_xlsx():
-    '''
-    Creates an xlsx database file with formatting and writes data to it
-    '''
+    """
+        Creates an xlsx database file with formatting and writes data to it
+    """
     # DataFrame to store the data
     data = {
         'caseNumber': [],
@@ -2467,7 +2487,9 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
         storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
         vaultTotal, tempNotes, hostname, phoneIMEI2):
-    
+    """
+        write the report to a word document        
+    """
     # Create or load the DataFrame
     try:
         df = pd.read_excel(spreadsheet)
@@ -2564,9 +2586,9 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     df.to_excel('out_log.xlsx', index=False)
     
 def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer): 
-    '''
-    write ActivityReport_%s__%s_%s_%s_DRAFT.docx
-    '''
+    """
+        write ActivityReport_%s__%s_%s_%s_DRAFT.docx
+    """
     
     output_docx = ('ActivityReport_%s__%s_%s_%s_DRAFT.docx' %(caseNumber, Month, Day, Year)) 
 
@@ -2590,6 +2612,9 @@ def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, 
     print(f'{color_green}Activity report written to {output_docx}{color_reset}')        
 
 def write_sticker():
+    """
+        write a sticker, maximum of 10 cells (sorry)
+    """
     output_docx = "stickers.docx"
     output = open(output_docx, 'w+')
 
@@ -2683,9 +2708,9 @@ def write_sticker():
     print(f'{color_green}Data written to {output_docx}')
 
 def usage():
-    '''
-    working examples of syntax
-    '''
+    """
+        working examples of syntax
+    """
     file = sys.argv[0].split('\\')[-1]
     
 
