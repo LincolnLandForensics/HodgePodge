@@ -4,7 +4,8 @@
 read GPS coordinates and convert them to addresses
 or
 read addresses and convert them to coordinates
-
+and
+read GPS coordinates and convert them to KML
 '''
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -13,6 +14,7 @@ import re
 import sys
 import time
 import openpyxl
+import simplekml
 
 import argparse  # for menu system
 from openpyxl import load_workbook, Workbook
@@ -54,8 +56,8 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "convert GPS coordinates to addresses or visa versa"
-version = '0.9.1'
+description = "convert GPS coordinates to addresses or visa versa & create a KML file"
+version = '1.0.0'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -75,6 +77,8 @@ def main():
 
     global input_xlsx
     global outuput_xlsx
+    global output_kml
+    output_kml = 'gps.kml'
     
     if not args.input: 
         input_xlsx = "locations.xlsx"        
@@ -85,17 +89,20 @@ def main():
         outuput_xlsx = "locations2addresses_.xlsx"        
     else:
         outuput_xlsx = args.output
+
     if args.create:
         data = []
         print(f'{color_green}Writing to {outuput_xlsx} {color_reset}')
         write_xlsx(data)
     elif args.read:
+        data = []
         file_exists = os.path.exists(input_xlsx)
         if file_exists == True:
             print(f'{color_green}Reading {input_xlsx} {color_reset}')
             
             data = read_xlsx(input_xlsx)
-            # write_xlsx(data)
+
+            convert_xlsx_to_kml(input_xlsx, output_kml) # works
             workbook.close()
             print(f'{color_green}Writing to {outuput_xlsx} {color_reset}')
         else:
@@ -109,6 +116,58 @@ def main():
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+def convert_xlsx_to_kml(input_xlsx, output_kml):
+    '''
+    Read xlsx with Latitude and longitude and convert it to a kml
+    file so you can import it into Google Earth
+    '''
+
+    # Load the Excel workbook
+    wb = openpyxl.load_workbook(input_xlsx)
+    
+    # Get the active sheet
+    sheet = wb.active
+    
+    # Get column indices for Latitude and Longitude
+    lat_col = None
+    lon_col = None
+    time_col = None
+    headers = [cell.value for cell in sheet[1]]
+    for i, header in enumerate(headers):
+        if header == "Latitude":
+            lat_col = i + 1
+        elif header == "Longitude":
+            lon_col = i + 1
+        elif header == "Time":
+            time_col = i + 1
+            
+    if lat_col is None or lon_col is None:
+        print("Latitude or Longitude column not found in the Excel file.")
+        return
+    
+    # Create KML object
+    kml = simplekml.Kml()
+
+    try:
+        # Iterate through data and add Placemark for each entry
+        for row_data in sheet.iter_rows(min_row=2, values_only=True):
+            latitude = row_data[lat_col - 1]
+            longitude = row_data[lon_col - 1]
+            time = ""
+            time = row_data[time_col - 1]
+            date = time.split(' ')[0]
+            if latitude is not None and longitude is not None:
+                # Create Placemark with Point
+                kml.newpoint(name=f"{date}", coords=[(longitude, latitude)])
+
+        # Save the KML document to the specified output file
+        kml.save(output_kml)
+
+        print(f"KML file '{output_kml}' created successfully!")
+
+    except Exception as e:
+        print(f"Error converting XLSX to KML: {str(e)}")
 
 def read_xlsx(input_xlsx):
 
@@ -138,6 +197,10 @@ def read_xlsx(input_xlsx):
         for header, value in zip(headers, row):
             row_data[header] = value
         data.append(row_data)
+
+    if not data:
+        print(f"{color_red}No data found in the Excel file.{color_reset}")
+        return None
 
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
@@ -234,11 +297,29 @@ def read_xlsx(input_xlsx):
                 # except Exception as e:
                     # print(f"{color_red}Error : {str(e)}{color_reset}")
 
+
+            try:
+                location = geolocator.reverse(query)
+                fulladdress = location.address
+                row_data["fulladdress"] = fulladdress
+
+                # ... (rest of the code remains unchanged)
+
+            except Exception as e:
+                print(f"{color_red}Error: {str(e)}{color_reset}")
+
+
+
                 # Sleep for x seconds
                 time.sleep(8)
+                # Check if latitude and longitude are float values
+                # if isinstance(lat_data, float) and isinstance(long_data, float):
+                    # query = f"{lat_data},{long_data}"
+                    # row_data["query"] = query
 
                 # if print(location.latitude, location.longitude)
-                if long_data is None or lat_data is None:
+                if isinstance(lat_data, float) and isinstance(long_data, float):
+                # if long_data is None or lat_data is None:
                     try:
                         row_data["Longitude"] = location.longitude 
                         row_data["Latitude"] = location.latitude
@@ -252,7 +333,11 @@ def read_xlsx(input_xlsx):
         else:
             print('')
             # print(f'{color_yellow}trying {color_reset} {lat_data} {long_data}')            
-            if len(lat_data) > 3:
+            
+            # Check if there is latitude data and it is a string
+            if lat_data is not None and isinstance(lat_data, str) and len(lat_data) > 3:
+            
+            # if len(lat_data) > 3:
                 if len(fulladdress) < 2:
                     
                     # print(f'{color_yellow}there is no fulladdress{color_reset} but there is lat long {lat_data} - {long_data}')
@@ -327,7 +412,7 @@ def read_xlsx(input_xlsx):
     # workbook.save(outuput_xlsx)
 
     write_xlsx(data)
-    # return data
+    return data
 
 def write_xlsx(data):
     '''
@@ -435,7 +520,7 @@ if __name__ == '__main__':
 """
 export a temp copy to output.txt
 if it's less than 3000 skip the sleep timer
-
+read Time, Latitude, Longitude and create gps.kml
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
