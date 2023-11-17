@@ -102,9 +102,16 @@ def main():
             
             data = read_xlsx(input_xlsx)
 
-            convert_xlsx_to_kml(input_xlsx, output_kml) # works
+            # create kml file
+            write_kml(data)
+            
+            
             workbook.close()
             print(f'{color_green}Writing to {outuput_xlsx} {color_reset}')
+            print(f'''\n\n{color_yellow}
+            visit https://earth.google.com/
+            <file><Import KML> select gps.kml <open>
+            {color_reset}\n''')
         else:
             print(f'{color_red}{input_xlsx} does not exist{color_reset}')
             exit()
@@ -117,57 +124,6 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-def convert_xlsx_to_kml(input_xlsx, output_kml):
-    '''
-    Read xlsx with Latitude and longitude and convert it to a kml
-    file so you can import it into Google Earth
-    '''
-
-    # Load the Excel workbook
-    wb = openpyxl.load_workbook(input_xlsx)
-    
-    # Get the active sheet
-    sheet = wb.active
-    
-    # Get column indices for Latitude and Longitude
-    lat_col = None
-    lon_col = None
-    time_col = None
-    headers = [cell.value for cell in sheet[1]]
-    for i, header in enumerate(headers):
-        if header == "Latitude":
-            lat_col = i + 1
-        elif header == "Longitude":
-            lon_col = i + 1
-        elif header == "Time":
-            time_col = i + 1
-            
-    if lat_col is None or lon_col is None:
-        print("Latitude or Longitude column not found in the Excel file.")
-        return
-    
-    # Create KML object
-    kml = simplekml.Kml()
-
-    try:
-        # Iterate through data and add Placemark for each entry
-        for row_data in sheet.iter_rows(min_row=2, values_only=True):
-            latitude = row_data[lat_col - 1]
-            longitude = row_data[lon_col - 1]
-            time = ""
-            time = row_data[time_col - 1]
-            date = time.split(' ')[0]
-            if latitude is not None and longitude is not None:
-                # Create Placemark with Point
-                kml.newpoint(name=f"{date}", coords=[(longitude, latitude)])
-
-        # Save the KML document to the specified output file
-        kml.save(output_kml)
-
-        print(f"KML file '{output_kml}' created successfully!")
-
-    except Exception as e:
-        print(f"Error converting XLSX to KML: {str(e)}")
 
 def read_xlsx(input_xlsx):
 
@@ -204,13 +160,22 @@ def read_xlsx(input_xlsx):
 
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
-        (state, fulladdress, Latitude, Longitude, query) = ('', '', '', '', '')
-
+        (state, fulladdress, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
+        (Index) = ('')
+        
         name_data = row_data.get("Name")
-
+        coordinate_data = row_data.get("Coordinate")
         lat_data = row_data.get("Latitude")
         long_data = row_data.get("Longitude")
         address_data = row_data.get("Address")        
+        
+        row_data["Index"] = (row_index + 2)
+        
+        # address_data = row_data.get("Address")
+        # address_data = row_data.get("Address")
+        # address_data = row_data.get("Address")
+        # address_data = row_data.get("Address")
+
 
         # Check if address_data is None
         if address_data is None:
@@ -408,11 +373,107 @@ def read_xlsx(input_xlsx):
                     # Sleep x seconds
                     time.sleep(8) 
 
+        # if 1 == 1:
+            # print("hello world")
+            # if 
+       
         print(f'{query}\t{color_yellow}{fulladdress}{color_reset}')     
     # workbook.save(outuput_xlsx)
 
     write_xlsx(data)
+    # write_kml(data)
+    
     return data
+
+def write_kml(data):
+    '''
+    The write_kml() function receives the processed data as a list of 
+    dictionaries and writes it to a kml using simplekml. 
+    '''
+
+    # Create KML object
+    kml = simplekml.Kml()
+    
+    print(f'testing write_kml') # temp
+    headers = [
+        "Name", "Description", "Time", "End time", "Category", "Latitude"
+        , "Longitude", "Map Address", "Address", "Type", "Source", "Account"
+        , "Deleted", "Tag Note", "Source file information", "Carved"
+        , "Manually decoded", "business", "number", "street", "city", "county"
+        , "state", "zipcode", "country", "fulladdress", "query", "Plate"
+        , "Container", "Sighting State", "Sighting Location", "Coordinate"
+        , "Highway Name", "Direction", "Time (Local)", "Index"
+    ]
+
+    for row_index, row_data in enumerate(data):
+        (description_data) = ('')
+        
+        name_data = row_data.get("Name")
+        description_data = row_data.get("Description")
+        time_data = row_data.get("Time")
+        end_time_data = row_data.get("End time")
+        coordinate_data = row_data.get("Coordinate")
+        lat_data = row_data.get("Latitude")
+        long_data = row_data.get("Longitude")
+        address_data = row_data.get("Address")
+        type_data = row_data.get("Type")
+        full_address_data  = row_data.get("fulladdress")
+        plate_data  = row_data.get("Plate")
+        hwy_data  = row_data.get("Highway Name")
+        direction_data  = row_data.get("Direction")
+                
+        index_data = row_data.get("Index")
+        
+        if description_data == None:
+            description_data = ''       
+        
+        # (description_data) = (f'{index_data}, {description_data}')
+
+        if name_data != None:
+            (description_data) = (f'{description_data}, {name_data}')
+        
+        if time_data != None:
+            (description_data) = (f'{description_data}, {time_data}')
+
+        if end_time_data != None:
+            (description_data) = (f'{description_data} to endTime: {end_time_data}')
+
+        if address_data != None:
+            (description_data) = (f'{description_data}, {address_data}')
+
+        elif full_address_data != None:
+            (description_data) = (f'{description_data}, {full_address_data}')
+
+        if hwy_data != None:
+            (description_data) = (f'{description_data}, Hwy Name:{hwy_data}')
+            
+        if direction_data != None:
+            (description_data) = (f'{description_data}, Direction:{direction_data}')
+           
+
+        if type_data != None:
+            (description_data) = (f'{description_data}, type:{type_data}')
+
+        if plate_data != None:
+            (description_data) = (f'{description_data}, plate:{plate_data}')
+            
+        print(f'description = {description_data}')
+        
+
+        if lat_data is not None and long_data is not None:
+            # kml.newpoint(name=f"{description_data}", coords=[(long_data, lat_data)])    #should it be lat, long?
+            kml.newpoint(name=f"{index_data}", description=f"{description_data}", coords=[(long_data, lat_data)])  # lon, lat
+        elif coordinate_data is not None:
+            # kml.newpoint(name=f"{description_data}", coords=[(long_data, lat_data)])    #should it be lat, long?
+            # kml.newpoint(name=f"{index_data}", description=f"{description_data}", coords=[(coordinate_data)])  # lon, lat
+            print(f'fix coordinate_data {coordinate_data}')
+            
+
+    # Save the KML document to the specified output file
+    kml.save(output_kml)
+
+    print(f"KML file '{output_kml}' created successfully!")
+
 
 def write_xlsx(data):
     '''
@@ -439,7 +500,9 @@ def write_xlsx(data):
         , "Longitude", "Map Address", "Address", "Type", "Source", "Account"
         , "Deleted", "Tag Note", "Source file information", "Carved"
         , "Manually decoded", "business", "number", "street", "city", "county"
-        , "state", "zipcode", "country", "fulladdress", "query"
+        , "state", "zipcode", "country", "fulladdress", "query", "Plate"
+        , "Container", "Sighting State", "Sighting Location", "Coordinate"
+        , "Highway Name", "Direction", "Time (Local)", "Index"
     ]
 
     # Write headers to the first row
@@ -452,7 +515,7 @@ def write_xlsx(data):
 
     # Excel column width
     worksheet.column_dimensions['A'].width = 15# Name
-    worksheet.column_dimensions['B'].width = 7# Description
+    worksheet.column_dimensions['B'].width = 17# Description
     worksheet.column_dimensions['C'].width = 16# Time
     worksheet.column_dimensions['D'].width = 20# End time
     worksheet.column_dimensions['E'].width = 20# Category
@@ -474,10 +537,20 @@ def write_xlsx(data):
     worksheet.column_dimensions['Y'].width = 20# city    
     worksheet.column_dimensions['V'].width = 25# county    
     worksheet.column_dimensions['W'].width = 15# state    
-    
-      
-        
+    worksheet.column_dimensions['X'].width = 8# zipcode   
+    worksheet.column_dimensions['Y'].width = 9# country   
     worksheet.column_dimensions['Z'].width = 26# FullAddress
+    worksheet.column_dimensions['AA'].width = 26# query
+    # Flock
+    worksheet.column_dimensions['AB'].width = 11# Plate
+    worksheet.column_dimensions['AC'].width = 10# Container
+    worksheet.column_dimensions['AD'].width = 17# Sighting State
+    worksheet.column_dimensions['AE'].width = 17# Sighting Location
+    worksheet.column_dimensions['AF'].width = 17# Coordinate
+    worksheet.column_dimensions['AG'].width = 26# Highway Name
+    worksheet.column_dimensions['AH'].width = 12# Direction
+    worksheet.column_dimensions['AI'].width = 29# Time (LOCAL)
+    worksheet.column_dimensions['AJ'].width = 8# Index
 
     for row_index, row_data in enumerate(data):
 
