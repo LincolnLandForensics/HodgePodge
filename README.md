@@ -77,13 +77,13 @@ Example:
 Visit earth.google.com <File><Import KML> 
 ![Case Example](images/GPS.png)
 
-Color Code:
-Red = LPR (Licensce Plate Reader)
-Blue = Images
-Yellow = Videos
-Purple = Locations
-Orange = default
-If business is populated the item number will be yellow.
+GPS Color Codes:
+*   Red = LPR (Licensce Plate Reader)
+*   Blue = Images
+*   Yellow = Videos
+*   Purple = Locations
+*   Orange = default
+*   Yellow Font = Business
 
 ---
 ## translatinator.py
