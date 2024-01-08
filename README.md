@@ -62,7 +62,11 @@ python ForensicsReporter.py -r -c
 
 ## GPS2Address.py
 
-    insert your input into locations.xlsx
+Usage:
+```
+python GPS2Address.py -r
+
+insert your input into locations.xlsx
 
 Example:
     GPS2Address.py -c -O input_blank.xlsx
