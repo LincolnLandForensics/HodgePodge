@@ -74,6 +74,7 @@ Example:
     GPS2Address.py -r
     GPS2Address.py -r -I locations.xlsx -O locations2addresses_.xlsx
 ```    
+![Case Example](images/GPS.png)
 
 ---
 ## translatinator.py
