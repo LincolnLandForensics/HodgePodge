@@ -74,7 +74,7 @@ Example:
     GPS2Address.py -r
     GPS2Address.py -r -I locations.xlsx -O locations2addresses_.xlsx
 ```    
-*   Visit earth.google.com <File><Import KML> 
+*   Visit earth.google.com, File,Import KML 
 
 ![Case Example](images/GPS.png)
 
