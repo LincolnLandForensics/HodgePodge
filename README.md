@@ -59,6 +59,19 @@ python ForensicsReporter.py -r -c
 
 
 
+
+## GPS2Address.py
+
+    insert your input into locations.xlsx
+
+Example:
+    GPS2Address.py -c -O input_blank.xlsx
+    GPS2Address.py -k -I locations.xlsx  # xlsx 2 kml with no internet processing
+    GPS2Address.py -r
+    GPS2Address.py -r -I locations.xlsx -O locations2addresses_.xlsx
+    
+
+---
 ## translatinator.py
 <div style="background-color: red; color: white; padding: 10px;">
     Note: Google Translate module stops working every once in a while.
