@@ -15,6 +15,10 @@ import time
 import openpyxl
 import simplekml
 
+from openpyxl import Workbook   # test
+from openpyxl.styles import PatternFill # test
+
+
 import argparse  # for menu system
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
@@ -56,7 +60,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.1.0'
+version = '1.1.1'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -458,63 +462,97 @@ def write_kml(data):
         (description_data) = ('')
         
         name_data = row_data.get("Name")
+        if name_data is None:
+            name_data = ''
+   
         description_data = row_data.get("Description")
+        if description_data is None:
+            description_data = ''
+
         time_data = row_data.get("Time")
+        if time_data is None:
+            time_data = ''
+        
+        
         end_time_data = row_data.get("End time")
+        if end_time_data is None:
+            end_time_data = ''        
+        
         coordinate_data = row_data.get("Coordinate")
         lat_data = row_data.get("Latitude")
-        long_data = row_data.get("Longitude")
-        address_data = row_data.get("Address")
-        type_data = row_data.get("Type")
-        business_data = row_data.get("business")    # test   
-        # business_data = business_data.strip()   # test
-        
-        # if business_data is not None:
-            # business_data = business_data.strip()
+        if lat_data is None:
+            lat_data = ''        
 
+        long_data = row_data.get("Longitude")
+        if long_data is None:
+            long_data = ''
+            
+        address_data = row_data.get("Address")
+        if address_data is None:
+            address_data = ''        
+        
+        type_data = row_data.get("Type")
+        if type_data is None:
+            type_data = ''        
+        
+        business_data = row_data.get("business")    # test   
+        if business_data is None:
+            business_data = ''
+        else:
+            try:
+                business_data = business_data.strip()
+            except Exception as e:
+                print(f"{color_red}Error stripping {business_data}: {str(e)}{color_reset}")
+            
         full_address_data  = row_data.get("fulladdress")
+        if full_address_data is None:
+            full_address_data = ''           
+        
         plate_data  = row_data.get("Plate")         # red
+        if plate_data is None:
+            plate_data = ''          
+        
         hwy_data  = row_data.get("Highway Name")
+        if hwy_data is None:
+            hwy_data = ''           
         direction_data  = row_data.get("Direction")
+        if direction_data is None:
+            direction_data = ''           
                 
         # index_data = row_data.get("Index")
         index_data = row_index  # task
-  
-  
-        if description_data == None:
-            description_data = ''       
-        
+    
         # (description_data) = (f'{index_data}, {description_data}')
 
-        if name_data != None:
+        if name_data != '':
             (description_data) = (f'{description_data}\nNAME: {name_data}')
         
-        if time_data != None:
+        if time_data != '':
             (description_data) = (f'{description_data}\nTIME: {time_data}')
 
-        if end_time_data != None:
+        if end_time_data != '':
             (description_data) = (f'{description_data}\nendTime: {end_time_data}')
 
-        if address_data != None:
+        if address_data != '':
             (description_data) = (f'{description_data}\n{address_data}')
 
-        elif full_address_data != None:
+        elif full_address_data != '':
             (description_data) = (f'{description_data}\nADDRESS: {full_address_data}')
 
-        if hwy_data != None:
+        if hwy_data != '':
             (description_data) = (f'{description_data}\nHwy NAME: {hwy_data}')
             
-        if direction_data != None:
+        if direction_data != '':
             (description_data) = (f'{description_data}\nDIRECTION: {direction_data}')
 
-        if type_data != None:
+        if type_data != '':
             (description_data) = (f'{description_data}\nTYPE: {type_data}')
-            
-        if business_data != None:
+
+        if business_data != '':
             (description_data) = (f'{description_data}\nBusiness: {business_data}')
 
 
-        if plate_data != None:
+        if plate_data != '':
             (description_data) = (f'{description_data}\nPLATE: {plate_data}')
 
             
@@ -522,7 +560,8 @@ def write_kml(data):
 
         point = None  # Initialize point variable outside the block
 
-        if lat_data is not None and long_data is not None and type_data == "LPR":
+        if lat_data != '' and long_data != '' and type_data == "LPR":
+            
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
@@ -530,14 +569,14 @@ def write_kml(data):
             )
             point.style.iconstyle.color = simplekml.Color.red
             point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
-            point.style.labelstyle.text = "Videos"  # Set the label text
-
-            if business_data != None:
+            # point.style.labelstyle.text = "Videos"  # Set the label text
+            print(f'LPR found {type_data}') # temp
+            if business_data != '':
                 point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
             else:   
                 point.style.labelstyle.color = simplekml.Color.white  # Set label text color
 
-        elif lat_data is not None and long_data is not None and type_data == "Images":
+        elif lat_data != '' and long_data != '' and type_data == "Images":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
@@ -547,12 +586,12 @@ def write_kml(data):
             point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
             point.style.labelstyle.text = "Videos"  # Set the label text
 
-            if business_data != None or business_data != "":
+            if business_data != "":
                 point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
             else:   
                 point.style.labelstyle.color = simplekml.Color.white  # Set label text color
 
-        elif lat_data is not None and long_data is not None and type_data == "Videos":
+        elif lat_data != '' and long_data != '' and type_data == "Videos":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
@@ -562,20 +601,12 @@ def write_kml(data):
             point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
             point.style.labelstyle.text = "Videos"  # Set the label text
 
-            if business_data != None or business_data != "":
+            if business_data != "":
                 point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
             else:   
                 point.style.labelstyle.color = simplekml.Color.white  # Set label text color
 
-
-        # elif lat_data is not None and long_data is not None and type_data == "Videos":    # test
-            # kml.newpoint(name=f"{index_data}", description=f"{description_data}", coords=[(long_data, lat_data)]).style.iconstyle.color = simplekml.Color.yellow  # lon, lat
-
-        # elif lat_data is not None and long_data is not None and type_data == "Locations":    # test
-            # print(f'index_data = {index_data}')   # temp
-            # kml.newpoint(name=f"{index_data}", description=f"{description_data}", coords=[(long_data, lat_data)]).style.iconstyle.color = simplekml.Color.purple  # lon, lat
-
-        elif lat_data is not None and long_data is not None and type_data == "Locations":
+        elif lat_data != '' and long_data != '' and type_data == "Locations":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
@@ -585,18 +616,12 @@ def write_kml(data):
             point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
             point.style.labelstyle.text = "Videos"  # Set the label text
 
-            if business_data != None:   
+            if business_data != '':   
                 point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
             else:   
                 point.style.labelstyle.color = simplekml.Color.white  # Set label text color
 
-
-        # elif lat_data is not None and long_data is not None:
-            # kml.newpoint(name=f"{description_data}", coords=[(long_data, lat_data)])    #should it be lat, long?
-            # kml.newpoint(name=f"{index_data}", description=f"{description_data}", coords=[(long_data, lat_data)])  # lon, lat
-            # kml.newpoint(name=f"{index_data}", description=f"{description_data}", coords=[(long_data, lat_data)]).style.iconstyle.color = simplekml.Color.orange  # lon, lat
-
-        elif lat_data is not None and long_data is not None:
+        elif lat_data != '' and long_data != '':
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
@@ -606,7 +631,7 @@ def write_kml(data):
             point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
             point.style.labelstyle.text = "Videos"  # Set the label text
 
-            if business_data != None:
+            if business_data != '':
                 point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
             else:   
                 point.style.labelstyle.color = simplekml.Color.white  # Set label text color
@@ -720,6 +745,34 @@ def write_xlsx(data):
                 worksheet.cell(row=row_index+2, column=col_index+1).value = cell_data
             except Exception as e:
                 print(f"{color_red}Error printing line: {str(e)}{color_reset}")
+
+
+    # Create a new worksheet for color codes
+    color_worksheet = workbook.create_sheet(title='GPS Pin Color Codes')
+    color_worksheet.freeze_panes = 'B2'  # Freeze cells
+
+    # Excel column width
+    color_worksheet.column_dimensions['A'].width = 16# Name
+    color_worksheet.column_dimensions['B'].width = 60# Description 21
+    
+    # Define color codes
+    color_worksheet['A1'] = 'GPS Pin Colors'
+    color_worksheet['B1'] = 'Description'
+
+    color_data = [
+        ('Red', 'LPR (License Plate Reader)'),
+        ('Orange', 'Default pin color'),  
+        ('Yellow', 'Videos'),        
+        ('Black', 'Images'),
+        ('Purple', 'Locations'),
+        ('Yellow font', 'Business'),
+        ('', ''),
+        ('NOTE', 'visit https://earth.google.com/ <file><Import KML> select gps.kml <open>'),
+    ]
+
+    for row_index, (color, description) in enumerate(color_data):
+        color_worksheet.cell(row=row_index + 2, column=1).value = color
+        color_worksheet.cell(row=row_index + 2, column=2).value = description
     
     workbook.save(outuput_xlsx)
 
@@ -745,8 +798,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
-
+1.1.0 - color code sheet
+1.0.1 - Color coded pins for gps.kml
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -757,6 +810,7 @@ export a temp copy to output.txt
 if it's less than 3000 skip the sleep timer
 
 Add Group and Subgroup, color
+
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
