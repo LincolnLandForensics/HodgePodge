@@ -60,7 +60,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.1.1'
+version = '1.1.5'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -128,12 +128,12 @@ def main():
         if file_exists == True:
             print(f'{color_green}Reading {input_xlsx} {color_reset}')
             
-            data = read_xlsx(input_xlsx)
-
-            # create kml file
+            # data = read_xlsx(input_xlsx)
+            data = read_xlsx_basic(input_xlsx)
+            data = read_gps(data)
+            write_xlsx(data)
             write_kml(data)
-            
-            
+
             workbook.close()
             print(f'{color_green}Writing to {outuput_xlsx} {color_reset}')
             print(f'''\n\n{color_yellow}
@@ -153,248 +153,187 @@ def main():
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
-def read_xlsx(input_xlsx):
+def read_gps(data): 
 
-    """Read data from an xlsx file and return as a list of dictionaries.
-    Read XLSX Function: The read_xlsx() function reads data from the input 
-    Excel file using the openpyxl library. It extracts headers from the 
+    """Read data and return as a list of dictionaries.
+    It extracts headers from the 
     first row and then iterates through the data rows, creating dictionaries 
     for each row with headers as keys and cell values as values.
     
     """
 
-    wb = openpyxl.load_workbook(input_xlsx)
-    ws = wb.active
-    data = []
-
-    # get header values from first row
-    global headers
-    headers = []
-    for cell in ws[1]:
-        headers.append(cell.value)
-
-    # get data rows
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        row_data = {}
-        for header, value in zip(headers, row):
-            row_data[header] = value
-        data.append(row_data)
-
-    if not data:
-        print(f"{color_red}No data found in the Excel file.{color_reset}")
-        return None
-
     for row_index, row_data in enumerate(data):
-        (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
-        (state, fulladdress, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
-        (Index, country) = ('', '')
+        (street, Coordinate, fulladdress_data) = ('', '', '')
         
+        (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
+        (state, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '')
+        (Index, country, lat_data, long_data) = ('', '', '', '')
+        (county, query) = ('', '')
+        (location, skip) = ('', '')
+        # print(f'fulladdress = {row_data.get("fulladdress")}')    # temp
+        fulladdress_data = row_data.get("fulladdress")
+
         name_data = row_data.get("Name")
+        lat_data = row_data.get("Latitude") # works
+        
+        long_data = row_data.get("Longitude") # works
+        address_data = row_data.get("Address") # works
+  
+        business = row_data.get("business")
+        number = row_data.get("number")
+        city = row_data.get("city")
+        county = row_data.get("county")
+        state = row_data.get("state")
+        zipcode = row_data.get("zipcode")
+        query = row_data.get("query")
+        country = row_data.get("country")
+        
+        
         coordinate_data = row_data.get("Coordinate")
-        lat_data = row_data.get("Latitude")
-        long_data = row_data.get("Longitude")
-        address_data = row_data.get("Address")  # fulladdress
-        fulladdress_data = row_data.get("fulladdress") 
         row_data["Index"] = (row_index + 2)
 
-        if address_data is None:
-            if fulladdress_data is None:
-                fulladdress_data = ''
+# skip lines with fulladdress
+        if len(fulladdress_data) > 2:        
+            skip = 'skip'
 
-            address_data = fulladdress_data
-            row_data["Address"] = address_data
-            print(f'address_data = {address_data}') # temp
-            
-        # Check if address_data is None
-        if address_data is None or address_data == '':
-            print(f'')
+            print(f'{color_green} full address =  {fulladdress_data}{color_reset}')    # temp
+# GPS to fulladdress
+        elif lat_data != '' and isinstance(lat_data, str) and len(lat_data) > 3:
+            print(f'{color_orange} Coordinate =  {coordinate_data}{color_reset}')    # temp
 
-        else:
-            # Check the length of address_data
+            if lat_data != '' and isinstance(lat_data, str) and len(lat_data) > 3:
+                print(f'') # temp
+                ##  if no fulladdress
+                if len(fulladdress_data) < 2:
+                    query = (f'{lat_data}, {long_data}') # backwards
+
+                    try:
+                        location = geolocator.reverse((lat_data, long_data), language='en')
+                    except Exception as e:
+                        print(f"{color_red}Error : {str(e)}{color_reset}") 
+                    try:
+                        fulladdress_data = location.address
+
+                    except Exception as e:
+                        print(f"{color_red}Error : {str(e)}{color_reset}") 
+
+                    time.sleep(8)   ## Sleep x seconds
+
+# address to gps / Full address
+        elif address_data != '':
+            print(f'{color_blue} address =  {address_data}{color_reset}')    # temp
             if len(address_data) > 3:
-                
-                # turn fulladdress into lat/long
+
                 try:
                     location = geolocator.geocode(address_data)
-                except Exception as e:
-                    print(f"{color_red}Error : {str(e)}{color_reset}")
-                    
-                try:
-                    fulladdress = location.address
-                    row_data["fulladdress"] = fulladdress                
-                    address_parts = fulladdress.split(', ')
-                    country = address_parts[-1]
-                    row_data["country"] = country
-                    
-                    zipcode = address_parts[-2]
-                    print(f'zipcode = {zipcode}')   # temp
-                    row_data["zipcode"] = zipcode
-                    
-                    print(f'country = {county}')    # temp
-                    
-                    # Check if there are exactly 7 commas
-                    if fulladdress.count(',') == 7:
-                        # Split the address by commas
-                        address_parts = fulladdress.split(', ')
-                        business = address_parts[0]
-                        number = address_parts[1]
-                        street = address_parts[2]
-                        city = address_parts[3]
-                        county = address_parts[4]
-                        state = address_parts[5]
-                        
-                        row_data["business"] = business 
-                        row_data["number"] = number 
-                        row_data["street"] = street
-                        row_data["city"] = city 
-                        row_data["county"] = county 
-                        row_data["state"] = state 
-                    elif fulladdress.count(',') == 5:
-                        # Split the address by commas
-                        address_parts = fulladdress.split(', ')
-                        # business = address_parts[0]
-                        # number = address_parts[1]
-                        street = address_parts[0]
-                        city = address_parts[1]
-                        county = address_parts[2]
-                        state = address_parts[3]
-                        
-                        row_data["business"] = business 
-                        row_data["number"] = number 
-                        row_data["street"] = street
-                        row_data["city"] = city 
-                        row_data["state"] = state 
-                        
-                    
-                    if "United States" in fulladdress:
-                        row_data["country"] = "US" 
-                    if ", Illinois," in fulladdress:
-                        row_data["state"] = "IL" 
-                    elif ", Missouri," in fulladdress:
-                        row_data["state"] = "MO"                                  
-                   
-  
-                except Exception as e:
-                    print(f"{color_red}Error : {str(e)}{color_reset}")                
 
+                    if location:
+                        lat_data = location.latitude
+                        long_data = location.longitude
+                        query = (f'{address_data}')
+                    else:
+                        print(f"Location not found for address: {address_data}")
+
+                except Exception as e:
+                    print(f"Error: {str(e)}")
 
             try:
-                location = geolocator.reverse(query)
-                fulladdress = location.address
-                row_data["fulladdress"] = fulladdress
-
-                # ... (rest of the code remains unchanged)
+                location = geolocator.reverse((lat_data, long_data), language='en')
+                fulladdress_data = location.address
 
             except Exception as e:
                 print(f"{color_red}Error: {str(e)}{color_reset}")
 
-
-
-                # Sleep for x seconds
-                time.sleep(8)
-                # Check if latitude and longitude are float values
-                # if isinstance(lat_data, float) and isinstance(long_data, float):
-                    # query = f"{lat_data},{long_data}"
-                    # row_data["query"] = query
-
-                # if print(location.latitude, location.longitude)
-                if isinstance(lat_data, float) and isinstance(long_data, float):
-                # if long_data is None or lat_data is None:
-                    try:
-                        row_data["Longitude"] = location.longitude 
-                        row_data["Latitude"] = location.latitude
-                        query = (f'{location.latitude}, {location.longitude}')
-                    except Exception as e:
-                        print(f"{color_red}Error : {str(e)}{color_reset}") 
-
-        # check lat long
-        if long_data is None or lat_data is None:
-            # print('')
-            print(f'{color_red}there is no lat or long{color_reset} {lat_data} - {long_data}')
+                time.sleep(8)   # Sleep for x seconds
         else:
-            # print('')
-            print(f'{color_yellow}trying {color_reset} {lat_data} {long_data}')   # temp         
-            
-            # Check if there is latitude data and it is a string
-            if lat_data is not None and isinstance(lat_data, str) and len(lat_data) > 3:
-                print(f'') # temp
-                # b = b
-            # if len(lat_data) > 3:
-                if len(fulladdress) < 2:
+            print(f'none of the above')
+
+# parse fulladdress
+        if len(fulladdress_data) > 2 and skip != 'skip':
+            try:
+                address_parts = fulladdress_data.split(', ')
+                country = address_parts[-1]
+                zipcode = address_parts[-2]
+                state = address_parts[-3]
+                county = address_parts[-4]
+                
+                if "Township" in address_parts[-5]:
+                    city = address_parts[-6]
+                else:    
+                    county = address_parts[-5]
+                    city = address_parts[-6]
                     
-                    if address_data is None:
-                        address_data = fulladdress_data
-                        row_data["Address"] = address_data
+                if fulladdress_data.count(',') == 7:    # Check if there are exactly 7 commas
+                    if 'Township' in address_parts[3]:    # task
+                             
+                        address_parts = fulladdress_data.split(', ')    # Split the address by commas
+                        business = address_parts[0]
+                        number = address_parts[0]
+                        street = address_parts[1]
 
-                    print(f'{color_yellow}there is no fulladdress{color_reset} but there is lat long {lat_data} - {long_data}')
-                    query = (f'{lat_data}, {long_data}')
-                    row_data["query"] = query
-                    try:
-                        location = geolocator.reverse(query)
-                    except Exception as e:
-                        print(f"{color_red}Error : {str(e)}{color_reset}") 
-                    try:
-                        fulladdress = location.address
-                        row_data["fulladdress"] = fulladdress                
-
-                        # Check if there are exactly 7 commas
-                        
-                        if ", " in fulladdress:
-                            
-                            address_parts = fulladdress.split(', ')
-                            country = address_parts[-1]
-                            zipcode = address_parts[-2]
-                            state = address_parts[-3]
-                            county = address_parts[-4]
-                            # city = address_parts[-5]
-
-                        if fulladdress.count(',') == 7:
-                            # Split the address by commas
-                            address_parts = fulladdress.split(', ')
-                            business = address_parts[0]
-                            number = address_parts[1]
-                            street = address_parts[2]
-                            city = address_parts[3]
-
-                        elif fulladdress.count(',') == 5:
-                            # Split the address by commas
-                            address_parts = fulladdress.split(', ')
-                            business = address_parts[0]
-                            number = address_parts[1]
-                            street = address_parts[0]
-                            city = address_parts[1]
-
-                    except Exception as e:
-                        print(f"{color_red}Error : {str(e)}{color_reset}") 
-                    
-                    row_data["business"] = business 
-                    row_data["number"] = number 
-                    row_data["street"] = street
-                    row_data["city"] = city  
-                    row_data["county"] = county 
-                    if state == "Illinois":
-                        state = "IL" 
-                    elif state == "Missouri":
-                        state = "Mo"                         
-                    row_data["state"] = state 
-                    row_data["zipcode"] = zipcode 
-                    if country == "United States":
-                        country = "US"
-                    row_data["country"] = country
-                    
-                    # Sleep x seconds
-                    time.sleep(8) 
-
-        # if 1 == 1:
-            # print("hello world")
-            # if 
-       
-        print(f'{query}\t{color_yellow}{fulladdress}{color_reset}')     
-    # workbook.save(outuput_xlsx)
-
-    write_xlsx(data)
-    # write_kml(data)
+                    else:
+                        address_parts = fulladdress_data.split(', ')    # Split the address by commas
+                        business = address_parts[0]
+                        number = address_parts[1]
+                        street = address_parts[2]
     
+                elif fulladdress_data.count(',') == 5:
+                    if 'Township' in address_parts[1]:    # task
+                        # print(f'township = {address_parts[1]}') # temp   
+                        address_parts = fulladdress_data.split(', ')    # Split the address by commas
+                        business = address_parts[0]
+                        number = address_parts[1]
+                        street = address_parts[2]
+
+                    else:
+                        address_parts = fulladdress_data.split(', ')    # Split the address by commas
+                        business = address_parts[0]
+                        number = address_parts[1]
+                        street = address_parts[2]
+
+                if "United States" in country:
+                    country = "US" 
+
+                if street.endswith(" Township"):
+                    street == ''                
+
+                
+                if business == '' and address_parts[1].isdigit():
+                    business = address_parts[0]
+                
+                if business.isdigit():
+                    business = ''
+                elif business.endswith(" Street") or business.endswith(" Road") or business.endswith(" Tollway") or business.endswith(" Avenue"): 
+                    business = ''
+
+                if address_parts[0].isdigit():
+                    number = address_parts[0]
+                    if street == '':
+                        street = address_parts[1]
+                        
+                number = number if number.isdigit() else ''
+
+            except Exception as e:
+                print(f"{color_red}Error : {str(e)}{color_reset}")  
+
+# write rows to data
+        row_data["Latitude"] = lat_data
+        row_data["Longitude"] = long_data 
+        row_data["Address"] = address_data
+        row_data["business"] = business 
+        row_data["number"] = number 
+        row_data["street"] = street
+        row_data["city"] = city 
+        row_data["county"] = county 
+        row_data["state"] = state 
+        row_data["zipcode"] = zipcode
+        row_data["country"] = country 
+        row_data["fulladdress"] = fulladdress_data
+        row_data["query"] = query
+        row_data["Coordinate"] = Coordinate
+        
+        print(f'{row_index + 2} ______________________\nName: {name_data}\nLat\Long: {lat_data}, {long_data}\naddress = {address_data}\nbusiness = {business}\nfulladdress_data = {fulladdress_data}\n')
+
     return data
 
 def read_xlsx_basic(input_xlsx):
@@ -402,9 +341,7 @@ def read_xlsx_basic(input_xlsx):
     """Read data from an xlsx file and return as a list of dictionaries.
     Read XLSX Function: The read_xlsx() function reads data from the input 
     Excel file using the openpyxl library. It extracts headers from the 
-    first row and then iterates through the data rows, creating dictionaries 
-    for each row with headers as keys and cell values as values.
-    
+    first row and then iterates through the data rows.    
     """
 
     wb = openpyxl.load_workbook(input_xlsx)
@@ -430,12 +367,127 @@ def read_xlsx_basic(input_xlsx):
 
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
-        (state, fulladdress, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
+        (state, fulladdress_data, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
         (Index, country) = ('', '')
+        (description_data) = ('')
+        
+        ## replace all None values with '' 
+        name_data = ''  # in case there is no Name column
+        name_data = row_data.get("Name")
+        if name_data is None:
+            name_data = ''
+        row_data["Name"] = name_data
+        
+        description_data = ''
+        description_data = row_data.get("Description")
+        if description_data is None:
+            description_data = ''
+        row_data["Description"] = description_data
 
-    
+        time_data = ''
+        time_data = row_data.get("Time")
+        if time_data is None:
+            time_data = ''
+        row_data["Time"] = time_data
+        
+        end_time_data = ''
+        end_time_data = row_data.get("End time")
+        if end_time_data is None:
+            end_time_data = ''        
+        row_data["End time"] = end_time_data
+
+        category_data = ''
+        category_data = row_data.get("Category")
+        if category_data is None:
+            category_data = ''        
+        row_data["Category"] = category_data
+
+        lat_data = ''
+        lat_data = row_data.get("Latitude")
+
+        row_data["Latitude"] = lat_data
+
+        long_data = ''
+        long_data = row_data.get("Longitude")
+
+        row_data["Longitude"] = long_data
+
+        address_data = ''    
+        address_data = row_data.get("Address")
+        if address_data is None:
+            address_data = ''        
+        row_data["Address"] = address_data
+
+        type_data = ''
+        type_data = row_data.get("Type")
+        if type_data is None:
+            type_data = ''  
+        row_data["Type"] = type_data
+        
+        business_data = ''
+        business_data = row_data.get("business")    # test   
+        if business_data is None:
+            business_data = ''
+        else:
+            try:
+                business_data = business_data.strip()
+            except Exception as e:
+                print(f"{color_red}Error stripping {business_data}: {str(e)}{color_reset}")
+        row_data["business"] = business_data    
+
+        fulladdress_data  = row_data.get("fulladdress")
+        if fulladdress_data is None:
+            fulladdress_data = ''       
+        row_data["fulladdress"] = fulladdress_data
+
+        query = ''
+        query  = row_data.get("query")
+        if query is None:
+            query = ''     
+        row_data["query"] = query
+
+
+        plate_data = ''
+        plate_data  = row_data.get("Plate")         # red
+        if plate_data is None:
+            plate_data = ''     
+        row_data["Plate"] = plate_data
+
+        country = ''
+        country = row_data.get("country")
+        if country is None:
+            country = ''     
+        row_data["country"] = country
+
+
+        
+        lat_data = row_data.get("Coordinate")
+        lat_data = row_data.get("Latitude")
+        if lat_data is None:
+            lat_data = ''  
+        
+        coordinate_data = ''
+        coordinate_data = row_data.get("Coordinate")
+        if coordinate_data is None:
+            coordinate_data = ''        
+        if coordinate_data == '':
+            if lat_data != '' and long_data != '':
+                coordinate_data = (f'{long_data}, {lat_data}')
+        row_data["Coordinate"] = coordinate_data
+
+        hwy_data = ''
+        hwy_data  = row_data.get("Highway Name")
+        if hwy_data is None:
+            hwy_data = ''           
+        row_data["Highway Name"] = hwy_data
+
+        direction_data = ''
+        direction_data  = row_data.get("Direction")
+        if direction_data is None:
+            direction_data = ''    
+        row_data["Direction"] = direction_data
+        
     return data
-
 
 
 def write_kml(data):
@@ -459,70 +511,24 @@ def write_kml(data):
     ]
 
     for row_index, row_data in enumerate(data):
-        (description_data) = ('')
+        index_data = row_index + 2  # excel row starts at 2, not 0
         
         name_data = row_data.get("Name")
-        if name_data is None:
-            name_data = ''
-   
         description_data = row_data.get("Description")
-        if description_data is None:
-            description_data = ''
-
         time_data = row_data.get("Time")
-        if time_data is None:
-            time_data = ''
-        
-        
         end_time_data = row_data.get("End time")
-        if end_time_data is None:
-            end_time_data = ''        
-        
-        coordinate_data = row_data.get("Coordinate")
+        category_data = row_data.get("Category")
         lat_data = row_data.get("Latitude")
-        if lat_data is None:
-            lat_data = ''        
-
         long_data = row_data.get("Longitude")
-        if long_data is None:
-            long_data = ''
-            
         address_data = row_data.get("Address")
-        if address_data is None:
-            address_data = ''        
-        
         type_data = row_data.get("Type")
-        if type_data is None:
-            type_data = ''        
-        
+        business_data = ''
         business_data = row_data.get("business")    # test   
-        if business_data is None:
-            business_data = ''
-        else:
-            try:
-                business_data = business_data.strip()
-            except Exception as e:
-                print(f"{color_red}Error stripping {business_data}: {str(e)}{color_reset}")
-            
-        full_address_data  = row_data.get("fulladdress")
-        if full_address_data is None:
-            full_address_data = ''           
-        
+        fulladdress_data  = row_data.get("fulladdress")
         plate_data  = row_data.get("Plate")         # red
-        if plate_data is None:
-            plate_data = ''          
-        
+        coordinate_data = row_data.get("Coordinate")
         hwy_data  = row_data.get("Highway Name")
-        if hwy_data is None:
-            hwy_data = ''           
         direction_data  = row_data.get("Direction")
-        if direction_data is None:
-            direction_data = ''           
-                
-        # index_data = row_data.get("Index")
-        index_data = row_index  # task
-    
-        # (description_data) = (f'{index_data}, {description_data}')
 
         if name_data != '':
             (description_data) = (f'{description_data}\nNAME: {name_data}')
@@ -536,8 +542,8 @@ def write_kml(data):
         if address_data != '':
             (description_data) = (f'{description_data}\n{address_data}')
 
-        elif full_address_data != '':
-            (description_data) = (f'{description_data}\nADDRESS: {full_address_data}')
+        elif fulladdress_data != '':
+            (description_data) = (f'{description_data}\nADDRESS: {fulladdress_data}')
 
         if hwy_data != '':
             (description_data) = (f'{description_data}\nHwy NAME: {hwy_data}')
@@ -555,12 +561,13 @@ def write_kml(data):
         if plate_data != '':
             (description_data) = (f'{description_data}\nPLATE: {plate_data}')
 
-            
-        print(f'______________________{index_data + 2} description = {description_data}')
+        point = ''  # Initialize point variable outside the block
+        
+        if lat_data == '' or long_data == '' or lat_data == None or long_data == None:
+            print(f'skipping row {index_data} - No GPS')
 
-        point = None  # Initialize point variable outside the block
-
-        if lat_data != '' and long_data != '' and type_data == "LPR":
+        elif type_data == "LPR":
+        # if lat_data != '' and long_data != '' and type_data == "LPR":
             
             point = kml.newpoint(
                 name=f"{index_data}",
@@ -569,14 +576,14 @@ def write_kml(data):
             )
             point.style.iconstyle.color = simplekml.Color.red
             point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
-            # point.style.labelstyle.text = "Videos"  # Set the label text
-            print(f'LPR found {type_data}') # temp
+
             if business_data != '':
                 point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
             else:   
                 point.style.labelstyle.color = simplekml.Color.white  # Set label text color
 
-        elif lat_data != '' and long_data != '' and type_data == "Images":
+        elif type_data == "Images":
+        # elif lat_data != '' and long_data != '' and type_data == "Images":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
@@ -591,7 +598,8 @@ def write_kml(data):
             else:   
                 point.style.labelstyle.color = simplekml.Color.white  # Set label text color
 
-        elif lat_data != '' and long_data != '' and type_data == "Videos":
+        elif type_data == "Videos":
+        # elif lat_data != '' and long_data != '' and type_data == "Videos":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
@@ -606,7 +614,8 @@ def write_kml(data):
             else:   
                 point.style.labelstyle.color = simplekml.Color.white  # Set label text color
 
-        elif lat_data != '' and long_data != '' and type_data == "Locations":
+        elif type_data == "Locations":
+        # elif lat_data != '' and long_data != '' and type_data == "Locations":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
@@ -635,17 +644,6 @@ def write_kml(data):
                 point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
             else:   
                 point.style.labelstyle.color = simplekml.Color.white  # Set label text color
-
-
-
-
-            # color options: red, orange, yellow, green, blue, purple, white, black, gray
-            
-        elif coordinate_data is not None:
-            # kml.newpoint(name=f"{description_data}", coords=[(long_data, lat_data)])    #should it be lat, long?
-            # kml.newpoint(name=f"{index_data}", description=f"{description_data}", coords=[(coordinate_data)])  # lon, lat
-            print(f'fix coordinate_data {coordinate_data}')
-            
 
     # Save the KML document to the specified output file
     kml.save(output_kml)
@@ -810,7 +808,7 @@ export a temp copy to output.txt
 if it's less than 3000 skip the sleep timer
 
 Add Group and Subgroup, color
-
+if coordinate but no address or gps. convert coordinate to lat/long
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
