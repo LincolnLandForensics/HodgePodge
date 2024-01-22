@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="1">
+        <Style id="4">
+            <IconStyle id="5">
+                <color>ffff0000</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="6">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="7">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="10">
+            <IconStyle id="11">
+                <color>ff800080</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="12">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="13">
+                <color>ffffffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="16">
+            <IconStyle id="17">
+                <color>ff800080</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="18">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="19">
+                <color>ffffffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="22">
+            <IconStyle id="23">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="24">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="25">
+                <color>ffffffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="28">
+            <IconStyle id="29">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="30">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="31">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="34">
+            <IconStyle id="35">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="36">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="37">
+                <color>ffffffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="40">
+            <IconStyle id="41">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="42">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="43">
+                <color>ffffffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="46">
+            <IconStyle id="47">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="48">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="49">
+                <color>ffffffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="52">
+            <IconStyle id="53">
+                <color>ff800080</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="54">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="55">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="58">
+            <IconStyle id="59">
+                <color>ffff0000</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="60">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="61">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="64">
+            <IconStyle id="65">
+                <color>ff00a5ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="66">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="67">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Placemark id="3">
+            <name>2</name>
+            <description>IMG_1045.JPG
+TIME: 7/15/2021 5:21:51 PM
+Crazy Grill Buffet, Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60130, United States
+TYPE: Images / Media / Media
+Business: Crazy Grill Buffet</description>
+            <styleUrl>#4</styleUrl>
+            <Point id="2">
+                <coordinates>-87.8146277777778,41.8637888888889,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="9">
+            <name>3</name>
+            <description>
+TIME: 12/26/2023 11:01:31 AM(UTC-6)
+West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
+SOURCE: Apple Maps
+TYPE: Locations / PointOfInterest / UserSpecified</description>
+            <styleUrl>#10</styleUrl>
+            <Point id="8">
+                <coordinates>-87.6369670043945,41.8832054138184,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="15">
+            <name>4</name>
+            <description>
+NAME: Purple Test – Parking
+TIME: 9/20/2023 3:26:38 PM(UTC-5)
+ADDRESS: Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
+SOURCE: WhatsApp
+TYPE: Locations / PointOfInterest / Shared</description>
+            <styleUrl>#16</styleUrl>
+            <Point id="14">
+                <coordinates>-87.8169277777778,41.8637869888889,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="21">
+            <name>5</name>
+            <description>IMG_0069.MOV
+TIME: 12/24/2023 10:24:20 AM(UTC-6)
+Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
+TYPE: Videos / Media / Media</description>
+            <styleUrl>#22</styleUrl>
+            <Point id="20">
+                <coordinates>-87.8169277777778,41.8636988888889,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="27">
+            <name>6</name>
+            <description>IMG_1969.MOV
+NAME: Yellow test w/Business
+TIME: 8/6/2022 7:14:54 PM(UTC-5)
+DiNolfo's Banquets, 14447, West 159th Street, Homer Glen, Will County, Illinois, 60491, United States
+TYPE: Videos / Media / Media
+Business: DiNolfo's Banquets</description>
+            <styleUrl>#28</styleUrl>
+            <Point id="26">
+                <coordinates>-87.9698,41.5988,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="33">
+            <name>7</name>
+            <description>
+NAME: test3
+TIME: 9/22/2021 1:02:45 PM(UTC-5)
+West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
+Hwy NAME: West Washington Street
+DIRECTION: west
+TYPE: LPR / None / None
+PLATE: No_Plate</description>
+            <styleUrl>#34</styleUrl>
+            <Point id="32">
+                <coordinates>-87.6369670043945,41.8832069138184,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="39">
+            <name>8</name>
+            <description>
+NAME: Orange Test
+TIME: 7/26/2022 2:33:12 PM(UTC-5)
+Tri-State Tollway, Justice, Lyons Township, Cook County, Illinois, 60458, United States
+Hwy NAME: I-294
+SOURCE: Flock
+TYPE: Videos / Media / Media</description>
+            <styleUrl>#40</styleUrl>
+            <Point id="38">
+                <coordinates>-87.8328635429077,41.7431510003286,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="45">
+            <name>9</name>
+            <description>
+NAME: Red Test
+TIME: 7/26/2022 2:33:12 PM(UTC-5)
+8701, Industrial Drive, Justice, Lyons Township, Cook County, Illinois, 60458, United States
+Hwy NAME: I-294
+TYPE: LPR / None / None
+PLATE: No_Plate2</description>
+            <styleUrl>#46</styleUrl>
+            <Point id="44">
+                <coordinates>-87.8369635429077,41.7431510003286,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="51">
+            <name>10</name>
+            <description>Last Position
+NAME: Willis Tower – Address only
+233 S Wacker Dr, Chicago, IL 60606
+SOURCE: Waze
+TYPE: Locations / PointOfInterest / Navigation
+Business: Willis Tower</description>
+            <styleUrl>#52</styleUrl>
+            <Point id="50">
+                <coordinates>-87.6359612118808,41.87873805,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="57">
+            <name>12</name>
+            <description>
+NAME: Midway GPS only
+ADDRESS: Chicago Midway International Airport, 5700, South Cicero Avenue, Garfield Ridge, Chicago, Lake Township, Cook County, Illinois, 60638, United States
+TYPE: Images / Media / Media
+Business: Chicago Midway International Airport</description>
+            <styleUrl>#58</styleUrl>
+            <Point id="56">
+                <coordinates>-87.7508486935715,41.7854316,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="63">
+            <name>13</name>
+            <description>Little Red Schoolhouse Nature Center
+Little Red Schoolhouse Nature Center, 9800 Willow Springs Rd, Willow Springs, IL 60480
+SOURCE: Waze
+TYPE: Searched Items / PointOfInterest / SearchedPlaces
+Business: Little Red Schoolhouse Nature Center</description>
+            <styleUrl>#64</styleUrl>
+            <Point id="62">
+                <coordinates>-87.877258885395,41.7090584,0.0</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>
