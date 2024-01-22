@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 # coding: utf-8
 '''
 read GPS coordinates and convert them to addresses
@@ -14,6 +14,9 @@ import sys
 import time
 import openpyxl
 import simplekml
+from datetime import datetime
+
+
 
 from openpyxl import Workbook   # test
 from openpyxl.styles import PatternFill # test
@@ -152,6 +155,43 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+def convert_date_format(input_date):
+    (output_date) = ('')
+    input_date = input_date.replace(' at ',' ')
+    date_parts = input_date.split(' ')
+    updated_date_parts = date_parts[:-1]
+    updated_date_string = ' '.join(updated_date_parts)
+    input_date = updated_date_string
+
+    if input_date.count(',') == 1:
+        input_format = "%B %d, %Y %I:%M:%S %p"
+
+        try:
+            dt_object = datetime.strptime(input_date, input_format)
+        except Exception as e:
+            print(f"Error : {str(e)}") 
+        
+        try:
+            output_format = "%m/%d/%Y %I:%M:%S %p"
+            output_date = dt_object.strftime(output_format)
+        except Exception as e:
+            print(f"Error : {str(e)}") 
+    elif input_date.count(',') == 2:
+        input_format = "%B %d, %Y, %I:%M:%S %p"
+
+        try:
+            dt_object = datetime.strptime(input_date, input_format)
+        except Exception as e:
+            print(f"Error : {str(e)}") 
+        
+        try:
+            output_format = "%m/%d/%Y %I:%M:%S %p"
+            output_date = dt_object.strftime(output_format)
+        except Exception as e:
+            print(f"Error : {str(e)}") 
+        
+    return output_date
+
 
 def read_gps(data): 
 
@@ -163,6 +203,7 @@ def read_gps(data):
     """
 
     for row_index, row_data in enumerate(data):
+        print(f'\n{row_index + 2} ______________________\n')
         (street, Coordinate, fulladdress_data) = ('', '', '')
         
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
@@ -175,8 +216,13 @@ def read_gps(data):
 
         name_data = row_data.get("Name")
         lat_data = row_data.get("Latitude") # works
-        
+        lat_data = str(lat_data)
+        if lat_data is None:
+            lat_data = ''        
         long_data = row_data.get("Longitude") # works
+        long_data = str(long_data)
+        if long_data is None:
+            long_data = ''        
         address_data = row_data.get("Address") # works
   
         business = row_data.get("business")
@@ -187,8 +233,7 @@ def read_gps(data):
         zipcode = row_data.get("zipcode")
         query = row_data.get("query")
         country = row_data.get("country")
-        
-        
+
         coordinate_data = row_data.get("Coordinate")
         row_data["Index"] = (row_index + 2)
 
@@ -198,8 +243,8 @@ def read_gps(data):
 
             print(f'{color_green} full address =  {fulladdress_data}{color_reset}')    # temp
 # GPS to fulladdress
-        elif lat_data != '' and isinstance(lat_data, str) and len(lat_data) > 3:
-            print(f'{color_orange} Coordinate =  {coordinate_data}{color_reset}')    # temp
+        elif lat_data != '' and isinstance(lat_data, str) and len(lat_data) > 5:
+            print(f'{color_yellow} Coordinate =  {lat_data}, {long_data}{color_reset}')    # temp
 
             if lat_data != '' and isinstance(lat_data, str) and len(lat_data) > 3:
                 print(f'') # temp
@@ -246,7 +291,7 @@ def read_gps(data):
 
                 time.sleep(8)   # Sleep for x seconds
         else:
-            print(f'none of the above')
+            print(f'{color_red}none of the above{color_reset}')
 
 # parse fulladdress
         if len(fulladdress_data) > 2 and skip != 'skip':
@@ -330,9 +375,10 @@ def read_gps(data):
         row_data["country"] = country 
         row_data["fulladdress"] = fulladdress_data
         row_data["query"] = query
-        row_data["Coordinate"] = Coordinate
+        row_data["Coordinate"] = coordinate_data
+
         
-        print(f'{row_index + 2} ______________________\nName: {name_data}\nLat\Long: {lat_data}, {long_data}\naddress = {address_data}\nbusiness = {business}\nfulladdress_data = {fulladdress_data}\n')
+        print(f'\nName: {name_data}\nLat\Long: {lat_data}, {long_data}\naddress = {address_data}\nbusiness = {business}\nfulladdress_data = {fulladdress_data}\n')
 
     return data
 
@@ -368,7 +414,7 @@ def read_xlsx_basic(input_xlsx):
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
         (state, fulladdress_data, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
-        (Index, country) = ('', '')
+        (Index, country, capture_time) = ('', '', '')
         (description_data) = ('')
         
         ## replace all None values with '' 
@@ -404,13 +450,32 @@ def read_xlsx_basic(input_xlsx):
 
         lat_data = ''
         lat_data = row_data.get("Latitude")
-
+        lat_data = str(lat_data)
+        if lat_data is None or lat_data == 'None':
+            lat_data = ''        
         row_data["Latitude"] = lat_data
 
         long_data = ''
         long_data = row_data.get("Longitude")
-
+        long_data = str(long_data)
+        if long_data is None or long_data == 'None':
+            long_data = ''        
         row_data["Longitude"] = long_data
+
+        if lat_data == '': 
+            lat_data = row_data.get("Capture Location Latitude")
+            lat_data = str(lat_data)
+            if lat_data is None or lat_data == 'None':
+                lat_data = ''        
+            row_data["Latitude"] = lat_data
+
+        if long_data == '':
+            long_data = ''
+            long_data = row_data.get("Capture Location Longitude")
+            long_data = str(long_data)
+            if long_data is None or long_data == 'None':
+                long_data = ''        
+            row_data["Longitude"] = long_data
 
         address_data = ''    
         address_data = row_data.get("Address")
@@ -453,6 +518,20 @@ def read_xlsx_basic(input_xlsx):
             plate_data = ''     
         row_data["Plate"] = plate_data
 
+        capture_time = ''
+        capture_time  = row_data.get("Capture Time") 
+        if capture_time is None:
+            capture_time = ''     
+        row_data["Capture Time"] = capture_time
+
+        if time_data == '' or time_data is None:
+            if capture_time != '':
+                # capture_time = "January 13, 2022, 9:41:33 PM CDT"
+                converted_date = convert_date_format(capture_time)
+                row_data["Time"] = converted_date
+                # print(f'Converted Capture time to new format {converted_date}')
+
+
         country = ''
         country = row_data.get("country")
         if country is None:
@@ -475,11 +554,25 @@ def read_xlsx_basic(input_xlsx):
                 coordinate_data = (f'{long_data}, {lat_data}')
         row_data["Coordinate"] = coordinate_data
 
+        if coordinate_data == '':
+            coordinate_data = row_data.get("Capture Location")
+            if coordinate_data is None:
+                coordinate_data = '' 
+            coordinate_data = coordinate_data.replace('(', '').replace(')', '')
+
+            row_data["Coordinate"] = coordinate_data
+
         hwy_data = ''
         hwy_data  = row_data.get("Highway Name")
         if hwy_data is None:
             hwy_data = ''           
         row_data["Highway Name"] = hwy_data
+
+        if hwy_data == '':
+            hwy_data  = row_data.get("Capture Camera")
+            if hwy_data is None:
+                hwy_data = ''           
+            row_data["Highway Name"] = hwy_data
 
         direction_data = ''
         direction_data  = row_data.get("Direction")
@@ -500,35 +593,29 @@ def write_kml(data):
     kml = simplekml.Kml()
     
     print(f'testing write_kml') # temp
-    headers = [
-        "Name", "Description", "Time", "End time", "Category", "Latitude"
-        , "Longitude", "Map Address", "Address", "Type", "Source", "Account"
-        , "Deleted", "Tag Note", "Source file information", "Carved"
-        , "Manually decoded", "business", "number", "street", "city", "county"
-        , "state", "zipcode", "country", "fulladdress", "query", "Plate"
-        , "Container", "Sighting State", "Sighting Location", "Coordinate"
-        , "Highway Name", "Direction", "Time (Local)", "Index"
-    ]
 
     for row_index, row_data in enumerate(data):
         index_data = row_index + 2  # excel row starts at 2, not 0
         
-        name_data = row_data.get("Name")
-        description_data = row_data.get("Description")
         time_data = row_data.get("Time")
-        end_time_data = row_data.get("End time")
-        category_data = row_data.get("Category")
         lat_data = row_data.get("Latitude")
         long_data = row_data.get("Longitude")
         address_data = row_data.get("Address")
+        group_data = row_data.get("Group") 
+        subgroup_data = row_data.get("Subgroup")   
+        description_data = row_data.get("Description")
         type_data = row_data.get("Type")
+        source_data = row_data.get("Source")
+        name_data = row_data.get("Name")
         business_data = ''
         business_data = row_data.get("business")    # test   
         fulladdress_data  = row_data.get("fulladdress")
-        plate_data  = row_data.get("Plate")         # red
-        coordinate_data = row_data.get("Coordinate")
+        plate_data  = row_data.get("Plate")   
         hwy_data  = row_data.get("Highway Name")
+        coordinate_data = row_data.get("Coordinate")
         direction_data  = row_data.get("Direction")
+        end_time_data = row_data.get("End time")
+        category_data = row_data.get("Category")
 
         if name_data != '':
             (description_data) = (f'{description_data}\nNAME: {name_data}')
@@ -551,12 +638,20 @@ def write_kml(data):
         if direction_data != '':
             (description_data) = (f'{description_data}\nDIRECTION: {direction_data}')
 
+        if source_data != '' and source_data != None:
+            (description_data) = (f'{description_data}\nSOURCE: {source_data}')
+
         if type_data != '':
             (description_data) = (f'{description_data}\nTYPE: {type_data}')
 
+        if group_data != '':
+            (description_data) = (f'{description_data} / {group_data}')
+
+        if subgroup_data != '' and subgroup_data != 'Unknown':
+            (description_data) = (f'{description_data} / {subgroup_data}')
+
         if business_data != '':
             (description_data) = (f'{description_data}\nBusiness: {business_data}')
-
 
         if plate_data != '':
             (description_data) = (f'{description_data}\nPLATE: {plate_data}')
@@ -671,69 +766,95 @@ def write_xlsx(data):
 
     # headers = data[0].keys()  # Get the keys (headers) from the first row of data
 
+    # headers_old = [
+        # "Name", "Description", "Time", "End time", "Category", "Latitude"
+        # , "Longitude", "Map Address", "Address", "Type", "Source", "Account"
+        # , "Deleted", "Tag Note", "Source file information", "Carved"
+        # , "Manually decoded", "business", "number", "street", "city", "county"
+        # , "state", "zipcode", "country", "fulladdress", "query", "Plate"
+        # , "Container", "Sighting State", "Sighting Location", "Coordinate"
+        # , "Highway Name", "Direction", "Time (Local)", "Index", "#"
+    # ]
+    
     headers = [
-        "Name", "Description", "Time", "End time", "Category", "Latitude"
-        , "Longitude", "Map Address", "Address", "Type", "Source", "Account"
-        , "Deleted", "Tag Note", "Source file information", "Carved"
-        , "Manually decoded", "business", "number", "street", "city", "county"
-        , "state", "zipcode", "country", "fulladdress", "query", "Plate"
-        , "Container", "Sighting State", "Sighting Location", "Coordinate"
-        , "Highway Name", "Direction", "Time (Local)", "Index", "#"
+        "#", "Time", "Latitude", "Longitude", "Address", "Group", "Subgroup"
+        , "Description", "Type", "Source", "Deleted", "Tag", "Source file information"
+        , "Service Identifier", "Carved", "Name", "business", "number", "street"
+        , "city", "county", "state", "zipcode", "country", "fulladdress", "query"
+        , "Sighting State", "Plate", "Capture Time", "Capture Network", "Highway Name"
+        , "Coordinate", "Capture Location Latitude", "Capture Location Longitude"
+        , "Index", "Container", "Sighting Location", "Highway Name", "Direction"
+        , "Time Local", "End time", "Category", "Manually decoded", "Account"
     ]
+
+
 
     # Write headers to the first row
     for col_index, header in enumerate(headers):
         cell = worksheet.cell(row=1, column=col_index + 1)
         cell.value = header
-        if col_index in [5, 6, 8]: 
-            fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
+        if col_index in [2, 3, 4]: 
+            fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid") # orange?
             cell.fill = fill
-        elif col_index in [0, 1, 2, 3, 9, 17, 25, 31, 32, 33]:  # yellow headers
+        elif col_index in [1, 5, 6, 7, 8, 9, 15, 16, 24, 30, 31, 37, 38, 40]:  # yellow headers
             fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")  # Use yellow color
             cell.fill = fill
         elif col_index == 27:  # Red for column 27
             fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")  # Red color
             cell.fill = fill
 
-    # Excel column width
-    worksheet.column_dimensions['A'].width = 15# Name
-    worksheet.column_dimensions['B'].width = 17# Description
-    worksheet.column_dimensions['C'].width = 16# Time
-    worksheet.column_dimensions['D'].width = 20# End time
-    worksheet.column_dimensions['E'].width = 20# Category       or Group or Subgroup
-    worksheet.column_dimensions['F'].width = 20# Latitude
-    worksheet.column_dimensions['G'].width = 20# Longitude
-    worksheet.column_dimensions['H'].width = 20# Map Address
-    worksheet.column_dimensions['I'].width = 45# Address
-    worksheet.column_dimensions['J'].width = 10# Type
+    ## Excel column width
+    worksheet.column_dimensions['A'].width = 8# #
+    worksheet.column_dimensions['B'].width = 16# Time
+    worksheet.column_dimensions['C'].width = 20# Latitude
+    worksheet.column_dimensions['D'].width = 20# Longitude
+    worksheet.column_dimensions['E'].width = 45# Address  Category       or Group or Subgroup
+    worksheet.column_dimensions['F'].width = 15# Group
+    worksheet.column_dimensions['G'].width = 15# Subgroup
+    worksheet.column_dimensions['H'].width = 17# Description
+    worksheet.column_dimensions['I'].width = 10# Type
+    worksheet.column_dimensions['J'].width = 10# Source
     worksheet.column_dimensions['K'].width = 10# Source
-    worksheet.column_dimensions['L'].width = 10# Account
-    worksheet.column_dimensions['M'].width = 10# Deleted
-    worksheet.column_dimensions['N'].width = 10# Tag Note       or Tag
-    worksheet.column_dimensions['O'].width = 20# Source file information
-    worksheet.column_dimensions['P'].width = 10# Carved
-    worksheet.column_dimensions['Q'].width = 10# Manually decoded
-    worksheet.column_dimensions['R'].width = 20# business   
-    worksheet.column_dimensions['S'].width = 10# number    
-    worksheet.column_dimensions['T'].width = 20# street    
-    worksheet.column_dimensions['Y'].width = 20# city    
-    worksheet.column_dimensions['V'].width = 25# county    
-    worksheet.column_dimensions['W'].width = 15# state    
-    worksheet.column_dimensions['X'].width = 8# zipcode   
-    worksheet.column_dimensions['Y'].width = 9# country   
-    worksheet.column_dimensions['Z'].width = 26# FullAddress
-    worksheet.column_dimensions['AA'].width = 26# query
-    # Flock
+    worksheet.column_dimensions['L'].width = 10# Tag
+    worksheet.column_dimensions['M'].width = 20# Source file information
+    worksheet.column_dimensions['N'].width = 15# Service Identifier
+    worksheet.column_dimensions['O'].width = 10# Carved
+    worksheet.column_dimensions['P'].width = 15# Name
+    
+    ## bonus
+    worksheet.column_dimensions['Q'].width = 20# business 
+    worksheet.column_dimensions['R'].width = 10# number
+    worksheet.column_dimensions['S'].width = 20# street 
+    worksheet.column_dimensions['T'].width = 20# city   
+    worksheet.column_dimensions['Y'].width = 25# county    
+    worksheet.column_dimensions['V'].width = 15# state   
+    worksheet.column_dimensions['W'].width = 8# zipcode     
+    worksheet.column_dimensions['X'].width = 8# country    
+    worksheet.column_dimensions['Y'].width = 26# FullAddress   
+    worksheet.column_dimensions['Z'].width = 26# query
+
+    ##  Flock
+    worksheet.column_dimensions['AA'].width = 11# Sighting State
     worksheet.column_dimensions['AB'].width = 11# Plate
-    worksheet.column_dimensions['AC'].width = 10# Container
-    worksheet.column_dimensions['AD'].width = 17# Sighting State
-    worksheet.column_dimensions['AE'].width = 17# Sighting Location
+    worksheet.column_dimensions['AC'].width = 20# Capture Time
+    worksheet.column_dimensions['AD'].width = 15# Capture Network
+    worksheet.column_dimensions['AE'].width = 26# Highway Name
     worksheet.column_dimensions['AF'].width = 17# Coordinate
-    worksheet.column_dimensions['AG'].width = 26# Highway Name
-    worksheet.column_dimensions['AH'].width = 12# Direction
-    worksheet.column_dimensions['AI'].width = 29# Time (LOCAL)
-    worksheet.column_dimensions['AJ'].width = 8# Index
-    worksheet.column_dimensions['AK'].width = 8# #
+    worksheet.column_dimensions['AG'].width = 26# Capture Location Latitude
+    worksheet.column_dimensions['AH'].width = 26# Capture Location Longitude
+
+    ##
+    worksheet.column_dimensions['AI'].width = 6# Index
+    worksheet.column_dimensions['AJ'].width = 10# Container
+    worksheet.column_dimensions['AK'].width = 18# Sighting Location
+    worksheet.column_dimensions['AL'].width = 14# Highway Name
+    worksheet.column_dimensions['AM'].width = 10# Direction
+    worksheet.column_dimensions['AN'].width = 11# Time Local
+    worksheet.column_dimensions['AO'].width = 11# End time
+    worksheet.column_dimensions['AP'].width = 10# Category
+    worksheet.column_dimensions['AQ'].width = 18# Manually decoded
+    worksheet.column_dimensions['AR'].width = 10# Account
+
     
     for row_index, row_data in enumerate(data):
 
