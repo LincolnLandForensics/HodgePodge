@@ -99,7 +99,7 @@
         </Style>
         <Style id="40">
             <IconStyle id="41">
-                <color>ff00ffff</color>
+                <color>ff00a5ff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
@@ -131,7 +131,7 @@
         </Style>
         <Style id="52">
             <IconStyle id="53">
-                <color>ff800080</color>
+                <color>ff00a5ff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
@@ -147,7 +147,7 @@
         </Style>
         <Style id="58">
             <IconStyle id="59">
-                <color>ffff0000</color>
+                <color>ff800080</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
@@ -163,7 +163,7 @@
         </Style>
         <Style id="64">
             <IconStyle id="65">
-                <color>ff00a5ff</color>
+                <color>ffff0000</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
@@ -177,12 +177,73 @@
                 <scale>0.8</scale>
             </LabelStyle>
         </Style>
+        <Style id="70">
+            <IconStyle id="71">
+                <color>ff00a5ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="72">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="73">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="76">
+            <IconStyle id="77">
+                <color>ff00a5ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="78">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="79">
+                <color>ffffffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="82">
+            <IconStyle id="83">
+                <color>ff00a5ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="84">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="85">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="88">
+            <IconStyle id="89">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="90">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="91">
+                <color>ffffffff</color>
+                <colorMode>normal</colorMode>
+                <scale>0.8</scale>
+            </LabelStyle>
+        </Style>
         <Placemark id="3">
             <name>2</name>
-            <description>IMG_1045.JPG
-TIME: 7/15/2021 5:21:51 PM
-Crazy Grill Buffet, Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60130, United States
-TYPE: Images / Media / Media
+            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
 Business: Crazy Grill Buffet</description>
             <styleUrl>#4</styleUrl>
             <Point id="2">
@@ -192,10 +253,10 @@ Business: Crazy Grill Buffet</description>
         <Placemark id="9">
             <name>3</name>
             <description>
+NAME: Test – gps only (purple pin) no business
 TIME: 12/26/2023 11:01:31 AM(UTC-6)
-West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
-SOURCE: Apple Maps
-TYPE: Locations / PointOfInterest / UserSpecified</description>
+ADDRESS: West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
+TYPE: Locations</description>
             <styleUrl>#10</styleUrl>
             <Point id="8">
                 <coordinates>-87.6369670043945,41.8832054138184,0.0</coordinates>
@@ -204,11 +265,10 @@ TYPE: Locations / PointOfInterest / UserSpecified</description>
         <Placemark id="15">
             <name>4</name>
             <description>
-NAME: Purple Test – Parking
+NAME: Test – gps only (purple pin) no business
 TIME: 9/20/2023 3:26:38 PM(UTC-5)
 ADDRESS: Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
-SOURCE: WhatsApp
-TYPE: Locations / PointOfInterest / Shared</description>
+TYPE: Locations</description>
             <styleUrl>#16</styleUrl>
             <Point id="14">
                 <coordinates>-87.8169277777778,41.8637869888889,0.0</coordinates>
@@ -217,9 +277,10 @@ TYPE: Locations / PointOfInterest / Shared</description>
         <Placemark id="21">
             <name>5</name>
             <description>IMG_0069.MOV
+NAME: Test – Fulladdress,gps and address (yellow pin) no business
 TIME: 12/24/2023 10:24:20 AM(UTC-6)
 Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
-TYPE: Videos / Media / Media</description>
+TYPE: Videos</description>
             <styleUrl>#22</styleUrl>
             <Point id="20">
                 <coordinates>-87.8169277777778,41.8636988888889,0.0</coordinates>
@@ -227,26 +288,23 @@ TYPE: Videos / Media / Media</description>
         </Placemark>
         <Placemark id="27">
             <name>6</name>
-            <description>IMG_1969.MOV
-NAME: Yellow test w/Business
-TIME: 8/6/2022 7:14:54 PM(UTC-5)
-DiNolfo's Banquets, 14447, West 159th Street, Homer Glen, Will County, Illinois, 60491, United States
-TYPE: Videos / Media / Media
-Business: DiNolfo's Banquets</description>
+            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+Business: Hawthorne Racecourse</description>
             <styleUrl>#28</styleUrl>
             <Point id="26">
-                <coordinates>-87.9698,41.5988,0.0</coordinates>
+                <coordinates>-87.7510767237512,41.8285843,0.0</coordinates>
             </Point>
         </Placemark>
         <Placemark id="33">
             <name>7</name>
             <description>
-NAME: test3
+NAME: Test – lpr gps only (red) end time
 TIME: 9/22/2021 1:02:45 PM(UTC-5)
-West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
-Hwy NAME: West Washington Street
+End Time: 9/22/2021 1:02:45 PM(UTC-5)
+ADDRESS: West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
+HWY NAME: West Washington Street
 DIRECTION: west
-TYPE: LPR / None / None
+TYPE: LPR
 PLATE: No_Plate</description>
             <styleUrl>#34</styleUrl>
             <Point id="32">
@@ -256,12 +314,10 @@ PLATE: No_Plate</description>
         <Placemark id="39">
             <name>8</name>
             <description>
-NAME: Orange Test
+NAME: Test – gps only(orange pin) (unkown type)
 TIME: 7/26/2022 2:33:12 PM(UTC-5)
-Tri-State Tollway, Justice, Lyons Township, Cook County, Illinois, 60458, United States
-Hwy NAME: I-294
-SOURCE: Flock
-TYPE: Videos / Media / Media</description>
+ADDRESS: Tri-State Tollway, Justice, Lyons Township, Cook County, Illinois, 60458, United States
+TYPE: Intel</description>
             <styleUrl>#40</styleUrl>
             <Point id="38">
                 <coordinates>-87.8328635429077,41.7431510003286,0.0</coordinates>
@@ -270,11 +326,11 @@ TYPE: Videos / Media / Media</description>
         <Placemark id="45">
             <name>9</name>
             <description>
-NAME: Red Test
+NAME: Test – gps only LPR (red pin)
 TIME: 7/26/2022 2:33:12 PM(UTC-5)
-8701, Industrial Drive, Justice, Lyons Township, Cook County, Illinois, 60458, United States
-Hwy NAME: I-294
-TYPE: LPR / None / None
+ADDRESS: 8701, Industrial Drive, Justice, Lyons Township, Cook County, Illinois, 60458, United States
+HWY NAME: I-294
+TYPE: LPR
 PLATE: No_Plate2</description>
             <styleUrl>#46</styleUrl>
             <Point id="44">
@@ -282,12 +338,8 @@ PLATE: No_Plate2</description>
             </Point>
         </Placemark>
         <Placemark id="51">
-            <name>10</name>
-            <description>Last Position
-NAME: Willis Tower – Address only
-233 S Wacker Dr, Chicago, IL 60606
-SOURCE: Waze
-TYPE: Locations / PointOfInterest / Navigation
+            <name>11</name>
+            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
 Business: Willis Tower</description>
             <styleUrl>#52</styleUrl>
             <Point id="50">
@@ -296,26 +348,62 @@ Business: Willis Tower</description>
         </Placemark>
         <Placemark id="57">
             <name>12</name>
-            <description>
-NAME: Midway GPS only
-ADDRESS: Chicago Midway International Airport, 5700, South Cicero Avenue, Garfield Ridge, Chicago, Lake Township, Cook County, Illinois, 60638, United States
-TYPE: Images / Media / Media
-Business: Chicago Midway International Airport</description>
+            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+Business: Urban Air</description>
             <styleUrl>#58</styleUrl>
             <Point id="56">
-                <coordinates>-87.7508486935715,41.7854316,0.0</coordinates>
+                <coordinates>-87.80702,41.8458074,0.0</coordinates>
             </Point>
         </Placemark>
         <Placemark id="63">
             <name>13</name>
-            <description>Little Red Schoolhouse Nature Center
-Little Red Schoolhouse Nature Center, 9800 Willow Springs Rd, Willow Springs, IL 60480
-SOURCE: Waze
-TYPE: Searched Items / PointOfInterest / SearchedPlaces
-Business: Little Red Schoolhouse Nature Center</description>
+            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+Business: Chicago Midway International Airport</description>
             <styleUrl>#64</styleUrl>
             <Point id="62">
+                <coordinates>-87.7508486935769,41.78543165,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="69">
+            <name>14</name>
+            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+Business: Little Red Schoolhouse Nature Center</description>
+            <styleUrl>#70</styleUrl>
+            <Point id="68">
                 <coordinates>-87.877258885395,41.7090584,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="75">
+            <name>15</name>
+            <description>
+NAME: Test – full address/gps and address (orange pin) w/ business
+Riverside Public Library, 1 Burling Rd, Riverside, IL 60546</description>
+            <styleUrl>#76</styleUrl>
+            <Point id="74">
+                <coordinates>-87.8192555677286,41.82621495,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="81">
+            <name>16</name>
+            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+Business: Chicago Midway International Airport</description>
+            <styleUrl>#82</styleUrl>
+            <Point id="80">
+                <coordinates>-87.7508994935715,41.7856916,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="87">
+            <name>17</name>
+            <description>
+NAME: Test – Flock Coordinate only (red pin)
+TIME: 06/13/2022 09:41:33 PM
+ADDRESS: South Central Avenue, Stickney, Stickney Township, Cook County, Illinois, 60459, United States
+HWY NAME: 09  Central/Pershing (SB)
+TYPE: LPR
+PLATE: No_Plate2</description>
+            <styleUrl>#88</styleUrl>
+            <Point id="86">
+                <coordinates>-87.76324840980894,41.821174151816635,0.0</coordinates>
             </Point>
         </Placemark>
     </Document>
