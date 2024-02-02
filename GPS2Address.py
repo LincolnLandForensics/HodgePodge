@@ -10,17 +10,16 @@ read GPS coordinates (xlsx) and convert them to KML
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 import os
+import re
 import sys
 import time
 import openpyxl
 import simplekml
+import geohash2
 from datetime import datetime
-
-
 
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
-
 
 import argparse  # for menu system
 from openpyxl import load_workbook, Workbook
@@ -62,7 +61,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "convert GPS coordinates to addresses or visa versa & create a KML file"
+description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
 version = '1.1.7'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -71,26 +70,33 @@ def main():
     global row
     row = 0  # defines arguments
     # Row = 1  # defines arguments   # if you want to add headers 
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(description=description2)
     parser.add_argument('-I', '--input', help='', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
     parser.add_argument('-c', '--create', help='create blank input sheet', required=False, action='store_true')
+    parser.add_argument('-i', '--intel', help='convert intel sheet to locations', required=False, action='store_true')
+  
     parser.add_argument('-k', '--kml', help='xlsx to kml with nothing else', required=False, action='store_true')
         
     parser.add_argument('-r', '--read', help='read xlsx', required=False, action='store_true')
 
     args = parser.parse_args()
 
-    global input_xlsx
+    # global input_xlsx
     global outuput_xlsx
     global output_kml
     output_kml = 'gps.kml'
+
+
+
+
     
     if not args.input: 
         input_xlsx = "locations.xlsx"        
     else:
         input_xlsx = args.input
 
+        
     if not args.output: 
         outuput_xlsx = "locations2addresses_.xlsx"        
     else:
@@ -99,7 +105,7 @@ def main():
     if args.create:
         data = []
         print(f'{color_green}Writing to {outuput_xlsx} {color_reset}')
-        write_xlsx(data)
+        write_locations(data)
 
     elif args.kml:
         data = []
@@ -108,7 +114,7 @@ def main():
             print(f'{color_green}Reading {input_xlsx} {color_reset}')
             
             # data = read_xlsx(input_xlsx)
-            data = read_xlsx_basic(input_xlsx)
+            data = read_locations(input_xlsx)
 
             # create kml file
             write_kml(data)
@@ -124,7 +130,20 @@ def main():
         else:
             print(f'{color_red}{input_xlsx} does not exist{color_reset}')
             exit()
+    elif args.intel:
+        data = []
+        file_exists = os.path.exists(input_xlsx)
+        if file_exists == True:
+            print(f'{color_green}Reading {input_xlsx} {color_reset}')
 
+            data = read_intel(input_xlsx)
+            # write_kml(data)
+            write_locations(data)
+            print(f'{color_green}Writing to {outuput_xlsx} {color_reset}')
+        else:
+            print(f'{color_red}{input_xlsx} does not exist{color_reset}')
+            exit()
+            
     elif args.read:
         data = []
         file_exists = os.path.exists(input_xlsx)
@@ -132,9 +151,9 @@ def main():
             print(f'{color_green}Reading {input_xlsx} {color_reset}')
             
             # data = read_xlsx(input_xlsx)
-            data = read_xlsx_basic(input_xlsx)
+            data = read_locations(input_xlsx)
             data = read_gps(data)
-            write_xlsx(data)
+            write_locations(data)
             write_kml(data)
 
             workbook.close()
@@ -156,14 +175,31 @@ def main():
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 def convert_date_format(input_date):
-    (output_date) = ('')
+    # Time regex
+    time_pattern1 = re.compile(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})')    # "YYYY-MM-DD HH:MM:SS"
+
+    time_match1 = time_pattern1.search(input_date)
+    
+    
+    (output_date, timezone) = ('', '')
+    input_date = str(input_date)    # test
     input_date = input_date.replace(' at ',' ')
     date_parts = input_date.split(' ')
     updated_date_parts = date_parts[:-1]
     updated_date_string = ' '.join(updated_date_parts)
     input_date = updated_date_string
 
-    if input_date.count(',') == 1:
+    if time_match1:             
+        print(f'time_match1 = {time_match1}')   # temp
+        # Convert the matched date string to the desired format
+        original_date = datetime.strptime(time_match1.group(1), '%Y-%m-%d %H:%M:%S')
+        converted_date = original_date.strftime('%m/%d/%Y %H:%M:%S')
+        print("Original Date:", original_date)   # temp
+        print("Converted Date:", converted_date)   # temp
+
+
+        
+    elif input_date.count(',') == 1:
         input_format = "%B %d, %Y %I:%M:%S %p"
 
         try:
@@ -190,7 +226,7 @@ def convert_date_format(input_date):
         except Exception as e:
             print(f"Error : {str(e)}") 
         
-    return output_date
+    return output_date, timezone
 
 
 def read_gps(data): 
@@ -208,9 +244,9 @@ def read_gps(data):
         
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
         (state, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '')
-        (Index, country, lat_data, long_data) = ('', '', '', '')
+        (Index, country, lat_data, long_data, PlusCode) = ('', '', '', '', '')
         (county, query) = ('', '')
-        (location, skip) = ('', '')
+        (location, skip, address_data) = ('', '', '')
         fulladdress_data = row_data.get("fulladdress")
 
         name_data = row_data.get("Name")
@@ -235,10 +271,13 @@ def read_gps(data):
 
         coordinate_data = row_data.get("Coordinate")
         row_data["Index"] = (row_index + 2)
+        PlusCode = row_data.get("PlusCode")
+
 
 # skip lines with fulladdress
-        if len(fulladdress_data) > 2:        
-            skip = 'skip'
+        if len(fulladdress_data) > 2 or fulladdress_data == 'Soul Buoy':        
+            fulladdress_data = ''
+            skip == 'skip'
 # GPS to fulladdress
         elif lat_data != '' and isinstance(lat_data, str) and len(lat_data) > 5:
 
@@ -249,7 +288,9 @@ def read_gps(data):
                     query = (f'{lat_data}, {long_data}') # backwards
 
                     try:
-                        location = geolocator.reverse((lat_data, long_data), language='en')
+                        # location = geolocator.reverse((long_data, lat_data), language='en')
+
+                        location = geolocator.reverse((lat_data, long_data), language='en') #lat/long
                     except Exception as e:
                         print(f"{color_red}Error : {str(e)}{color_reset}") 
                     try:
@@ -257,6 +298,10 @@ def read_gps(data):
 
                     except Exception as e:
                         print(f"{color_red}Error : {str(e)}{color_reset}") 
+
+                    if fulladdress_data == 'Soul Buoy':        
+                        fulladdress_data = ''
+  
 
                     time.sleep(8)   ## Sleep x seconds
 
@@ -284,11 +329,38 @@ def read_gps(data):
             except Exception as e:
                 print(f"{color_red}Error: {str(e)}{color_reset}")
 
+            if fulladdress_data == 'Soul Buoy':        
+                fulladdress_data = ''
+                skip == 'skip'
+
     # coordinate        
             if lat_data != '' and long_data != '':
                 coordinate_data = (f'{lat_data},{long_data}')
 
                 time.sleep(8)   # Sleep for x seconds
+
+        elif PlusCode != '':
+            print(f'testing PlusCode {PlusCode}')
+            
+            try:
+                decoded_location = geohash2.decode(PlusCode)
+                lat_data = decoded_location[0]
+                long_data = decoded_location[1]
+
+            
+                print(f"Coordinates for Geohash '{PlusCode}': {decoded_location[0]}, {decoded_location[1]}")
+                
+                
+                
+                # location = geolocator.geocode(PlusCode)
+                if decoded_location is not None:
+                    # lat_data, long_data = location.latitude, location.longitude
+                    print(f'PlusCode {PlusCode} = {lat_data}, {long_data}')
+                    fulladdress_data = location.address
+                else:
+                    print(f"Unable to find coordinates for address: {PlusCode}")
+            except Exception as e:
+                    print(f"{color_red}Error : {str(e)}{color_reset} PlusCode = <{PlusCode}>")  
 
         else:
             print(f'{color_red}none of the above{color_reset}')
@@ -388,13 +460,168 @@ def read_gps(data):
         row_data["fulladdress"] = fulladdress_data
         row_data["query"] = query
         row_data["Coordinate"] = coordinate_data
+        row_data["PlusCode"] = PlusCode
 
         
         print(f'\nName: {name_data}\nCoordinate: {coordinate_data}\naddress = {address_data}\nbusiness = {business}\nfulladdress_data = {fulladdress_data}\n')
 
     return data
 
-def read_xlsx_basic(input_xlsx):
+def read_intel(input_xlsx):
+    """Read intel_.xlsx sheet and convert it to locations format.    
+    """
+
+    wb = openpyxl.load_workbook(input_xlsx)
+    ws = wb.active
+    data = []
+
+    # get header values from first row
+    global headers
+    headers = []
+    for cell in ws[1]:
+        headers.append(cell.value)
+
+    # get data rows
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        row_data = {}
+        for header, value in zip(headers, row):
+            row_data[header] = value
+        data.append(row_data)
+
+    if not data:
+        print(f"{color_red}No data found in the Excel file.{color_reset}")
+        return None
+
+    for row_index, row_data in enumerate(data):
+
+        (fullname, phone, business, fulladdress_data, city, state) = ('', '', '', '', '', '')
+        (note, sosagent, Time, Latitude, Longitude, Coordinate) = ('', '', '', '', '', '')
+        (Source, description_data, type_data, Name, tag, source) = ('', '', 'Intel', '', '', '')
+        (group, subgroup, number, street, county, zipcode) = ('', '', '', '', '', '')
+        (country, query, plate_data, capture_time, hwy_data, direction_data) = ('', '', '', '', '', '')
+        (end_time_data, category_data, time2, timezone, PlusCode) = ('', '', '', '', '')
+
+# Time
+        time_data = ''
+        time_data = row_data.get("Time")
+        if time_data is None:
+            time_data = ''
+
+# Latitude
+        lat_data = ''
+        lat_data = row_data.get("Latitude")
+        lat_data = str(lat_data)
+        if lat_data is None or lat_data == 'None':
+            lat_data = ''        
+
+# Latitude
+        long_data = ''
+        long_data = row_data.get("Longitude")
+        long_data = str(long_data)
+        if long_data is None or long_data == 'None':
+            long_data = ''        
+
+# Coordinate    
+        Coordinate = ''
+        Coordinate = row_data.get("Coordinate")
+        if Coordinate is None:
+            Coordinate = ''
+            
+# address
+        address_data = ''    
+        address_data = row_data.get("fulladdress")
+        if address_data is None:
+            address_data = ''    
+            
+# Name    
+        Name = ''
+        Name = row_data.get("fullname")
+        if Name is None:
+            Name = ''
+
+# source file
+        source_file = row_data.get("Source file information")
+        if source_file is None and input_xlsx != 'intel_.xlsx':
+            source_file = input_xlsx
+
+# sosagent    
+        sosagent = ''
+        sosagent = row_data.get("sosagent")
+        if sosagent is None:
+            sosagent = ''
+            
+# phone    
+        phone = ''
+        phone = row_data.get("phone")
+        if phone is None:
+            phone = ''
+        else:
+            description_data = (f'{description_data}\nPhone:{phone}')
+
+# business    
+        business = ''
+        business = row_data.get("business")
+        if business is None:
+            business = ''
+        else:
+            description_data = (f'{description_data}\nBusiness:{business}')
+
+        description_data = description_data.strip()
+
+# city    
+        city = ''
+        city = row_data.get("city")
+        if city is None:
+            city = ''
+
+# state    
+        state = ''
+        state = row_data.get("state")
+        if state is None:
+            state = ''
+
+      
+# write rows to data
+        row_data["Time"] = time_data
+        row_data["Latitude"] = lat_data
+        row_data["Longitude"] = long_data 
+        row_data["Address"] = address_data
+        # row_data["Group"] = group
+        # row_data["Subgroup"] = subgroup
+        row_data["Description"] = description_data
+        row_data["Type"] = type_data
+        row_data["Tag"] = tag        
+        row_data["Source"] = source
+        row_data["Source file information"] = source_file
+        row_data["Name"] = Name
+        row_data["business"] = business 
+        # row_data["number"] = number 
+        # row_data["street"] = street
+        row_data["city"] = city 
+        # row_data["county"] = county 
+        row_data["state"] = state 
+        # row_data["zipcode"] = zipcode
+        # row_data["country"] = country 
+        row_data["fulladdress"] = fulladdress_data
+        # row_data["query"] = query
+        # row_data["Plate"] = plate_data
+        # row_data["Capture Time"] = capture_time
+        # row_data["Highway Name"] = hwy_data
+        row_data["Coordinate"] = Coordinate
+        # row_data["Direction"] = direction_data
+        # row_data["End time"] = end_time_data
+        # row_data["Category"] = category_data
+        # row_data["Time Original"] = time2
+        # row_data["Timezone"] = timezone
+        # row_data["PlusCode"] = PlusCode
+        # index
+     
+     
+    return data
+
+
+
+def read_locations(input_xlsx):
 
     """Read data from an xlsx file and return as a list of dictionaries.
     Read XLSX Function: The read_xlsx() function reads data from the input 
@@ -426,8 +653,8 @@ def read_xlsx_basic(input_xlsx):
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
         (state, fulladdress_data, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
-        (Index, country, capture_time) = ('', '', '')
-        (description_data, group, subgroup, source, source_file) = ('', '', '', '', '')
+        (Index, country, capture_time, PlusCode, Time2) = ('', '', '', '', '')
+        (description_data, group, subgroup, source, source_file, tag) = ('', '', '', '', '', '')
         
         ## replace all None values with '' 
         name_data = ''  # in case there is no Name column
@@ -447,6 +674,57 @@ def read_xlsx_basic(input_xlsx):
         if time_data is None:
             time_data = ''
 
+# Time2
+        time2 = ''
+        time2 = row_data.get("Time Original")
+        if time2 is None:
+            time2 = ''
+
+# Capture Time
+        capture_time = ''
+        capture_time  = row_data.get("Capture Time") 
+        if capture_time is None:
+            capture_time = ''     
+
+        if time_data == '' or time_data is None:
+            if capture_time != '':
+                time2 = capture_time
+                (converted_date, timezone) = convert_date_format(capture_time)  # test
+                time_data = converted_date
+
+        if time2 == '' and time_data == '':
+                time_data = time2   # test
+
+        # Split the string by "("
+        # split_result = time_data.split("(")
+
+        # Print the second part after "("
+        # if len(split_result) > 1:
+            # time_part = split_result[1].strip(')')
+            # print(time_part)
+
+
+# timezone
+        timezone = ''
+        timezone = row_data.get("timezone")
+        if timezone is None:
+            timezone = ''
+        if isinstance(time_data, str):
+            split_result = time_data.split("(")
+            # time_data = time_data[0]
+            if len(split_result) > 1:
+                timezone 
+                timezone = split_result[1].strip(')')
+                
+            if "(" in time_data:
+                time_data = time_data.split("(")
+                time_data = time_data[0].strip()    
+                if timezone == '':
+                    timezone = time_data[1].strip(' ()')
+                    
+                    
+                    # .strip('\(').strip('\)').strip()   
+            
 # End time
         end_time_data = ''
         end_time_data = row_data.get("End time")
@@ -530,9 +808,15 @@ def read_xlsx_basic(input_xlsx):
         if type_data is None:
             type_data = ''  
 
+# tag
+        tag = ''
+        tag = row_data.get("Tag")
+        if tag is None:
+            tag = ''
+
 # source file
         source_file = row_data.get("Source file information")
-        if source_file is None and input_xlsx != 'locations.xls':
+        if source_file is None and input_xlsx != 'locations.xlsx':
             source_file = input_xlsx
 
 # business  
@@ -566,16 +850,6 @@ def read_xlsx_basic(input_xlsx):
             type_data = 'LPR'
             
 
-# Capture Time
-        capture_time = ''
-        capture_time  = row_data.get("Capture Time") 
-        if capture_time is None:
-            capture_time = ''     
-
-        if time_data == '' or time_data is None:
-            if capture_time != '':
-                converted_date = convert_date_format(capture_time)
-                time_data = converted_date
 
 # country
         country = ''
@@ -600,6 +874,12 @@ def read_xlsx_basic(input_xlsx):
         if direction_data is None:
             direction_data = ''    
 
+# PlusCode
+        PlusCode = ''
+        PlusCode  = row_data.get("PlusCode")
+        if PlusCode is None:
+            PlusCode = ''  
+            
 # write rows to data
         row_data["Time"] = time_data
         row_data["Latitude"] = lat_data
@@ -609,6 +889,7 @@ def read_xlsx_basic(input_xlsx):
         row_data["Subgroup"] = subgroup
         row_data["Description"] = description_data
         row_data["Type"] = type_data
+        row_data["Tag"] = tag        
         row_data["Source"] = source
         row_data["Source file information"] = source_file
         row_data["Name"] = name_data
@@ -629,7 +910,12 @@ def read_xlsx_basic(input_xlsx):
         row_data["Direction"] = direction_data
         row_data["End time"] = end_time_data
         row_data["Category"] = category_data
-   
+        row_data["Time Original"] = time2
+        row_data["Timezone"] = timezone
+        row_data["PlusCode"] = PlusCode
+        # index
+     
+     
     return data
 
 
@@ -652,7 +938,8 @@ def write_kml(data):
         group_data = row_data.get("Group") 
         subgroup_data = row_data.get("Subgroup")   
         description_data = row_data.get("Description")
-        type_data = row_data.get("Type") #
+        type_data = row_data.get("Type")#
+        tag = row_data.get("Tag")
         source_file = row_data.get("Source file information") #
         name_data = row_data.get("Name")
         business = row_data.get("business")
@@ -688,6 +975,9 @@ def write_kml(data):
         # if source_file != '' and source_file != None:
             # (description_data) = (f'{description_data}\nSOURCE: {source_file}')
 
+        if tag != '':
+            (description_data) = (f'{description_data}\nTAG: {tag}')    # test
+
         if type_data != '':
             (description_data) = (f'{description_data}\nTYPE: {type_data}')
 
@@ -698,7 +988,7 @@ def write_kml(data):
             (description_data) = (f'{description_data} / {subgroup_data}')
 
         if business != '':
-            (description_data) = (f'{description}\nBusiness: {business}')
+            (description_data) = (f'{description_data}\nBusiness: {business}')
             
         if plate_data != '':
             (description_data) = (f'{description_data}\nPLATE: {plate_data}')
@@ -708,8 +998,20 @@ def write_kml(data):
         if lat_data == '' or long_data == '' or lat_data == None or long_data == None:
             print(f'skipping row {index_data} - No GPS')
 
-        elif type_data == "LPR":
-        # if lat_data != '' and long_data != '' and type_data == "LPR":
+        elif tag == "Important":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.color = simplekml.Color.cyan # bright green
+            point.style.labelstyle.scale = 1.0  # Adjust label scale if needed
+            if business != '':
+                point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
+            else:   
+                point.style.labelstyle.color = simplekml.Color.white  # Set label text color
+
+        elif type_data == "LPR" or type_data == "Toll":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
@@ -791,14 +1093,14 @@ def write_kml(data):
     print(f"KML file '{output_kml}' created successfully!")
 
 
-def write_xlsx(data):
+def write_locations(data):
     '''
-    The write_xlsx() function receives the processed data as a list of 
+    The write_locations() function receives the processed data as a list of 
     dictionaries and writes it to a new Excel file using openpyxl. 
     It defines the column headers, sets column widths, and then iterates 
     through each row of data, writing it into the Excel worksheet.
     '''
-
+    print(f'write_locations')   # temp
     global workbook
     workbook = Workbook()
     global worksheet
@@ -817,7 +1119,8 @@ def write_xlsx(data):
         , "Sighting State", "Plate", "Capture Time", "Capture Network", "Highway Name"
         , "Coordinate", "Capture Location Latitude", "Capture Location Longitude"
         , "Container", "Sighting Location", "Direction", "Time Local", "End time"
-        , "Category", "Manually decoded", "Account", "Index"
+        , "Category", "Manually decoded", "Account", "PlusCode", "Time Original", "Timezone", "Index"
+
     ]
 
     # Write headers to the first row
@@ -884,6 +1187,7 @@ def write_xlsx(data):
     worksheet.column_dimensions['AO'].width = 18# Manually decoded
     worksheet.column_dimensions['AP'].width = 10# Account
     worksheet.column_dimensions['AQ'].width = 6# Index
+    worksheet.column_dimensions['AR'].width = 26# PlusCode
 
     
     for row_index, row_data in enumerate(data):
@@ -909,9 +1213,10 @@ def write_xlsx(data):
     color_worksheet['B1'] = 'Description'
 
     color_data = [
-        ('Red', 'LPR (License Plate Reader)'),
+        ('Red', 'LPR (License Plate Reader) or Toll'),
         ('Orange', 'Default pin color'),  
         ('Yellow', 'Videos'),        
+        ('Green', 'Important'),        
         ('Black', 'Images'),
         ('Purple', 'Locations'),
         ('Yellow font', 'Business'),
@@ -931,7 +1236,7 @@ def usage():
     working examples of syntax
     '''
     file = sys.argv[0].split('\\')[-1]
-    print(f'\nDescription: {color_green}{description}{color_reset}')
+    print(f'\nDescription: {color_green}{description2}{color_reset}')
     print(f'{file} Version: {version} by {author}')
     print(f'\n    {color_yellow}insert your input into locations.xlsx')
     print(f'\nExample:')
@@ -939,7 +1244,7 @@ def usage():
     print(f'    {file} -k -I locations.xlsx  # xlsx 2 kml with no internet processing')     
     print(f'    {file} -r')
     print(f'    {file} -r -I locations.xlsx -O locations2addresses_.xlsx') 
- 
+    print(f'    {file} -i -I intel_.xlsx -O intel2locations_.xlsx')  
                 
 if __name__ == '__main__':
     main()
