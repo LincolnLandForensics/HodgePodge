@@ -3,407 +3,524 @@
     <Document id="1">
         <Style id="4">
             <IconStyle id="5">
-                <color>ffff0000</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
                 <Icon id="6">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="7">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>0.8</scale>
-            </LabelStyle>
         </Style>
-        <Style id="10">
-            <IconStyle id="11">
-                <color>ff800080</color>
+        <Style id="9">
+            <IconStyle id="10">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="12">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="11">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="13">
-                <color>ffffffff</color>
-                <colorMode>normal</colorMode>
-                <scale>0.8</scale>
-            </LabelStyle>
         </Style>
-        <Style id="16">
-            <IconStyle id="17">
-                <color>ff800080</color>
+        <Style id="14">
+            <IconStyle id="15">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="18">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="16">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="19">
-                <color>ffffffff</color>
-                <colorMode>normal</colorMode>
-                <scale>0.8</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="22">
-            <IconStyle id="23">
+            <LabelStyle id="17">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="24">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="25">
-                <color>ffffffff</color>
-                <colorMode>normal</colorMode>
-                <scale>0.8</scale>
             </LabelStyle>
         </Style>
-        <Style id="28">
-            <IconStyle id="29">
-                <color>ff00ffff</color>
+        <Style id="20">
+            <IconStyle id="21">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="30">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="22">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="31">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>0.8</scale>
-            </LabelStyle>
         </Style>
-        <Style id="34">
-            <IconStyle id="35">
-                <color>ff0000ff</color>
+        <Style id="25">
+            <IconStyle id="26">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="36">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="27">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="37">
-                <color>ffffffff</color>
+        </Style>
+        <Style id="30">
+            <IconStyle id="31">
                 <colorMode>normal</colorMode>
-                <scale>0.8</scale>
-            </LabelStyle>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="32">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="35">
+            <IconStyle id="36">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="37">
+                    <href>https://maps.google.com/mapfiles/kml/shapes/truck.png</href>
+                </Icon>
+            </IconStyle>
         </Style>
         <Style id="40">
             <IconStyle id="41">
-                <color>ff00a5ff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
                 <Icon id="42">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="43">
-                <color>ffffffff</color>
-                <colorMode>normal</colorMode>
-                <scale>0.8</scale>
-            </LabelStyle>
         </Style>
-        <Style id="46">
-            <IconStyle id="47">
-                <color>ff0000ff</color>
+        <Style id="45">
+            <IconStyle id="46">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="48">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="47">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="49">
-                <color>ffffffff</color>
-                <colorMode>normal</colorMode>
-                <scale>0.8</scale>
-            </LabelStyle>
         </Style>
-        <Style id="52">
-            <IconStyle id="53">
-                <color>ff00a5ff</color>
+        <Style id="50">
+            <IconStyle id="51">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="54">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="52">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon21.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="55">
+            <LabelStyle id="53">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>0.8</scale>
+                <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="58">
-            <IconStyle id="59">
-                <color>ff800080</color>
+        <Style id="56">
+            <IconStyle id="57">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="60">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="58">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="61">
+        </Style>
+        <Style id="61">
+            <IconStyle id="62">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="63">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="64">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>0.8</scale>
+                <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="64">
-            <IconStyle id="65">
-                <color>ffff0000</color>
+        <Style id="67">
+            <IconStyle id="68">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="66">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="69">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon9.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="67">
+            <LabelStyle id="70">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>0.8</scale>
+                <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="70">
-            <IconStyle id="71">
-                <color>ff00a5ff</color>
+        <Style id="73">
+            <IconStyle id="74">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="72">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="75">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="73">
+            <LabelStyle id="76">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>0.8</scale>
+                <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="76">
-            <IconStyle id="77">
-                <color>ff00a5ff</color>
+        <Style id="79">
+            <IconStyle id="80">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="78">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="81">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon23.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="79">
-                <color>ffffffff</color>
-                <colorMode>normal</colorMode>
-                <scale>0.8</scale>
-            </LabelStyle>
         </Style>
-        <Style id="82">
-            <IconStyle id="83">
-                <color>ff00a5ff</color>
+        <Style id="84">
+            <IconStyle id="85">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="84">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="86">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon15.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="85">
+            <LabelStyle id="87">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>0.8</scale>
+                <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="88">
-            <IconStyle id="89">
-                <color>ff0000ff</color>
+        <Style id="90">
+            <IconStyle id="91">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="90">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                <Icon id="92">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-8.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="91">
-                <color>ffffffff</color>
+        </Style>
+        <Style id="95">
+            <IconStyle id="96">
                 <colorMode>normal</colorMode>
-                <scale>0.8</scale>
-            </LabelStyle>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="97">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-12.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="100">
+            <IconStyle id="101">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="102">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="105">
+            <IconStyle id="106">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="107">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-4.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="110">
+            <IconStyle id="111">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="112">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon47.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="115">
+            <IconStyle id="116">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="117">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
+                </Icon>
+            </IconStyle>
         </Style>
         <Placemark id="3">
             <name>2</name>
-            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+            <description>IMG_1045.JPG
+NAME: Test – gps only Images
+TIME: 07/15/2021 17:21:51
+TYPE: Images
 Business: Crazy Grill Buffet</description>
             <styleUrl>#4</styleUrl>
             <Point id="2">
                 <coordinates>-87.8146277777778,41.8637888888889,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="9">
+        <Placemark id="8">
             <name>3</name>
             <description>
-NAME: Test – gps only (purple pin) no business
-TIME: 12/26/2023 11:01:31 AM(UTC-6)
-ADDRESS: West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
+NAME: N-bound icon : Toll Tag ID:12345678
+TIME: 01/19/2024 14:15:00
+HWY NAME: I-294 &amp; 83rd St
+DIRECTION: N
+TYPE: Toll</description>
+            <styleUrl>#9</styleUrl>
+            <Point id="7">
+                <coordinates>-87.8291374,41.7394375,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="13">
+            <name>4</name>
+            <description>
+NAME: Test – gps only Locations Yelow paddle
+TIME: 12/26/2023 11:01:31
+TAG: Important
 TYPE: Locations</description>
-            <styleUrl>#10</styleUrl>
-            <Point id="8">
+            <styleUrl>#14</styleUrl>
+            <Point id="12">
                 <coordinates>-87.6369670043945,41.8832054138184,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="15">
-            <name>4</name>
+        <Placemark id="19">
+            <name>5</name>
             <description>
-NAME: Test – gps only (purple pin) no business
-TIME: 9/20/2023 3:26:38 PM(UTC-5)
-ADDRESS: Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
+NAME: Test – gps only Locations Yelow paddle
+TIME: 09/20/2023 15:26:38
 TYPE: Locations</description>
-            <styleUrl>#16</styleUrl>
-            <Point id="14">
+            <styleUrl>#20</styleUrl>
+            <Point id="18">
                 <coordinates>-87.8169277777778,41.8637869888889,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="21">
-            <name>5</name>
+        <Placemark id="24">
+            <name>6</name>
             <description>IMG_0069.MOV
-NAME: Test – Fulladdress,gps and address (yellow pin) no business
-TIME: 12/24/2023 10:24:20 AM(UTC-6)
+NAME: Test – Fulladdress,gps and address videos
+TIME: 12/24/2023 10:24:20
 Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
 TYPE: Videos</description>
-            <styleUrl>#22</styleUrl>
-            <Point id="20">
+            <styleUrl>#25</styleUrl>
+            <Point id="23">
                 <coordinates>-87.8169277777778,41.8636988888889,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="27">
-            <name>6</name>
-            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+        <Placemark id="29">
+            <name>7</name>
+            <description>IMG_1969.MOV
+NAME: Test – gps only (yellow pin) with business
+3501 S Laramie Ave, Cicero, IL 60804
+TYPE: Videos
 Business: Hawthorne Racecourse</description>
-            <styleUrl>#28</styleUrl>
-            <Point id="26">
+            <styleUrl>#30</styleUrl>
+            <Point id="28">
                 <coordinates>-87.7510767237512,41.8285843,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="33">
-            <name>7</name>
+        <Placemark id="34">
+            <name>8</name>
             <description>
-NAME: Test – lpr gps only (red) end time
-TIME: 9/22/2021 1:02:45 PM(UTC-5)
+NAME: Test – Truck icon
+TIME: 09/22/2021 13:02:45
 End Time: 9/22/2021 1:02:45 PM(UTC-5)
-ADDRESS: West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
 HWY NAME: West Washington Street
 DIRECTION: west
 TYPE: LPR
 PLATE: No_Plate</description>
-            <styleUrl>#34</styleUrl>
-            <Point id="32">
+            <styleUrl>#35</styleUrl>
+            <Point id="33">
                 <coordinates>-87.6369670043945,41.8832069138184,0.0</coordinates>
             </Point>
         </Placemark>
         <Placemark id="39">
-            <name>8</name>
+            <name>9</name>
             <description>
-NAME: Test – gps only(orange pin) (unkown type)
-TIME: 7/26/2022 2:33:12 PM(UTC-5)
-ADDRESS: Tri-State Tollway, Justice, Lyons Township, Cook County, Illinois, 60458, United States
+NAME: Test – gps only Intel
+TIME: 07/26/2022 14:33:12
 TYPE: Intel</description>
             <styleUrl>#40</styleUrl>
             <Point id="38">
                 <coordinates>-87.8328635429077,41.7431510003286,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="45">
-            <name>9</name>
+        <Placemark id="44">
+            <name>10</name>
             <description>
-NAME: Test – gps only LPR (red pin)
-TIME: 7/26/2022 2:33:12 PM(UTC-5)
-ADDRESS: 8701, Industrial Drive, Justice, Lyons Township, Cook County, Illinois, 60458, United States
+NAME: Test – gps only Toll w/ no direction arrow (blue square)
+TIME: 07/26/2022 14:33:12
 HWY NAME: I-294
-TYPE: LPR
+TYPE: Toll
 PLATE: No_Plate2</description>
-            <styleUrl>#46</styleUrl>
-            <Point id="44">
+            <styleUrl>#45</styleUrl>
+            <Point id="43">
                 <coordinates>-87.8369635429077,41.7431510003286,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="51">
-            <name>11</name>
-            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+        <Placemark id="49">
+            <name>12</name>
+            <description>
+NAME: Test – address only office w/ yellow font
+Willis Tower, 233, South Wacker Drive, Chicago, Illinois, 60606
+TAG: Review
+TYPE: Intel
 Business: Willis Tower</description>
-            <styleUrl>#52</styleUrl>
-            <Point id="50">
+            <styleUrl>#50</styleUrl>
+            <Point id="48">
                 <coordinates>-87.6359612118808,41.87873805,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="57">
-            <name>12</name>
-            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+        <Placemark id="55">
+            <name>13</name>
+            <description>Last Position
+NAME: Test – gps only yellow paddle w/ tag
+TYPE: Locations
 Business: Urban Air</description>
-            <styleUrl>#58</styleUrl>
-            <Point id="56">
+            <styleUrl>#56</styleUrl>
+            <Point id="54">
                 <coordinates>-87.80702,41.8458074,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="63">
-            <name>13</name>
-            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+        <Placemark id="60">
+            <name>14</name>
+            <description>
+NAME: Test – gps only Images w/ yellow font
+TAG: blah
+TYPE: Images
 Business: Chicago Midway International Airport</description>
-            <styleUrl>#64</styleUrl>
-            <Point id="62">
+            <styleUrl>#61</styleUrl>
+            <Point id="59">
                 <coordinates>-87.7508486935769,41.78543165,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="69">
-            <name>14</name>
-            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+        <Placemark id="66">
+            <name>15</name>
+            <description>Little Red Schoolhouse Nature Center
+NAME: Test – gps / address Searched
+Little Red Schoolhouse Nature Center, 9800 Willow Springs Rd, Willow Springs, IL 60480
+TAG: Review
+TYPE: Searched Items
 Business: Little Red Schoolhouse Nature Center</description>
-            <styleUrl>#70</styleUrl>
-            <Point id="68">
+            <styleUrl>#67</styleUrl>
+            <Point id="65">
                 <coordinates>-87.877258885395,41.7090584,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="75">
-            <name>15</name>
+        <Placemark id="72">
+            <name>16</name>
             <description>
-NAME: Test – full address/gps and address (orange pin) w/ business
-Riverside Public Library, 1 Burling Rd, Riverside, IL 60546</description>
-            <styleUrl>#76</styleUrl>
-            <Point id="74">
+NAME: Test – full address/gps and address Intel Important
+Riverside Public Library, 1 Burling Rd, Riverside, IL 60546
+TAG: Important</description>
+            <styleUrl>#73</styleUrl>
+            <Point id="71">
                 <coordinates>-87.8192555677286,41.82621495,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="81">
-            <name>16</name>
-            <description>convert GPS coordinates to addresses or visa versa &amp; create a KML file
+        <Placemark id="78">
+            <name>17</name>
+            <description>Flight: EY 242 from LHE to AUH
+NAME: Test – gps only Calendar
+TIME: 01/07/2024 13:39:20
+TYPE: Calendar
 Business: Chicago Midway International Airport</description>
-            <styleUrl>#82</styleUrl>
-            <Point id="80">
+            <styleUrl>#79</styleUrl>
+            <Point id="77">
                 <coordinates>-87.7508994935715,41.7856916,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="87">
-            <name>17</name>
+        <Placemark id="83">
+            <name>18</name>
             <description>
-NAME: Test – Flock Coordinate only (red pin)
-TIME: 06/13/2022 09:41:33 PM
-ADDRESS: South Central Avenue, Stickney, Stickney Township, Cook County, Illinois, 60459, United States
+NAME: Test – LPR red car
+TIME: 06/13/2022 21:41:33
 HWY NAME: 09  Central/Pershing (SB)
+TAG: Important
 TYPE: LPR
+Business: Lpr
 PLATE: No_Plate2</description>
-            <styleUrl>#88</styleUrl>
-            <Point id="86">
+            <styleUrl>#84</styleUrl>
+            <Point id="82">
                 <coordinates>-87.76324840980894,41.821174151816635,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="89">
+            <name>19</name>
+            <description>
+NAME: Test – Southbound
+TIME: 12/27/2023 17:11:00
+HWY NAME: I-355 &amp; Boughton Rd Mainline
+DIRECTION: S
+TYPE: Toll
+Business: S</description>
+            <styleUrl>#90</styleUrl>
+            <Point id="88">
+                <coordinates>-88.0377624,41.7330625,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="94">
+            <name>20</name>
+            <description>
+NAME: Test – Westbound
+TIME: 12/27/2023 16:59:00
+HWY NAME: I-88 &amp; York Rd
+DIRECTION: W
+TYPE: Toll
+Business: W</description>
+            <styleUrl>#95</styleUrl>
+            <Point id="93">
+                <coordinates>-87.9437624,41.8485625,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="99">
+            <name>21</name>
+            <description>
+NAME: Test – Toll
+TIME: 01/20/2023 19:17:00
+HWY NAME: I-390 &amp; Hamilton Lakes Blvd
+TYPE: Toll
+Business: Toll</description>
+            <styleUrl>#100</styleUrl>
+            <Point id="98">
+                <coordinates>-88.0100124,41.9843125,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="104">
+            <name>22</name>
+            <description>
+NAME: Test – Eastbound
+TIME: 01/02/2023 17:42:00
+HWY NAME: I-390 &amp; Lively Blvd
+DIRECTION: E
+TYPE: Toll
+Business: E</description>
+            <styleUrl>#105</styleUrl>
+            <Point id="103">
+                <coordinates>-87.9707624,41.9836875,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="109">
+            <name>23</name>
+            <description>
+NAME: Test – Car2 coordinate only</description>
+            <styleUrl>#110</styleUrl>
+            <Point id="108">
+                <coordinates>-87.8814396,41.9629122,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="114">
+            <name>24</name>
+            <description>
+NAME: Test – Home coordinate only
+Business: Samuel A Rothermel Houses</description>
+            <styleUrl>#115</styleUrl>
+            <Point id="113">
+                <coordinates>-87.8031364,41.8923463,0.0</coordinates>
             </Point>
         </Placemark>
     </Document>
