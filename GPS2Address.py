@@ -9,6 +9,10 @@ read GPS coordinates (xlsx) and convert them to KML
 '''
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+import io
+import requests
+from openpyxl.drawing.image import Image
+
 import os
 import re
 import sys
@@ -62,7 +66,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.1.7'
+version = '1.1.8'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -174,61 +178,64 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-def convert_date_format(input_date):
-    # Time regex
-    time_pattern1 = re.compile(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})')    # "YYYY-MM-DD HH:MM:SS"
 
-    time_match1 = time_pattern1.search(input_date)
+def convert_timestamp(timestamp, time_orig, timezone):
+    if timezone != "" or timezone is None:
+        timezone = ''
     
+    time_data = timestamp
+    timestamp = str(timestamp)
+    if time_orig == "":
+        time_orig = timestamp
+    timestamp = timestamp.replace(' at ', ' ')
+    if "(" in timestamp:
+        timestamp = timestamp.split('(')
+        timezone = timestamp[1].replace(")", '')
+        timestamp = timestamp[0]
+    elif " CDT" in timestamp:
+        timezone = "CDT"
+        timestamp = timestamp.replace(" CDT", "")
+    elif " CST" in timestamp:
+        timezone = "CST"
+        timestamp = timestamp.replace(" CST", "")        
+
+    # %B: Full month name (e.g., January, February, etc.)
+    # %d: Day of the month as a zero-padded decimal number (01 to 31)
+    # %Y: Year with century as a decimal number (e.g., 2023)
+    # %I: Hour (12-hour clock) as a zero-padded decimal number (01 to 12)
+    # %M: Minute as a zero-padded decimal number (00 to 59)
+    # %S: Second as a zero-padded decimal number (00 to 59)
+    # %p: AM or PM designation
+    # %Z: Time zone name or abbreviation    
     
-    (output_date, timezone) = ('', '')
-    input_date = str(input_date)    # test
-    input_date = input_date.replace(' at ',' ')
-    date_parts = input_date.split(' ')
-    updated_date_parts = date_parts[:-1]
-    updated_date_string = ' '.join(updated_date_parts)
-    input_date = updated_date_string
-
-    if time_match1:             
-        print(f'time_match1 = {time_match1}')   # temp
-        # Convert the matched date string to the desired format
-        original_date = datetime.strptime(time_match1.group(1), '%Y-%m-%d %H:%M:%S')
-        converted_date = original_date.strftime('%m/%d/%Y %H:%M:%S')
-        print("Original Date:", original_date)   # temp
-        print("Converted Date:", converted_date)   # temp
-
-
-        
-    elif input_date.count(',') == 1:
-        input_format = "%B %d, %Y %I:%M:%S %p"
-
+    formats = ["%Y-%m-%d %H:%M:%S",
+               "%m/%d/%Y %I:%M:%S %p",
+               "%m/%d/%Y %I:%M:%S %p",
+               "%m/%d/%Y %I:%M %p",  # timestamps without seconds
+               "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
+               "%m/%d/%Y %I:%M %p",  # "07/26/2020 06:08 AM"
+               "%B %d, %Y at %I:%M:%S %p %Z",  # timestamp with month name
+               "%B %d, %Y at %I:%M:%S %p CST",  
+               "%B %d, %Y at %I:%M:%S %p",  # "December 15, 2023 at 12:20:09 PM CST"
+               "%B %d, %Y %I:%M:%S %p %Z",  # "December 15, 2023 12:20:09 PM CST" 
+               "%B %d, %Y %I:%M:%S %p"]  # "December 15, 2023 12:20:09 PM"               
+    for fmt in formats:
         try:
-            dt_object = datetime.strptime(input_date, input_format)
+            # print(f'trying timestamp: {timestamp} with fmt:{fmt}')  # temp
+            dt_obj = datetime.strptime(timestamp, fmt)
+            time_data = dt_obj  # Assigning the datetime object to time_data
+            return dt_obj, time_orig, timezone  # Return datetime object, original timestamp, and timezone
         except Exception as e:
-            print(f"Error : {str(e)}") 
-        
-        try:
-            output_format = "%m/%d/%Y %I:%M:%S %p"
-            output_date = dt_object.strftime(output_format)
-        except Exception as e:
-            print(f"Error : {str(e)}") 
-    elif input_date.count(',') == 2:
-        input_format = "%B %d, %Y, %I:%M:%S %p"
+            # print(f"Error3 : {str(e)}") 
+            pass
 
-        try:
-            dt_object = datetime.strptime(input_date, input_format)
-        except Exception as e:
-            print(f"Error : {str(e)}") 
-        
-        try:
-            output_format = "%m/%d/%Y %I:%M:%S %p"
-            output_date = dt_object.strftime(output_format)
-        except Exception as e:
-            print(f"Error : {str(e)}") 
-        
-    return output_date, timezone
+                        
 
 
+    # If no format matches, raise ValueError
+    raise ValueError(f"{time_orig} Timestamp format not recognized")
+
+    
 def read_gps(data): 
 
     """Read data and return as a list of dictionaries.
@@ -245,7 +252,7 @@ def read_gps(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
         (state, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '')
         (Index, country, lat_data, long_data, PlusCode) = ('', '', '', '', '')
-        (county, query) = ('', '')
+        (county, query, type_data) = ('', '', '')
         (location, skip, address_data) = ('', '', '')
         fulladdress_data = row_data.get("fulladdress")
 
@@ -259,7 +266,7 @@ def read_gps(data):
         if long_data is None:
             long_data = ''        
         address_data = row_data.get("Address") # works
-  
+        type_data = row_data.get("Type") # works  
         business = row_data.get("business")
         number = row_data.get("number")
         city = row_data.get("city")
@@ -445,6 +452,34 @@ def read_gps(data):
             except Exception as e:
                 print(f"{color_red}Error : {str(e)}{color_reset} Business = <{business}> Full address =<{address_parts}>")  
 
+# Icon    
+        Icon = ''
+        Icon = row_data.get("Icon")
+        if Icon is None:
+            Icon = ''
+
+        if Icon != "":
+            Icon = Icon        
+        elif type_data == "Calendar":
+            Icon = "Calendar"
+        elif type_data == "LPR":
+            Icon = "LPR"
+        elif type_data == "Images":
+            Icon = "Images"
+        elif type_data == "Intel":
+            Icon = "Intel"
+        elif type_data == "Locations":
+            Icon = "Locations"
+        elif type_data == "Searched Items":
+            Icon = "Searched"
+        elif type_data == "Toll":
+            Icon = "Toll"
+        elif type_data == "Videos":
+            Icon = "Videos"
+
+
+
+
 # write rows to data
         row_data["Latitude"] = lat_data
         row_data["Longitude"] = long_data 
@@ -461,7 +496,7 @@ def read_gps(data):
         row_data["query"] = query
         row_data["Coordinate"] = coordinate_data
         row_data["PlusCode"] = PlusCode
-
+        row_data["Icon"] = Icon
         
         print(f'\nName: {name_data}\nCoordinate: {coordinate_data}\naddress = {address_data}\nbusiness = {business}\nfulladdress_data = {fulladdress_data}\n')
 
@@ -499,7 +534,7 @@ def read_intel(input_xlsx):
         (Source, description_data, type_data, Name, tag, source) = ('', '', 'Intel', '', '', '')
         (group, subgroup, number, street, county, zipcode) = ('', '', '', '', '', '')
         (country, query, plate_data, capture_time, hwy_data, direction_data) = ('', '', '', '', '', '')
-        (end_time_data, category_data, time2, timezone, PlusCode) = ('', '', '', '', '')
+        (end_time_data, category_data, time_orig, timezone, PlusCode, Icon) = ('', '', '', '', '', '')
 
 # Time
         time_data = ''
@@ -580,6 +615,12 @@ def read_intel(input_xlsx):
         if state is None:
             state = ''
 
+# Icon    
+        Icon = ''
+        Icon = row_data.get("Icon")
+        if Icon is None:
+            Icon = ''
+
       
 # write rows to data
         row_data["Time"] = time_data
@@ -611,9 +652,10 @@ def read_intel(input_xlsx):
         # row_data["Direction"] = direction_data
         # row_data["End time"] = end_time_data
         # row_data["Category"] = category_data
-        # row_data["Time Original"] = time2
+        # row_data["Time Original"] = time_orig
         # row_data["Timezone"] = timezone
         # row_data["PlusCode"] = PlusCode
+        row_data["Icon"] = Icon
         # index
      
      
@@ -653,10 +695,9 @@ def read_locations(input_xlsx):
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
         (state, fulladdress_data, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
-        (Index, country, capture_time, PlusCode, Time2) = ('', '', '', '', '')
+        (Index, country, capture_time, PlusCode, time_orig, Icon) = ('', '', '', '', '', '')
         (description_data, group, subgroup, source, source_file, tag) = ('', '', '', '', '', '')
-        
-        ## replace all None values with '' 
+
         name_data = ''  # in case there is no Name column
         name_data = row_data.get("Name")
         if name_data is None:
@@ -674,11 +715,10 @@ def read_locations(input_xlsx):
         if time_data is None:
             time_data = ''
 
-# Time2
-        time2 = ''
-        time2 = row_data.get("Time Original")
-        if time2 is None:
-            time2 = ''
+# time_orig
+        time_orig = row_data.get("Time Original")
+        if time_orig is None:
+            time_orig = ''
 
 # Capture Time
         capture_time = ''
@@ -688,43 +728,26 @@ def read_locations(input_xlsx):
 
         if time_data == '' or time_data is None:
             if capture_time != '':
-                time2 = capture_time
-                (converted_date, timezone) = convert_date_format(capture_time)  # test
-                time_data = converted_date
-
-        if time2 == '' and time_data == '':
-                time_data = time2   # test
-
-        # Split the string by "("
-        # split_result = time_data.split("(")
-
-        # Print the second part after "("
-        # if len(split_result) > 1:
-            # time_part = split_result[1].strip(')')
-            # print(time_part)
+                time_data = capture_time
 
 
 # timezone
         timezone = ''
         timezone = row_data.get("timezone")
-        if timezone is None:
-            timezone = ''
-        if isinstance(time_data, str):
-            split_result = time_data.split("(")
-            # time_data = time_data[0]
-            if len(split_result) > 1:
-                timezone 
-                timezone = split_result[1].strip(')')
-                
-            if "(" in time_data:
-                time_data = time_data.split("(")
-                time_data = time_data[0].strip()    
-                if timezone == '':
-                    timezone = time_data[1].strip(' ()')
-                    
-                    
-                    # .strip('\(').strip('\)').strip()   
+
+# convert time
+        output_format = "%m/%d/%Y %H:%M:%S"  # Changed to military time
+        
+        if time_orig == "" and time_data != '':
+            time_orig = time_data
+        try:
+            (time_data, time_orig, timezone) = convert_timestamp(time_data, time_orig, timezone)
+            time_data = time_data.strftime(output_format)
+        except ValueError as e:
+            # print(f"Error time2: {e} - {time_data}")
+            time_data = ''
             
+   
 # End time
         end_time_data = ''
         end_time_data = row_data.get("End time")
@@ -879,7 +902,15 @@ def read_locations(input_xlsx):
         PlusCode  = row_data.get("PlusCode")
         if PlusCode is None:
             PlusCode = ''  
-            
+
+# Icon    
+        Icon = ''
+        Icon = row_data.get("Icon")
+        if Icon is None:
+            Icon = ''
+        if Icon != "":
+            Icon = Icon[0].upper() + Icon[1:].lower()
+        
 # write rows to data
         row_data["Time"] = time_data
         row_data["Latitude"] = lat_data
@@ -910,9 +941,10 @@ def read_locations(input_xlsx):
         row_data["Direction"] = direction_data
         row_data["End time"] = end_time_data
         row_data["Category"] = category_data
-        row_data["Time Original"] = time2
+        row_data["Time Original"] = time_orig
         row_data["Timezone"] = timezone
         row_data["PlusCode"] = PlusCode
+        row_data["Icon"] = Icon        
         # index
      
      
@@ -927,6 +959,43 @@ def write_kml(data):
 
     # Create KML object
     kml = simplekml.Kml()
+
+    # Define different default icons
+    # square_icon = 'http://maps.google.com/mapfiles/kml/shapes/square.png'
+    # triangle_icon = 'http://maps.google.com/mapfiles/kml/shapes/triangle.png'
+    # star_icon = 'http://maps.google.com/mapfiles/kml/shapes/star.png'
+    # polygon_icon = 'http://maps.google.com/mapfiles/kml/shapes/polygon.png'
+    # circle_icon = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+    # yellow_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/ylw-circle.png'
+    # red_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/red-circle.png'
+    # white_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/wht-circle.png'
+
+
+
+    default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
+
+    car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
+    car2_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon47.png'  # yellow car
+    car3_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon54.png'  # green car with circle
+    car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
+
+    truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
+
+    calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
+    locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
+    home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
+    images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
+    intel_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon44.png'
+    office_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon21.png'
+    searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon9.png'
+    toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
+    videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
+    n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
+    e_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-4.png'
+    s_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-8.png'
+    w_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-12.png'
+      
+    
 
     for row_index, row_data in enumerate(data):
         index_data = row_index + 2  # excel row starts at 2, not 0
@@ -950,6 +1019,8 @@ def write_kml(data):
         direction_data  = row_data.get("Direction")
         end_time_data = row_data.get("End time")
         category_data = row_data.get("Category")
+        Icon = row_data.get("Icon")
+
 
         if name_data != '':
             (description_data) = (f'{description_data}\nNAME: {name_data}')
@@ -998,97 +1069,167 @@ def write_kml(data):
         if lat_data == '' or long_data == '' or lat_data == None or long_data == None:
             print(f'skipping row {index_data} - No GPS')
 
-        elif tag == "Important":
+        elif Icon == "Lpr" or Icon == "Car":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
                 coords=[(long_data, lat_data)]
             )
-            point.style.iconstyle.color = simplekml.Color.cyan # bright green
-            point.style.labelstyle.scale = 1.0  # Adjust label scale if needed
-            if business != '':
-                point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
-            else:   
-                point.style.labelstyle.color = simplekml.Color.white  # Set label text color
+            point.style.iconstyle.icon.href = car_icon  # red car
 
-        elif type_data == "LPR" or type_data == "Toll":
+        elif Icon == "Car2":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
                 coords=[(long_data, lat_data)]
             )
-            point.style.iconstyle.color = simplekml.Color.red
-            point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
-            if business != '':
-                point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
-            else:   
-                point.style.labelstyle.color = simplekml.Color.white  # Set label text color
+            point.style.iconstyle.icon.href = car2_icon  # yellow car
 
-        elif type_data == "Images":
-        # elif lat_data != '' and long_data != '' and type_data == "Images":
+        elif Icon == "Car3":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
                 coords=[(long_data, lat_data)]
             )
-            point.style.iconstyle.color = simplekml.Color.blue
-            point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
-            point.style.labelstyle.text = "Videos"  # Set the label text
+            point.style.iconstyle.icon.href = car3_icon  # green car
 
-            if business != "":
-                point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
-            else:   
-                point.style.labelstyle.color = simplekml.Color.white  # Set label text color
-
-        elif type_data == "Videos":
-        # elif lat_data != '' and long_data != '' and type_data == "Videos":
+        elif Icon == "Car4":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
                 coords=[(long_data, lat_data)]
             )
-            point.style.iconstyle.color = simplekml.Color.yellow
-            point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
-            point.style.labelstyle.text = "Videos"  # Set the label text
+            point.style.iconstyle.icon.href = car4_icon  # red car (with circle)
 
-            if business != "":
-                point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
-            else:   
-                point.style.labelstyle.color = simplekml.Color.white  # Set label text color
-
-        elif type_data == "Locations":
-        # elif lat_data != '' and long_data != '' and type_data == "Locations":
+        elif Icon == "Truck":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
                 coords=[(long_data, lat_data)]
             )
-            point.style.iconstyle.color = simplekml.Color.purple
-            point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
-            point.style.labelstyle.text = "Videos"  # Set the label text
+            point.style.iconstyle.icon.href = truck_icon
 
-            if business != '':   
-                point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
-            else:   
-                point.style.labelstyle.color = simplekml.Color.white  # Set label text color
-
-        elif lat_data != '' and long_data != '':
+        elif Icon == "Calendar":
             point = kml.newpoint(
                 name=f"{index_data}",
                 description=f"{description_data}",
                 coords=[(long_data, lat_data)]
             )
-            point.style.iconstyle.color = simplekml.Color.orange
-            point.style.labelstyle.scale = 0.8  # Adjust label scale if needed
-            point.style.labelstyle.text = "Videos"  # Set the label text
+            point.style.iconstyle.icon.href = calendar_icon
 
-            if business != '':
-                point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
-            else:   
-                point.style.labelstyle.color = simplekml.Color.white  # Set label text color
+        elif Icon == "Home":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = home_icon
 
-    # Save the KML document to the specified output file
-    kml.save(output_kml)
+        elif Icon == "Images":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = images_icon
+
+        elif Icon == "Intel":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = intel_icon
+
+        elif Icon == "Office":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = office_icon
+
+        elif Icon == "Searched":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = searched_icon
+
+        elif Icon == "Videos":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = videos_icon
+
+        elif Icon == "Locations":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = locations_icon    # yellow paddle
+
+        elif Icon == "Toll":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = toll_icon
+
+        elif Icon == "N":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = n_icon
+
+        elif Icon == "E":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = e_icon
+
+        elif Icon == "S":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = s_icon
+
+        elif Icon == "W":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = w_icon
+
+        else:
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description_data}",
+                coords=[(long_data, lat_data)]
+            )
+            point.style.iconstyle.icon.href = default_icon    # orange paddle
+
+
+        
+        if tag != '':   # mark label yellow if tag is not blank
+            point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
+            # point.style.labelstyle.scale = 1.2  # Adjust label scale if needed    # task
+
+
+    
+    kml.save(output_kml)    # Save the KML document to the specified output file
 
     print(f"KML file '{output_kml}' created successfully!")
 
@@ -1106,7 +1247,7 @@ def write_locations(data):
     global worksheet
     worksheet = workbook.active
 
-    worksheet.title = 'Sheet1'
+    worksheet.title = 'Locations'
     header_format = {'bold': True, 'border': True}
     worksheet.freeze_panes = 'B2'  # Freeze cells
     worksheet.selection = 'B2'
@@ -1119,7 +1260,8 @@ def write_locations(data):
         , "Sighting State", "Plate", "Capture Time", "Capture Network", "Highway Name"
         , "Coordinate", "Capture Location Latitude", "Capture Location Longitude"
         , "Container", "Sighting Location", "Direction", "Time Local", "End time"
-        , "Category", "Manually decoded", "Account", "PlusCode", "Time Original", "Timezone", "Index"
+        , "Category", "Manually decoded", "Account", "PlusCode", "Time Original", "Timezone"
+        , "Icon", "Index"
 
     ]
 
@@ -1139,7 +1281,7 @@ def write_locations(data):
 
     ## Excel column width
     worksheet.column_dimensions['A'].width = 8# #
-    worksheet.column_dimensions['B'].width = 16# Time
+    worksheet.column_dimensions['B'].width = 19# Time
     worksheet.column_dimensions['C'].width = 18# Latitude
     worksheet.column_dimensions['D'].width = 18# Longitude
     worksheet.column_dimensions['E'].width = 45# Address
@@ -1186,8 +1328,11 @@ def write_locations(data):
     worksheet.column_dimensions['AN'].width = 10# Category
     worksheet.column_dimensions['AO'].width = 18# Manually decoded
     worksheet.column_dimensions['AP'].width = 10# Account
-    worksheet.column_dimensions['AQ'].width = 6# Index
-    worksheet.column_dimensions['AR'].width = 26# PlusCode
+    worksheet.column_dimensions['AQ'].width = 25 # PlusCode
+    worksheet.column_dimensions['AR'].width = 21 # Time Original
+    worksheet.column_dimensions['AS'].width = 9 # Timezone
+    worksheet.column_dimensions['AT'].width = 6 # Icon   
+    worksheet.column_dimensions['AU'].width = 6 # Index
 
     
     for row_index, row_data in enumerate(data):
@@ -1201,32 +1346,188 @@ def write_locations(data):
 
 
     # Create a new worksheet for color codes
-    color_worksheet = workbook.create_sheet(title='GPS Pin Color Codes')
+    color_worksheet = workbook.create_sheet(title='Icons')
     color_worksheet.freeze_panes = 'B2'  # Freeze cells
 
     # Excel column width
-    color_worksheet.column_dimensions['A'].width = 16# Name
-    color_worksheet.column_dimensions['B'].width = 60# Description 21
+    color_worksheet.column_dimensions['A'].width = 8# Icon sample
+    color_worksheet.column_dimensions['B'].width = 9# Name
+    color_worksheet.column_dimensions['C'].width = 29# Description
+
+    # Excel row height
+    color_worksheet.row_dimensions[2].height = 22  # Adjust the height as needed
+    color_worksheet.row_dimensions[3].height = 22
+    color_worksheet.row_dimensions[4].height = 23
+    color_worksheet.row_dimensions[5].height = 23
+    color_worksheet.row_dimensions[6].height = 40   # truck
+    color_worksheet.row_dimensions[7].height = 6
+    color_worksheet.row_dimensions[8].height = 24
+    color_worksheet.row_dimensions[9].height = 22
+    color_worksheet.row_dimensions[10].height = 22
+    color_worksheet.row_dimensions[11].height = 22
+    color_worksheet.row_dimensions[12].height = 23
+    color_worksheet.row_dimensions[13].height = 23
+    color_worksheet.row_dimensions[14].height = 25
+    color_worksheet.row_dimensions[15].height = 25
+    color_worksheet.row_dimensions[16].height = 23
+    color_worksheet.row_dimensions[17].height = 6
+    color_worksheet.row_dimensions[18].height = 38
+    color_worksheet.row_dimensions[19].height = 38
+    color_worksheet.row_dimensions[20].height = 38
+    color_worksheet.row_dimensions[21].height = 38
+    color_worksheet.row_dimensions[22].height = 38
+    color_worksheet.row_dimensions[23].height = 6
+    color_worksheet.row_dimensions[24].height = 15
+    color_worksheet.row_dimensions[25].height = 6
+    color_worksheet.row_dimensions[26].height = 15
+
+
     
     # Define color codes
-    color_worksheet['A1'] = 'GPS Pin Colors'
-    color_worksheet['B1'] = 'Description'
+    color_worksheet['A1'] = ' '
+    color_worksheet['B1'] = 'Icon'
+    color_worksheet['C1'] = 'Icon Description'
 
     color_data = [
-        ('Red', 'LPR (License Plate Reader) or Toll'),
-        ('Orange', 'Default pin color'),  
-        ('Yellow', 'Videos'),        
-        ('Green', 'Important'),        
-        ('Black', 'Images'),
-        ('Purple', 'Locations'),
-        ('Yellow font', 'Business'),
-        ('', ''),
-        ('NOTE', 'visit https://earth.google.com/ <file><Import KML> select gps.kml <open>'),
+
+        ('', 'Car', 'Lpr red car (License Plate Reader)'),
+        ('', 'Car2', 'Lpr yellow car'),
+        ('', 'Car3', 'Lpr greeen car with circle'),
+        ('', 'Car4', 'Lpr red car with circle'),
+        ('', 'Truck', 'Lpr truck'),         
+        ('', '', ''),
+        ('', 'Calendar', 'Calendar'), 
+        ('', 'Home', 'Home'),                
+        ('', 'Images', 'Photo'),
+        ('', 'Intel', 'I'),  
+        ('', 'Locations', 'Reticle'),  
+        ('', 'default', 'Yellow flag'),  
+        ('', 'Office', 'Office'),         
+        ('', 'Searched', 'Searched Item'),          
+        ('', 'Videos', 'Video clip'),        
+        ('', '', ''),
+        ('', 'Toll', 'Blue square'), 
+        ('', 'N', 'Northbound blue arrow'),
+        ('', 'E', 'Eastbound blue arrow'),
+        ('', 'S', 'Southbound blue arrow'),
+        ('', 'W', 'Westbound blue arrow'),
+        ('', '', ''),
+        ('', 'Yellow font', 'Tagged'),
+
+
+        ('', '', ''),
+        ('', 'NOTE', 'visit https://earth.google.com/ <file><Import KML> select gps.kml <open>'),
     ]
 
-    for row_index, (color, description) in enumerate(color_data):
-        color_worksheet.cell(row=row_index + 2, column=1).value = color
-        color_worksheet.cell(row=row_index + 2, column=2).value = description
+    for row_index, (icon, tag, description) in enumerate(color_data):
+        color_worksheet.cell(row=row_index + 2, column=1).value = icon
+        color_worksheet.cell(row=row_index + 2, column=2).value = tag
+        color_worksheet.cell(row=row_index + 2, column=3).value = description
+
+
+    car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
+    car2_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon47.png'  # yellow car
+    car3_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon54.png'  # green car with circle
+    car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
+    truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
+    default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
+    calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
+    locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
+    home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
+    images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
+    intel_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon44.png'
+    office_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon21.png'
+    searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon9.png'
+    toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
+    videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
+    n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
+    e_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-4.png'
+    s_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-8.png'
+    w_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-12.png'
+
+    try:
+        # Insert graphic from URL into cell of color_worksheet
+
+        response = requests.get(car_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A2')
+
+        response = requests.get(car2_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A3')
+
+        response = requests.get(car3_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A4')
+
+        response = requests.get(car4_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A5')
+
+        response = requests.get(truck_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A6')
+
+        response = requests.get(calendar_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A8')
+        
+        response = requests.get(home_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A9')
+
+        response = requests.get(images_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A10')
+
+        response = requests.get(intel_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A11')
+
+        response = requests.get(locations_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A12')
+
+        response = requests.get(default_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A13')
+
+        response = requests.get(office_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A14')        
+
+        response = requests.get(searched_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A15')
+
+        response = requests.get(videos_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A16')
+        
+        response = requests.get(toll_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A18')
+
+        response = requests.get(n_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A19')
+
+        response = requests.get(e_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A20')
+
+        response = requests.get(s_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A21')
+
+        response = requests.get(w_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A22')
+     
+        
+    except:
+        pass
+
     
     workbook.save(outuput_xlsx)
 
@@ -1259,6 +1560,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+run -r a second time and fulladdress and Tag are blank.
+
 if address / fulldata only, get lat/long
 export a temp copy to output.txt
 if it's less than 3000 skip the sleep timer
