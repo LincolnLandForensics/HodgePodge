@@ -66,7 +66,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.1.8'
+version = '1.2.0'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -79,11 +79,8 @@ def main():
     parser.add_argument('-O', '--output', help='', required=False)
     parser.add_argument('-c', '--create', help='create blank input sheet', required=False, action='store_true')
     parser.add_argument('-i', '--intel', help='convert intel sheet to locations', required=False, action='store_true')
-  
     parser.add_argument('-k', '--kml', help='xlsx to kml with nothing else', required=False, action='store_true')
-        
     parser.add_argument('-r', '--read', help='read xlsx', required=False, action='store_true')
-
     args = parser.parse_args()
 
     # global input_xlsx
@@ -91,10 +88,6 @@ def main():
     global output_kml
     output_kml = 'gps.kml'
 
-
-
-
-    
     if not args.input: 
         input_xlsx = "locations.xlsx"        
     else:
@@ -180,14 +173,17 @@ def main():
 
 
 def convert_timestamp(timestamp, time_orig, timezone):
-    if timezone != "" or timezone is None:
+    if timezone is None:
         timezone = ''
-    
-    time_data = timestamp
+    if time_orig is None:
+        time_orig = ''
+
     timestamp = str(timestamp)
+
     if time_orig == "":
         time_orig = timestamp
-    timestamp = timestamp.replace(' at ', ' ')
+
+    # timestamp = timestamp.replace(' at ', ' ')
     if "(" in timestamp:
         timestamp = timestamp.split('(')
         timezone = timestamp[1].replace(")", '')
@@ -197,42 +193,33 @@ def convert_timestamp(timestamp, time_orig, timezone):
         timestamp = timestamp.replace(" CDT", "")
     elif " CST" in timestamp:
         timezone = "CST"
-        timestamp = timestamp.replace(" CST", "")        
+        timestamp = timestamp.replace(" CST", "")
 
-    # %B: Full month name (e.g., January, February, etc.)
-    # %d: Day of the month as a zero-padded decimal number (01 to 31)
-    # %Y: Year with century as a decimal number (e.g., 2023)
-    # %I: Hour (12-hour clock) as a zero-padded decimal number (01 to 12)
-    # %M: Minute as a zero-padded decimal number (00 to 59)
-    # %S: Second as a zero-padded decimal number (00 to 59)
-    # %p: AM or PM designation
-    # %Z: Time zone name or abbreviation    
-    
-    formats = ["%Y-%m-%d %H:%M:%S",
-               "%m/%d/%Y %I:%M:%S %p",
-               "%m/%d/%Y %I:%M:%S %p",
-               "%m/%d/%Y %I:%M %p",  # timestamps without seconds
-               "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
-               "%m/%d/%Y %I:%M %p",  # "07/26/2020 06:08 AM"
-               "%B %d, %Y at %I:%M:%S %p %Z",  # timestamp with month name
-               "%B %d, %Y at %I:%M:%S %p CST",  
-               "%B %d, %Y at %I:%M:%S %p",  # "December 15, 2023 at 12:20:09 PM CST"
-               "%B %d, %Y %I:%M:%S %p %Z",  # "December 15, 2023 12:20:09 PM CST" 
-               "%B %d, %Y %I:%M:%S %p"]  # "December 15, 2023 12:20:09 PM"               
+    formats = [
+        "%B %d, %Y, %I:%M:%S %p %Z",    # June 13, 2022, 9:41:33 PM CDT (Flock)
+        "%Y:%m:%d %H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",
+        "%m/%d/%Y %I:%M:%S %p",
+        "%m/%d/%Y %I:%M %p",  # timestamps without seconds
+        "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
+        "%B %d, %Y at %I:%M:%S %p %Z",
+        # "%B %d, %Y at %I:%M:%S %p CST",
+        "%B %d, %Y at %I:%M:%S %p",
+        "%B %d, %Y %I:%M:%S %p %Z",
+        "%B %d, %Y %I:%M:%S %p",
+        "%B %d, %Y, %I:%M:%S %p %Z",
+        "%Y-%m-%dT%H:%M:%SZ"  # ISO 8601 format with UTC timezone
+    ]
+ 
     for fmt in formats:
         try:
-            # print(f'trying timestamp: {timestamp} with fmt:{fmt}')  # temp
-            dt_obj = datetime.strptime(timestamp, fmt)
-            time_data = dt_obj  # Assigning the datetime object to time_data
-            return dt_obj, time_orig, timezone  # Return datetime object, original timestamp, and timezone
-        except Exception as e:
-            # print(f"Error3 : {str(e)}") 
+            dt_obj = datetime.strptime(timestamp.strip(), fmt)
+            timestamp = dt_obj
+            return timestamp, time_orig, timezone
+                        
+        except ValueError:
             pass
 
-                        
-
-
-    # If no format matches, raise ValueError
     raise ValueError(f"{time_orig} Timestamp format not recognized")
 
     
@@ -247,102 +234,116 @@ def read_gps(data):
 
     for row_index, row_data in enumerate(data):
         print(f'\n{row_index + 2} ______________________\n')
-        (street, Coordinate, fulladdress_data) = ('', '', '')
+        (street, fulladdress) = ('', '')
         
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
-        (state, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '')
-        (Index, country, lat_data, long_data, PlusCode) = ('', '', '', '', '')
+        (state, latitude, longitude, query, coordinate) = ('', '', '', '', '')
+        (Index, country, latitude, longitude, PlusCode) = ('', '', '', '', '')
         (county, query, type_data) = ('', '', '')
-        (location, skip, address_data) = ('', '', '')
-        fulladdress_data = row_data.get("fulladdress")
+        (location, skip, address) = ('', '', '')
+        (type_data, plate, country_code, state_ftk, city_ftk, hwy) = ('', '', '', '', '', '')
+        (direction, name_data, no, account, container, time_local) = ('', '', '', '', '', '') 
+        (deleted, service_id, carved, sighting_state, sighting_location, manually_decoded) = ('', '', '', '', '', '')
+
+        fulladdress = row_data.get("fulladdress")
+        if fulladdress is None:
+            fulladdress = ''  
 
         name_data = row_data.get("Name")
-        lat_data = row_data.get("Latitude") # works
-        lat_data = str(lat_data)
-        if lat_data is None:
-            lat_data = ''        
-        long_data = row_data.get("Longitude") # works
-        long_data = str(long_data)
-        if long_data is None:
-            long_data = ''        
-        address_data = row_data.get("Address") # works
+        latitude = row_data.get("Latitude") # works
+        latitude = str(latitude)
+        if latitude is None:
+            latitude = ''        
+        longitude = row_data.get("Longitude") # works
+        longitude = str(longitude)
+        if longitude is None:
+            longitude = ''        
+        address = row_data.get("Address") # works
         type_data = row_data.get("Type") # works  
         business = row_data.get("business")
         number = row_data.get("number")
+        street = row_data.get("street")
         city = row_data.get("city")
         county = row_data.get("county")
         state = row_data.get("state")
         zipcode = row_data.get("zipcode")
         query = row_data.get("query")
         country = row_data.get("country")
-
-        coordinate_data = row_data.get("Coordinate")
+        Subgroup = row_data.get("Subgroup")
+        
+        coordinate = row_data.get("Coordinate")
         row_data["Index"] = (row_index + 2)
         PlusCode = row_data.get("PlusCode")
 
 
 # skip lines with fulladdress
-        if len(fulladdress_data) > 2 or fulladdress_data == 'Soul Buoy':        
-            fulladdress_data = ''
+        # if fulladdress != '' or fulladdress == 'Soul Buoy':  
+        if "," in fulladdress:        
+            print(f'skipping fulladdress')    # temp
+        # if len(fulladdress) > 2 or fulladdress == 'Soul Buoy':        
+            if fulladdress == 'Soul Buoy':
+                fulladdress = ''
+        # if len(fulladdress) < 2 or fulladdress == 'Soul Buoy':        
+            # fulladdress = ''
             skip == 'skip'
 # GPS to fulladdress
-        elif lat_data != '' and isinstance(lat_data, str) and len(lat_data) > 5:
-
-            if lat_data != '' and isinstance(lat_data, str) and len(lat_data) > 3:
+        elif latitude != '' and isinstance(latitude, str) and len(latitude) > 5:
+            print(f'trying to get full address')    # temp
+            if latitude != '' and isinstance(latitude, str) and len(latitude) > 3:
 
                 ##  if no fulladdress
-                if len(fulladdress_data) < 2:
-                    query = (f'{lat_data}, {long_data}') # backwards
+                if len(fulladdress) < 2:
+                    query = (f'{latitude}, {longitude}') # backwards
 
                     try:
-                        # location = geolocator.reverse((long_data, lat_data), language='en')
+                        # location = geolocator.reverse((longitude, latitude), language='en')
 
-                        location = geolocator.reverse((lat_data, long_data), language='en') #lat/long
+                        location = geolocator.reverse((latitude, longitude), language='en') #lat/long
                     except Exception as e:
                         print(f"{color_red}Error : {str(e)}{color_reset}") 
                     try:
-                        fulladdress_data = location.address
+                        fulladdress = location.address
 
                     except Exception as e:
                         print(f"{color_red}Error : {str(e)}{color_reset}") 
 
-                    if fulladdress_data == 'Soul Buoy':        
-                        fulladdress_data = ''
+                    if fulladdress == 'Soul Buoy':        
+                        fulladdress = ''
   
 
                     time.sleep(8)   ## Sleep x seconds
 
 # address to gps / Full address
-        elif address_data != '':
-            if len(address_data) > 3:
+        elif address != '':
+            if len(address) > 3:
 
                 try:
-                    location = geolocator.geocode(address_data)
+                    location = geolocator.geocode(address)
 
                     if location:
-                        lat_data = location.latitude
-                        long_data = location.longitude
-                        query = (f'{address_data}')
+                        latitude = location.latitude
+                        longitude = location.longitude
+                        query = (f'{address}')
                     else:
-                        print(f"Location not found for address: {address_data}")
+                        print(f"Location not found for address: {address}")
 
                 except Exception as e:
                     print(f"Error: {str(e)}")
 
             try:
-                location = geolocator.reverse((lat_data, long_data), language='en')
-                fulladdress_data = location.address
+                location = geolocator.reverse((latitude, longitude), language='en')
+                fulladdress = location.address
 
             except Exception as e:
                 print(f"{color_red}Error: {str(e)}{color_reset}")
 
-            if fulladdress_data == 'Soul Buoy':        
-                fulladdress_data = ''
+            if fulladdress == 'Soul Buoy':        
+                fulladdress = ''
                 skip == 'skip'
 
     # coordinate        
-            if lat_data != '' and long_data != '':
-                coordinate_data = (f'{lat_data},{long_data}')
+            if latitude != '' and longitude != '':
+                coordinate = (f'{latitude},{longitude}')
 
                 time.sleep(8)   # Sleep for x seconds
 
@@ -351,8 +352,8 @@ def read_gps(data):
             
             try:
                 decoded_location = geohash2.decode(PlusCode)
-                lat_data = decoded_location[0]
-                long_data = decoded_location[1]
+                latitude = decoded_location[0]
+                longitude = decoded_location[1]
 
             
                 print(f"Coordinates for Geohash '{PlusCode}': {decoded_location[0]}, {decoded_location[1]}")
@@ -361,9 +362,9 @@ def read_gps(data):
                 
                 # location = geolocator.geocode(PlusCode)
                 if decoded_location is not None:
-                    # lat_data, long_data = location.latitude, location.longitude
-                    print(f'PlusCode {PlusCode} = {lat_data}, {long_data}')
-                    fulladdress_data = location.address
+                    # latitude, longitude = location.latitude, location.longitude
+                    print(f'PlusCode {PlusCode} = {latitude}, {longitude}')
+                    fulladdress = location.address
                 else:
                     print(f"Unable to find coordinates for address: {PlusCode}")
             except Exception as e:
@@ -373,43 +374,50 @@ def read_gps(data):
             print(f'{color_red}none of the above{color_reset}')
 
 # parse fulladdress
-        if len(fulladdress_data) > 2 and skip != 'skip':
+        if len(fulladdress) > 5 and skip != 'skip' and "," in fulladdress:
             try:
-                address_parts = fulladdress_data.split(', ')
-                country = address_parts[-1]
-                zipcode = address_parts[-2]
-                state = address_parts[-3]
-                county = address_parts[-4]
+                address_parts = fulladdress.split(', ')
+                if country != '' and len(address_parts) >= 1:
+                    country = address_parts[-1]
+                if zipcode != '' and len(address_parts) >= 2:
+                    zipcode = address_parts[-2]
+                if state == '' and len(address_parts) >= 3:
+                    state = address_parts[-3]
+                if country != '' and len(address_parts) >= 4:
+                    county = address_parts[-4]
+                if len(address_parts) >= 6:
+                    if "Township" in address_parts[-5]:
+                        city = address_parts[-6]
+                    else:    
+                        county = address_parts[-5]
+                        city = address_parts[-6]
                 
-                if "Township" in address_parts[-5]:
-                    city = address_parts[-6]
-                else:    
-                    county = address_parts[-5]
-                    city = address_parts[-6]
-                    
-                if fulladdress_data.count(',') == 7:    # Check if there are exactly 7 commas
+                # if len(address_parts) == 7:
+                    # print(f'there are 7 parts') # temp
+                if fulladdress.count(',') == 7:    # Check if there are exactly 7 commas
+                    # print(f'there are also 7 parts') # temp
                     if 'Township' in address_parts[3]:    # task
                              
-                        address_parts = fulladdress_data.split(', ')    # Split the address by commas
+                        address_parts = fulladdress.split(', ')    # Split the address by commas
                         business = address_parts[0]
                         number = address_parts[0]
                         street = address_parts[1]
 
                     else:
-                        address_parts = fulladdress_data.split(', ')    # Split the address by commas
+                        address_parts = fulladdress.split(', ')    # Split the address by commas
                         business = address_parts[0]
                         number = address_parts[1]
                         street = address_parts[2]
     
-                elif fulladdress_data.count(',') == 5:
+                elif fulladdress.count(',') == 5:
                     if 'Township' in address_parts[1]:    # task
-                        address_parts = fulladdress_data.split(', ')    # Split the address by commas
+                        address_parts = fulladdress.split(', ')    # Split the address by commas
                         business = address_parts[0]
                         number = address_parts[1]
                         street = address_parts[2]
 
                     else:
-                        address_parts = fulladdress_data.split(', ')    # Split the address by commas
+                        address_parts = fulladdress.split(', ')    # Split the address by commas
                         business = address_parts[0]
                         number = address_parts[1]
                         street = address_parts[2]
@@ -453,7 +461,6 @@ def read_gps(data):
                 print(f"{color_red}Error : {str(e)}{color_reset} Business = <{business}> Full address =<{address_parts}>")  
 
 # Icon    
-        Icon = ''
         Icon = row_data.get("Icon")
         if Icon is None:
             Icon = ''
@@ -470,6 +477,12 @@ def read_gps(data):
             Icon = "Intel"
         elif type_data == "Locations":
             Icon = "Locations"
+            if Subgroup == "SearchedPlaces":
+                Icon = "Searched"
+            elif Subgroup == "Shared":
+                Icon = "Shared"   
+            elif Subgroup == "Mentioned":
+                Icon = "Locations"  # task
         elif type_data == "Searched Items":
             Icon = "Searched"
         elif type_data == "Toll":
@@ -481,9 +494,9 @@ def read_gps(data):
 
 
 # write rows to data
-        row_data["Latitude"] = lat_data
-        row_data["Longitude"] = long_data 
-        row_data["Address"] = address_data
+        row_data["Latitude"] = latitude
+        row_data["Longitude"] = longitude 
+        row_data["Address"] = address
         row_data["business"] = business 
         row_data["number"] = number 
         row_data["street"] = street
@@ -492,13 +505,13 @@ def read_gps(data):
         row_data["state"] = state 
         row_data["zipcode"] = zipcode
         row_data["country"] = country 
-        row_data["fulladdress"] = fulladdress_data
+        row_data["fulladdress"] = fulladdress
         row_data["query"] = query
-        row_data["Coordinate"] = coordinate_data
+        row_data["Coordinate"] = coordinate
         row_data["PlusCode"] = PlusCode
         row_data["Icon"] = Icon
         
-        print(f'\nName: {name_data}\nCoordinate: {coordinate_data}\naddress = {address_data}\nbusiness = {business}\nfulladdress_data = {fulladdress_data}\n')
+        print(f'\nName: {name_data}\nCoordinate: {coordinate}\naddress = {address}\nbusiness = {business}\nfulladdress = {fulladdress}\n')
 
     return data
 
@@ -529,32 +542,32 @@ def read_intel(input_xlsx):
 
     for row_index, row_data in enumerate(data):
 
-        (fullname, phone, business, fulladdress_data, city, state) = ('', '', '', '', '', '')
+        (fullname, phone, business, fulladdress, city, state) = ('', '', '', '', '', '')
         (note, sosagent, Time, Latitude, Longitude, Coordinate) = ('', '', '', '', '', '')
-        (Source, description_data, type_data, Name, tag, source) = ('', '', 'Intel', '', '', '')
+        (Source, description, type_data, Name, tag, source) = ('', '', 'Intel', '', '', '')
         (group, subgroup, number, street, county, zipcode) = ('', '', '', '', '', '')
-        (country, query, plate_data, capture_time, hwy_data, direction_data) = ('', '', '', '', '', '')
-        (end_time_data, category_data, time_orig, timezone, PlusCode, Icon) = ('', '', '', '', '', '')
+        (country, query, plate, capture_time, hwy, direction) = ('', '', '', '', '', '')
+        (end_time, category, time_orig, timezone, PlusCode, Icon) = ('', '', '', '', '', '')
 
 # Time
-        time_data = ''
-        time_data = row_data.get("Time")
-        if time_data is None:
-            time_data = ''
+        # Time = ''
+        Time = row_data.get("Time")
+        if Time is None:
+            Time = ''
 
 # Latitude
-        lat_data = ''
-        lat_data = row_data.get("Latitude")
-        lat_data = str(lat_data)
-        if lat_data is None or lat_data == 'None':
-            lat_data = ''        
+        # latitude = ''
+        latitude = row_data.get("Latitude")
+        latitude = str(latitude)
+        if latitude is None or latitude == 'None':
+            latitude = ''        
 
 # Latitude
-        long_data = ''
-        long_data = row_data.get("Longitude")
-        long_data = str(long_data)
-        if long_data is None or long_data == 'None':
-            long_data = ''        
+        # longitude = ''
+        longitude = row_data.get("Longitude")
+        longitude = str(longitude)
+        if longitude is None or longitude == 'None':
+            longitude = ''        
 
 # Coordinate    
         Coordinate = ''
@@ -563,10 +576,9 @@ def read_intel(input_xlsx):
             Coordinate = ''
             
 # address
-        address_data = ''    
-        address_data = row_data.get("fulladdress")
-        if address_data is None:
-            address_data = ''    
+        address = row_data.get("fulladdress")
+        if address is None:
+            address = ''    
             
 # Name    
         Name = ''
@@ -574,11 +586,21 @@ def read_intel(input_xlsx):
         if Name is None:
             Name = ''
 
+# source
+        source = row_data.get("Source")
+        if source is None:
+            source = ''        
+            
 # source file
         source_file = row_data.get("Source file information")
-        if source_file is None and input_xlsx != 'intel_.xlsx':
+        if source_file is None or source_file == '':
             source_file = input_xlsx
 
+# origin_file
+        origin_file = row_data.get("origin_file")
+        if origin_file is None or origin_file == "":
+            origin_file = input_xlsx
+            
 # sosagent    
         sosagent = ''
         sosagent = row_data.get("sosagent")
@@ -591,7 +613,7 @@ def read_intel(input_xlsx):
         if phone is None:
             phone = ''
         else:
-            description_data = (f'{description_data}\nPhone:{phone}')
+            description = (f'{description}\nPhone:{phone}')
 
 # business    
         business = ''
@@ -599,9 +621,9 @@ def read_intel(input_xlsx):
         if business is None:
             business = ''
         else:
-            description_data = (f'{description_data}\nBusiness:{business}')
+            description = (f'{description}\nBusiness:{business}')
 
-        description_data = description_data.strip()
+        description = description.strip()
 
 # city    
         city = ''
@@ -623,13 +645,13 @@ def read_intel(input_xlsx):
 
       
 # write rows to data
-        row_data["Time"] = time_data
-        row_data["Latitude"] = lat_data
-        row_data["Longitude"] = long_data 
-        row_data["Address"] = address_data
+        row_data["Time"] = Time
+        row_data["Latitude"] = latitude
+        row_data["Longitude"] = longitude 
+        row_data["Address"] = address
         # row_data["Group"] = group
-        # row_data["Subgroup"] = subgroup
-        row_data["Description"] = description_data
+        row_data["Subgroup"] = subgroup
+        row_data["Description"] = description
         row_data["Type"] = type_data
         row_data["Tag"] = tag        
         row_data["Source"] = source
@@ -643,19 +665,20 @@ def read_intel(input_xlsx):
         row_data["state"] = state 
         # row_data["zipcode"] = zipcode
         # row_data["country"] = country 
-        row_data["fulladdress"] = fulladdress_data
+        row_data["fulladdress"] = fulladdress
         # row_data["query"] = query
-        # row_data["Plate"] = plate_data
+        # row_data["Plate"] = plate
         # row_data["Capture Time"] = capture_time
-        # row_data["Highway Name"] = hwy_data
+        # row_data["Highway Name"] = hwy
         row_data["Coordinate"] = Coordinate
-        # row_data["Direction"] = direction_data
-        # row_data["End time"] = end_time_data
-        # row_data["Category"] = category_data
+        # row_data["Direction"] = direction
+        # row_data["End time"] = end_time
+        # row_data["Category"] = category
         # row_data["Time Original"] = time_orig
         # row_data["Timezone"] = timezone
         # row_data["PlusCode"] = PlusCode
         row_data["Icon"] = Icon
+        row_data["origin_file"] = origin_file # test
         # index
      
      
@@ -694,26 +717,37 @@ def read_locations(input_xlsx):
 
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
-        (state, fulladdress_data, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
+        (state, fulladdress, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
         (Index, country, capture_time, PlusCode, time_orig, Icon) = ('', '', '', '', '', '')
-        (description_data, group, subgroup, source, source_file, tag) = ('', '', '', '', '', '')
+        (description, group, subgroup, source, source_file, tag) = ('', '', '', '', '', '')
+        (Time, capture_date, timezone, origin_file) = ('', '', '', '')  
+        (end_time, category, latitude, longitude, coordinate, address) = ('', '', '', '', '', '')
 
-        name_data = ''  # in case there is no Name column
+        (type_data, plate, country_code, state_ftk, city_ftk, hwy) = ('', '', '', '', '', '')
+        (direction, name_data, no, account, container, time_local) = ('', '', '', '', '', '') 
+        (deleted, service_id, carved, sighting_state, sighting_location, manually_decoded) = ('', '', '', '', '', '')
+
         name_data = row_data.get("Name")
         if name_data is None:
             name_data = ''
 
+# no 
+        no = row_data.get("#")
+        if no is None:
+            no = ''
+            
 # Description    
-        description_data = ''
-        description_data = row_data.get("Description")
-        if description_data is None:
-            description_data = ''
+        description = row_data.get("Description")
+        if description is None:
+            description = ''
+
+
+
 
 # Time
-        time_data = ''
-        time_data = row_data.get("Time")
-        if time_data is None:
-            time_data = ''
+        Time = row_data.get("Time")
+        if Time is None:
+            Time = ''
 
 # time_orig
         time_orig = row_data.get("Time Original")
@@ -721,98 +755,119 @@ def read_locations(input_xlsx):
             time_orig = ''
 
 # Capture Time
-        capture_time = ''
         capture_time  = row_data.get("Capture Time") 
         if capture_time is None:
             capture_time = ''     
 
-        if time_data == '' or time_data is None:
+        if Time == '':
             if capture_time != '':
-                time_data = capture_time
+                Time = capture_time
 
+# Capture Date
+        capture_date  = row_data.get("Capture Date") 
+        if capture_date is None:
+            capture_date = ''     
+
+        if Time == '':
+            if capture_date != '':
+                Time = capture_date
 
 # timezone
-        timezone = ''
-        timezone = row_data.get("timezone")
+        timezone  = row_data.get("Timezone")
+        if timezone is None:
+            timezone = ''  
+
+# time Gmail warrant retuirn
+        time2  = row_data.get("Timestamp (UTC)")
+        if time2 is None:
+            time2 = ''  
+        if Time == "" and time2 != "":
+            Time = time2
+            timezone = "UTC"
+            
 
 # convert time
-        output_format = "%m/%d/%Y %H:%M:%S"  # Changed to military time
-        
-        if time_orig == "" and time_data != '':
-            time_orig = time_data
+        # output_format = "%m/%d/%Y %H:%M:%S"  # Changed to military time
+        output_format = "%Y/%m/%d %H:%M:%S"  # Changed to ISO military time
+        # output_format = "%Y-%m-%dT%H:%M:%SZ"    # Google Earth format
+
+        # pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
+        pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'  # ISO military time
+
+        if time_orig == '' and Time != '': # copy the original time
+            time_orig = Time
         try:
-            (time_data, time_orig, timezone) = convert_timestamp(time_data, time_orig, timezone)
-            time_data = time_data.strftime(output_format)
-        except ValueError as e:
-            # print(f"Error time2: {e} - {time_data}")
-            time_data = ''
+            (Time, time_orig, timezone) = convert_timestamp(Time, time_orig, timezone)
+            Time = Time.strftime(output_format)
+            if Time is None:
+                Time = ''              
             
-   
+        except ValueError as e:
+            # print(f"Error time2: {e} - {Time}")
+            # Time = ''    # temp rem of this
+            pass
+        
 # End time
-        end_time_data = ''
-        end_time_data = row_data.get("End time")
-        if end_time_data is None:
-            end_time_data = ''        
+        end_time = row_data.get("End time")
+        if end_time is None:
+            end_time = ''        
 
 # Category
-        category_data = ''
-        category_data = row_data.get("Category")
-        if category_data is None:
-            category_data = ''        
+        category = row_data.get("Category")
+        if category is None:
+            category = ''        
 
 # gps
-        lat_data = ''
-        lat_data = row_data.get("Latitude")
-        lat_data = str(lat_data)
-        if lat_data is None or lat_data == 'None':
-            lat_data = ''        
 
-        long_data = ''
-        long_data = row_data.get("Longitude")
-        long_data = str(long_data)
-        if long_data is None or long_data == 'None':
-            long_data = ''        
+        latitude = row_data.get("Latitude")
+        latitude = str(latitude)
+        if latitude is None or latitude == 'None':
+            latitude = ''        
 
-        if lat_data == '': 
-            lat_data = row_data.get("Capture Location Latitude")
-            lat_data = str(lat_data)
-            if lat_data is None or lat_data == 'None':
-                lat_data = ''        
+        longitude = row_data.get("Longitude")
+        longitude = str(longitude)
+        if longitude is None or longitude == 'None':
+            longitude = ''        
 
-        if long_data == '':
-            long_data = row_data.get("Capture Location Longitude")
-            long_data = str(long_data)
-            if long_data is None or long_data == 'None':
-                long_data = ''        
+        if latitude == '': 
+            latitude = row_data.get("Capture Location Latitude")
+            latitude = str(latitude)
+            if latitude is None or latitude == 'None':
+                latitude = ''        
+
+        if longitude == '':
+            longitude = row_data.get("Capture Location Longitude")
+            longitude = str(longitude)
+            if longitude is None or longitude == 'None':
+                longitude = ''        
 
 # coordinate        
-        coordinate_data = ''
 
-        if lat_data != '' and long_data != '':
-            coordinate_data = (f'{lat_data},{long_data}')
+
+        if latitude != '' and longitude != '':
+            coordinate = (f'{latitude},{longitude}')
         elif row_data.get("Coordinate") != None:
-            coordinate_data = row_data.get("Coordinate")
+            coordinate = row_data.get("Coordinate")
             
         elif row_data.get("Capture Location") != None:
-            coordinate_data = row_data.get("Capture Location")
+            coordinate = row_data.get("Capture Location")
         elif row_data.get("Capture Location (Latitude,Longitude)") != None:
-            coordinate_data = row_data.get("Capture Location (Latitude,Longitude)")
+            coordinate = row_data.get("Capture Location (Latitude,Longitude)")
 
-        if len(coordinate_data) > 6:
+        if len(coordinate) > 6:
            
-            coordinate_data = coordinate_data.replace('(', '').replace(')', '')
-            if ',' in coordinate_data:
-                coordinate_data = coordinate_data.split(',')
-                lat_data = coordinate_data[0].strip()
-                long_data = coordinate_data[1].strip()
-                long_data = coordinate_data[1].strip()
-                coordinate_data = (f'{lat_data},{long_data}')
+            coordinate = coordinate.replace('(', '').replace(')', '')
+            if ',' in coordinate:
+                coordinate = coordinate.split(',')
+                latitude = coordinate[0].strip()
+                longitude = coordinate[1].strip()
+                longitude = coordinate[1].strip()
+                coordinate = (f'{latitude},{longitude}')
 
 # address
-        address_data = ''    
-        address_data = row_data.get("Address")
-        if address_data is None:
-            address_data = ''        
+        address = row_data.get("Address")
+        if address is None:
+            address = ''        
 
 # group
         group = row_data.get("Group")
@@ -824,87 +879,166 @@ def read_locations(input_xlsx):
         if subgroup is None:
             subgroup = ''
 
-
 # type
-        type_data = ''
         type_data = row_data.get("Type")
         if type_data is None:
             type_data = ''  
 
 # tag
-        tag = ''
         tag = row_data.get("Tag")
         if tag is None:
             tag = ''
 
+
+# tag from label
+        label  = row_data.get("Label") 
+        if label is None:
+            label = ''     
+
+        if tag == '':
+            if label != '':
+                tag = label
+
+# source
+        source = row_data.get("Source")
+        if source is None:
+            source = ''
+
+# carved
+        carved = row_data.get("Source file information")
+        if carved is None or 'xlsx' in carved:
+            carved = ''
+
 # source file
         source_file = row_data.get("Source file information")
-        if source_file is None and input_xlsx != 'locations.xlsx':
-            source_file = input_xlsx
+        if source_file is None:
+            source_file = ''
 
+# origin_file
+        origin_file = row_data.get("origin_file")
+        if origin_file is None or origin_file == "":
+            origin_file = input_xlsx
+            
 # business  
         business = row_data.get("business")
         if business is None:
             business = ''
-        # else:
-            # try:
-                # business = business.strip()
-            # except Exception as e:
-                # print(f"{color_red}Error stripping {business}: {str(e)}{color_reset}")
 
 # fulladdress
-        fulladdress_data  = row_data.get("fulladdress")
-        if fulladdress_data is None:
-            fulladdress_data = ''       
+        fulladdress  = row_data.get("fulladdress")
+        if fulladdress is None:
+            fulladdress = ''       
 
 # query
-        query = ''
         query  = row_data.get("query")
         if query is None:
             query = ''     
 
 # Plate
-        plate_data = ''
-        plate_data  = row_data.get("Plate")         # red
-        if plate_data is None:
-            plate_data = ''     
+        plate  = row_data.get("Plate")         # red
+        if plate is None:
+            plate = ''     
 
-        if plate_data != '' and type_data == '':
+        if plate != '' and type_data == '':
             type_data = 'LPR'
             
 
 
 # country
-        country = ''
         country = row_data.get("country")
         if country is None:
             country = ''     
 
-# hwy
-        hwy_data = ''
-        hwy_data  = row_data.get("Highway Name")
-        if hwy_data is None:
-            hwy_data = ''           
+# Country Code
+        country_code  = row_data.get("Country Code") 
+        if country_code is None:
+            country_code = ''     
 
-        if hwy_data == '':
-            hwy_data  = row_data.get("Capture Camera")
-            if hwy_data is None:
-                hwy_data = ''           
+        if country == '':
+            if country_code != '':
+                country = country_code
+
+# county  
+        county = row_data.get("county")
+        if county is None:
+            county = ''
+
+# state  
+        state = row_data.get("state")
+        if state is None:
+            state = ''
+        
+# state_ftk
+        state_ftk  = row_data.get("Region") 
+        if state_ftk is None:
+            state_ftk = ''     
+        if state == '':
+            if state_ftk != '':
+                state = state_ftk
+
+# zipcode  
+        zipcode = row_data.get("zipcode")
+        if zipcode is None:
+            zipcode = ''
+
+# number  
+        number = row_data.get("number")
+        if number is None:
+            number = ''
+            
+# street  
+        street = row_data.get("street")
+        if street is None:
+            street = ''
+
+
+# city  
+        city = row_data.get("city")
+        if city is None:
+            city = ''
+
+# City
+        city_ftk  = row_data.get("City") 
+        if city_ftk is None:
+            city_ftk = ''     
+
+        if city == '':
+            if city_ftk != '':
+                city = city_ftk 
+            
+# hwy
+        hwy  = row_data.get("Highway Name")
+        if hwy is None:
+            hwy = ''           
+
+        if hwy == '':
+            hwy  = row_data.get("Capture Camera")
+            if hwy is None:
+                hwy = ''           
 
 # Direction
-        direction_data = ''
-        direction_data  = row_data.get("Direction")
-        if direction_data is None:
-            direction_data = ''    
+        direction  = row_data.get("Direction")
+        if direction is None:
+            direction = ''    
+        if direction == '':
+            match = re.search(r'\((\w+)\)',hwy)
+            if ' NB' in hwy:
+                direction = 'N'
+            elif ' EB' in hwy:
+                direction = 'E'
+            elif ' SB' in hwy:
+                direction = 'S'
+            elif ' WB' in hwy:
+                direction = 'W'
+            elif match:
+                direction = match.group(1).replace('B','')
 
 # PlusCode
-        PlusCode = ''
         PlusCode  = row_data.get("PlusCode")
         if PlusCode is None:
             PlusCode = ''  
 
 # Icon    
-        Icon = ''
         Icon = row_data.get("Icon")
         if Icon is None:
             Icon = ''
@@ -912,17 +1046,21 @@ def read_locations(input_xlsx):
             Icon = Icon[0].upper() + Icon[1:].lower()
         
 # write rows to data
-        row_data["Time"] = time_data
-        row_data["Latitude"] = lat_data
-        row_data["Longitude"] = long_data 
-        row_data["Address"] = address_data
+        row_data["#"] = no
+        row_data["Time"] = Time
+        row_data["Latitude"] = latitude
+        row_data["Longitude"] = longitude 
+        row_data["Address"] = address
         row_data["Group"] = group
         row_data["Subgroup"] = subgroup
-        row_data["Description"] = description_data
+        row_data["Description"] = description
         row_data["Type"] = type_data
-        row_data["Tag"] = tag        
         row_data["Source"] = source
+        # row_data["Deleted"] = deleted
+        row_data["Tag"] = tag        
         row_data["Source file information"] = source_file
+        # row_data["Service Identifier"] = service_id   
+        # row_data["Carved"] = carved        
         row_data["Name"] = name_data
         row_data["business"] = business 
         row_data["number"] = number 
@@ -932,20 +1070,28 @@ def read_locations(input_xlsx):
         row_data["state"] = state 
         row_data["zipcode"] = zipcode
         row_data["country"] = country 
-        row_data["fulladdress"] = fulladdress_data
+        row_data["fulladdress"] = fulladdress
         row_data["query"] = query
-        row_data["Plate"] = plate_data
+        # row_data["Sighting State"] = sighting_state
+        row_data["Plate"] = plate
         row_data["Capture Time"] = capture_time
-        row_data["Highway Name"] = hwy_data
-        row_data["Coordinate"] = coordinate_data
-        row_data["Direction"] = direction_data
-        row_data["End time"] = end_time_data
-        row_data["Category"] = category_data
+        row_data["Highway Name"] = hwy
+        row_data["Coordinate"] = coordinate
+        row_data["Capture Location Latitude"] = latitude        
+        row_data["Capture Location Longitude"] = longitude       
+        # row_data["Container"] = container       
+        # row_data["Sighting Location"] = sighting_location        
+        row_data["Direction"] = direction
+        # row_data["Time Local"] = time_local
+        row_data["End time"] = end_time
+        row_data["Category"] = category
+        # row_data["Manually decoded"] = manually_decoded        
+        # row_data["Account"] = account
+        row_data["PlusCode"] = PlusCode        
         row_data["Time Original"] = time_orig
         row_data["Timezone"] = timezone
-        row_data["PlusCode"] = PlusCode
         row_data["Icon"] = Icon        
-        # index
+        row_data["origin_file"] = origin_file
      
      
     return data
@@ -970,8 +1116,6 @@ def write_kml(data):
     # red_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/red-circle.png'
     # white_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/wht-circle.png'
 
-
-
     default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
 
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
@@ -980,14 +1124,16 @@ def write_kml(data):
     car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
 
     truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
-
     calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
+    chat_icon = 'https://maps.google.com/mapfiles/kml/shapes/post_office.png' # email
     locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
     home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
     images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
     intel_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon44.png'
     office_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon21.png'
     searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon9.png'
+    shared_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon20.png'
+    
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
     n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
@@ -1000,224 +1146,240 @@ def write_kml(data):
     for row_index, row_data in enumerate(data):
         index_data = row_index + 2  # excel row starts at 2, not 0
         
-        time_data = row_data.get("Time") #
-        lat_data = row_data.get("Latitude") #
-        long_data = row_data.get("Longitude") #
-        address_data = row_data.get("Address") #
+        Time = row_data.get("Time") #
+        latitude = row_data.get("Latitude") #
+        longitude = row_data.get("Longitude") #
+        address = row_data.get("Address") #
         group_data = row_data.get("Group") 
-        subgroup_data = row_data.get("Subgroup")   
-        description_data = row_data.get("Description")
+        subgroup = row_data.get("Subgroup")   
+        description = row_data.get("Description")
         type_data = row_data.get("Type")#
         tag = row_data.get("Tag")
         source_file = row_data.get("Source file information") #
         name_data = row_data.get("Name")
         business = row_data.get("business")
-        fulladdress_data  = row_data.get("fulladdress")
-        plate_data  = row_data.get("Plate")   
-        hwy_data  = row_data.get("Highway Name") #
-        coordinate_data = row_data.get("Coordinate")
-        direction_data  = row_data.get("Direction")
-        end_time_data = row_data.get("End time")
-        category_data = row_data.get("Category")
+        fulladdress  = row_data.get("fulladdress")
+        plate  = row_data.get("Plate")   
+        hwy  = row_data.get("Highway Name") #
+        coordinate = row_data.get("Coordinate")
+        direction  = row_data.get("Direction")
+        end_time = row_data.get("End time")
+        category = row_data.get("Category")
         Icon = row_data.get("Icon")
-
+        origin_file = row_data.get("origin_file")
 
         if name_data != '':
-            (description_data) = (f'{description_data}\nNAME: {name_data}')
+            (description) = (f'{description}\nNAME: {name_data}')
         
-        if time_data != '':
-            (description_data) = (f'{description_data}\nTIME: {time_data}')
+        if Time != '':
+            (description) = (f'{description}\nTIME: {Time}')
 
-        if end_time_data != '':
-            (description_data) = (f'{description_data}\nEnd Time: {end_time_data}')
+        if end_time != '':
+            (description) = (f'{description}\nEnd Time: {end_time}')
 
-        if address_data != '':
-            (description_data) = (f'{description_data}\n{address_data}')
+        if address != '':
+            (description) = (f'{description}\n{address}')
 
-        elif fulladdress_data != '':
-            (description_data) = (f'{description_data}\nADDRESS: {fulladdress_data}')
+        elif fulladdress != '':
+            (description) = (f'{description}\nADDRESS: {fulladdress}')
 
-        if hwy_data != '':
-            (description_data) = (f'{description_data}\nHWY NAME: {hwy_data}')
+        if hwy != '':
+            (description) = (f'{description}\nHWY NAME: {hwy}')
             
-        if direction_data != '':
-            (description_data) = (f'{description_data}\nDIRECTION: {direction_data}')
+        if direction != '':
+            (description) = (f'{description}\nDIRECTION: {direction}')
 
         # if source_file != '' and source_file != None:
-            # (description_data) = (f'{description_data}\nSOURCE: {source_file}')
+            # (description) = (f'{description}\nSOURCE: {source_file}')
 
         if tag != '':
-            (description_data) = (f'{description_data}\nTAG: {tag}')    # test
+            (description) = (f'{description}\nTAG: {tag}')    # test
 
         if type_data != '':
-            (description_data) = (f'{description_data}\nTYPE: {type_data}')
+            (description) = (f'{description}\nTYPE: {type_data}')
 
         if group_data != '':
-            (description_data) = (f'{description_data} / {group_data}')
+            (description) = (f'{description} / {group_data}')
 
-        if subgroup_data != '' and subgroup_data != 'Unknown':
-            (description_data) = (f'{description_data} / {subgroup_data}')
+        if subgroup != '' and subgroup != 'Unknown':
+            (description) = (f'{description} / {subgroup}')
 
         if business != '':
-            (description_data) = (f'{description_data}\nBusiness: {business}')
+            (description) = (f'{description}\nBusiness: {business}')
             
-        if plate_data != '':
-            (description_data) = (f'{description_data}\nPLATE: {plate_data}')
+        if plate != '':
+            (description) = (f'{description}\nPLATE: {plate}')
 
         point = ''  # Initialize point variable outside the block
         
-        if lat_data == '' or long_data == '' or lat_data == None or long_data == None:
+        if latitude == '' or longitude == '' or latitude == None or longitude == None:
             print(f'skipping row {index_data} - No GPS')
 
         elif Icon == "Lpr" or Icon == "Car":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = car_icon  # red car
 
         elif Icon == "Car2":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = car2_icon  # yellow car
 
         elif Icon == "Car3":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = car3_icon  # green car
 
         elif Icon == "Car4":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = car4_icon  # red car (with circle)
 
         elif Icon == "Truck":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = truck_icon
 
         elif Icon == "Calendar":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = calendar_icon
 
+        elif Icon == "Chat":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description}",
+                coords=[(longitude, latitude)]
+            )
+            point.style.iconstyle.icon.href = chat_icon
+            
         elif Icon == "Home":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = home_icon
 
         elif Icon == "Images":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = images_icon
 
         elif Icon == "Intel":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = intel_icon
 
         elif Icon == "Office":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = office_icon
 
         elif Icon == "Searched":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = searched_icon
 
+        elif Icon == "Shared":
+            point = kml.newpoint(
+                name=f"{index_data}",
+                description=f"{description}",
+                coords=[(longitude, latitude)]
+            )
+            point.style.iconstyle.icon.href = shared_icon
+            
         elif Icon == "Videos":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = videos_icon
 
         elif Icon == "Locations":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = locations_icon    # yellow paddle
 
         elif Icon == "Toll":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = toll_icon
 
         elif Icon == "N":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = n_icon
 
         elif Icon == "E":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = e_icon
 
         elif Icon == "S":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = s_icon
 
         elif Icon == "W":
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = w_icon
 
         else:
             point = kml.newpoint(
                 name=f"{index_data}",
-                description=f"{description_data}",
-                coords=[(long_data, lat_data)]
+                description=f"{description}",
+                coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = default_icon    # orange paddle
 
@@ -1261,7 +1423,7 @@ def write_locations(data):
         , "Coordinate", "Capture Location Latitude", "Capture Location Longitude"
         , "Container", "Sighting Location", "Direction", "Time Local", "End time"
         , "Category", "Manually decoded", "Account", "PlusCode", "Time Original", "Timezone"
-        , "Icon", "Index"
+        , "Icon", "origin_file", "Index"
 
     ]
 
@@ -1291,7 +1453,7 @@ def write_locations(data):
     worksheet.column_dimensions['I'].width = 9# Type
     worksheet.column_dimensions['J'].width = 10# Source
     worksheet.column_dimensions['K'].width = 10# Deleted
-    worksheet.column_dimensions['L'].width = 4# Tag
+    worksheet.column_dimensions['L'].width = 11# Tag
     worksheet.column_dimensions['M'].width = 20# Source file information
     worksheet.column_dimensions['N'].width = 15# Service Identifier
     worksheet.column_dimensions['O'].width = 7# Carved
@@ -1331,8 +1493,9 @@ def write_locations(data):
     worksheet.column_dimensions['AQ'].width = 25 # PlusCode
     worksheet.column_dimensions['AR'].width = 21 # Time Original
     worksheet.column_dimensions['AS'].width = 9 # Timezone
-    worksheet.column_dimensions['AT'].width = 6 # Icon   
-    worksheet.column_dimensions['AU'].width = 6 # Index
+    worksheet.column_dimensions['AT'].width = 10 # Icon   
+    worksheet.column_dimensions['AU'].width = 7 # origin_file
+    worksheet.column_dimensions['AV'].width = 6 # Index
 
     
     for row_index, row_data in enumerate(data):
@@ -1388,7 +1551,7 @@ def write_locations(data):
     color_worksheet['B1'] = 'Icon'
     color_worksheet['C1'] = 'Icon Description'
 
-    color_data = [
+    icon_data = [
 
         ('', 'Car', 'Lpr red car (License Plate Reader)'),
         ('', 'Car2', 'Lpr yellow car'),
@@ -1413,17 +1576,17 @@ def write_locations(data):
         ('', 'W', 'Westbound blue arrow'),
         ('', '', ''),
         ('', 'Yellow font', 'Tagged'),
+        ('', 'Chats', 'Chats'),   # 
 
 
         ('', '', ''),
         ('', 'NOTE', 'visit https://earth.google.com/ <file><Import KML> select gps.kml <open>'),
     ]
 
-    for row_index, (icon, tag, description) in enumerate(color_data):
+    for row_index, (icon, tag, description) in enumerate(icon_data):
         color_worksheet.cell(row=row_index + 2, column=1).value = icon
         color_worksheet.cell(row=row_index + 2, column=2).value = tag
         color_worksheet.cell(row=row_index + 2, column=3).value = description
-
 
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car2_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon47.png'  # yellow car
@@ -1432,12 +1595,13 @@ def write_locations(data):
     truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
     default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
     calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
+    chat_icon = 'https://maps.google.com/mapfiles/kml/shapes/post_office.png' # email
     locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
     home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
     images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
     intel_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon44.png'
     office_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon21.png'
-    searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon9.png'
+    searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon0.png'  #  
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
     n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
@@ -1523,7 +1687,10 @@ def write_locations(data):
         response = requests.get(w_icon)
         img = Image(io.BytesIO(response.content))
         color_worksheet.add_image(img, 'A22')
-     
+
+        response = requests.get(chat_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A24')     
         
     except:
         pass
@@ -1545,8 +1712,16 @@ def usage():
     print(f'    {file} -k -I locations.xlsx  # xlsx 2 kml with no internet processing')     
     print(f'    {file} -r')
     print(f'    {file} -r -I locations.xlsx -O locations2addresses_.xlsx') 
+    print(f'    {file} -r -I locations_FTK.xlsx -O locations2addresses_.xlsx') 
+    print(f'    {file} -r -I Flock.xlsx -O locations_Flock.xlsx')    
+    print(f'    {file} -r -I MediaLocations_.xlsx')  
+    print(f'    {file} -r -I PointsOfInterest.xlsx -O locations_PointsOfInterest.xlsx') 
+    print(f'    {file} -r -I Tolls.xlsx -O locations_Tolls.xlsx')     
     print(f'    {file} -i -I intel_.xlsx -O intel2locations_.xlsx')  
-                
+    print(f'    {file} -i -I intel_SearchedItems_.xlsx')  
+    print(f'    {file} -i -I intel_Chats_.xlsx')  
+
+    
 if __name__ == '__main__':
     main()
 
@@ -1560,14 +1735,13 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-run -r a second time and fulladdress and Tag are blank.
-
+Country and zipcode are blank
 if address / fulldata only, get lat/long
 export a temp copy to output.txt
 if it's less than 3000 skip the sleep timer
 
 Add Group and Subgroup, color
-if coordinate but no address or gps. convert coordinate to lat/long
+
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>

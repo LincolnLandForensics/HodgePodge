@@ -75,7 +75,7 @@ def main():
     args = parser.parse_args()
     data = []
     global outuput_xlsx
-
+    outuput_xlsx = args.output
 
     if args.blank:
         data = []
@@ -121,42 +121,57 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-def convert_date_format(input_date):
-    (output_date) = ('')
-    input_date = input_date.replace(' at ',' ')
-    date_parts = input_date.split(' ')
-    updated_date_parts = date_parts[:-1]
-    updated_date_string = ' '.join(updated_date_parts)
-    input_date = updated_date_string
+def convert_timestamp(timestamp, time_orig, timezone):
+    if timezone is None:
+    # if timezone != "" and timezone is not None:
+        timezone = ''
 
-    if input_date.count(',') == 1:
-        input_format = "%B %d, %Y %I:%M:%S %p"
+    # time_data = timestamp
+    timestamp = str(timestamp)
 
-        try:
-            dt_object = datetime.strptime(input_date, input_format)
-        except Exception as e:
-            print(f"Error : {str(e)}") 
-        
-        try:
-            output_format = "%m/%d/%Y %I:%M:%S %p"
-            output_date = dt_object.strftime(output_format)
-        except Exception as e:
-            print(f"Error : {str(e)}") 
-    elif input_date.count(',') == 2:
-        input_format = "%B %d, %Y, %I:%M:%S %p"
+    if time_orig == "":
+        time_orig = timestamp
 
+    timestamp = timestamp.replace(' at ', ' ')
+    if "(" in timestamp:
+        timestamp = timestamp.split('(')
+        timezone = timestamp[1].replace(")", '')
+        timestamp = timestamp[0]
+    elif " CDT" in timestamp:
+        timezone = "CDT"
+        timestamp = timestamp.replace(" CDT", "")
+    elif " CST" in timestamp:
+        timezone = "CST"
+        timestamp = timestamp.replace(" CST", "")
+
+    formats = [
+        "%B %d, %Y, %I:%M:%S %p %Z",
+        "%Y:%m:%d %H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",
+        "%m/%d/%Y %I:%M:%S %p",
+        "%m/%d/%Y %I:%M %p",  # timestamps without seconds
+        "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
+        "%B %d, %Y at %I:%M:%S %p %Z",
+        "%B %d, %Y at %I:%M:%S %p CST",
+        "%B %d, %Y at %I:%M:%S %p",
+        "%B %d, %Y %I:%M:%S %p %Z",
+        "%B %d, %Y %I:%M:%S %p",
+        "%B %d, %Y, %I:%M:%S %p %Z",
+        "%Y-%m-%dT%H:%M:%SZ"  # ISO 8601 format with UTC timezone
+    ]
+
+    for fmt in formats:
         try:
-            dt_object = datetime.strptime(input_date, input_format)
-        except Exception as e:
-            print(f"Error : {str(e)}") 
-        
-        try:
-            output_format = "%m/%d/%Y %I:%M:%S %p"
-            output_date = dt_object.strftime(output_format)
-        except Exception as e:
-            print(f"Error : {str(e)}") 
-        
-    return output_date
+            dt_obj = datetime.strptime(timestamp.strip(), fmt)
+            timestamp = dt_obj
+            # return dt_obj, time_orig, timezone
+            return timestamp, time_orig, timezone
+                        
+        except ValueError:
+            pass
+
+    raise ValueError(f"{time_orig} Timestamp format not recognized")
+
 
 def read_cellebrite(input_xlsx):
 
@@ -225,10 +240,13 @@ def read_cellebrite(input_xlsx):
     for row_index, row_data in enumerate(data):
         (fullname, url, phone, email, business, misc) = ('', '', '', '', '', '')
         (lastname, firstname) = ('', '')
-        (ranking) = (f'4 - {datatype}')
+        (Time, time_orig, timezone) = ('', '', '')
+        (ranking, source_file, origin_file) = (f'4 - {datatype}', '', '')
         (fulladdress , note, info, source, user, query) = ('', '', '', '', '', '')
         (aka, dob, otheremails, titleurl, dnsdomain, country) = ('', '', '', '', '', '')
-        (Latitude, Longitude, Coordinate, fulladdress2, state) = ('', '', '', '', '')
+        (Latitude, Longitude, Coordinate, fulladdress2, state, Time) = ('', '', '', '', '', '')
+        
+        
 # fullname        
         ## replace all None values with '' 
         fullname = row_data.get("Name")
@@ -241,16 +259,20 @@ def read_cellebrite(input_xlsx):
 
 # url   
         url = row_data.get("URL")
+        if url is None:
+            url = ''        
+
+# title
         title = row_data.get("Title")
-        
         if title is None:
             title = ''
         else:
             # (ranking) = ('4 - Chats')
             titleurl = title
-            misc = row_data.get("Last Visited-Time")
-            if misc is None:
-                misc = ''
+            Time = row_data.get("Last Visited-Time")
+            
+            if Time is None:
+                Time = ''
             
         if url is None:
             url = ''
@@ -353,9 +375,9 @@ def read_cellebrite(input_xlsx):
         if info == "" and info2 != "":
             info = info2
             ranking == "3 - Chats"
-            misc = row_data.get("Timestamp: Time")
-            if misc is None:
-                misc = ''
+            Time = row_data.get("Timestamp: Time")
+            if Time is None:
+                Time = ''
             if info.startswith("http"):
                 url = info
 
@@ -415,6 +437,8 @@ def read_cellebrite(input_xlsx):
         elif phone7 is not None:
             phone = (f'{phone}\n{phone7}')            
             
+        if phone is None:  
+            phone = ''
         phone = phone.replace(' ','').replace('+','')
         phone = ''.join(char for char in phone if char.isalnum())
         if len(phone) >= 7:
@@ -434,9 +458,12 @@ def read_cellebrite(input_xlsx):
 # Parties        
         Parties = row_data.get("Parties")
         if Parties is None:
-            Parties = row_data.get("Parties")
+            Parties = ''
         else:
             misc = row_data.get("Time")
+            if misc is None:
+                misc = ''            
+            
             info = (f'{row_data.get("Direction")} {row_data.get("Status")} {row_data.get("Duration")}')
             Parties = Parties.replace('From:  ', '').replace('To:  ', '').lstrip('+')
             if " " in Parties:
@@ -450,7 +477,29 @@ def read_cellebrite(input_xlsx):
                     phone = Parties[0]
                 fullname = Parties[1]
                 
-                    
+# Position        
+        Position = row_data.get("Position")
+        if Position is None:
+            Position = ''         
+        
+        try:
+            Position = Position.replace(' ', '')
+        except Exception as e:
+            print(f"{color_red}Error printing line: {str(e)}{color_reset}")
+        
+        if Position is None:
+            Position = ''
+        else:
+            Position = Position.replace('(', '').replace(')', '').strip()
+            Position = str(Position)
+            Coordinate = Position
+        if Latitude == '' and ',' in Position:
+            Position = Position.split(',')
+            Latitude = Position[0]
+            Longitude= Position[1]
+            # print(f'Latitude {Latitude}') # temp
+
+            
 # user
         if user1 is not None:
             if "@s.whatsapp.net" in user1 and phone == '':
@@ -517,6 +566,8 @@ def read_cellebrite(input_xlsx):
             email = misc   
             misc = ''
         # if phone == '' and misc.startswith("+"):
+        if phone is None:
+            phone = ''
         if phone is not None and phone == '' and misc is not None and "+" in misc:
         # if phone == '' and "+" in misc:
             phone = misc   
@@ -541,6 +592,26 @@ def read_cellebrite(input_xlsx):
         if fulladdress == '' and fulladdress2 != '':
             fulladdress = fulladdress2
 
+# Map Address
+        fulladdress3 = row_data.get("Map Address")
+        if fulladdress3 is None:
+            fulladdress3 = ''
+            query = row_data.get("Value")
+            if query is None:
+                query = ''
+            
+            
+            # query = query.strip()
+            
+        else:
+            fulladdress3 = fulladdress3.strip()
+
+
+
+
+        if len(fulladdress) < 2:
+            fulladdress = fulladdress3
+
 # country        
         ## replace all None values with '' 
         country = row_data.get("Country code")
@@ -548,18 +619,34 @@ def read_cellebrite(input_xlsx):
             country = ''
         country = country.strip()
         
-# ranking
+# tag
         tag = row_data.get("Tag")
+        if tag is None:
+            tag = ''       
+
+        tag2 = row_data.get("Tag Note - Chat")
+        if tag2 is None:
+            tag2 = ''
+        # else:
+            
+        if tag == "" and tag2 != "":
+            tag2 = tag2.replace('Tags: ', '').strip()
+            # print(f'tag2 = {tag2}') # temp
+            tag = tag2
+            if "Important" in tag:
+                tag = "Important"
+            elif "Review" in tag:
+                tag = "Review"        
+
+# ranking
         ranking2 = row_data.get("Service Type")
 
         if ranking2 is None:
             ranking = (f'{ranking} - {ranking2}')
             ranking = ranking.replace("4 -", "3 -")
-        if tag is not None:
-            ranking = (f'{ranking} - {tag}')
-            ranking = ranking.replace("4 -", "3 -")
 
-
+        if ranking is None:
+            ranking = ''
         ranking = ranking.replace(" - None ", "")
 
 # source
@@ -575,16 +662,77 @@ def read_cellebrite(input_xlsx):
         if " - None" in ranking:
             ranking = ranking.replace(' - None', '')    
 
+# source file
+        source_file = row_data.get("Source file information")
+        if source_file is None:
+            source_file = ''
+
+# origin_file
+        origin_file = row_data.get("origin_file")
+        if origin_file is None or origin_file == "":
+            origin_file = input_xlsx
+
+
+
+# type_data
+        type_data = row_data.get("Type")
+        if type_data is None:
+            type_data = ''
+        if type_data == "":
+            if "Searched" in origin_file:
+               type_data = "Searched"
+            elif "Chats" in origin_file:
+               type_data = "Chats"
+
+
+# Icon    
+        Icon = row_data.get("Icon")
+        if Icon is None:
+            Icon = ''
+        if Icon == "":
+            if "Searched" in origin_file:
+               Icon = "Searched"            
+            elif "Chats" in origin_file:
+               Icon = "Chats"  
+               
 # misc time cleanup
 
-        if misc is not None and '(UTC' in misc:
-            misc = misc.split('(')[0]
-        note = note.rstrip(',')
-        # elif note.endswith(','):
+# Time
+        Time = row_data.get("Time")
+        if Time is None:
+            Time = ''
+
+        if Time == '':
+            Time = row_data.get("Timestamp: Time")
+            if Time is None:
+                Time = ''
+
+# convert time
+        # output_format = "%m/%d/%Y %H:%M:%S"  # Changed to military time
+        output_format = "%Y/%m/%d %H:%M:%S"  # Changed to ISO military time
+        # output_format = "%Y-%m-%dT%H:%M:%SZ"    # Google Earth format
+
+        # pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
+        pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'  # ISO military time
+
+        if time_orig == '' and Time != '': # copy the original time
+            time_orig = Time
+        try:
+            (Time, time_orig, timezone) = convert_timestamp(Time, time_orig, timezone)
+            Time = Time.strftime(output_format)
+            if Time is None:
+                Time = ''              
             
-            # print(f'note = {note}') # temp
+        except ValueError as e:
+            if Time != "":
+                print(f"Error time2: {e} - {Time}")
+                # Time = ''    # temp rem of this
             
 # fullname cleanup
+        if fullname is None:
+            fullname = ''
+        
+        
         fullname = fullname.replace("_$!<Other>!$_", "")
         if "@" in fullname and fullname is not None:
             fullname = ''
@@ -614,7 +762,7 @@ def read_cellebrite(input_xlsx):
         row_data["phone"] = phone
         row_data["email"] = email
         row_data["user"] = user        
-        row_data["business/entity"] = business        
+        row_data["business"] = business        
         row_data["fulladdress"] = fulladdress  
         row_data["country"] = country        
         row_data["note"] = note
@@ -628,11 +776,19 @@ def read_cellebrite(input_xlsx):
         row_data["state"] = state 
 
         row_data["dnsdomain"] = dnsdomain     
-        row_data["titleurl"] = titleurl  
+        row_data["titleurl"] = titleurl 
+        row_data["Time"] = Time
         row_data["Latitude"] = Latitude  
         row_data["Longitude"] = Longitude  
         row_data["Coordinate"] = Coordinate  
-    
+        row_data["Source file information"] = source_file     
+        row_data["origin_file"] = origin_file     
+        row_data["Tag"] = tag     
+        row_data["Type"] = type_data     
+        row_data["Icon"] = Icon     
+
+
+
 
     return data
 
@@ -657,12 +813,13 @@ def write_xlsx(data):
 
     headers = [
         "query", "ranking", "fullname", "url", "email", "user", "phone", "ip"
-        , "business/entity", "fulladdress", "city", "state", "zip", "country"
+        , "business", "fulladdress", "city", "state", "zip", "country"
         , "note", "aka", "dob", "gender", "info", "misc", "lastname", "firstname"
         , "middlename", "friend", "otherurls", "otherphones", "otheremails"
         , "case", "sosfilenumber", "president", "sosagent", "managers", "dnsdomain"
         , "dstip", "srcip", "content", "referer", "osurl", "titleurl", "pagestatus"
-        , "Time", "Latitude", "Longitude", "Coordinate", "Source"
+        , "Time", "Latitude", "Longitude", "Coordinate", "Source", "Source file information"
+        , "origin_file", "Tag", "Type", "Icon"
     ]
 
     # Write headers to the first row
@@ -718,6 +875,14 @@ def write_xlsx(data):
     worksheet.column_dimensions['AL'].width = 10# 
     worksheet.column_dimensions['AM'].width = 10# 
     worksheet.column_dimensions['AN'].width = 10# 
+    worksheet.column_dimensions['AO'].width = 28# 
+    worksheet.column_dimensions['AP'].width = 12# 
+    worksheet.column_dimensions['AQ'].width = 12# 
+    worksheet.column_dimensions['AR'].width = 22# Coordinate
+    worksheet.column_dimensions['AS'].width = 12# Coordinate
+    worksheet.column_dimensions['AT'].width = 12# origin_file
+
+
 
 
     
@@ -747,7 +912,8 @@ def usage():
     print(f'    {file} -C -I Accounts.xlsx  ')  
     print(f'    {file} -C -I Calls.xlsx  ')      
     print(f'    {file} -C -I Chats.xlsx  ')       
-    print(f'    {file} -C -I Contacts.xlsx  ')     
+    print(f'    {file} -C -I Contacts.xlsx  ')   
+    print(f'    {file} -C -I SearchedItems.xlsx  ')   
     print(f'    {file} -C -I WebHistory.xlsx  ')  
  
                 
@@ -764,7 +930,7 @@ if __name__ == '__main__':
 
 """
 if instagram id found create a url
-
+Icon, type_data and origin update
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
