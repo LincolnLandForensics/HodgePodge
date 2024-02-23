@@ -243,7 +243,7 @@ def read_cellebrite(input_xlsx):
         (Time, time_orig, timezone) = ('', '', '')
         (ranking, source_file, origin_file) = (f'4 - {datatype}', '', '')
         (fulladdress , note, info, source, user, query) = ('', '', '', '', '', '')
-        (aka, dob, otheremails, titleurl, dnsdomain, country) = ('', '', '', '', '', '')
+        (aka, DOB, otheremails, titleurl, dnsdomain, country) = ('', '', '', '', '', '')
         (Latitude, Longitude, Coordinate, fulladdress2, state, Time) = ('', '', '', '', '', '')
         
         
@@ -446,6 +446,8 @@ def read_cellebrite(input_xlsx):
         else:
             phone = ''
 
+        phone = phone.replace('-', '')
+
 # email
         if email1 is not None:
             email = (f'{email}\n{email1}')
@@ -540,10 +542,10 @@ def read_cellebrite(input_xlsx):
         url = url.strip()
 
         
-# dob
+# DOB
         if dob1 is not None:
-            dob = (f'{email}\n{dob1}')
-        dob = dob.strip('')
+            DOB = (f'{email}\n{dob1}')
+        DOB = DOB.strip('')
 
 # aka
         if alias1 is not None:
@@ -573,6 +575,15 @@ def read_cellebrite(input_xlsx):
             phone = misc   
             phone = phone.replace("+", '')
             misc = ''
+
+        misc3 = row_data.get("Participants")
+        if misc3 is None:
+            misc3 = ''
+        misc3 = misc3.strip('')
+        
+        if misc == '' and misc3 != "":
+            misc = misc3
+
             
 # business        
         ## replace all None values with '' 
@@ -767,7 +778,7 @@ def read_cellebrite(input_xlsx):
         row_data["country"] = country        
         row_data["note"] = note
         row_data["info"] = info # interaction status
-        row_data["dob"] = dob
+        row_data["DOB"] = DOB
         row_data["aka"] = aka        
         row_data["misc"] = misc  
         row_data["lastname"] = lastname          
@@ -814,7 +825,7 @@ def write_xlsx(data):
     headers = [
         "query", "ranking", "fullname", "url", "email", "user", "phone", "ip"
         , "business", "fulladdress", "city", "state", "zip", "country"
-        , "note", "aka", "dob", "gender", "info", "misc", "lastname", "firstname"
+        , "note", "aka", "DOB", "SEX", "info", "misc", "lastname", "firstname"
         , "middlename", "friend", "otherurls", "otherphones", "otheremails"
         , "case", "sosfilenumber", "president", "sosagent", "managers", "dnsdomain"
         , "dstip", "srcip", "content", "referer", "osurl", "titleurl", "pagestatus"
@@ -905,7 +916,7 @@ def usage():
     file = sys.argv[0].split('\\')[-1]
     print(f'\nDescription: {color_green}{description2}{color_reset}')
     print(f'{file} Version: {version} by {author}')
-    print(f'\n    {color_yellow}insert your Cellebrite Contacts exports into Contacts.xlsx')
+    print(f'\n    {color_yellow}export from Cellebrite categories')
     print(f'\nExample:')
    
     print(f'    {file} -b -O input_blank.xlsx') 

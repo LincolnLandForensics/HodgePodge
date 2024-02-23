@@ -18,8 +18,8 @@ import re
 import sys
 import time
 import openpyxl
-import simplekml
-import geohash2
+import simplekml    # pip install simplekml
+import geohash2    # pip install geohash2
 from datetime import datetime
 
 from openpyxl import Workbook
@@ -29,7 +29,7 @@ import argparse  # for menu system
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 
-from geopy.geocoders import Nominatim
+from geopy.geocoders import Nominatim   # pip install geopy
 geolocator = Nominatim(user_agent="GeoTraxer")
 
 # Colorize section
@@ -203,12 +203,24 @@ def convert_timestamp(timestamp, time_orig, timezone):
         "%m/%d/%Y %I:%M %p",  # timestamps without seconds
         "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
         "%B %d, %Y at %I:%M:%S %p %Z",
-        # "%B %d, %Y at %I:%M:%S %p CST",
         "%B %d, %Y at %I:%M:%S %p",
         "%B %d, %Y %I:%M:%S %p %Z",
         "%B %d, %Y %I:%M:%S %p",
         "%B %d, %Y, %I:%M:%S %p %Z",
-        "%Y-%m-%dT%H:%M:%SZ"  # ISO 8601 format with UTC timezone
+        "%m-%d-%y %I:%M:%S %p",
+        "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 format with UTC timezone
+        "%Y/%m/%d %H:%M:%S",  # 2022/06/13 21:41:33
+        "%d-%m-%Y %I:%M:%S %p",  # 13-06-2022 9:41:33 PM
+        "%d/%m/%Y %H:%M:%S",  # 13/06/2022 21:41:33
+        "%Y-%m-%d %I:%M:%S %p",  # 2022-06-13 9:41:33 PM
+        "%Y%m%d%H%M%S",  # 20220613214133
+        "%Y%m%d %H%M%S",  # 20220613 214133
+        "%m/%d/%y %H:%M:%S",  # 06/13/22 21:41:33
+        "%d-%b-%Y %I:%M:%S %p",  # 13-Jun-2022 9:41:33 PM
+        "%d/%b/%Y %H:%M:%S",  # 13/Jun/2022 21:41:33
+        "%Y/%b/%d %I:%M:%S %p",  # 2022/Jun/13 9:41:33 PM
+        "%d %b %Y %H:%M:%S",  # 13 Jun 2022 21:41:33
+        "%A, %B %d, %Y %I:%M:%S %p %Z"  # Monday, June 13, 2022 9:41:33 PM CDT
     ]
  
     for fmt in formats:
@@ -799,12 +811,14 @@ def read_locations(input_xlsx):
         try:
             (Time, time_orig, timezone) = convert_timestamp(Time, time_orig, timezone)
             Time = Time.strftime(output_format)
+            
+            # print(f'            Time = {Time}   time_orig = {time_orig}')   # temp
             if Time is None:
                 Time = ''              
             
         except ValueError as e:
-            # print(f"Error time2: {e} - {Time}")
-            # Time = ''    # temp rem of this
+            print(f"Error time2: {e} - {Time}")
+            Time = ''    # temp rem of this
             pass
         
 # End time
@@ -1032,6 +1046,17 @@ def read_locations(input_xlsx):
                 direction = 'W'
             elif match:
                 direction = match.group(1).replace('B','')
+
+            if 'Northbound' in direction:
+                direction = 'N'
+            elif 'Eastbound' in direction:
+                direction = 'E'
+            elif 'Southbound' in direction:
+                direction = 'S'
+            elif 'Westbound' in direction:
+                direction = 'W'
+                
+
 
 # PlusCode
         PlusCode  = row_data.get("PlusCode")
@@ -1386,9 +1411,11 @@ def write_kml(data):
 
         
         if tag != '':   # mark label yellow if tag is not blank
-            point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
-            # point.style.labelstyle.scale = 1.2  # Adjust label scale if needed    # task
-
+            try:
+                point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
+                # point.style.labelstyle.scale = 1.2  # Adjust label scale if needed    # task
+            except Exception as e:
+                print(f"{color_red}Error printing line: {str(e)}{color_reset}")
 
     
     kml.save(output_kml)    # Save the KML document to the specified output file
@@ -1735,6 +1762,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+fix Time
 Country and zipcode are blank
 if address / fulldata only, get lat/long
 export a temp copy to output.txt
