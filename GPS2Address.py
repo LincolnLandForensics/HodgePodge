@@ -66,7 +66,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.2.0'
+version = '1.2.3'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -77,16 +77,23 @@ def main():
     parser = argparse.ArgumentParser(description=description2)
     parser.add_argument('-I', '--input', help='', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
+    parser.add_argument('-H','--howto', help='help module', required=False, action='store_true')
     parser.add_argument('-c', '--create', help='create blank input sheet', required=False, action='store_true')
     parser.add_argument('-i', '--intel', help='convert intel sheet to locations', required=False, action='store_true')
     parser.add_argument('-k', '--kml', help='xlsx to kml with nothing else', required=False, action='store_true')
     parser.add_argument('-r', '--read', help='read xlsx', required=False, action='store_true')
     args = parser.parse_args()
 
+    if args.howto:  # this section might be redundant
+        parser.print_help()
+        usage()
+        return 0
+        sys.exit()
+
     # global input_xlsx
     global outuput_xlsx
     global output_kml
-    output_kml = 'gps.kml'
+    output_kml = 'GPS_.kml'
 
     if not args.input: 
         input_xlsx = "locations.xlsx"        
@@ -95,7 +102,7 @@ def main():
 
         
     if not args.output: 
-        outuput_xlsx = "locations2addresses_.xlsx"        
+        outuput_xlsx = "Locations_.xlsx"        
     else:
         outuput_xlsx = args.output
 
@@ -202,12 +209,13 @@ def convert_timestamp(timestamp, time_orig, timezone):
         "%m/%d/%Y %I:%M:%S %p",
         "%m/%d/%Y %I:%M %p",  # timestamps without seconds
         "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
+        "%m-%d-%y at %I:%M:%S %p %Z", # test 09-10-23 at 4:29:12 PM CDT
+        "%m-%d-%y %I:%M:%S %p",
         "%B %d, %Y at %I:%M:%S %p %Z",
         "%B %d, %Y at %I:%M:%S %p",
         "%B %d, %Y %I:%M:%S %p %Z",
         "%B %d, %Y %I:%M:%S %p",
         "%B %d, %Y, %I:%M:%S %p %Z",
-        "%m-%d-%y %I:%M:%S %p",
         "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 format with UTC timezone
         "%Y/%m/%d %H:%M:%S",  # 2022/06/13 21:41:33
         "%d-%m-%Y %I:%M:%S %p",  # 13-06-2022 9:41:33 PM
@@ -220,9 +228,10 @@ def convert_timestamp(timestamp, time_orig, timezone):
         "%d/%b/%Y %H:%M:%S",  # 13/Jun/2022 21:41:33
         "%Y/%b/%d %I:%M:%S %p",  # 2022/Jun/13 9:41:33 PM
         "%d %b %Y %H:%M:%S",  # 13 Jun 2022 21:41:33
-        "%A, %B %d, %Y %I:%M:%S %p %Z"  # Monday, June 13, 2022 9:41:33 PM CDT
+        "%A, %B %d, %Y %I:%M:%S %p %Z",  # Monday, June 13, 2022 9:41:33 PM CDT ?
+        "%A, %B %d, %Y %I:%M:%S %p"     # Monday, June 13, 2022 9:41:33 PM CDT
     ]
- 
+
     for fmt in formats:
         try:
             dt_obj = datetime.strptime(timestamp.strip(), fmt)
@@ -234,6 +243,69 @@ def convert_timestamp(timestamp, time_orig, timezone):
 
     raise ValueError(f"{time_orig} Timestamp format not recognized")
 
+
+def convert_timestamp_test(timestamp, time_orig, timezone):
+    if timezone is None:
+        timezone = ''
+
+    if time_orig is None:
+        time_orig = ''
+
+    timestamp = str(timestamp)
+
+    if time_orig == "":
+        time_orig = timestamp
+
+    if "(" in timestamp:
+        timestamp_parts = timestamp.split('(')
+        timestamp = timestamp_parts[0].strip()
+        timezone = timestamp_parts[1].replace(")", '').strip()
+    elif "CDT" in timestamp:
+        timezone = "CDT"
+        timestamp = timestamp.replace("CDT", "").strip()
+    elif "CST" in timestamp:
+        timezone = "CST"
+        timestamp = timestamp.replace("CST", "").strip()
+
+    formats = [
+        "%B %d, %Y, %I:%M:%S %p %Z",    
+        "%Y:%m:%d %H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",
+        "%m/%d/%Y %I:%M:%S %p",
+        "%m/%d/%Y %I:%M %p",  
+        "%m/%d/%Y %H:%M:%S", 
+        "%m-%d-%y %I:%M:%S %p",
+        "%m-%d-%y at %I:%M:%S %p %Z"        
+        "%B %d, %Y at %I:%M:%S %p %Z",
+        "%B %d, %Y at %I:%M:%S %p",
+        "%B %d, %Y %I:%M:%S %p %Z",
+        "%B %d, %Y %I:%M:%S %p",
+        "%B %d, %Y, %I:%M:%S %p %Z",
+        "%Y-%m-%dT%H:%M:%SZ",  
+        "%Y/%m/%d %H:%M:%S",  
+        "%d-%m-%Y %I:%M:%S %p",  
+        "%d/%m/%Y %H:%M:%S",  
+        "%Y-%m-%d %I:%M:%S %p",  
+        "%Y%m%d%H%M%S",  
+        "%Y%m%d %H%M%S",  
+        "%m/%d/%y %H:%M:%S",  
+        "%d-%b-%Y %I:%M:%S %p",  
+        "%d/%b/%Y %H:%M:%S",  
+        "%Y/%b/%d %I:%M:%S %p",  
+        "%d %b %Y %H:%M:%S",  
+        "%A, %B %d, %Y %I:%M:%S %p %Z",
+
+    ]
+ 
+    for fmt in formats:
+        try:
+            dt_obj = datetime.strptime(timestamp.strip(), fmt)
+            return dt_obj, time_orig, timezone
+        except ValueError:
+            pass
+
+    raise ValueError(f"{time_orig} Timestamp format not recognized")
+    
     
 def read_gps(data): 
 
@@ -605,8 +677,8 @@ def read_intel(input_xlsx):
             
 # source file
         source_file = row_data.get("Source file information")
-        if source_file is None or source_file == '':
-            source_file = input_xlsx
+        if source_file is None:
+            source_file = ''
 
 # origin_file
         origin_file = row_data.get("origin_file")
@@ -747,14 +819,13 @@ def read_locations(input_xlsx):
         no = row_data.get("#")
         if no is None:
             no = ''
-            
+        if no == '':
+            no = row_index + 2
+
 # Description    
         description = row_data.get("Description")
         if description is None:
             description = ''
-
-
-
 
 # Time
         Time = row_data.get("Time")
@@ -783,6 +854,17 @@ def read_locations(input_xlsx):
         if Time == '':
             if capture_date != '':
                 Time = capture_date
+
+# Time (LOCAL)
+        time_local  = row_data.get("Time (LOCAL)") 
+        if time_local is None:
+            time_local = ''     
+
+        if Time == '':
+            if time_local != '':
+                Time = time_local
+                capture_date = time_local
+
 
 # timezone
         timezone  = row_data.get("Timezone")
@@ -867,6 +949,10 @@ def read_locations(input_xlsx):
             coordinate = row_data.get("Capture Location")
         elif row_data.get("Capture Location (Latitude,Longitude)") != None:
             coordinate = row_data.get("Capture Location (Latitude,Longitude)")
+        elif row_data.get("Coordinate(Lat., Long)") != None:
+            coordinate = row_data.get("Coordinate(Lat., Long)")
+
+
 
         if len(coordinate) > 6:
            
@@ -1046,16 +1132,14 @@ def read_locations(input_xlsx):
                 direction = 'W'
             elif match:
                 direction = match.group(1).replace('B','')
+            
+        direction = direction.replace('Northbound', 'N')
+        direction = direction.replace('Eastbound', 'E')
+        direction = direction.replace('Southbound', 'S')
+        direction = direction.replace('Westbound', 'W')
+        direction = direction.replace('Unknown', '')
+            
 
-            if 'Northbound' in direction:
-                direction = 'N'
-            elif 'Eastbound' in direction:
-                direction = 'E'
-            elif 'Southbound' in direction:
-                direction = 'S'
-            elif 'Westbound' in direction:
-                direction = 'W'
-                
 
 
 # PlusCode
@@ -1117,8 +1201,7 @@ def read_locations(input_xlsx):
         row_data["Timezone"] = timezone
         row_data["Icon"] = Icon        
         row_data["origin_file"] = origin_file
-     
-     
+
     return data
 
 
@@ -1171,6 +1254,10 @@ def write_kml(data):
     for row_index, row_data in enumerate(data):
         index_data = row_index + 2  # excel row starts at 2, not 0
         
+        no = row_data.get("#") #
+        if no is None or no == '':
+            no = index_data
+
         Time = row_data.get("Time") #
         latitude = row_data.get("Latitude") #
         longitude = row_data.get("Longitude") #
@@ -1192,6 +1279,7 @@ def write_kml(data):
         category = row_data.get("Category")
         Icon = row_data.get("Icon")
         origin_file = row_data.get("origin_file")
+        case = row_data.get("case")
 
         if name_data != '':
             (description) = (f'{description}\nNAME: {name_data}')
@@ -1234,6 +1322,12 @@ def write_kml(data):
             
         if plate != '':
             (description) = (f'{description}\nPLATE: {plate}')
+        if case != '' and case is not None:
+            (description) = (f'{description}\nCASE: {case}')
+        if origin_file != '':
+            (description) = (f'{description}\nSOURCE: {origin_file}')
+
+
 
         point = ''  # Initialize point variable outside the block
         
@@ -1242,7 +1336,8 @@ def write_kml(data):
 
         elif Icon == "Lpr" or Icon == "Car":
             point = kml.newpoint(
-                name=f"{index_data}",
+                # name=f"{index_data}",
+                name=f"{no}",                
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1250,7 +1345,7 @@ def write_kml(data):
 
         elif Icon == "Car2":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1258,7 +1353,7 @@ def write_kml(data):
 
         elif Icon == "Car3":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1266,7 +1361,7 @@ def write_kml(data):
 
         elif Icon == "Car4":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1274,7 +1369,7 @@ def write_kml(data):
 
         elif Icon == "Truck":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1282,7 +1377,7 @@ def write_kml(data):
 
         elif Icon == "Calendar":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1290,7 +1385,7 @@ def write_kml(data):
 
         elif Icon == "Chat":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1298,7 +1393,7 @@ def write_kml(data):
             
         elif Icon == "Home":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1306,7 +1401,7 @@ def write_kml(data):
 
         elif Icon == "Images":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1314,7 +1409,7 @@ def write_kml(data):
 
         elif Icon == "Intel":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1322,7 +1417,7 @@ def write_kml(data):
 
         elif Icon == "Office":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1330,7 +1425,7 @@ def write_kml(data):
 
         elif Icon == "Searched":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1338,7 +1433,7 @@ def write_kml(data):
 
         elif Icon == "Shared":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1346,7 +1441,7 @@ def write_kml(data):
             
         elif Icon == "Videos":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1354,7 +1449,7 @@ def write_kml(data):
 
         elif Icon == "Locations":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1362,7 +1457,7 @@ def write_kml(data):
 
         elif Icon == "Toll":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1370,7 +1465,7 @@ def write_kml(data):
 
         elif Icon == "N":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1378,7 +1473,7 @@ def write_kml(data):
 
         elif Icon == "E":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1386,7 +1481,7 @@ def write_kml(data):
 
         elif Icon == "S":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1394,7 +1489,7 @@ def write_kml(data):
 
         elif Icon == "W":
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
@@ -1402,14 +1497,12 @@ def write_kml(data):
 
         else:
             point = kml.newpoint(
-                name=f"{index_data}",
+                name=f"{no}",
                 description=f"{description}",
                 coords=[(longitude, latitude)]
             )
             point.style.iconstyle.icon.href = default_icon    # orange paddle
 
-
-        
         if tag != '':   # mark label yellow if tag is not blank
             try:
                 point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
@@ -1450,7 +1543,7 @@ def write_locations(data):
         , "Coordinate", "Capture Location Latitude", "Capture Location Longitude"
         , "Container", "Sighting Location", "Direction", "Time Local", "End time"
         , "Category", "Manually decoded", "Account", "PlusCode", "Time Original", "Timezone"
-        , "Icon", "origin_file", "Index"
+        , "Icon", "origin_file", "case", "Index"
 
     ]
 
@@ -1521,8 +1614,9 @@ def write_locations(data):
     worksheet.column_dimensions['AR'].width = 21 # Time Original
     worksheet.column_dimensions['AS'].width = 9 # Timezone
     worksheet.column_dimensions['AT'].width = 10 # Icon   
-    worksheet.column_dimensions['AU'].width = 7 # origin_file
-    worksheet.column_dimensions['AV'].width = 6 # Index
+    worksheet.column_dimensions['AU'].width = 20 # origin_file
+    worksheet.column_dimensions['AV'].width = 10 # case
+    worksheet.column_dimensions['AW'].width = 6 # Index
 
     
     for row_index, row_data in enumerate(data):
@@ -1738,13 +1832,13 @@ def usage():
     print(f'    {file} -c -O input_blank.xlsx') 
     print(f'    {file} -k -I locations.xlsx  # xlsx 2 kml with no internet processing')     
     print(f'    {file} -r')
-    print(f'    {file} -r -I locations.xlsx -O locations2addresses_.xlsx') 
-    print(f'    {file} -r -I locations_FTK.xlsx -O locations2addresses_.xlsx') 
-    print(f'    {file} -r -I Flock.xlsx -O locations_Flock.xlsx')    
+    print(f'    {file} -r -I locations.xlsx -O Locations_.xlsx') 
+    print(f'    {file} -r -I locations_FTK.xlsx -O Locations_.xlsx') 
+    print(f'    {file} -r -I Flock.xlsx -O Locations_Flock.xlsx')    
     print(f'    {file} -r -I MediaLocations_.xlsx')  
-    print(f'    {file} -r -I PointsOfInterest.xlsx -O locations_PointsOfInterest.xlsx') 
-    print(f'    {file} -r -I Tolls.xlsx -O locations_Tolls.xlsx')     
-    print(f'    {file} -i -I intel_.xlsx -O intel2locations_.xlsx')  
+    print(f'    {file} -r -I PointsOfInterest.xlsx -O Locations_PointsOfInterest.xlsx') 
+    print(f'    {file} -r -I Tolls.xlsx -O Locations_Tolls.xlsx')     
+    print(f'    {file} -i -I intel_.xlsx -O Locations_Intel_.xlsx')  
     print(f'    {file} -i -I intel_SearchedItems_.xlsx')  
     print(f'    {file} -i -I intel_Chats_.xlsx')  
 
@@ -1755,20 +1849,18 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-1.1.0 - color code sheet
-1.0.1 - Color coded pins for gps.kml
+
+1.2.1 - can populate # with custom display or if it's blank it will put in the column number
+1.2.0 - added icons
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-fix Time
+
 Country and zipcode are blank
 if address / fulldata only, get lat/long
-export a temp copy to output.txt
 if it's less than 3000 skip the sleep timer
-
-Add Group and Subgroup, color
 
 """
 
