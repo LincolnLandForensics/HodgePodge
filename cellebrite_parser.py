@@ -123,16 +123,30 @@ def main():
 
 def convert_timestamp(timestamp, time_orig, timezone):
     if timezone is None:
-    # if timezone != "" and timezone is not None:
         timezone = ''
+    if time_orig is None:
+        time_orig = ''
 
-    # time_data = timestamp
     timestamp = str(timestamp)
 
+    # Regular expression to find all timezones
+    timezone_pattern = r"([A-Za-z ]+)$"
+    matches = re.findall(timezone_pattern, timestamp)
+
+    # Extract the last timezone match
+    if matches:
+        timezone = matches[-1]
+        timestamp = timestamp.replace(timezone, "").strip()
+    else:
+        timezone = ''
+        
     if time_orig == "":
         time_orig = timestamp
+    else:
+        timezone = ''
 
-    timestamp = timestamp.replace(' at ', ' ')
+
+    # timestamp = timestamp.replace(' at ', ' ')
     if "(" in timestamp:
         timestamp = timestamp.split('(')
         timezone = timestamp[1].replace(")", '')
@@ -144,33 +158,50 @@ def convert_timestamp(timestamp, time_orig, timezone):
         timezone = "CST"
         timestamp = timestamp.replace(" CST", "")
 
+
+
+
     formats = [
-        "%B %d, %Y, %I:%M:%S %p %Z",
+        "%B %d, %Y, %I:%M:%S %p %Z",    # June 13, 2022, 9:41:33 PM CDT (Flock)
         "%Y:%m:%d %H:%M:%S",
         "%Y-%m-%d %H:%M:%S",
         "%m/%d/%Y %I:%M:%S %p",
         "%m/%d/%Y %I:%M %p",  # timestamps without seconds
         "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
+        "%m-%d-%y at %I:%M:%S %p %Z", # test 09-10-23 at 4:29:12 PM CDT
+        "%m-%d-%y %I:%M:%S %p",
         "%B %d, %Y at %I:%M:%S %p %Z",
-        "%B %d, %Y at %I:%M:%S %p CST",
         "%B %d, %Y at %I:%M:%S %p",
         "%B %d, %Y %I:%M:%S %p %Z",
         "%B %d, %Y %I:%M:%S %p",
         "%B %d, %Y, %I:%M:%S %p %Z",
-        "%Y-%m-%dT%H:%M:%SZ"  # ISO 8601 format with UTC timezone
+        "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 format with UTC timezone
+        "%Y/%m/%d %H:%M:%S",  # 2022/06/13 21:41:33
+        "%d-%m-%Y %I:%M:%S %p",  # 13-06-2022 9:41:33 PM
+        "%d/%m/%Y %H:%M:%S",  # 13/06/2022 21:41:33
+        "%Y-%m-%d %I:%M:%S %p",  # 2022-06-13 9:41:33 PM
+        "%Y%m%d%H%M%S",  # 20220613214133
+        "%Y%m%d %H%M%S",  # 20220613 214133
+        "%m/%d/%y %H:%M:%S",  # 06/13/22 21:41:33
+        "%d-%b-%Y %I:%M:%S %p",  # 13-Jun-2022 9:41:33 PM
+        "%d/%b/%Y %H:%M:%S",  # 13/Jun/2022 21:41:33
+        "%Y/%b/%d %I:%M:%S %p",  # 2022/Jun/13 9:41:33 PM
+        "%d %b %Y %H:%M:%S",  # 13 Jun 2022 21:41:33
+        "%A, %B %d, %Y %I:%M:%S %p %Z",  # Monday, June 13, 2022 9:41:33 PM CDT ?
+        "%A, %B %d, %Y %I:%M:%S %p"     # Monday, June 13, 2022 9:41:33 PM CDT
     ]
 
     for fmt in formats:
         try:
             dt_obj = datetime.strptime(timestamp.strip(), fmt)
             timestamp = dt_obj
-            # return dt_obj, time_orig, timezone
             return timestamp, time_orig, timezone
                         
         except ValueError:
             pass
 
     raise ValueError(f"{time_orig} Timestamp format not recognized")
+
 
 
 def read_cellebrite(input_xlsx):
@@ -720,9 +751,9 @@ def read_cellebrite(input_xlsx):
 
 # convert time
         # output_format = "%m/%d/%Y %H:%M:%S"  # Changed to military time
-        output_format = "%Y/%m/%d %H:%M:%S"  # Changed to ISO military time
+        # output_format = "%Y/%m/%d %H:%M:%S"  # Changed to ISO military time
+        output_format = "%Y-%m-%d %H:%M:%S "    # ISO 8601 - Google Earth format
         # output_format = "%Y-%m-%dT%H:%M:%SZ"    # Google Earth format
-
         # pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
         pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'  # ISO military time
 
@@ -866,7 +897,7 @@ def write_xlsx(data):
     worksheet.column_dimensions['R'].width = 5# 
     worksheet.column_dimensions['S'].width = 30# 
     worksheet.column_dimensions['T'].width = 20#   
-    worksheet.column_dimensions['Y'].width = 10#     
+    worksheet.column_dimensions['U'].width = 10#     
     worksheet.column_dimensions['V'].width = 10#   
     worksheet.column_dimensions['W'].width = 10# 
     worksheet.column_dimensions['X'].width = 10#   

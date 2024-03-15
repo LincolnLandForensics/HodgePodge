@@ -66,7 +66,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.2.3'
+version = '1.2.4'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -187,8 +187,22 @@ def convert_timestamp(timestamp, time_orig, timezone):
 
     timestamp = str(timestamp)
 
+    # Regular expression to find all timezones
+    timezone_pattern = r"([A-Za-z ]+)$"
+    matches = re.findall(timezone_pattern, timestamp)
+
+    # Extract the last timezone match
+    if matches:
+        timezone = matches[-1]
+        timestamp = timestamp.replace(timezone, "").strip()
+    else:
+        timezone = ''
+        
     if time_orig == "":
         time_orig = timestamp
+    else:
+        timezone = ''
+
 
     # timestamp = timestamp.replace(' at ', ' ')
     if "(" in timestamp:
@@ -201,6 +215,9 @@ def convert_timestamp(timestamp, time_orig, timezone):
     elif " CST" in timestamp:
         timezone = "CST"
         timestamp = timestamp.replace(" CST", "")
+
+
+
 
     formats = [
         "%B %d, %Y, %I:%M:%S %p %Z",    # June 13, 2022, 9:41:33 PM CDT (Flock)
@@ -241,71 +258,15 @@ def convert_timestamp(timestamp, time_orig, timezone):
         except ValueError:
             pass
 
+
+
+    print(f'timezone temp2 = {timezone}  time_orig = {time_orig} ')    # temp
+
+
     raise ValueError(f"{time_orig} Timestamp format not recognized")
 
 
-def convert_timestamp_test(timestamp, time_orig, timezone):
-    if timezone is None:
-        timezone = ''
 
-    if time_orig is None:
-        time_orig = ''
-
-    timestamp = str(timestamp)
-
-    if time_orig == "":
-        time_orig = timestamp
-
-    if "(" in timestamp:
-        timestamp_parts = timestamp.split('(')
-        timestamp = timestamp_parts[0].strip()
-        timezone = timestamp_parts[1].replace(")", '').strip()
-    elif "CDT" in timestamp:
-        timezone = "CDT"
-        timestamp = timestamp.replace("CDT", "").strip()
-    elif "CST" in timestamp:
-        timezone = "CST"
-        timestamp = timestamp.replace("CST", "").strip()
-
-    formats = [
-        "%B %d, %Y, %I:%M:%S %p %Z",    
-        "%Y:%m:%d %H:%M:%S",
-        "%Y-%m-%d %H:%M:%S",
-        "%m/%d/%Y %I:%M:%S %p",
-        "%m/%d/%Y %I:%M %p",  
-        "%m/%d/%Y %H:%M:%S", 
-        "%m-%d-%y %I:%M:%S %p",
-        "%m-%d-%y at %I:%M:%S %p %Z"        
-        "%B %d, %Y at %I:%M:%S %p %Z",
-        "%B %d, %Y at %I:%M:%S %p",
-        "%B %d, %Y %I:%M:%S %p %Z",
-        "%B %d, %Y %I:%M:%S %p",
-        "%B %d, %Y, %I:%M:%S %p %Z",
-        "%Y-%m-%dT%H:%M:%SZ",  
-        "%Y/%m/%d %H:%M:%S",  
-        "%d-%m-%Y %I:%M:%S %p",  
-        "%d/%m/%Y %H:%M:%S",  
-        "%Y-%m-%d %I:%M:%S %p",  
-        "%Y%m%d%H%M%S",  
-        "%Y%m%d %H%M%S",  
-        "%m/%d/%y %H:%M:%S",  
-        "%d-%b-%Y %I:%M:%S %p",  
-        "%d/%b/%Y %H:%M:%S",  
-        "%Y/%b/%d %I:%M:%S %p",  
-        "%d %b %Y %H:%M:%S",  
-        "%A, %B %d, %Y %I:%M:%S %p %Z",
-
-    ]
- 
-    for fmt in formats:
-        try:
-            dt_obj = datetime.strptime(timestamp.strip(), fmt)
-            return dt_obj, time_orig, timezone
-        except ValueError:
-            pass
-
-    raise ValueError(f"{time_orig} Timestamp format not recognized")
-    
     
 def read_gps(data): 
 
@@ -882,11 +843,12 @@ def read_locations(input_xlsx):
 
 # convert time
         # output_format = "%m/%d/%Y %H:%M:%S"  # Changed to military time
-        output_format = "%Y/%m/%d %H:%M:%S"  # Changed to ISO military time
+        # output_format = "%Y/%m/%d %H:%M:%S"  # Changed to ISO military time
+        output_format = "%Y-%m-%d %H:%M:%S"  # Changed to ISO 8601 military time
         # output_format = "%Y-%m-%dT%H:%M:%SZ"    # Google Earth format
 
         # pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
-        pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'  # ISO military time
+        pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'  # ISO 8601 ? military time
 
         if time_orig == '' and Time != '': # copy the original time
             time_orig = Time
