@@ -7,164 +7,164 @@
                 <scale>1</scale>
                 <heading>0</heading>
                 <Icon id="6">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="7">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
         </Style>
-        <Style id="10">
-            <IconStyle id="11">
+        <Style id="9">
+            <IconStyle id="10">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="12">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="13">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="16">
-            <IconStyle id="17">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="18">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="19">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="22">
-            <IconStyle id="23">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="24">
+                <Icon id="11">
                     <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="25">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
         </Style>
-        <Style id="28">
-            <IconStyle id="29">
+        <Style id="14">
+            <IconStyle id="15">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="30">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
+                <Icon id="16">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="31">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
         </Style>
-        <Style id="34">
-            <IconStyle id="35">
+        <Style id="19">
+            <IconStyle id="20">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="36">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="37">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="40">
-            <IconStyle id="41">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="42">
+                <Icon id="21">
                     <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
                 </Icon>
             </IconStyle>
         </Style>
-        <Style id="45">
-            <IconStyle id="46">
+        <Style id="24">
+            <IconStyle id="25">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="47">
-                    <href>https://maps.google.com/mapfiles/kml/shapes/truck.png</href>
+                <Icon id="26">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
                 </Icon>
             </IconStyle>
-        </Style>
-        <Style id="50">
-            <IconStyle id="51">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="52">
-                    <href>https://maps.google.com/mapfiles/kml/pal4/icon15.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="53">
+            <LabelStyle id="27">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="56">
-            <IconStyle id="57">
+        <Style id="30">
+            <IconStyle id="31">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="58">
+                <Icon id="32">
                     <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
                 </Icon>
             </IconStyle>
+            <LabelStyle id="33">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+            </LabelStyle>
         </Style>
-        <Style id="61">
-            <IconStyle id="62">
+        <Style id="36">
+            <IconStyle id="37">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="63">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
+                <Icon id="38">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
                 </Icon>
             </IconStyle>
+            <LabelStyle id="39">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+            </LabelStyle>
         </Style>
-        <Style id="66">
-            <IconStyle id="67">
+        <Style id="42">
+            <IconStyle id="43">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="68">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-4.png</href>
+                <Icon id="44">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
                 </Icon>
             </IconStyle>
+            <LabelStyle id="45">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+            </LabelStyle>
         </Style>
-        <Style id="71">
-            <IconStyle id="72">
+        <Style id="48">
+            <IconStyle id="49">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="73">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
+                <Icon id="50">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
                 </Icon>
             </IconStyle>
+            <LabelStyle id="51">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="54">
+            <IconStyle id="55">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="56">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="57">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="60">
+            <IconStyle id="61">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="62">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="65">
+            <IconStyle id="66">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="67">
+                    <href>https://maps.google.com/mapfiles/kml/shapes/truck.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="70">
+            <IconStyle id="71">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="72">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon15.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="73">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+            </LabelStyle>
         </Style>
         <Style id="76">
             <IconStyle id="77">
@@ -172,7 +172,7 @@
                 <scale>1</scale>
                 <heading>0</heading>
                 <Icon id="78">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
                 </Icon>
             </IconStyle>
         </Style>
@@ -182,7 +182,7 @@
                 <scale>1</scale>
                 <heading>0</heading>
                 <Icon id="83">
-                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
                 </Icon>
             </IconStyle>
         </Style>
@@ -192,54 +192,54 @@
                 <scale>1</scale>
                 <heading>0</heading>
                 <Icon id="88">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-4.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="91">
+            <IconStyle id="92">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="93">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="96">
+            <IconStyle id="97">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="98">
                     <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="89">
+        </Style>
+        <Style id="101">
+            <IconStyle id="102">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="103">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="106">
+            <IconStyle id="107">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="108">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="109">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
             </LabelStyle>
-        </Style>
-        <Style id="92">
-            <IconStyle id="93">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="94">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-12.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="97">
-            <IconStyle id="98">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="99">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-8.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="102">
-            <IconStyle id="103">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="104">
-                    <href>https://maps.google.com/mapfiles/kml/pal2/icon23.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="107">
-            <IconStyle id="108">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="109">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
-                </Icon>
-            </IconStyle>
         </Style>
         <Style id="112">
             <IconStyle id="113">
@@ -247,7 +247,7 @@
                 <scale>1</scale>
                 <heading>0</heading>
                 <Icon id="114">
-                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-12.png</href>
                 </Icon>
             </IconStyle>
         </Style>
@@ -257,92 +257,189 @@
                 <scale>1</scale>
                 <heading>0</heading>
                 <Icon id="119">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-8.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="122">
+            <IconStyle id="123">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="124">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon23.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="127">
+            <IconStyle id="128">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="129">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="132">
+            <IconStyle id="133">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="134">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="137">
+            <IconStyle id="138">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="139">
                     <href>https://maps.google.com/mapfiles/kml/pal3/icon21.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="120">
+            <LabelStyle id="140">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="123">
-            <IconStyle id="124">
+        <Style id="143">
+            <IconStyle id="144">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="125">
+                <Icon id="145">
                     <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
                 </Icon>
             </IconStyle>
         </Style>
-        <Style id="128">
-            <IconStyle id="129">
+        <Style id="148">
+            <IconStyle id="149">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="130">
+                <Icon id="150">
                     <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="131">
+            <LabelStyle id="151">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="134">
-            <IconStyle id="135">
+        <Style id="154">
+            <IconStyle id="155">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="136">
+                <Icon id="156">
                     <href>https://maps.google.com/mapfiles/kml/pal4/icon9.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="137">
+            <LabelStyle id="157">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="140">
-            <IconStyle id="141">
+        <Style id="160">
+            <IconStyle id="161">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="142">
+                <Icon id="162">
                     <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="143">
+            <LabelStyle id="163">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
             </LabelStyle>
         </Style>
-        <Style id="146">
-            <IconStyle id="147">
+        <Style id="166">
+            <IconStyle id="167">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="148">
+                <Icon id="168">
                     <href>https://maps.google.com/mapfiles/kml/pal2/icon47.png</href>
                 </Icon>
             </IconStyle>
         </Style>
-        <Style id="151">
-            <IconStyle id="152">
+        <Style id="171">
+            <IconStyle id="172">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="153">
+                <Icon id="173">
                     <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
                 </Icon>
             </IconStyle>
         </Style>
         <Placemark id="3">
-            <name>2</name>
+            <name>Haymarket Square</name>
+            <description>On May 4, 1886, a riot broke out between police and labor movement protestors in Haymarket Square after a bomb was reportedly hurled at police, prompting an eruption of gunfire and general chaos. When the smoke had cleared, seven police officers and one civilian were dead, and countless others injured.  
+NAME: The Haymarket Square Riot
+TIME: 1886-05-04 22:23:00
+ADDRESS: Tacombi, 126, North Peoria Street, Fulton Market District, Near West Side, Chicago, West Chicago Township, Cook County, Illinois, 60607, United States
+TYPE: Locations
+Business: Haymarket Square
+CASE: 1886-05-122
+SOURCE: locations_test.xlsx</description>
+            <styleUrl>#4</styleUrl>
+            <Point id="2">
+                <coordinates>-87.6498211,41.8841319,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="8">
+            <name>H. H. Holmes’ Hotel</name>
+            <description>
+TIME: 1886-08-07 14:00:00
+ADDRESS: S Wallace Ave &amp; W 63rd St chicago IL
+TYPE: H.H. Holmes's Murder Castle
+Business: H. H. Holmes’ Hotel
+SOURCE: locations_test.xlsx</description>
+            <styleUrl>#9</styleUrl>
+            <Point id="7">
+                <coordinates>-87.6425803,41.7798363,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="13">
+            <name>Biograph Theatre</name>
+            <description>IMG_0169.MOV
+NAME: John Dillinger entering movie theater
+TIME: 1934-07-22 20:02:00
+2433 N Lincoln Ave, Chicago, IL 60614
+TYPE: Videos
+Business: Biograph Theatre
+CASE: 1933-22-333
+SOURCE: locations_test.xlsx</description>
+            <styleUrl>#14</styleUrl>
+            <Point id="12">
+                <coordinates>-87.6523627,41.9263466,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="18">
+            <name>John Wayne Gacy</name>
+            <description>IMG_1969.JPG
+NAME: John Wayne Gacy crime scene
+TIME: 1979-12-07 14:23:00
+ADDRESS: 8213 W Summerdale Ave, Chicago, IL 60656
+TYPE: Images
+CASE: 1979-12-222
+SOURCE: locations_test.xlsx</description>
+            <styleUrl>#19</styleUrl>
+            <Point id="17">
+                <coordinates>-87.8349639,41.9762196,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="23">
+            <name>6</name>
             <description>Al Capone Hang out
 NAME: https://greenmilljazz.com/location/
 TIME: 1927-02-15 08:08:00
@@ -352,13 +449,13 @@ TYPE: Intel
 Business: The Green Mill Cocktail Lounge 
 CASE: 1927-03-333
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#4</styleUrl>
-            <Point id="2">
+            <styleUrl>#24</styleUrl>
+            <Point id="22">
                 <coordinates>-87.6624785,41.9692095,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="9">
-            <name>3</name>
+        <Placemark id="29">
+            <name>7</name>
             <description>Al Capone Hang out
 NAME: https://www.exchequerpub.com/
 TIME: 1927-03-16 23:28:00
@@ -368,13 +465,13 @@ TYPE: Intel
 Business: EXCHEQUER RESTAURANT &amp; PUB
 CASE: 1927-03-333
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#10</styleUrl>
-            <Point id="8">
+            <styleUrl>#30</styleUrl>
+            <Point id="28">
                 <coordinates>-87.6291376,41.8787485,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="15">
-            <name>4</name>
+        <Placemark id="35">
+            <name>8</name>
             <description>Al Capone’s Barber
 NAME: https://www.theblackstonehotel.com/
 TIME: 1927-04-13 13:22:00
@@ -384,13 +481,13 @@ TYPE: Intel
 Business: South Holden Court
 CASE: 1927-03-333
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#16</styleUrl>
-            <Point id="14">
+            <styleUrl>#36</styleUrl>
+            <Point id="34">
                 <coordinates>-87.6270749,41.873364,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="21">
-            <name>5</name>
+        <Placemark id="41">
+            <name>9</name>
             <description>Al Capone’s Home
 TIME: 1927-05-14 15:22:00
 7244 S Prairie Ave, Chicago, IL 60619
@@ -398,13 +495,13 @@ TAG: Important
 TYPE: Intel
 CASE: 1927-03-333
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#22</styleUrl>
-            <Point id="20">
+            <styleUrl>#42</styleUrl>
+            <Point id="40">
                 <coordinates>-87.6213478,41.7625038,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="27">
-            <name>6</name>
+        <Placemark id="47">
+            <name>10</name>
             <description>Al Capone Hang out
 TIME: 1927-06-15 15:22:00
 505 N. Michigan Ave Chicago, Illinois 60611 
@@ -413,13 +510,13 @@ TYPE: Intel
 Business: Medinah Athletic Club
 CASE: 1927-03-333
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#28</styleUrl>
-            <Point id="26">
+            <styleUrl>#48</styleUrl>
+            <Point id="46">
                 <coordinates>-87.6262266,41.8911897,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="33">
-            <name>7 Massacre</name>
+        <Placemark id="53">
+            <name>ST. VALENTINE’S MASSACRE</name>
             <description>ST. VALENTINE’S MASSACRE
 TIME: 1929-02-14 10:30:00
 2122 N Clark St, Chicago, IL 60614
@@ -428,13 +525,13 @@ TYPE: Locations
 Business: SMC Cartage Company garage
 CASE: 1929-02-142
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#34</styleUrl>
-            <Point id="32">
+            <styleUrl>#54</styleUrl>
+            <Point id="52">
                 <coordinates>-87.6404249,41.9208803,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="39">
-            <name>8</name>
+        <Placemark id="59">
+            <name>12</name>
             <description>IMG_1045.JPG
 NAME: Test – gps only Images
 TIME: 2021-07-15 17:21:51
@@ -442,13 +539,13 @@ ADDRESS: Crazy Grill Buffet, Roosevelt Road, Forest Park, Proviso Township, Cook
 TYPE: Images
 Business: Crazy Grill Buffet
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#40</styleUrl>
-            <Point id="38">
+            <styleUrl>#60</styleUrl>
+            <Point id="58">
                 <coordinates>-87.8146277777778,41.8637888888889,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="44">
-            <name>9</name>
+        <Placemark id="64">
+            <name>13</name>
             <description>
 NAME: Test – Truck icon
 TIME: 2021-09-22 13:02:45
@@ -459,13 +556,13 @@ DIRECTION: W
 TYPE: LPR
 PLATE: No_Plate
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#45</styleUrl>
-            <Point id="43">
+            <styleUrl>#65</styleUrl>
+            <Point id="63">
                 <coordinates>-87.6369670043945,41.8832069138184,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="49">
-            <name>10</name>
+        <Placemark id="69">
+            <name>14</name>
             <description>
 NAME: Test – LPR red car
 TIME: 2022-06-13 21:41:33
@@ -477,26 +574,26 @@ TYPE: LPR
 Business: Lpr
 PLATE: No_Plate2
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#50</styleUrl>
-            <Point id="48">
+            <styleUrl>#70</styleUrl>
+            <Point id="68">
                 <coordinates>-87.76324840980894,41.821174151816635,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="55">
-            <name>11</name>
+        <Placemark id="75">
+            <name>15</name>
             <description>
 NAME: Test – gps only Intel
 TIME: 2022-07-26 14:33:12
 ADDRESS: Tri-State Tollway, Justice, Lyons Township, Cook County, Illinois, 60458, United States
 TYPE: Intel
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#56</styleUrl>
-            <Point id="54">
+            <styleUrl>#76</styleUrl>
+            <Point id="74">
                 <coordinates>-87.8328635429077,41.7431510003286,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="60">
-            <name>12</name>
+        <Placemark id="80">
+            <name>16</name>
             <description>
 NAME: Test – gps only Toll w/ no direction arrow (blue square)
 TIME: 2022-07-26 14:33:12
@@ -505,13 +602,13 @@ HWY NAME: I-294
 TYPE: Toll
 PLATE: No_Plate2
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#61</styleUrl>
-            <Point id="59">
+            <styleUrl>#81</styleUrl>
+            <Point id="79">
                 <coordinates>-87.8369635429077,41.7431510003286,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="65">
-            <name>13</name>
+        <Placemark id="85">
+            <name>17</name>
             <description>
 NAME: Test – Eastbound
 TIME: 2023-01-02 17:42:00
@@ -521,13 +618,13 @@ DIRECTION: E
 TYPE: Toll
 Business: E
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#66</styleUrl>
-            <Point id="64">
+            <styleUrl>#86</styleUrl>
+            <Point id="84">
                 <coordinates>-87.9707624,41.9836875,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="70">
-            <name>14</name>
+        <Placemark id="90">
+            <name>18</name>
             <description>
 NAME: Test – Toll
 TIME: 2023-01-20 19:17:00
@@ -536,39 +633,39 @@ HWY NAME: I-390 &amp; Hamilton Lakes Blvd
 TYPE: Toll
 Business: Toll
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#71</styleUrl>
-            <Point id="69">
+            <styleUrl>#91</styleUrl>
+            <Point id="89">
                 <coordinates>-88.0100124,41.9843125,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="75">
-            <name>15</name>
+        <Placemark id="95">
+            <name>19</name>
             <description>
 NAME: Test – gps only Locations Yelow paddle
 TIME: 2023-09-20 15:26:38
 ADDRESS: Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
 TYPE: Locations
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#76</styleUrl>
-            <Point id="74">
+            <styleUrl>#96</styleUrl>
+            <Point id="94">
                 <coordinates>-87.8169277777778,41.8637869888889,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="80">
-            <name>16</name>
+        <Placemark id="100">
+            <name>20</name>
             <description>IMG_0069.MOV
 NAME: Test – Fulladdress,gps and address videos
 TIME: 2023-12-24 10:24:20
 Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
 TYPE: Videos
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#81</styleUrl>
-            <Point id="79">
+            <styleUrl>#101</styleUrl>
+            <Point id="99">
                 <coordinates>-87.8169277777778,41.8636988888889,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="85">
-            <name>17</name>
+        <Placemark id="105">
+            <name>21</name>
             <description>
 NAME: Test – gps only Locations Yelow paddle
 TIME: 2023-12-26 11:01:31
@@ -576,13 +673,13 @@ ADDRESS: West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, Un
 TAG: Important
 TYPE: Locations
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#86</styleUrl>
-            <Point id="84">
+            <styleUrl>#106</styleUrl>
+            <Point id="104">
                 <coordinates>-87.6369670043945,41.8832054138184,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="91">
-            <name>18</name>
+        <Placemark id="111">
+            <name>22</name>
             <description>
 NAME: Test – Westbound
 TIME: 2023-12-27 16:59:00
@@ -592,13 +689,13 @@ DIRECTION: W
 TYPE: Toll
 Business: Illinois Tollway Plaza 51
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#92</styleUrl>
-            <Point id="90">
+            <styleUrl>#112</styleUrl>
+            <Point id="110">
                 <coordinates>-87.9437624,41.8485625,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="96">
-            <name>19</name>
+        <Placemark id="116">
+            <name>23</name>
             <description>
 NAME: Test – Southbound
 TIME: 2023-12-27 17:11:00
@@ -608,13 +705,13 @@ DIRECTION: S
 TYPE: Toll
 Business: S
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#97</styleUrl>
-            <Point id="95">
+            <styleUrl>#117</styleUrl>
+            <Point id="115">
                 <coordinates>-88.0377624,41.7330625,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="101">
-            <name>20</name>
+        <Placemark id="121">
+            <name>24</name>
             <description>Flight: EY 242 from LHE to AUH
 NAME: Test – gps only Calendar
 TIME: 2024-01-07 13:39:20
@@ -622,13 +719,13 @@ ADDRESS: Chicago Midway International Airport, 5700, South Cicero Avenue, Garfie
 TYPE: Calendar
 Business: Chicago Midway International Airport
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#102</styleUrl>
-            <Point id="100">
+            <styleUrl>#122</styleUrl>
+            <Point id="120">
                 <coordinates>-87.7508994935715,41.7856916,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="106">
-            <name>21</name>
+        <Placemark id="126">
+            <name>25</name>
             <description>
 NAME: N-bound icon : Toll Tag ID:12345678
 TIME: 2024-01-19 14:15:00
@@ -637,26 +734,26 @@ HWY NAME: I-294 &amp; 83rd St
 DIRECTION: N
 TYPE: Toll
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#107</styleUrl>
-            <Point id="105">
+            <styleUrl>#127</styleUrl>
+            <Point id="125">
                 <coordinates>-87.8291374,41.7394375,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="111">
-            <name>22</name>
+        <Placemark id="131">
+            <name>26</name>
             <description>IMG_1969.MOV
 NAME: Test – gps only (yellow pin) with business
 3501 S Laramie Ave, Cicero, IL 60804
 TYPE: Videos
 Business: Hawthorne Racecourse
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#112</styleUrl>
-            <Point id="110">
+            <styleUrl>#132</styleUrl>
+            <Point id="130">
                 <coordinates>-87.7510767237512,41.8285843,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="116">
-            <name>24</name>
+        <Placemark id="136">
+            <name>28</name>
             <description>
 NAME: Test – address only office w/ yellow font
 Willis Tower, 233, South Wacker Drive, Chicago, Illinois, 60606
@@ -664,26 +761,26 @@ TAG: Review
 TYPE: Intel
 Business: Willis Tower
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#117</styleUrl>
-            <Point id="115">
+            <styleUrl>#137</styleUrl>
+            <Point id="135">
                 <coordinates>-87.6359612118808,41.87873805,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="122">
-            <name>25</name>
+        <Placemark id="142">
+            <name>29</name>
             <description>Last Position
 NAME: Test – gps only yellow paddle w/ tag
 ADDRESS: Urban Air, 7401, West 25th Street, North Riverside Plaza, North Riverside, Riverside Township, Cook County, Illinois, 60546, United States
 TYPE: Locations
 Business: Urban Air
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#123</styleUrl>
-            <Point id="121">
+            <styleUrl>#143</styleUrl>
+            <Point id="141">
                 <coordinates>-87.80702,41.8458074,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="127">
-            <name>26</name>
+        <Placemark id="147">
+            <name>30</name>
             <description>
 NAME: Test – gps only Images w/ yellow font
 ADDRESS: Chicago Midway International Airport, 5700, South Cicero Avenue, Garfield Ridge, Chicago, Lake Township, Cook County, Illinois, 60638, United States
@@ -691,13 +788,13 @@ TAG: blah
 TYPE: Images
 Business: Chicago Midway International Airport
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#128</styleUrl>
-            <Point id="126">
+            <styleUrl>#148</styleUrl>
+            <Point id="146">
                 <coordinates>-87.7508486935769,41.78543165,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="133">
-            <name>27</name>
+        <Placemark id="153">
+            <name>31</name>
             <description>Little Red Schoolhouse Nature Center
 NAME: Test – gps / address Searched
 Little Red Schoolhouse Nature Center, 9800 Willow Springs Rd, Willow Springs, IL 60480
@@ -705,43 +802,43 @@ TAG: Review
 TYPE: Searched Items
 Business: Little Red Schoolhouse Nature Center
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#134</styleUrl>
-            <Point id="132">
+            <styleUrl>#154</styleUrl>
+            <Point id="152">
                 <coordinates>-87.877258885395,41.7090584,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="139">
-            <name>28</name>
+        <Placemark id="159">
+            <name>32</name>
             <description>
 NAME: Test – full address/gps and address Intel Important
 Riverside Public Library, 1 Burling Rd, Riverside, IL 60546
 TAG: Important
 Business: Riverside Public Library
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#140</styleUrl>
-            <Point id="138">
+            <styleUrl>#160</styleUrl>
+            <Point id="158">
                 <coordinates>-87.8192555677286,41.82621495,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="145">
-            <name>29</name>
+        <Placemark id="165">
+            <name>33</name>
             <description>
 NAME: Test – Car2 coordinate only
 ADDRESS: Montrose Avenue, O'Hare, Chicago, Jefferson Township, Cook County, Illinois, 60176, United States
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#146</styleUrl>
-            <Point id="144">
+            <styleUrl>#166</styleUrl>
+            <Point id="164">
                 <coordinates>-87.8814396,41.9629122,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="150">
-            <name>30</name>
+        <Placemark id="170">
+            <name>34</name>
             <description>
 NAME: Test – Home coordinate only
 ADDRESS: 313, North Marion Street, Samuel A Rothermel Houses, Oak Park, Cook County, Illinois, 60302, United States
 SOURCE: locations_test.xlsx</description>
-            <styleUrl>#151</styleUrl>
-            <Point id="149">
+            <styleUrl>#171</styleUrl>
+            <Point id="169">
                 <coordinates>-87.8031364,41.8923463,0.0</coordinates>
             </Point>
         </Placemark>
