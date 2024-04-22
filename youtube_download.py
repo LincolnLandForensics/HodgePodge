@@ -201,9 +201,14 @@ def youtube_transcript(video_id):
     
     try:
         srt = YouTubeTranscriptApi.get_transcript(video_id)
-        for i in srt:
-            caption_temp = ("{}\n".format(i))    # test
-            caption = (f'{caption}{caption_temp}')
+
+        for part in srt:
+            text = part['text']  # Extract text content
+            text = text.replace('[Music]', '')
+            text = text + ' '
+            caption += ' ' + text + ' '
+
+            caption = caption.strip()
 
     except Exception as e:
         print(f"An error occurred : {str(e)}")
@@ -212,7 +217,7 @@ def youtube_transcript(video_id):
 
 
 def youtube():
-    keywords_to_check = ["tax", "lambo", "clubhouse was packed"]
+    keywords_to_check = ["tax", "lambo", "drug dealer"]
 
 
 
@@ -289,17 +294,6 @@ def youtube():
         if len(video_id) > 5:
             caption = youtube_transcript(video_id)
             caption = caption.replace('{\'text\': ', '')    # .replace(', \'start\': ', '^').replace(', \'duration\': ', '^')
-            # if '^' in caption:
-                # captiontemp = caption.split('^')
-                # caption = (f'captiontemp[0]
-            # print(f'video_id = {video_id}')
-
-            # caption = caption_sort(caption)    #test
-
-
-        # keyword hunt
-        # if "tax" in caption:
-            # keywords = (f'tax, {keywords}')
 
         # Check for keywords in captions
         keywords = check_keywords_in_captions(caption, keywords_to_check)
@@ -374,6 +368,7 @@ if __name__ == '__main__':
 
 """
 download a list of all urls the user has
+parse comments
 
 """
 
