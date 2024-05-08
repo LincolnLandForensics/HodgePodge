@@ -102,18 +102,6 @@ or the exe version
 ```
 translatinator.exe
 ```
-or when you specify a specific language
-```
-python translatinator.py -c	# for chinese translation
-```
-
-Language switches:
-
-*   -a  # arabic 2 english
-*   -c  # chinese 2 english
-*   -f  # french 2 english
-*   -g  # german 2 english
-*   -s  # spanish 2 english
 
 ![translation.exe output](images/translation.png)
 
