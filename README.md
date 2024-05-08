@@ -98,6 +98,7 @@ Usage:
 python translatinator.py
 ```
 or the exe version (Exe version available upon request (its 38 mb and github only allows me to upload 25mb files)
+(use auto-py-to-exe to make your own exe's)
 ```
 translatinator.exe
 ```
