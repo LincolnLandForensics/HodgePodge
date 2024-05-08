@@ -3,48 +3,40 @@
 
 '''
 This script is used to translate the contents of an Excel spreadsheet from many 
-languages to English. It uses the openypyl library to read the input file, googletrans 
-to perform the translation, and openypyl to write the translated contents to a new Excel file.
+languages to English. It uses the openypyl library to read the input file, requests  
+to perform the translation, (googletrans as a backup module) and openypyl to write 
+the translated contents to a new Excel file.
 '''
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+# import re
 import sys
 import time
 import os.path
 import openpyxl
+import requests # pip install requests
 import argparse  # for menu system
-import googletrans		# pip install googletrans   # redunant?
-from googletrans import Translator
+# from datetime import date, datetime
+# from googletrans import Translator  # pip install googletrans
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "Read input.xlsx filled with another language and translate it to english"
-version = '0.4.7'
-
-LANGUAGES = {
-    'arabic': 'ar',
-    'chinese': 'zh-CN',
-    'french': 'fr',
-    'german': 'de',
-    'spanish': 'es',
-    'multi': ''
-}
+description = "Read input_translate.xlsx filled with another language and translate it to english"
+version = '1.0.1'
 
 # Colorize section
 global color_red
 global color_yellow
 global color_green
 global color_blue
-global color_purple
 global color_reset
 color_red = ''
 color_yellow = ''
 color_green = ''
 color_blue = ''
-color_purple = ''
 color_reset = ''
 
 if sys.version_info > (3, 7, 9) and os.name == "nt":
@@ -61,46 +53,161 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
         color_yellow = Fore.YELLOW
         color_green = Fore.GREEN
         color_blue = Fore.BLUE
-        color_purple = Fore.MAGENTA
         color_reset = Style.RESET_ALL
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 def main():
+    # d = datetime.today()
+      
+    # todaysDate = d.strftime("%m/%d/%Y")
+    # todaysDateTime = d.strftime("%Y-%m-%d_%H_%M_%S")    
+
+    # output_xlsx = ('translation_%s.xlsx' %(todaysDateTime)) 
+    output_xlsx = ('translation_.xlsx') 
+
+
     parser = argparse.ArgumentParser(description='Translate Excel contents from various languages to English')
     parser.add_argument('-I', '--input', help='Input Excel file', required=False)
-    parser.add_argument('-O', '--output', help='Output Excel file', required=False, default='out_english.xlsx')
-    parser.add_argument('-l', '--language', help='Source language for translation', choices=LANGUAGES.keys(), required=False)
+    parser.add_argument('-O', '--output', help='Output Excel file', required=False, default=output_xlsx)
     args = parser.parse_args()
     
     # global variables
-    # global Row
-    # Row = 0  # defines arguments
-    # Row = 1  # defines arguments   # if you want to add headers 
-    # global source_language
     source_language = '' 
-    # global input_xlsx
     input_xlsx = ('input_translate.xlsx')
-    # global output_xlsx
-    output_xlsx = ('out_english_.xlsx')
-    # global sheet_format
-    # sheet_format = ''
-    # sheet_format = "Translation"    
+    
 
     if args.input:  # defaults to input_translate.xlsx
         input_xlsx = args.input
     if args.output:  # defaults to out_english_.xlsx
         output_xlsx = args.output   
-    if args.language:  # defaults to input_translate.xlsx
-        source_language = args.language
 
     translate_excel(input_xlsx, output_xlsx, source_language)
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+def detected_language_enhance(detected_language):
+    LANGUAGES = {
+        'af': 'Afrikaans',
+        'sq': 'Albanian',
+        'am': 'Amharic',
+        'ar': 'Arabic',
+        # 'hy': 'Armenian',
+        # 'az': 'Azerbaijani',
+        # 'eu': 'Basque',
+        # 'be': 'Belarusian',
+        # 'bn': 'Bengali',
+        # 'bs': 'Bosnian',
+        # 'bg': 'Bulgarian',
+        # 'ca': 'Catalan',
+        # 'ceb': 'Cebuano',
+        # 'ny': 'Chichewa',
+        # 'zh-CN': 'Chinese (Simplified)',
+        # 'zh-TW': 'Chinese (Traditional)',
+        # 'co': 'Corsican',
+        # 'hr': 'Croatian',
+        # 'cs': 'Czech',
+        # 'da': 'Danish',
+        # 'nl': 'Dutch',
+        # 'en': 'English',
+        # 'eo': 'Esperanto',
+        # 'et': 'Estonian',
+        # 'tl': 'Filipino',
+        # 'fi': 'Finnish',
+        # 'fr': 'French',
+        # 'fy': 'Frisian',
+        # 'gl': 'Galician',
+        # 'ka': 'Georgian',
+        # 'de': 'German',
+        # 'el': 'Greek',
+        # 'gu': 'Gujarati',
+        # 'ht': 'Haitian Creole',
+        # 'ha': 'Hausa',
+        # 'haw': 'Hawaiian',
+        # 'iw': 'Hebrew',
+        # 'hi': 'Hindi',
+        # 'hmn': 'Hmong',
+        # 'hu': 'Hungarian',
+        # 'is': 'Icelandic',
+        # 'ig': 'Igbo',
+        # 'id': 'Indonesian',
+        # 'ga': 'Irish',
+        # 'it': 'Italian',
+        # 'ja': 'Japanese',
+        # 'jw': 'Javanese',
+        # 'kn': 'Kannada',
+        # 'kk': 'Kazakh',
+        # 'km': 'Khmer',
+        # 'rw': 'Kinyarwanda',
+        # 'ko': 'Korean',
+        # 'ku': 'Kurdish (Kurmanji)',
+        # 'ky': 'Kyrgyz',
+        # 'lo': 'Lao',
+        # 'la': 'Latin',
+        # 'lv': 'Latvian',
+        # 'lt': 'Lithuanian',
+        # 'lb': 'Luxembourgish',
+        # 'mk': 'Macedonian',
+        # 'mg': 'Malagasy',
+        # 'ms': 'Malay',
+        # 'ml': 'Malayalam',
+        # 'mt': 'Maltese',
+        # 'mi': 'Maori',
+        # 'mr': 'Marathi',
+        # 'mn': 'Mongolian',
+        # 'my': 'Myanmar (Burmese)',
+        # 'ne': 'Nepali',
+        # 'no': 'Norwegian',
+        # 'ps': 'Pashto',
+        # 'fa': 'Persian',
+        # 'pl': 'Polish',
+        # 'pt': 'Portuguese',
+        # 'pa': 'Punjabi',
+        # 'ro': 'Romanian',
+        # 'ru': 'Russian',
+        # 'sm': 'Samoan',
+        # 'gd': 'Scots Gaelic',
+        # 'sr': 'Serbian',
+        # 'st': 'Sesotho',
+        # 'sn': 'Shona',
+        # 'sd': 'Sindhi',
+        # 'si': 'Sinhala',
+        # 'sk': 'Slovak',
+        # 'sl': 'Slovenian',
+        # 'so': 'Somali',
+        # 'es': 'Spanish',
+        # 'su': 'Sundanese',
+        # 'sw': 'Swahili',
+        # 'sv': 'Swedish',
+        # 'tg': 'Tajik',
+        # 'ta': 'Tamil',
+        # 'te': 'Telugu',
+        # 'th': 'Thai',
+        # 'tr': 'Turkish',
+        # 'uk': 'Ukrainian',
+        # 'ur': 'Urdu',
+        # 'ug': 'Uyghur',
+        # 'uz': 'Uzbek',
+        # 'vi': 'Vietnamese',
+        # 'cy': 'Welsh',
+        # 'xh': 'Xhosa',
+        # 'yi': 'Yiddish',
+        # 'yo': 'Yoruba',
+        'zu': 'Zulu'
+    }
+
+    # Iterate over the items in the LANGUAGES dictionary
+    for key, value in LANGUAGES.items():
+        # Check if the detected_language matches any value in the dictionary
+        if value == detected_language:
+            detected_language = key  # Replace detected_language with the corresponding key
+            break  # Exit the loop once a match is found
+
+    # print("Detected Language:", detected_language)
+    return detected_language
+
 def translate_excel(input_xlsx, output_xlsx, source_language):
-    translator = Translator()
-    print(f'{color_yellow}You selected {source_language} as your language{color_reset}')
+    target_language = 'en'
     file_exists = os.path.exists(input_xlsx)
     if file_exists == True:
         print(f'{color_green}Reading {input_xlsx} {color_reset}')
@@ -108,49 +215,34 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         sheet = workbook.active
     else:
         print(f'{color_red}{input_xlsx} does not exist{color_reset}')
-        exit()
+        sys.exit()
 
-
-    # Add columns for translated content and language. Maintains any extra input from the source
-    sheet.insert_cols(2)
-    sheet.insert_cols(3)
     sheet.cell(row=1, column=2, value='english')
     sheet.cell(row=1, column=3, value='language')
     sheet.cell(row=1, column=4, value='note')    
 
     for row in sheet.iter_rows(min_row=2):
         (translation, note, e) = ('', '', '')
+        (detected_language, text) = ('auto', '')
         original_content = row[0].value
 
-        try:
-            detected_language = LANGUAGES.get(source_language, '')
-        except:
-            detected_language = source_language # statically assign till detection works
-    
-        if original_content is not None:
+        if original_content is not None and original_content != '':
+        # if original_content is not None:
             if isinstance(original_content, (int, float)):
-                # print("Original content is a number:", original_content)
                 translation = original_content
             elif len(str(original_content)) >= 1:
-                retries = 1 # 3
-                for _ in range(retries):
-                    try:
-                        translation_result = translator.translate(original_content, lang_src=detected_language, lang_tgt='en')
-                        if translation_result and translation_result.text:
-                            translation = translation_result.text
-                            break  # Exit the loop on successful translation
-                    except Exception as e:
-                        print(f"Error translating: {e}")
-                        # Retry after a short delay
-                        time.sleep(2)
 
+                (translation, source_language, note) = translate_request(original_content, target_language, note)
+                detected_language = source_language
+                time.sleep(1) #will sleep for a second
+                
                 if not translation:
-                    # print(f"Translation failed for: {original_content}")
+                    print(f"Translation failed for: {original_content}")
                     note = "Translation failed"
-
+                    # (translation, source_language, note) = translate_googletrans(text, source_language, target_language, note)
+                    detected_language = source_language
+                    time.sleep(2) #will sleep for a second
         print(f'{color_blue}{original_content}  {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
-
-        time.sleep(5) #will sleep for 5 seconds
 
         # Update the translated content and language columns
         sheet.cell(row=row[0].row, column=2, value=translation)
@@ -158,7 +250,82 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         sheet.cell(row=row[0].row, column=4, value=note)
         
     workbook.save(output_xlsx)
-    print(f'{color_green}Translated content saved to {output_xlsx}{color_reset}')
+    print(f'{color_green}Translation content saved to {output_xlsx}{color_reset}')
+    
+def translate_googletrans(text, source_language, target_language, note):
+    translator = Translator()
+    '''
+    use googletrans module, 60% of time, it works every time
+    '''
+    translation = ('')
+    detected_language = source_language
+    original_content = text
+    retries = 3 # 3
+    for _ in range(retries):  
+        try:
+            translation_result = translator.translate(original_content, lang_src=detected_language, lang_tgt=target_language)
+                 
+            if translation_result and translation_result.text:
+                translation = translation_result.text
+                break  # Exit the loop on successful translation
+
+        except Exception as e:
+            print(f"Error translating: {e}")    # Error translating: 'NoneType' object has no attribute 'group'
+            # Retry after a short delay
+            time.sleep(2)
+
+    return (translation, source_language, note)
+    
+def translate_request(text, target_language, note):
+    '''
+    use requests to translate lan
+    '''
+    source_language = 'auto'
+    
+    url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl={}&tl={}&dt=t&q={}".format(
+        source_language, target_language, text
+    )
+
+    # Define custom user agent
+    user_agent = "Mozilla/5.0"
+
+    # Define SSL certificate verification (set to False if you don't want to verify)
+    verify_ssl_cert = True  # Change to False if you don't want to verify SSL certificates
+
+    # Define headers with user agent
+    headers = {
+        "User-Agent": user_agent
+    }
+
+
+    # Send GET request with custom user agent, proxies, and SSL certificate verification
+    # response = requests.get(url, headers=headers, proxies=proxies, verify=verify_ssl_cert)
+
+
+
+    try:
+        # response = requests.get(url, verify=True)   # works
+        response = requests.get(url, headers=headers, verify=True)
+             
+        if response.status_code == 200:
+            data = response.json()
+            translation = data[0][0][0] if data else ""
+
+            source_language = data[2]
+            note = ''
+        else:
+            print("Failed to translate. Status code:", response.status_code)
+            note = ("Failed to translate. Status code:", response.status_code)
+            source_language = ''
+            
+    except Exception as e:
+        print("Error occurred while translating:", e)
+        (translation, source_language) = ('', '')
+        note = 'Error occurred while translating'
+        source_language = ''
+    detected_language = detected_language_enhance(source_language)
+    source_language = detected_language
+    return (translation, source_language, note)
     
 def usage():
     file = sys.argv[0].split('\\')[-1]
@@ -182,6 +349,7 @@ if __name__ == '__main__':
 
 """
 
+1.0.0 - use requests with googletrans as a backup (non-working) module.
 0.2.0 - removed any switch requirements to make the exe version easier
 0.1.0 - read xlsx, translate, export to xlsx
 """
@@ -189,31 +357,26 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
-detectedLanguage = translator.detect(original[0])  # fix me
-
-[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1007)
+fix language module ar = arabic
+Make sure to handle potential issues like rate limiting, certificate verification, and unexpected input data gracefully. 
 
 if len(original_content) >= 1:
 TypeError: object of type 'NoneType' has no len()
-
-if input is just a number or is blank, skip it
 
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-if you know it's one of the specified languages, select that, otherwise select -m or no switches for unknown or mixed languages
 
-GoogleTrans is either rate limiting or they are using an API now
+GoogleTrans is either rate limiting or they are using an API now (tested fine on 10/17/2023
 
 
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Copyright        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-# Copyright (C) 2023 LincolnLandForensics
+# Copyright (C) 2024 LincolnLandForensics
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License version 2, as published by the
