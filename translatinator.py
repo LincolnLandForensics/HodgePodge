@@ -8,17 +8,16 @@ to perform the translation, (googletrans as a backup module) and openypyl to wri
 the translated contents to a new Excel file.
 '''
 
-
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-# import re
-import sys
-import time
+from sys import exit, version_info
+from time import sleep
 import os.path
-import openpyxl
-import requests # pip install requests
-import argparse  # for menu system
-# from datetime import date, datetime
+from openpyxl import load_workbook
+from requests import get 
+
+# import argparse  # for menu system
+
 # from googletrans import Translator  # pip install googletrans
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -39,14 +38,12 @@ color_green = ''
 color_blue = ''
 color_reset = ''
 
-if sys.version_info > (3, 7, 9) and os.name == "nt":
+if version_info > (3, 7, 9) and os.name == "nt":
     version_info = os.sys.getwindowsversion()
     major_version = version_info.major
     build_version = version_info.build
-    # print(f'major version = {major_version} Build= {build_version} {version_info}')   # temp
 
     if major_version >= 10 and build_version >= 22000: # Windows 11 and above
-        import colorama
         from colorama import Fore, Back, Style  
         print(f'{Back.BLACK}') # make sure background is black
         color_red = Fore.RED
@@ -57,166 +54,188 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 def main():
-    # d = datetime.today()
-      
-    # todaysDate = d.strftime("%m/%d/%Y")
-    # todaysDateTime = d.strftime("%Y-%m-%d_%H_%M_%S")    
-
-    # output_xlsx = ('translation_%s.xlsx' %(todaysDateTime)) 
     output_xlsx = ('translation_.xlsx') 
 
-
-    parser = argparse.ArgumentParser(description='Translate Excel contents from various languages to English')
-    parser.add_argument('-I', '--input', help='Input Excel file', required=False)
-    parser.add_argument('-O', '--output', help='Output Excel file', required=False, default=output_xlsx)
-    args = parser.parse_args()
+    check_internet_connection()
+    
+    # parser = argparse.ArgumentParser(description='Translate Excel contents from various languages to English')
+    # parser.add_argument('-I', '--input', help='Input Excel file', required=False)
+    # parser.add_argument('-O', '--output', help='Output Excel file', required=False, default=output_xlsx)
+    # args = parser.parse_args()
     
     # global variables
     source_language = '' 
     input_xlsx = ('input_translate.xlsx')
     
 
-    if args.input:  # defaults to input_translate.xlsx
-        input_xlsx = args.input
-    if args.output:  # defaults to out_english_.xlsx
-        output_xlsx = args.output   
-
+    # if args.input:  # defaults to input_translate.xlsx
+        # input_xlsx = args.input
+    # if args.output:  # defaults to out_english_.xlsx
+        # output_xlsx = args.output   
+    # input_xlsx = args.input
     translate_excel(input_xlsx, output_xlsx, source_language)
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+def check_internet_connection():
+    try:
+        # Try to make a request to a known website
+        response = get("http://www.google.com", timeout=5)
+        response.raise_for_status()  # Raise an error for any HTTP error status
+        message = 'Internet connection is available.'
+
+    except:
+        message = 'Internet connection is not available.'
+        message_square(message, color_red)
+        exit(1)  # Exit with error status 1
+
+
 def detected_language_enhance(detected_language):
+    '''
+    Convert 2 digit language code to a full name
+    '''
     LANGUAGES = {
         'af': 'Afrikaans',
         'sq': 'Albanian',
         'am': 'Amharic',
         'ar': 'Arabic',
-        # 'hy': 'Armenian',
-        # 'az': 'Azerbaijani',
-        # 'eu': 'Basque',
-        # 'be': 'Belarusian',
-        # 'bn': 'Bengali',
-        # 'bs': 'Bosnian',
-        # 'bg': 'Bulgarian',
-        # 'ca': 'Catalan',
-        # 'ceb': 'Cebuano',
-        # 'ny': 'Chichewa',
-        # 'zh-CN': 'Chinese (Simplified)',
-        # 'zh-TW': 'Chinese (Traditional)',
-        # 'co': 'Corsican',
-        # 'hr': 'Croatian',
-        # 'cs': 'Czech',
-        # 'da': 'Danish',
-        # 'nl': 'Dutch',
-        # 'en': 'English',
-        # 'eo': 'Esperanto',
-        # 'et': 'Estonian',
-        # 'tl': 'Filipino',
-        # 'fi': 'Finnish',
-        # 'fr': 'French',
-        # 'fy': 'Frisian',
-        # 'gl': 'Galician',
-        # 'ka': 'Georgian',
-        # 'de': 'German',
-        # 'el': 'Greek',
-        # 'gu': 'Gujarati',
-        # 'ht': 'Haitian Creole',
-        # 'ha': 'Hausa',
-        # 'haw': 'Hawaiian',
-        # 'iw': 'Hebrew',
-        # 'hi': 'Hindi',
-        # 'hmn': 'Hmong',
-        # 'hu': 'Hungarian',
-        # 'is': 'Icelandic',
-        # 'ig': 'Igbo',
-        # 'id': 'Indonesian',
-        # 'ga': 'Irish',
-        # 'it': 'Italian',
-        # 'ja': 'Japanese',
-        # 'jw': 'Javanese',
-        # 'kn': 'Kannada',
-        # 'kk': 'Kazakh',
-        # 'km': 'Khmer',
-        # 'rw': 'Kinyarwanda',
-        # 'ko': 'Korean',
-        # 'ku': 'Kurdish (Kurmanji)',
-        # 'ky': 'Kyrgyz',
-        # 'lo': 'Lao',
-        # 'la': 'Latin',
-        # 'lv': 'Latvian',
-        # 'lt': 'Lithuanian',
-        # 'lb': 'Luxembourgish',
-        # 'mk': 'Macedonian',
-        # 'mg': 'Malagasy',
-        # 'ms': 'Malay',
-        # 'ml': 'Malayalam',
-        # 'mt': 'Maltese',
-        # 'mi': 'Maori',
-        # 'mr': 'Marathi',
-        # 'mn': 'Mongolian',
-        # 'my': 'Myanmar (Burmese)',
-        # 'ne': 'Nepali',
-        # 'no': 'Norwegian',
-        # 'ps': 'Pashto',
-        # 'fa': 'Persian',
-        # 'pl': 'Polish',
-        # 'pt': 'Portuguese',
-        # 'pa': 'Punjabi',
-        # 'ro': 'Romanian',
-        # 'ru': 'Russian',
-        # 'sm': 'Samoan',
-        # 'gd': 'Scots Gaelic',
-        # 'sr': 'Serbian',
-        # 'st': 'Sesotho',
-        # 'sn': 'Shona',
-        # 'sd': 'Sindhi',
-        # 'si': 'Sinhala',
-        # 'sk': 'Slovak',
-        # 'sl': 'Slovenian',
-        # 'so': 'Somali',
-        # 'es': 'Spanish',
-        # 'su': 'Sundanese',
-        # 'sw': 'Swahili',
-        # 'sv': 'Swedish',
-        # 'tg': 'Tajik',
-        # 'ta': 'Tamil',
-        # 'te': 'Telugu',
-        # 'th': 'Thai',
-        # 'tr': 'Turkish',
-        # 'uk': 'Ukrainian',
-        # 'ur': 'Urdu',
-        # 'ug': 'Uyghur',
-        # 'uz': 'Uzbek',
-        # 'vi': 'Vietnamese',
-        # 'cy': 'Welsh',
-        # 'xh': 'Xhosa',
-        # 'yi': 'Yiddish',
-        # 'yo': 'Yoruba',
+        'hy': 'Armenian',
+        'az': 'Azerbaijani',
+        'eu': 'Basque',
+        'be': 'Belarusian',
+        'bn': 'Bengali',
+        'bs': 'Bosnian',
+        'bg': 'Bulgarian',
+        'ca': 'Catalan',
+        'ceb': 'Cebuano',
+        'ny': 'Chichewa',
+        'zh-CN': 'Chinese (Simplified)',
+        'zh-TW': 'Chinese (Traditional)',
+        'co': 'Corsican',
+        'hr': 'Croatian',
+        'cs': 'Czech',
+        'da': 'Danish',
+        'nl': 'Dutch',
+        'en': 'English',
+        'eo': 'Esperanto',
+        'et': 'Estonian',
+        'tl': 'Filipino',
+        'fi': 'Finnish',
+        'fr': 'French',
+        'fy': 'Frisian',
+        'gl': 'Galician',
+        'ka': 'Georgian',
+        'de': 'German',
+        'el': 'Greek',
+        'gu': 'Gujarati',
+        'ht': 'Haitian Creole',
+        'ha': 'Hausa',
+        'haw': 'Hawaiian',
+        'iw': 'Hebrew',
+        'hi': 'Hindi',
+        'hmn': 'Hmong',
+        'hu': 'Hungarian',
+        'is': 'Icelandic',
+        'ig': 'Igbo',
+        'id': 'Indonesian',
+        'ga': 'Irish',
+        'it': 'Italian',
+        'ja': 'Japanese',
+        'jw': 'Javanese',
+        'kn': 'Kannada',
+        'kk': 'Kazakh',
+        'km': 'Khmer',
+        'rw': 'Kinyarwanda',
+        'ko': 'Korean',
+        'ku': 'Kurdish (Kurmanji)',
+        'ky': 'Kyrgyz',
+        'lo': 'Lao',
+        'la': 'Latin',
+        'lv': 'Latvian',
+        'lt': 'Lithuanian',
+        'lb': 'Luxembourgish',
+        'mk': 'Macedonian',
+        'mg': 'Malagasy',
+        'ms': 'Malay',
+        'ml': 'Malayalam',
+        'mt': 'Maltese',
+        'mi': 'Maori',
+        'mr': 'Marathi',
+        'mn': 'Mongolian',
+        'my': 'Myanmar (Burmese)',
+        'ne': 'Nepali',
+        'no': 'Norwegian',
+        'ps': 'Pashto',
+        'fa': 'Persian',
+        'pl': 'Polish',
+        'pt': 'Portuguese',
+        'pa': 'Punjabi',
+        'ro': 'Romanian',
+        'ru': 'Russian',
+        'sm': 'Samoan',
+        'gd': 'Scots Gaelic',
+        'sr': 'Serbian',
+        'st': 'Sesotho',
+        'sn': 'Shona',
+        'sd': 'Sindhi',
+        'si': 'Sinhala',
+        'sk': 'Slovak',
+        'sl': 'Slovenian',
+        'so': 'Somali',
+        'es': 'Spanish',
+        'su': 'Sundanese',
+        'sw': 'Swahili',
+        'sv': 'Swedish',
+        'tg': 'Tajik',
+        'ta': 'Tamil',
+        'te': 'Telugu',
+        'th': 'Thai',
+        'tr': 'Turkish',
+        'uk': 'Ukrainian',
+        'ur': 'Urdu',
+        'ug': 'Uyghur',
+        'uz': 'Uzbek',
+        'vi': 'Vietnamese',
+        'cy': 'Welsh',
+        'xh': 'Xhosa',
+        'yi': 'Yiddish',
+        'yo': 'Yoruba',
         'zu': 'Zulu'
     }
 
-    # Iterate over the items in the LANGUAGES dictionary
-    for key, value in LANGUAGES.items():
-        # Check if the detected_language matches any value in the dictionary
-        if value == detected_language:
-            detected_language = key  # Replace detected_language with the corresponding key
-            break  # Exit the loop once a match is found
+    # Check if the detected_language exists in LANGUAGES dictionary
+    if detected_language in LANGUAGES:
+        # Return the full name of the language
+        return LANGUAGES[detected_language]
+    else:
+        # If the language is not found, return None
+        return None
+        
+def message_square(message, color):
+    horizontal_line = f"+{'-' * (len(message) + 2)}+"
+    empty_line = f"| {' ' * (len(message))} |"
 
-    # print("Detected Language:", detected_language)
-    return detected_language
+    print(color + horizontal_line)
+    print(empty_line)
+    print(f"| {message} |")
+    print(empty_line)
+    print(horizontal_line)
+    print(f'{color_reset}')
 
 def translate_excel(input_xlsx, output_xlsx, source_language):
     target_language = 'en'
     file_exists = os.path.exists(input_xlsx)
     if file_exists == True:
-        print(f'{color_green}Reading {input_xlsx} {color_reset}')
-        workbook = openpyxl.load_workbook(input_xlsx)
+        message = (f'Reading {input_xlsx}')
+        message_square(message, color_green)
+        workbook = load_workbook(input_xlsx)        
         sheet = workbook.active
     else:
-        print(f'{color_red}{input_xlsx} does not exist{color_reset}')
-        sys.exit()
-
+        message = (f'Create {input_xlsx} and insert foreign language lines in the first column')
+        message_square(message, color_red)  # Using ANSI escape code for color
+        exit()
+        
     sheet.cell(row=1, column=2, value='english')
     sheet.cell(row=1, column=3, value='language')
     sheet.cell(row=1, column=4, value='note')    
@@ -233,15 +252,20 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
             elif len(str(original_content)) >= 1:
 
                 (translation, source_language, note) = translate_request(original_content, target_language, note)
+                # (translation, source_language, note) = translate_googletrans(text, source_language, target_language, note)
                 detected_language = source_language
-                time.sleep(1) #will sleep for a second
+                # time.sleep(1) #will sleep for a second
+                sleep(1)
                 
                 if not translation:
-                    print(f"Translation failed for: {original_content}")
+                    # print(f"Translation failed for: {original_content}")
                     note = "Translation failed"
                     # (translation, source_language, note) = translate_googletrans(text, source_language, target_language, note)
+                    # (translation, source_language, note) = translate_googletrans(text, source_language, target_language, note)
+
                     detected_language = source_language
-                    time.sleep(2) #will sleep for a second
+                    # time.sleep(2) #will sleep for a second
+                    sleep(2)
         print(f'{color_blue}{original_content}  {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
 
         # Update the translated content and language columns
@@ -250,10 +274,20 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         sheet.cell(row=row[0].row, column=4, value=note)
         
     workbook.save(output_xlsx)
-    print(f'{color_green}Translation content saved to {output_xlsx}{color_reset}')
+
+    message = (f'Saving to {output_xlsx}')
+    message_square(message, color_green)
+    
+    # print(f'\n\t\t\t{color_green}Translation content saved to {output_xlsx}{color_reset}')
     
 def translate_googletrans(text, source_language, target_language, note):
     translator = Translator()
+    print(f'source_language = {source_language} target_language, = {target_language,}')   # temp
+    source_language = 'auto'
+    target_language = "en"
+    print(f'source_language = {source_language} target_language, = {target_language,}')   # temp
+
+
     '''
     use googletrans module, 60% of time, it works every time
     '''
@@ -263,16 +297,19 @@ def translate_googletrans(text, source_language, target_language, note):
     retries = 3 # 3
     for _ in range(retries):  
         try:
-            translation_result = translator.translate(original_content, lang_src=detected_language, lang_tgt=target_language)
-                 
+            # translation_result = translator.translate(original_content, lang_src=detected_language, lang_tgt=target_language)
+            translation_result = translator.translate(original_content, src=detected_language, dest='en')
+            
             if translation_result and translation_result.text:
                 translation = translation_result.text
                 break  # Exit the loop on successful translation
 
         except Exception as e:
-            print(f"Error translating: {e}")    # Error translating: 'NoneType' object has no attribute 'group'
+            message = (f'Error translating: {e}')
+            message_square(message, color_red)
+            # print(f"Error translating: {e}")    # Error translating: 'NoneType' object has no attribute 'group'
             # Retry after a short delay
-            time.sleep(2)
+            sleep(2)
 
     return (translation, source_language, note)
     
@@ -305,8 +342,9 @@ def translate_request(text, target_language, note):
 
     try:
         # response = requests.get(url, verify=True)   # works
-        response = requests.get(url, headers=headers, verify=True)
-             
+        # response = requests.get(url, headers=headers, verify=True)
+        response = get(url, headers=headers, verify=True)
+        
         if response.status_code == 200:
             data = response.json()
             translation = data[0][0][0] if data else ""
@@ -319,7 +357,7 @@ def translate_request(text, target_language, note):
             source_language = ''
             
     except Exception as e:
-        print("Error occurred while translating:", e)
+        print(f'Error occurred while translating: {color_red}{e}{color_reset}')
         (translation, source_language) = ('', '')
         note = 'Error occurred while translating'
         source_language = ''
@@ -327,18 +365,18 @@ def translate_request(text, target_language, note):
     source_language = detected_language
     return (translation, source_language, note)
     
-def usage():
-    file = sys.argv[0].split('\\')[-1]
+# def usage():
+    # file = sys.argv[0].split('\\')[-1]
 
-    print(f'\nDescription: {color_green}{description}{color_reset}')
-    print(f'{file} Version: {version} by {author}')
-    print(f'\n    {color_yellow}insert your info into input_translate.xlsx')
-    print(f'\nExample:')
-    print(f'    {file} -c')
-    print(f'    {file} -f')
-    print(f'    {file} -g')
-    print(f'    {file} -m')
-    print(f'    {file} -s')
+    # print(f'\nDescription: {color_green}{description}{color_reset}')
+    # print(f'{file} Version: {version} by {author}')
+    # print(f'\n    {color_yellow}insert your info into input_translate.xlsx')
+    # print(f'\nExample:')
+    # print(f'    {file} -c')
+    # print(f'    {file} -f')
+    # print(f'    {file} -g')
+    # print(f'    {file} -m')
+    # print(f'    {file} -s')
 
 
 if __name__ == '__main__':
