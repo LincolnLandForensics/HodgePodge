@@ -88,10 +88,8 @@ GPS Color Codes:
 
 ---
 ## translatinator.py
-<div style="background-color: red; color: white; padding: 10px;">
-    Note: Google Translate module stops working every once in a while, so I switched to requests
-</div>
-Add your foreign blurbs in the first column of input_translate.xlsx and translate it to English. 
+
+Add foreign text in the first column of input_translate.xlsx and translate it to English. 
 
 Usage:
 ```
