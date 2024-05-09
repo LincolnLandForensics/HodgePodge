@@ -66,6 +66,7 @@ def main():
     parser = argparse.ArgumentParser(description='Translate Excel contents from various languages to English')
     parser.add_argument('-I', '--input', help='Input Excel file', required=False)
     parser.add_argument('-O', '--output', help='Output Excel file', required=False, default=output_xlsx)
+    parser.add_argument('-d','--detect', help='detect language only', required=False, action='store_true')
     parser.add_argument('-H','--howto', help='help module', required=False, action='store_true')
 
     args = parser.parse_args()
@@ -85,7 +86,10 @@ def main():
     if args.output:  # defaults to out_english_.xlsx
         output_xlsx = args.output   
     # input_xlsx = args.input
-    translate_excel(input_xlsx, output_xlsx, source_language)
+    if args.detect:
+        detect_language(input_xlsx, output_xlsx)
+    else:
+        translate_excel(input_xlsx, output_xlsx, source_language)
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -101,6 +105,56 @@ def check_internet_connection():
         msg_blurb = 'Internet connection is not available.'
         msg_blurb_square(msg_blurb, color_red)
         exit(1)  # Exit with error status 1
+
+
+def detect_language(input_xlsx, output_xlsx):
+    # Regular expression pattern to match words
+    word_pattern = re.compile(r'\b\w+\b')
+    word_pattern2 = re.compile(r'\b\w+\b', flags=re.UNICODE)
+    
+    skip_characters = ['!', '?', ':)']  # Define the list of special characters
+    
+    # target_language = 'en'
+    file_exists = os.path.exists(input_xlsx)
+    if file_exists == True:
+        msg_blurb = (f'Reading {input_xlsx} to detect languages only')
+        msg_blurb_square(msg_blurb, color_green)
+        workbook = load_workbook(input_xlsx)        
+        sheet = workbook.active
+    else:
+        msg_blurb = (f'Create {input_xlsx} and insert foreign language lines in the first column')
+        msg_blurb_square(msg_blurb, color_red)  # Using ANSI escape code for color
+        sys.exit()
+        
+    sheet.cell(row=1, column=2, value='english')
+    sheet.cell(row=1, column=3, value='language')
+    sheet.cell(row=1, column=4, value='note')    
+
+    for row in sheet.iter_rows(min_row=2):
+        (translation, note, e) = ('', '', '')
+        (detected_language, text, skipper) = ('', '', '')
+        original_content = row[0].value
+        
+        detected_language = language_detect(original_content) 
+        
+        if detected_language == 'en':
+            note = ''
+        elif detected_language == 'auto':
+            note = ''
+        else:
+            note = '.'
+            
+        if len(original_content) > 3660:
+            note = '.Translation failed - too long'
+
+        sheet.cell(row=row[0].row, column=2, value=translation)
+        sheet.cell(row=row[0].row, column=3, value=detected_language)
+        sheet.cell(row=row[0].row, column=4, value=note)
+
+    workbook.save(output_xlsx)
+
+    msg_blurb = (f'Language detection saved to {output_xlsx}')
+    msg_blurb_square(msg_blurb, color_green)
 
 
 def detected_language_enhance(detected_language):
@@ -329,7 +383,7 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
     msg_blurb = (f'Saving to {output_xlsx}')
     msg_blurb_square(msg_blurb, color_green)
     
-    print(f'\n\t\t\t{color_green}Translation content saved to {output_xlsx}{color_reset}')
+    # print(f'\n\t\t\t{color_green}Translation content saved to {output_xlsx}{color_reset}')
     
 def translate_googletrans(text, source_language, target_language, note):
     translator = Translator()
@@ -428,6 +482,7 @@ def usage():
     # print(f'    {file} -g')
     # print(f'    {file} -m')
     print(f'    {file}')
+    print(f'    {file} -d')
     print(f'    {file} -I input_translate.xlsx')
 
 
