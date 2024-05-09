@@ -9,7 +9,7 @@ the translated contents to a new Excel file.
 '''
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
-
+import re
 import sys
 from time import sleep
 import os.path
@@ -18,13 +18,18 @@ from requests import get
 
 import argparse  # for menu system
 
-from googletrans import Translator  # pip install googletrans
+# from googletrans import Translator  # pip install googletrans
+from langdetect import detect   # pip install langdetect
+
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description = "Read input_translate.xlsx filled with another language and translate it to english"
 version = '1.0.3'
+
+global auto_list
+auto_list = ['!','?']
 
 # Colorize section
 global color_red
@@ -79,7 +84,7 @@ def main():
         input_xlsx = args.input
     if args.output:  # defaults to out_english_.xlsx
         output_xlsx = args.output   
-    input_xlsx = args.input
+    # input_xlsx = args.input
     translate_excel(input_xlsx, output_xlsx, source_language)
 
 
@@ -218,7 +223,22 @@ def detected_language_enhance(detected_language):
     else:
         # If the language is not found, return None
         return None
-        
+
+def language_detect(original_content):
+    if original_content not in auto_list:
+        try:
+            detected_language = detect(original_content)
+        except:
+            detected_language = 'auto'
+    else:
+        detected_language = 'auto'
+
+    if original_content not in auto_list and detected_language == 'auto':
+        auto_list.append(original_content)
+
+    return detected_language
+
+    
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
     empty_line = f"| {' ' * (len(msg_blurb))} |"
@@ -231,6 +251,12 @@ def msg_blurb_square(msg_blurb, color):
     print(f'{color_reset}')
 
 def translate_excel(input_xlsx, output_xlsx, source_language):
+    # Regular expression pattern to match words
+    word_pattern = re.compile(r'\b\w+\b')
+    word_pattern2 = re.compile(r'\b\w+\b', flags=re.UNICODE)
+    
+    skip_characters = ['!', '?', ':)']  # Define the list of special characters
+    
     target_language = 'en'
     file_exists = os.path.exists(input_xlsx)
     if file_exists == True:
@@ -249,15 +275,40 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
 
     for row in sheet.iter_rows(min_row=2):
         (translation, note, e) = ('', '', '')
-        (detected_language, text) = ('auto', '')
+        (detected_language, text, skipper) = ('', '', '')
         original_content = row[0].value
+        
+        detected_language = language_detect(original_content) 
+ 
+        # if original_content in skip_characters:
+            # skipper = 'skip'
+            # print(f'skipping {original_content}')
 
-        if original_content is not None and original_content != '':
+        # if skipper == 'skip':
+            # a = '1'
+            # print(f'skipping')
+
+        # elif not text.isalnum():
+            # print(f'{original_content} is not a word')
+        # if 1==1:
+            # print(f'')
+            # print(f'temp skipping search')  # temp
+        if original_content is not None and original_content != '' and detected_language != 'auto':
         # if original_content is not None:
+
+            
             if isinstance(original_content, (int, float)):
                 translation = original_content
-            elif len(str(original_content)) >= 1:
-
+            # elif len(str(original_content)) <= 1:
+                # print(f'this is too small to translate: {original_content}')
+            # Check if the text equals any special characters from the list
+            # elif original_content in skip_characters:
+                # print(f'skipping {original_content}')
+            # elif any(original_content == char for char in skip_characters):
+                # print('skipping {original_content}')
+            # elif re.search(word_pattern2, original_content):
+                # print(f'{original_content} is not unicode') 
+            elif re.search(word_pattern, original_content):
                 (translation, source_language, note) = translate_request(original_content, target_language, note)
                 # (translation, source_language, note) = translate_googletrans(text, source_language, target_language, note)
                 detected_language = source_language
@@ -273,19 +324,22 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
                     detected_language = source_language
                     # time.sleep(2) #will sleep for a second
                     sleep(2)
-        print(f'{color_blue}{original_content}  {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
-
+            print(f'{color_blue}{original_content}  {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
+        
+        # if detected_language == 'auto': 
+            # detected_language = ''
         # Update the translated content and language columns
         sheet.cell(row=row[0].row, column=2, value=translation)
         sheet.cell(row=row[0].row, column=3, value=detected_language)
         sheet.cell(row=row[0].row, column=4, value=note)
-        
+    # print(f'detected_language = {detected_language} auto_list = {auto_list}')   # temp
+    
     workbook.save(output_xlsx)
 
     msg_blurb = (f'Saving to {output_xlsx}')
     msg_blurb_square(msg_blurb, color_green)
     
-    # print(f'\n\t\t\t{color_green}Translation content saved to {output_xlsx}{color_reset}')
+    print(f'\n\t\t\t{color_green}Translation content saved to {output_xlsx}{color_reset}')
     
 def translate_googletrans(text, source_language, target_language, note):
     translator = Translator()
