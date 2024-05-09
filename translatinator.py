@@ -10,21 +10,21 @@ the translated contents to a new Excel file.
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-from sys import exit, version_info
+import sys
 from time import sleep
 import os.path
 from openpyxl import load_workbook
 from requests import get 
 
-# import argparse  # for menu system
+import argparse  # for menu system
 
-# from googletrans import Translator  # pip install googletrans
+from googletrans import Translator  # pip install googletrans
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description = "Read input_translate.xlsx filled with another language and translate it to english"
-version = '1.0.1'
+version = '1.0.3'
 
 # Colorize section
 global color_red
@@ -38,7 +38,7 @@ color_green = ''
 color_blue = ''
 color_reset = ''
 
-if version_info > (3, 7, 9) and os.name == "nt":
+if sys.version_info > (3, 7, 9) and os.name == "nt":
     version_info = os.sys.getwindowsversion()
     major_version = version_info.major
     build_version = version_info.build
@@ -58,21 +58,28 @@ def main():
 
     check_internet_connection()
     
-    # parser = argparse.ArgumentParser(description='Translate Excel contents from various languages to English')
-    # parser.add_argument('-I', '--input', help='Input Excel file', required=False)
-    # parser.add_argument('-O', '--output', help='Output Excel file', required=False, default=output_xlsx)
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(description='Translate Excel contents from various languages to English')
+    parser.add_argument('-I', '--input', help='Input Excel file', required=False)
+    parser.add_argument('-O', '--output', help='Output Excel file', required=False, default=output_xlsx)
+    parser.add_argument('-H','--howto', help='help module', required=False, action='store_true')
+
+    args = parser.parse_args()
     
     # global variables
     source_language = '' 
     input_xlsx = ('input_translate.xlsx')
-    
+ 
+    if args.howto:  # this section might be redundant
+        parser.print_help()
+        usage()
+        return 0
+        sys.exit() 
 
-    # if args.input:  # defaults to input_translate.xlsx
-        # input_xlsx = args.input
-    # if args.output:  # defaults to out_english_.xlsx
-        # output_xlsx = args.output   
-    # input_xlsx = args.input
+    if args.input:  # defaults to input_translate.xlsx
+        input_xlsx = args.input
+    if args.output:  # defaults to out_english_.xlsx
+        output_xlsx = args.output   
+    input_xlsx = args.input
     translate_excel(input_xlsx, output_xlsx, source_language)
 
 
@@ -83,11 +90,11 @@ def check_internet_connection():
         # Try to make a request to a known website
         response = get("http://www.google.com", timeout=5)
         response.raise_for_status()  # Raise an error for any HTTP error status
-        message = 'Internet connection is available.'
+        msg_blurb = 'Internet connection is available.'
 
     except:
-        message = 'Internet connection is not available.'
-        message_square(message, color_red)
+        msg_blurb = 'Internet connection is not available.'
+        msg_blurb_square(msg_blurb, color_red)
         exit(1)  # Exit with error status 1
 
 
@@ -212,13 +219,13 @@ def detected_language_enhance(detected_language):
         # If the language is not found, return None
         return None
         
-def message_square(message, color):
-    horizontal_line = f"+{'-' * (len(message) + 2)}+"
-    empty_line = f"| {' ' * (len(message))} |"
+def msg_blurb_square(msg_blurb, color):
+    horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
+    empty_line = f"| {' ' * (len(msg_blurb))} |"
 
     print(color + horizontal_line)
     print(empty_line)
-    print(f"| {message} |")
+    print(f"| {msg_blurb} |")
     print(empty_line)
     print(horizontal_line)
     print(f'{color_reset}')
@@ -227,14 +234,14 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
     target_language = 'en'
     file_exists = os.path.exists(input_xlsx)
     if file_exists == True:
-        message = (f'Reading {input_xlsx}')
-        message_square(message, color_green)
+        msg_blurb = (f'Reading {input_xlsx}')
+        msg_blurb_square(msg_blurb, color_green)
         workbook = load_workbook(input_xlsx)        
         sheet = workbook.active
     else:
-        message = (f'Create {input_xlsx} and insert foreign language lines in the first column')
-        message_square(message, color_red)  # Using ANSI escape code for color
-        exit()
+        msg_blurb = (f'Create {input_xlsx} and insert foreign language lines in the first column')
+        msg_blurb_square(msg_blurb, color_red)  # Using ANSI escape code for color
+        sys.exit()
         
     sheet.cell(row=1, column=2, value='english')
     sheet.cell(row=1, column=3, value='language')
@@ -275,8 +282,8 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         
     workbook.save(output_xlsx)
 
-    message = (f'Saving to {output_xlsx}')
-    message_square(message, color_green)
+    msg_blurb = (f'Saving to {output_xlsx}')
+    msg_blurb_square(msg_blurb, color_green)
     
     # print(f'\n\t\t\t{color_green}Translation content saved to {output_xlsx}{color_reset}')
     
@@ -305,8 +312,8 @@ def translate_googletrans(text, source_language, target_language, note):
                 break  # Exit the loop on successful translation
 
         except Exception as e:
-            message = (f'Error translating: {e}')
-            message_square(message, color_red)
+            msg_blurb = (f'Error translating: {e}')
+            msg_blurb_square(msg_blurb, color_red)
             # print(f"Error translating: {e}")    # Error translating: 'NoneType' object has no attribute 'group'
             # Retry after a short delay
             sleep(2)
@@ -365,18 +372,19 @@ def translate_request(text, target_language, note):
     source_language = detected_language
     return (translation, source_language, note)
     
-# def usage():
-    # file = sys.argv[0].split('\\')[-1]
+def usage():
+    file = sys.argv[0].split('\\')[-1]
 
-    # print(f'\nDescription: {color_green}{description}{color_reset}')
-    # print(f'{file} Version: {version} by {author}')
-    # print(f'\n    {color_yellow}insert your info into input_translate.xlsx')
-    # print(f'\nExample:')
+    print(f'\nDescription: {color_green}{description}{color_reset}')
+    print(f'{file} Version: {version} by {author}')
+    print(f'\n    {color_yellow}insert your info into input_translate.xlsx')
+    print(f'\nExample:')
     # print(f'    {file} -c')
     # print(f'    {file} -f')
     # print(f'    {file} -g')
     # print(f'    {file} -m')
-    # print(f'    {file} -s')
+    print(f'    {file}')
+    print(f'    {file} -I input_translate.xlsx')
 
 
 if __name__ == '__main__':
