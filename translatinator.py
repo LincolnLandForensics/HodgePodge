@@ -279,21 +279,11 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         original_content = row[0].value
         
         detected_language = language_detect(original_content) 
- 
-        # if original_content in skip_characters:
-            # skipper = 'skip'
-            # print(f'skipping {original_content}')
-
-        # if skipper == 'skip':
-            # a = '1'
-            # print(f'skipping')
-
-        # elif not text.isalnum():
-            # print(f'{original_content} is not a word')
-        # if 1==1:
-            # print(f'')
-            # print(f'temp skipping search')  # temp
-        if original_content is not None and original_content != '' and detected_language != 'auto':
+        
+        if len(original_content) > 3660:
+            note = 'Translation failed - too long'
+        
+        elif original_content is not None and original_content != '' and detected_language != 'auto':
         # if original_content is not None:
 
             
@@ -332,7 +322,7 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         sheet.cell(row=row[0].row, column=2, value=translation)
         sheet.cell(row=row[0].row, column=3, value=detected_language)
         sheet.cell(row=row[0].row, column=4, value=note)
-    print(f'auto_list = {auto_list}')   # temp
+    # print(f'auto_list = {auto_list}')   # temp
     
     workbook.save(output_xlsx)
 
