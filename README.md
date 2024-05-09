@@ -88,32 +88,18 @@ GPS Color Codes:
 
 ---
 ## translatinator.py
-<div style="background-color: red; color: white; padding: 10px;">
-    Note: Google Translate module stops working every once in a while.
-</div>
-Read input_translate.xlsx filled with another language and translate it to English using Google Translate. 
-The default is any language but if you know it's Chinese, for example, add a -c.
+
+Add foreign text in the first column of input_translate.xlsx and translate it to English. 
 
 Usage:
 ```
 python translatinator.py
 ```
-or the exe version
+or the exe version (Exe version available upon request (its 38 mb and github only allows me to upload 25mb files)
+(use auto-py-to-exe to make your own exe's)
 ```
 translatinator.exe
 ```
-or when you specify a specific language
-```
-python translatinator.py -c	# for chinese translation
-```
-
-Language switches:
-
-*   -a  # arabic 2 english
-*   -c  # chinese 2 english
-*   -f  # french 2 english
-*   -g  # german 2 english
-*   -s  # spanish 2 english
 
 ![translation.exe output](images/translation.png)
 
