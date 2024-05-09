@@ -1,3 +1,4 @@
 openpyxl
 requests
+langdetect
 googletrans

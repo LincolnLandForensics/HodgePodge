@@ -26,7 +26,7 @@ from langdetect import detect   # pip install langdetect
 
 author = 'LincolnLandForensics'
 description = "Read input_translate.xlsx filled with another language and translate it to english"
-version = '1.0.3'
+version = '1.0.5'
 
 global auto_list
 auto_list = ['!','?']
@@ -332,7 +332,7 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         sheet.cell(row=row[0].row, column=2, value=translation)
         sheet.cell(row=row[0].row, column=3, value=detected_language)
         sheet.cell(row=row[0].row, column=4, value=note)
-    # print(f'detected_language = {detected_language} auto_list = {auto_list}')   # temp
+    print(f'auto_list = {auto_list}')   # temp
     
     workbook.save(output_xlsx)
 
@@ -378,7 +378,7 @@ def translate_request(text, target_language, note):
     '''
     use requests to translate lan
     '''
-    source_language = 'auto'
+    (translation, source_language) = ('', 'auto')
     
     url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl={}&tl={}&dt=t&q={}".format(
         source_language, target_language, text
