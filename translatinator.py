@@ -3,8 +3,8 @@
 
 '''
 This script is used to translate the contents of an Excel spreadsheet from many 
-languages to English. It uses the openypyl library to read the input file, requests  
-to perform the translation, (googletrans as a backup module) and openypyl to write 
+languages to English. It uses the openypyl library to read the input file, googletrans  
+to perform the translation, (requests as a backup module) and openypyl to write 
 the translated contents to a new Excel file.
 '''
 
@@ -18,16 +18,14 @@ from requests import get
 
 import argparse  # for menu system
 
-# from googletrans import Translator  # pip install googletrans
-from langdetect import detect   # pip install langdetect
-
+from googletrans import Translator  # pip install googletrans>=4.0.0-rc1
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
-
 author = 'LincolnLandForensics'
 description = "Read input_translate.xlsx filled with another language and translate it to english"
-version = '1.0.5'
+version = '1.1.0'
 
+# global variables
 global auto_list
 auto_list = ['!','?']
 
@@ -61,20 +59,26 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 def main():
     output_xlsx = ('translation_.xlsx') 
 
-    check_internet_connection()
+
     
     parser = argparse.ArgumentParser(description='Translate Excel contents from various languages to English')
+    parser.add_argument('-C','--copyright', help='print copyright', required=False, action='store_true')
     parser.add_argument('-I', '--input', help='Input Excel file', required=False)
     parser.add_argument('-O', '--output', help='Output Excel file', required=False, default=output_xlsx)
+    parser.add_argument('-a','--arabic', help='arabic module', required=False, action='store_true')
     parser.add_argument('-d','--detect', help='detect language only', required=False, action='store_true')
     parser.add_argument('-H','--howto', help='help module', required=False, action='store_true')
 
     args = parser.parse_args()
-    
-    # global variables
+
     source_language = '' 
     input_xlsx = ('input_translate.xlsx')
- 
+
+    if args.copyright:  # this section might be redundant
+        print(f'{color_blue}{copyright}{color_reset}')
+        return 0
+        sys.exit() 
+        
     if args.howto:  # this section might be redundant
         parser.print_help()
         usage()
@@ -85,18 +89,26 @@ def main():
         input_xlsx = args.input
     if args.output:  # defaults to out_english_.xlsx
         output_xlsx = args.output   
-    # input_xlsx = args.input
+
     if args.detect:
         detect_language(input_xlsx, output_xlsx)
+    elif args.arabic:
+        check_internet_connection()        
+        source_language = 'ar'
+        translate_excel(input_xlsx, output_xlsx, source_language)
     else:
+        check_internet_connection()        
         translate_excel(input_xlsx, output_xlsx, source_language)
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
-
 def check_internet_connection():
+    '''
+    check internet connection 
+    Try to make a request to a known website
+    '''
+    
     try:
-        # Try to make a request to a known website
         response = get("http://www.google.com", timeout=5)
         response.raise_for_status()  # Raise an error for any HTTP error status
         msg_blurb = 'Internet connection is available.'
@@ -108,13 +120,16 @@ def check_internet_connection():
 
 
 def detect_language(input_xlsx, output_xlsx):
+    '''
+    read each line and detect the language
+    Does not require internet access
+    sort by note afterwards to move english to the bottom
+    '''
+
     # Regular expression pattern to match words
     word_pattern = re.compile(r'\b\w+\b')
     word_pattern2 = re.compile(r'\b\w+\b', flags=re.UNICODE)
-    
-    skip_characters = ['!', '?', ':)']  # Define the list of special characters
-    
-    # target_language = 'en'
+
     file_exists = os.path.exists(input_xlsx)
     if file_exists == True:
         msg_blurb = (f'Reading {input_xlsx} to detect languages only')
@@ -123,34 +138,43 @@ def detect_language(input_xlsx, output_xlsx):
         sheet = workbook.active
     else:
         msg_blurb = (f'Create {input_xlsx} and insert foreign language lines in the first column')
-        msg_blurb_square(msg_blurb, color_red)  # Using ANSI escape code for color
+        msg_blurb_square(msg_blurb, color_red) 
         sys.exit()
         
     sheet.cell(row=1, column=2, value='english')
     sheet.cell(row=1, column=3, value='language')
-    sheet.cell(row=1, column=4, value='note')    
+    sheet.cell(row=1, column=4, value='note') 
+    # sheet.cell(row=1, column=5, value='confidence')     
 
     for row in sheet.iter_rows(min_row=2):
-        (translation, note, e) = ('', '', '')
+        (translation, note, e, confidence) = ('', '', '', '')
         (detected_language, text, skipper) = ('', '', '')
         original_content = row[0].value
         
-        detected_language = language_detect(original_content) 
-        
+        detected_language, confidence = language_detect(original_content)
         if detected_language == 'en':
             note = ''
         elif detected_language == 'auto':
             note = ''
-        else:
+        elif detected_language == 'ar':
             note = '.'
+        elif detected_language == 'zh-CN':
+            note = '.'
+        elif detected_language == 'zh-TW':
+            note = '.'
+        elif detected_language == 'ur':
+            note = '.'
+        else:
+            note = '..'
             
         if len(original_content) > 3660:
             note = '.Translation failed - too long'
-
+        detected_language = detected_language_enhance(detected_language)
         sheet.cell(row=row[0].row, column=2, value=translation)
         sheet.cell(row=row[0].row, column=3, value=detected_language)
         sheet.cell(row=row[0].row, column=4, value=note)
-
+        sheet.cell(row=row[0].row, column=5, value=confidence)
+        
     workbook.save(output_xlsx)
 
     msg_blurb = (f'Language detection saved to {output_xlsx}')
@@ -267,33 +291,48 @@ def detected_language_enhance(detected_language):
         'xh': 'Xhosa',
         'yi': 'Yiddish',
         'yo': 'Yoruba',
-        'zu': 'Zulu'
+        'zu': 'Zulu',
+        'auto': 'auto'
     }
 
-    # Check if the detected_language exists in LANGUAGES dictionary
     if detected_language in LANGUAGES:
-        # Return the full name of the language
-        return LANGUAGES[detected_language]
+        detected_language = LANGUAGES[detected_language]
+
     else:
-        # If the language is not found, return None
+        detected_language = ''
         return None
 
+    return detected_language
+
+
 def language_detect(original_content):
+    confidence = ''
     if original_content not in auto_list:
         try:
-            detected_language = detect(original_content)
+            translator = Translator()
+            detection = translator.detect(original_content)
+            detected_language = detection.lang
+            # confidence = detection.confidence
         except:
             detected_language = 'auto'
+
     else:
         detected_language = 'auto'
 
     if original_content not in auto_list and detected_language == 'auto':
         auto_list.append(original_content)
 
-    return detected_language
+    return detected_language, confidence
 
-    
+
 def msg_blurb_square(msg_blurb, color):
+    '''
++----------------------------------+
+|                                  |
+| put a square around your message |
+|                                  |
++----------------------------------+
+    '''
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
     empty_line = f"| {' ' * (len(msg_blurb))} |"
 
@@ -304,8 +343,9 @@ def msg_blurb_square(msg_blurb, color):
     print(horizontal_line)
     print(f'{color_reset}')
 
+
 def translate_excel(input_xlsx, output_xlsx, source_language):
-    # Regular expression pattern to match words
+    row_count = 2
     word_pattern = re.compile(r'\b\w+\b')
     word_pattern2 = re.compile(r'\b\w+\b', flags=re.UNICODE)
     
@@ -326,128 +366,105 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
     sheet.cell(row=1, column=2, value='english')
     sheet.cell(row=1, column=3, value='language')
     sheet.cell(row=1, column=4, value='note')    
-
+    # sheet.cell(row=1, column=5, value='confidence')   # task
+    
     for row in sheet.iter_rows(min_row=2):
-        (translation, note, e) = ('', '', '')
+        (translation, note, e, confidence) = ('', '', '', '')
         (detected_language, text, skipper) = ('', '', '')
         original_content = row[0].value
-        
-        detected_language = language_detect(original_content) 
-        
+
+        detected_language, confidence = language_detect(original_content)
+
         if len(original_content) > 3660:
             note = 'Translation failed - too long'
         
-        elif original_content is not None and original_content != '' and detected_language != 'auto':
-        # if original_content is not None:
+        elif original_content is not None and original_content != '' and detected_language != 'auto'  and detected_language != 'en':
 
-            
             if isinstance(original_content, (int, float)):
                 translation = original_content
-            # elif len(str(original_content)) <= 1:
-                # print(f'this is too small to translate: {original_content}')
-            # Check if the text equals any special characters from the list
-            # elif original_content in skip_characters:
-                # print(f'skipping {original_content}')
-            # elif any(original_content == char for char in skip_characters):
-                # print('skipping {original_content}')
-            # elif re.search(word_pattern2, original_content):
-                # print(f'{original_content} is not unicode') 
             elif re.search(word_pattern, original_content):
-                (translation, source_language, note) = translate_request(original_content, target_language, note)
-                # (translation, source_language, note) = translate_googletrans(text, source_language, target_language, note)
+                (translation, source_language, note) = translate_googletrans(original_content, source_language, target_language, note)
+
+                sleep(1)
+                if not translation:
+                    note = "Translation failed"
+                    sleep(2)
+            elif re.search(word_pattern, original_content):
+                (translation, source_language, note) = translate_request(original_content, source_language, target_language, note)   # works
                 detected_language = source_language
-                # time.sleep(1) #will sleep for a second
                 sleep(1)
                 
                 if not translation:
-                    # print(f"Translation failed for: {original_content}")
                     note = "Translation failed"
-                    # (translation, source_language, note) = translate_googletrans(text, source_language, target_language, note)
-                    # (translation, source_language, note) = translate_googletrans(text, source_language, target_language, note)
-
                     detected_language = source_language
-                    # time.sleep(2) #will sleep for a second
                     sleep(2)
-            print(f'{color_blue}{original_content}  {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
-        
-        # if detected_language == 'auto': 
-            # detected_language = ''
-        # Update the translated content and language columns
+            detected_language = detected_language_enhance(detected_language)
+
+            print(f'\n{color_red}{row_count} {color_blue}{original_content}      {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
+
+        else:
+            translation = original_content
+            
+        row_count += 1
         sheet.cell(row=row[0].row, column=2, value=translation)
         sheet.cell(row=row[0].row, column=3, value=detected_language)
         sheet.cell(row=row[0].row, column=4, value=note)
-    # print(f'auto_list = {auto_list}')   # temp
-    
+        sheet.cell(row=row[0].row, column=5, value=confidence)
+
     workbook.save(output_xlsx)
 
     msg_blurb = (f'Saving to {output_xlsx}')
     msg_blurb_square(msg_blurb, color_green)
-    
-    # print(f'\n\t\t\t{color_green}Translation content saved to {output_xlsx}{color_reset}')
-    
+
 def translate_googletrans(text, source_language, target_language, note):
-    translator = Translator()
-    print(f'source_language = {source_language} target_language, = {target_language,}')   # temp
-    source_language = 'auto'
-    target_language = "en"
-    print(f'source_language = {source_language} target_language, = {target_language,}')   # temp
-
-
     '''
     use googletrans module, 60% of time, it works every time
     '''
+
+    translator = Translator()
+    if source_language == '':
+        source_language = 'auto'
+    target_language = "en"
+
     translation = ('')
     detected_language = source_language
     original_content = text
     retries = 3 # 3
     for _ in range(retries):  
         try:
-            # translation_result = translator.translate(original_content, lang_src=detected_language, lang_tgt=target_language)
             translation_result = translator.translate(original_content, src=detected_language, dest='en')
-            
             if translation_result and translation_result.text:
                 translation = translation_result.text
-                break  # Exit the loop on successful translation
+                break
 
         except Exception as e:
-            msg_blurb = (f'Error translating: {e}')
+            msg_blurb = (f'Error translating_: {e}')
             msg_blurb_square(msg_blurb, color_red)
-            # print(f"Error translating: {e}")    # Error translating: 'NoneType' object has no attribute 'group'
-            # Retry after a short delay
             sleep(2)
 
     return (translation, source_language, note)
-    
-def translate_request(text, target_language, note):
+
+
+def translate_request(text, source_language, target_language, note):
     '''
-    use requests to translate lan
+    use requests to translate language
     '''
-    (translation, source_language) = ('', 'auto')
-    
+    if source_language == '':
+        source_language = 'auto'
+    (translation) = ('')
+
     url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl={}&tl={}&dt=t&q={}".format(
         source_language, target_language, text
     )
 
-    # Define custom user agent
-    user_agent = "Mozilla/5.0"
+    user_agent = "Mozilla/5.0"  # Define custom user agent
+    verify_ssl_cert = False  # Change to False if you don't want to verify SSL certificates
 
-    # Define SSL certificate verification (set to False if you don't want to verify)
-    verify_ssl_cert = True  # Change to False if you don't want to verify SSL certificates
-
-    # Define headers with user agent
     headers = {
         "User-Agent": user_agent
     }
 
-
-    # Send GET request with custom user agent, proxies, and SSL certificate verification
-    # response = requests.get(url, headers=headers, proxies=proxies, verify=verify_ssl_cert)
-
-
-
     try:
-        # response = requests.get(url, verify=True)   # works
-        # response = requests.get(url, headers=headers, verify=True)
         response = get(url, headers=headers, verify=True)
         
         if response.status_code == 200:
@@ -458,7 +475,7 @@ def translate_request(text, target_language, note):
             note = ''
         else:
             print("Failed to translate. Status code:", response.status_code)
-            note = ("Failed to translate. Status code:", response.status_code)
+            note = (".Failed to translate. Status code:", response.status_code)
             source_language = ''
             
     except Exception as e:
@@ -466,8 +483,7 @@ def translate_request(text, target_language, note):
         (translation, source_language) = ('', '')
         note = 'Error occurred while translating'
         source_language = ''
-    detected_language = detected_language_enhance(source_language)
-    source_language = detected_language
+
     return (translation, source_language, note)
     
 def usage():
@@ -477,59 +493,57 @@ def usage():
     print(f'{file} Version: {version} by {author}')
     print(f'\n    {color_yellow}insert your info into input_translate.xlsx')
     print(f'\nExample:')
-    # print(f'    {file} -c')
-    # print(f'    {file} -f')
-    # print(f'    {file} -g')
-    # print(f'    {file} -m')
+    print(f'    {file} -a') # beta
     print(f'    {file}')
     print(f'    {file} -d')
     print(f'    {file} -I input_translate.xlsx')
+    print(f'    {file} -C # print copyright') 
 
+copyright = '''
+Copyright (c) 2024 LincolnLandForensics
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'''
 
 if __name__ == '__main__':
     main()
 
-
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
-
 """
-
+1.0.5 -fixed language module ar = Arabic
 1.0.0 - use requests with googletrans as a backup (non-working) module.
 0.2.0 - removed any switch requirements to make the exe version easier
 0.1.0 - read xlsx, translate, export to xlsx
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
-
 """
-fix language module ar = arabic
+specify a language like arabic -a (ar)
+requests doesn't work behind a proxy 
 Make sure to handle potential issues like rate limiting, certificate verification, and unexpected input data gracefully. 
-
-if len(original_content) >= 1:
-TypeError: object of type 'NoneType' has no len()
 
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
-
 """
 
-GoogleTrans is either rate limiting or they are using an API now (tested fine on 10/17/2023
+GoogleTrans works if it is 4.0.0-rc1 or later. 3.0 doesn't work
 
 
 """
-
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      Copyright        >>>>>>>>>>>>>>>>>>>>>>>>>>
-
-# Copyright (C) 2024 LincolnLandForensics
-#
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 2, as published by the
-# Free Software Foundation
-#
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-# details (http://www.gnu.org/licenses/gpl.txt).
-
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      The End        >>>>>>>>>>>>>>>>>>>>>>>>>>
