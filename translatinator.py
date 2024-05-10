@@ -100,6 +100,11 @@ def main():
         check_internet_connection()        
         translate_excel(input_xlsx, output_xlsx, source_language)
 
+    input(f"{color_green}Hit any key to continue{color_reset}")
+    sys.exit()
+
+
+
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 def check_internet_connection():
@@ -141,10 +146,10 @@ def detect_language(input_xlsx, output_xlsx):
         msg_blurb_square(msg_blurb, color_red) 
         sys.exit()
         
-    sheet.cell(row=1, column=2, value='english')
-    sheet.cell(row=1, column=3, value='language')
-    sheet.cell(row=1, column=4, value='note') 
-    # sheet.cell(row=1, column=5, value='confidence')     
+    sheet.cell(row=1, column=2, value='English')
+    sheet.cell(row=1, column=3, value='Language')
+    sheet.cell(row=1, column=4, value='Notes') 
+    # sheet.cell(row=1, column=5, value='Confidence')     
 
     for row in sheet.iter_rows(min_row=2):
         (translation, note, e, confidence) = ('', '', '', '')
@@ -292,7 +297,7 @@ def detected_language_enhance(detected_language):
         'yi': 'Yiddish',
         'yo': 'Yoruba',
         'zu': 'Zulu',
-        'auto': 'auto'
+        'auto': '.'
     }
 
     if detected_language in LANGUAGES:
@@ -363,10 +368,10 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         msg_blurb_square(msg_blurb, color_red)  # Using ANSI escape code for color
         sys.exit()
         
-    sheet.cell(row=1, column=2, value='english')
-    sheet.cell(row=1, column=3, value='language')
-    sheet.cell(row=1, column=4, value='note')    
-    # sheet.cell(row=1, column=5, value='confidence')   # task
+    sheet.cell(row=1, column=2, value='English')
+    sheet.cell(row=1, column=3, value='Language')
+    sheet.cell(row=1, column=4, value='Notes')    
+    # sheet.cell(row=1, column=5, value='Confidence')   # task
     
     for row in sheet.iter_rows(min_row=2):
         (translation, note, e, confidence) = ('', '', '', '')
@@ -403,8 +408,9 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
             print(f'\n{color_red}{row_count} {color_blue}{original_content}      {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
 
         else:
+            detected_language = detected_language_enhance(detected_language)
             translation = original_content
-            
+        # detected_language = detected_language_enhance(detected_language)    
         row_count += 1
         sheet.cell(row=row[0].row, column=2, value=translation)
         sheet.cell(row=row[0].row, column=3, value=detected_language)
