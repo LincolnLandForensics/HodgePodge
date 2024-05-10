@@ -95,7 +95,7 @@ Usage:
 ```
 python translatinator.py
 ```
-or the exe version ([download here](https://drive.google.com/file/d/1sBF3RHlt0F2DQvCBZK8bkTsgdQCd6c6-/view?usp=sharing))
+or the exe version ([download here](https://drive.google.com/file/d/17AJu2-bLCkwALaPgjGHpYu19GEjp2Wn1/view?usp=sharing))
 (use auto-py-to-exe to make your own exe's)
 ```
 translatinator.exe
