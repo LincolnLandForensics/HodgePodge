@@ -77,12 +77,14 @@ def main():
     if args.copyright:  # this section might be redundant
         print(f'{color_blue}{copyright}{color_reset}')
         return 0
+        input(f"{color_green}Hit any key to continue{color_reset}")
         sys.exit() 
         
     if args.howto:  # this section might be redundant
         parser.print_help()
         usage()
         return 0
+        input(f"{color_green}Hit any key to continue{color_reset}")
         sys.exit() 
 
     if args.input:  # defaults to input_translate.xlsx
@@ -144,8 +146,9 @@ def detect_language(input_xlsx, output_xlsx):
     else:
         msg_blurb = (f'Create {input_xlsx} and insert foreign language lines in the first column')
         msg_blurb_square(msg_blurb, color_red) 
+        input(f"{color_green}Hit any key to continue{color_reset}")
         sys.exit()
-        
+
     sheet.cell(row=1, column=2, value='English')
     sheet.cell(row=1, column=3, value='Language')
     sheet.cell(row=1, column=4, value='Notes') 
@@ -366,7 +369,9 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
     else:
         msg_blurb = (f'Create {input_xlsx} and insert foreign language lines in the first column')
         msg_blurb_square(msg_blurb, color_red)  # Using ANSI escape code for color
+        input(f"{color_green}Hit any key to continue{color_reset}")
         sys.exit()
+
         
     sheet.cell(row=1, column=2, value='English')
     sheet.cell(row=1, column=3, value='Language')
