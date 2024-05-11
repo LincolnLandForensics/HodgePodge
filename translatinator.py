@@ -29,7 +29,7 @@ requests.packages.urllib3.disable_warnings()
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Read input_translate.xlsx filled with another language and translate it to english"
-version = '1.1.0'
+version = '1.1.2'
 
 # global variables
 global auto_list
@@ -132,6 +132,20 @@ def check_internet_connection():
         msg_blurb_square(msg_blurb, color_red)
         exit(1)  # Exit with error status 1
 
+def content_length(original_content):
+    """
+    Returns the length of the original_content.
+
+    Args:
+    original_content (str): The input string.
+
+    Returns:
+    int: The length of the input string.
+    """
+    if original_content is None:
+        return 0
+    return len(original_content)
+
 
 def detect_language(input_xlsx, output_xlsx):
     '''
@@ -158,50 +172,53 @@ def detect_language(input_xlsx, output_xlsx):
 
     sheet.cell(row=1, column=2, value='English')
     sheet.cell(row=1, column=3, value='Language')
-    sheet.cell(row=1, column=4, value='Notes') 
+    sheet.cell(row=1, column=4, value='Note') 
     # sheet.cell(row=1, column=5, value='Confidence')     
+    sheet.cell(row=1, column=6, value='Length')     
 
     for row in sheet.iter_rows(min_row=2):
         (translation, note, e, confidence) = ('', '', '', '')
-        (detected_language, text, skipper) = ('', '', '')
+        (source_language, text, skipper, length) = ('', '', '', '')
         original_content = row[0].value
         
-        detected_language, confidence = language_detect(original_content)
-        if detected_language == 'en':
+        source_language, confidence = language_detect(original_content)
+        if source_language == 'en' or source_language == 'English':
             note = ''
-        elif detected_language == 'auto':
+        elif source_language == 'auto':
             note = ''
-        elif detected_language == 'ar':
+        elif source_language == 'ar' or source_language == 'Arabic':
             note = '.'
-        elif detected_language == 'zh-CN':
+        elif source_language == 'zh-CN':
             note = '.'
-        elif detected_language == 'zh-TW':
+        elif source_language == 'zh-TW':
             note = '.'
-        elif detected_language == 'ur':
+        elif source_language == 'ur':
             note = '.'
         else:
             note = '..'
-            
+
+        length = content_length(original_content)  
+        
         if original_content is None:
             note = ''
-            detected_language = ''
+            source_language = ''
         elif original_content is not None and len(original_content) > 3660:
             note = '.Translation failed - too long'
-      
-        
-        detected_language = detected_language_enhance(detected_language)
+
+        source_language = source_language_enhance(source_language)
         sheet.cell(row=row[0].row, column=2, value=translation)
-        sheet.cell(row=row[0].row, column=3, value=detected_language)
+        sheet.cell(row=row[0].row, column=3, value=source_language)
         sheet.cell(row=row[0].row, column=4, value=note)
         sheet.cell(row=row[0].row, column=5, value=confidence)
-        
+        sheet.cell(row=row[0].row, column=6, value=length)
+         
     workbook.save(output_xlsx)
 
     msg_blurb = (f'Language detection saved to {output_xlsx}')
     msg_blurb_square(msg_blurb, color_green)
 
 
-def detected_language_enhance(detected_language):
+def source_language_enhance(source_language):
     '''
     Convert 2 digit language code to a full name
     '''
@@ -315,34 +332,34 @@ def detected_language_enhance(detected_language):
         'auto': '.'
     }
 
-    if detected_language in LANGUAGES:
-        detected_language = LANGUAGES[detected_language]
+    if source_language in LANGUAGES:
+        source_language = LANGUAGES[source_language]
 
     else:
-        detected_language = ''
+        source_language = ''
         return None
 
-    return detected_language
+    return source_language
 
 
 def language_detect(original_content):
-    confidence = ''
+    (source_language, confidence) = ('', '')
     if original_content not in auto_list:
         try:
             translator = Translator()
             detection = translator.detect(original_content)
-            detected_language = detection.lang
+            source_language = detection.lang
             # confidence = detection.confidence
         except:
-            detected_language = 'auto'
+            source_language = 'auto'
 
     else:
-        detected_language = 'auto'
+        source_language = 'auto'
 
-    if original_content not in auto_list and detected_language == 'auto':
+    if original_content not in auto_list and source_language == 'auto':
         auto_list.append(original_content)
 
-    return detected_language, confidence
+    return source_language, confidence
 
 
 def msg_blurb_square(msg_blurb, color):
@@ -388,23 +405,25 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         
     sheet.cell(row=1, column=2, value='English')
     sheet.cell(row=1, column=3, value='Language')
-    sheet.cell(row=1, column=4, value='Notes')    
+    sheet.cell(row=1, column=4, value='Note')    
     # sheet.cell(row=1, column=5, value='Confidence')   # task
+    sheet.cell(row=1, column=6, value='Length')    
     
     for row in sheet.iter_rows(min_row=2):
-        (translation, note, e, confidence) = ('', '', '', '')
-        (detected_language, text, skipper) = ('', '', '')
+        (translation, note, e, confidence, length) = ('', '', '', '', '')
+        (source_language, text, skipper) = ('', '', '')
         original_content = row[0].value
 
-        detected_language, confidence = language_detect(original_content)
-
+        source_language, confidence = language_detect(original_content)
+        length = content_length(original_content)
+        
         if original_content is None:
             note = ''
-            detected_language = ''
+            source_language = ''
         elif original_content is not None and len(original_content) > 3660:
             note = '.Translation failed - too long'
    
-        elif original_content is not None and original_content != '' and detected_language != 'auto'  and detected_language != 'en':
+        elif original_content is not None and original_content != '' and source_language != 'auto'  and source_language != 'en':
 
             if isinstance(original_content, (int, float)):
                 translation = original_content
@@ -417,26 +436,27 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
                     # sleep(2)
             elif re.search(word_pattern, original_content):
                 (translation, source_language, note) = translate_request(original_content, source_language, target_language, note)   # works
-                detected_language = source_language
+                # source_language = source_language
                 sleep(1)
                 
                 if not translation:
                     note = "Translation failed"
-                    detected_language = source_language
+                    # source_language = source_language
                     sleep(2)
-            detected_language = detected_language_enhance(detected_language)
+            source_language = source_language_enhance(source_language)
 
-            print(f'\n{color_red}{row_count} {color_blue}{original_content}      {color_yellow}{translation}  {color_green}{detected_language}  {color_red}{note}{color_reset}')
+            print(f'\n{color_red}{row_count} {color_blue}{original_content}      {color_yellow}{translation}  {color_green}{source_language}  {color_red}{note}{color_reset}')
 
         else:
-            detected_language = detected_language_enhance(detected_language)
+            source_language = source_language_enhance(source_language)
             translation = original_content
-        # detected_language = detected_language_enhance(detected_language)    
+        # source_language = source_language_enhance(source_language)    
         row_count += 1
         sheet.cell(row=row[0].row, column=2, value=translation)
-        sheet.cell(row=row[0].row, column=3, value=detected_language)
+        sheet.cell(row=row[0].row, column=3, value=source_language)
         sheet.cell(row=row[0].row, column=4, value=note)
         sheet.cell(row=row[0].row, column=5, value=confidence)
+        sheet.cell(row=row[0].row, column=6, value=length)
 
     workbook.save(output_xlsx)
 
@@ -454,17 +474,18 @@ def translate_googletrans(text, source_language, target_language, note):
     target_language = "en"
 
     translation = ('')
-    detected_language = source_language
+    # source_language = source_language
     original_content = text
     retries = 3 # 3
     for _ in range(retries):  
         try:
-            translation_result = translator.translate(original_content, src=detected_language, dest='en')
+            translation_result = translator.translate(original_content, src=source_language, dest='en')
             if translation_result and translation_result.text:
                 translation = translation_result.text
                 break
 
         except Exception as e:
+            note = (f'.Error occurred while translating {e}')
             msg_blurb = (f'Error translating_: {e}')
             msg_blurb_square(msg_blurb, color_red)
             sleep(2)
@@ -510,7 +531,7 @@ def translate_request(text, source_language, target_language, note):
     except Exception as e:
         print(f'Error occurred while translating: {color_red}{e}{color_reset}')
         (translation, source_language) = ('', '')
-        note = 'Error occurred while translating'
+        note = (f'.Error occurred while translating {e}')
         source_language = ''
 
     return (translation, source_language, note)
@@ -569,7 +590,7 @@ Make sure to handle potential issues like rate limiting, certificate verificatio
 
 """
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      Note            >>>>>>>>>>>>>>>>>>>>>>>>>>
 """
 
 GoogleTrans works if it is 4.0.0-rc1 or later. 3.0 doesn't work
