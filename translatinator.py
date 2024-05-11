@@ -20,6 +20,9 @@ import argparse  # for menu system
 
 from googletrans import Translator  # pip install googletrans>=4.0.0-rc1
 
+# import requests.packages.urllib3
+# requests.packages.urllib3.disable_warnings()  # Disable SSL verification warnings
+
 import urllib3
 
 # Disable SSL certificate verification
@@ -188,11 +191,13 @@ def detect_language(input_xlsx, output_xlsx):
             note = ''
         elif source_language == 'ar' or source_language == 'Arabic':
             note = '.'
-        elif source_language == 'zh-CN':
+        elif source_language == 'zh-CN' or source_language == 'Chinese (Simplified)':
             note = '.'
-        elif source_language == 'zh-TW':
+        elif source_language == 'zh-TW' or source_language == 'Chinese (Traditional)':
             note = '.'
-        elif source_language == 'ur':
+        elif source_language == 'ur' or source_language == 'Urdu':
+            note = '.'
+        elif source_language == 'fa' or source_language == 'Persian':
             note = '.'
         else:
             note = '..'
@@ -204,6 +209,16 @@ def detect_language(input_xlsx, output_xlsx):
             source_language = ''
         elif original_content is not None and len(original_content) > 3660:
             note = '.Translation failed - too long'
+        elif "@s.whatsapp.net left" in original_content:
+            source_language = 'en'
+            note = '...Whatsapp'
+        elif "@s.whatsapp.net) added" in original_content:
+            note = '...Whatsapp'
+            # source_language = 'Whatsapp'
+        elif original_content is not None and isinstance(original_content, str) and original_content.isalpha() and len(original_content) == 1:
+            note = ''
+            source_language = 'en'
+
 
         source_language = source_language_enhance(source_language)
         sheet.cell(row=row[0].row, column=2, value=translation)
