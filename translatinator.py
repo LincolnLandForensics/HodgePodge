@@ -77,6 +77,7 @@ def main():
     parser.add_argument('-a','--arabic', help='arabic module', required=False, action='store_true')
     parser.add_argument('-d','--detect', help='detect language only', required=False, action='store_true')
     parser.add_argument('-H','--howto', help='help module', required=False, action='store_true')
+    parser.add_argument('-V','--version', help='display script and googletrans version', required=False, action='store_true')
 
     args = parser.parse_args()
 
@@ -96,10 +97,21 @@ def main():
         input(f"{color_green}Hit any key to continue{color_reset}")
         sys.exit() 
 
+    if args.version:
+        file = sys.argv[0].split('\\')[-1]
+        print(f'{file} {version}')
+        googletrans_ver()
+        return 0
+        input(f"{color_green}Hit any key to continue{color_reset}")
+        sys.exit() 
+        
     if args.input:  # defaults to input_translate.xlsx
         input_xlsx = args.input
     if args.output:  # defaults to out_english_.xlsx
         output_xlsx = args.output   
+
+    # make sure you have a good enough version of googletrans
+    googletrans_ver()
 
     if args.detect:
         detect_language(input_xlsx, output_xlsx)
@@ -232,6 +244,22 @@ def detect_language(input_xlsx, output_xlsx):
     msg_blurb = (f'Language detection saved to {output_xlsx}')
     msg_blurb_square(msg_blurb, color_green)
 
+def googletrans_ver():
+    import googletrans
+    # Extract major and minor version from the module
+    major_version, minor_version = map(int, googletrans.__version__.split('.')[:2])
+    # major_version, minor_version = map(int, Translator.__version__.split('.')[:2])
+
+    # Check if the version is greater than 4.1
+    if major_version >= 4:
+        print(f"googletrans version {major_version}.{minor_version}")
+        return True
+    else:
+        print("Your version of Googletrans needs to be >=4")
+        print("pip install googletrans>=4.0.0-rc1")
+        print(f"The wont detect or translate")
+
+        return False
 
 def source_language_enhance(source_language):
     '''
