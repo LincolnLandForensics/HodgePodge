@@ -75,8 +75,10 @@ def main():
     parser.add_argument('-I', '--input', help='Input Excel file', required=False)
     parser.add_argument('-O', '--output', help='Output Excel file', required=False, default=output_xlsx)
     parser.add_argument('-a','--arabic', help='arabic module', required=False, action='store_true')
-    parser.add_argument('-d','--detect', help='detect language only', required=False, action='store_true')
+    parser.add_argument('-D','--detect', help='detect language only', required=False, action='store_true')
     parser.add_argument('-H','--howto', help='help module', required=False, action='store_true')
+    parser.add_argument('-L','--length', help='count length and more', required=False, action='store_true')
+
     parser.add_argument('-V','--version', help='display script and googletrans version', required=False, action='store_true')
 
     args = parser.parse_args()
@@ -115,6 +117,8 @@ def main():
 
     if args.detect:
         detect_language(input_xlsx, output_xlsx)
+    elif args.length:
+        length(input_xlsx, output_xlsx)
     elif args.arabic:
         check_internet_connection()        
         source_language = 'ar'
@@ -260,6 +264,88 @@ def googletrans_ver():
         print(f"The wont detect or translate")
 
         return False
+
+def length(input_xlsx, output_xlsx):
+    '''
+    read each line and detect the length
+    Does not require internet access
+    sort by note or length afterwards
+    '''
+
+    # Regular expression pattern to match words
+    word_pattern = re.compile(r'\b\w+\b')
+    word_pattern2 = re.compile(r'\b\w+\b', flags=re.UNICODE)
+
+    file_exists = os.path.exists(input_xlsx)
+    if file_exists == True:
+        msg_blurb = (f'Reading {input_xlsx} to calculate length only')
+        msg_blurb_square(msg_blurb, color_green)
+        workbook = load_workbook(input_xlsx)        
+        sheet = workbook.active
+    else:
+        msg_blurb = (f'Create {input_xlsx} and insert foreign language lines in the first column')
+        msg_blurb_square(msg_blurb, color_red) 
+        input(f"{color_green}Hit any key to continue{color_reset}")
+        sys.exit()
+
+    sheet.cell(row=1, column=2, value='English')
+    sheet.cell(row=1, column=3, value='Language')
+    sheet.cell(row=1, column=4, value='Note') 
+    # sheet.cell(row=1, column=5, value='Confidence')     
+    sheet.cell(row=1, column=6, value='Length')     
+
+    for row in sheet.iter_rows(min_row=2):
+        (translation, note, e, confidence) = ('', '', '', '')
+        (source_language, text, skipper, length) = ('', '', '', '')
+        original_content = row[0].value
+        note = '..'
+        # source_language, confidence = language_detect(original_content)
+        # if source_language == 'en' or source_language == 'English':
+            # note = ''
+        # elif source_language == 'auto':
+            # note = ''
+        # elif source_language == 'ar' or source_language == 'Arabic':
+            # note = '.'
+        # elif source_language == 'zh-CN' or source_language == 'Chinese (Simplified)':
+            # note = '.'
+        # elif source_language == 'zh-TW' or source_language == 'Chinese (Traditional)':
+            # note = '.'
+        # elif source_language == 'ur' or source_language == 'Urdu':
+            # note = '.'
+        # elif source_language == 'fa' or source_language == 'Persian':
+            # note = '.'
+        # else:
+            # note = '..'
+
+        length = content_length(original_content)  
+        
+        if original_content is None:
+            note = ''
+            source_language = ''
+        elif original_content is not None and len(original_content) > 3660:
+            note = '.Translation failed - too long'
+        elif "@s.whatsapp.net left" in original_content:
+            source_language = 'en'
+            note = '...Whatsapp'
+        elif "@s.whatsapp.net) added" in original_content:
+            note = '...Whatsapp'
+            # source_language = 'Whatsapp'
+        elif original_content is not None and isinstance(original_content, str) and original_content.isalpha() and len(original_content) == 1:
+            note = ''
+            source_language = 'en'
+
+
+        source_language = source_language_enhance(source_language)
+        sheet.cell(row=row[0].row, column=2, value=translation)
+        sheet.cell(row=row[0].row, column=3, value=source_language)
+        sheet.cell(row=row[0].row, column=4, value=note)
+        sheet.cell(row=row[0].row, column=5, value=confidence)
+        sheet.cell(row=row[0].row, column=6, value=length)
+         
+    workbook.save(output_xlsx)
+
+    msg_blurb = (f'Language detection saved to {output_xlsx}')
+    msg_blurb_square(msg_blurb, color_green)
 
 def source_language_enhance(source_language):
     '''
@@ -588,7 +674,8 @@ def usage():
     print(f'\nExample:')
     print(f'    {file} -a') # beta
     print(f'    {file}')
-    print(f'    {file} -d')
+    print(f'    {file} -D')
+    print(f'    {file} -L')
     print(f'    {file} -I input_translate.xlsx')
     print(f'    {file} -C # print copyright') 
 
