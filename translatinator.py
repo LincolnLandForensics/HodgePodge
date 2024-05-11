@@ -14,11 +14,17 @@ import sys
 from time import sleep
 import os.path
 from openpyxl import load_workbook
-from requests import get 
 
+import requests
 import argparse  # for menu system
 
 from googletrans import Translator  # pip install googletrans>=4.0.0-rc1
+
+import urllib3
+
+# Disable SSL certificate verification
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings()
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
@@ -116,7 +122,8 @@ def check_internet_connection():
     '''
     
     try:
-        response = get("http://www.google.com", timeout=5)
+        response = requests.get("http://www.google.com", timeout=5)
+
         response.raise_for_status()  # Raise an error for any HTTP error status
         msg_blurb = 'Internet connection is available.'
 
@@ -175,8 +182,13 @@ def detect_language(input_xlsx, output_xlsx):
         else:
             note = '..'
             
-        if len(original_content) > 3660:
+        if original_content is None:
+            note = ''
+            detected_language = ''
+        elif original_content is not None and len(original_content) > 3660:
             note = '.Translation failed - too long'
+      
+        
         detected_language = detected_language_enhance(detected_language)
         sheet.cell(row=row[0].row, column=2, value=translation)
         sheet.cell(row=row[0].row, column=3, value=detected_language)
@@ -353,6 +365,7 @@ def msg_blurb_square(msg_blurb, color):
 
 
 def translate_excel(input_xlsx, output_xlsx, source_language):
+
     row_count = 2
     word_pattern = re.compile(r'\b\w+\b')
     word_pattern2 = re.compile(r'\b\w+\b', flags=re.UNICODE)
@@ -385,20 +398,23 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
 
         detected_language, confidence = language_detect(original_content)
 
-        if len(original_content) > 3660:
-            note = 'Translation failed - too long'
-        
+        if original_content is None:
+            note = ''
+            detected_language = ''
+        elif original_content is not None and len(original_content) > 3660:
+            note = '.Translation failed - too long'
+   
         elif original_content is not None and original_content != '' and detected_language != 'auto'  and detected_language != 'en':
 
             if isinstance(original_content, (int, float)):
                 translation = original_content
-            elif re.search(word_pattern, original_content):
-                (translation, source_language, note) = translate_googletrans(original_content, source_language, target_language, note)
+            # elif re.search(word_pattern, original_content):
+                # (translation, source_language, note) = translate_googletrans(original_content, source_language, target_language, note)
 
-                sleep(1)
-                if not translation:
-                    note = "Translation failed"
-                    sleep(2)
+                # sleep(1)
+                # if not translation:
+                    # note = "Translation failed"
+                    # sleep(2)
             elif re.search(word_pattern, original_content):
                 (translation, source_language, note) = translate_request(original_content, source_language, target_language, note)   # works
                 detected_language = source_language
@@ -460,10 +476,12 @@ def translate_request(text, source_language, target_language, note):
     '''
     use requests to translate language
     '''
+
     if source_language == '':
         source_language = 'auto'
     (translation) = ('')
-
+    # if source_language != 'auto':
+        # print(f'translating with {source_language}')
     url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl={}&tl={}&dt=t&q={}".format(
         source_language, target_language, text
     )
@@ -476,7 +494,7 @@ def translate_request(text, source_language, target_language, note):
     }
 
     try:
-        response = get(url, headers=headers, verify=True)
+        response = requests.get(url, headers=headers, verify=verify_ssl_cert)
         
         if response.status_code == 200:
             data = response.json()
