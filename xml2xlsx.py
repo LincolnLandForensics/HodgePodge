@@ -1,17 +1,15 @@
- #!/usr/bin/env python3
+#!/usr/bin/env python3
 # coding: utf-8
 '''
 read xml files in an xml folder
 convert them to xlsx
-
 '''
+
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 import os
 import xml.etree.ElementTree as ET
 from openpyxl import Workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
-import pandas as pd
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -24,12 +22,16 @@ def parse_xml(xml_file):
     tree = ET.parse(xml_file)
     root = tree.getroot()
     data = []
+    
+    # Extract column headers from the first entry
+    headers = [elem.tag for elem in root[0].iter() if elem.tag != root[0].tag]
+    
+    # Extract data
     for child in root:
-        row = []
-        for subchild in child:
-            row.append(subchild.text)
+        row = [subchild.text for subchild in child.iter() if subchild.tag != child.tag]
         data.append(row)
-    return data
+    
+    return headers, data
 
 def main():
     count = 1
@@ -45,6 +47,7 @@ def main():
     if not xml_files:
         print(f"\n\tNo XML files found in the {xml_folder} folder.")
         return
+
     print(f'\nReading XML files out of the {xml_folder} folder')
     # Create a workbook
     wb = Workbook()
@@ -55,43 +58,40 @@ def main():
     for filename in xml_files:
         print(f"\t{count}. Parsing {filename} ...")
         xml_file = os.path.join(xml_folder, filename)
-        data = parse_xml(xml_file)
+        headers, data = parse_xml(xml_file)
+        
         if not header_written:
-            # Write header from the first sheet
-            header = [subchild.tag for subchild in ET.parse(xml_file).getroot()[0]]
-            ws.append(header)
+            ws.append(headers)
             header_written = True
+        
         for row in data:
             ws.append(row)
-
-        count +=1
+        
+        count += 1
+    
     # Save the workbook
     wb.save(output_xlsx)
     print(f'\nSaving to {output_xlsx}')
+
 if __name__ == "__main__":
     main()
-
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
 0.2.0 - reads xml and convert them to xlsx
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
-
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
-
 """
+
 '''
 Copyright (c) 2024 LincolnLandForensics
 
@@ -115,4 +115,3 @@ SOFTWARE.
 '''
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      The End        >>>>>>>>>>>>>>>>>>>>>>>>>>
-
