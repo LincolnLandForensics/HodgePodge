@@ -73,7 +73,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.2.5'
+version = '1.2.6'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -137,12 +137,12 @@ def main():
             msg_blurb_square(msg_blurb, color_green)
 
             # data = read_xlsx(input_xlsx)
-            data = read_locations(input_xlsx)
+            (data, coordinates) = read_locations(input_xlsx)
 
             # create kml file
             write_locations(data)   # ??
             write_kml(data)
-
+            travel_path_kml(coordinates)
             
             workbook.close()
             # print(f'{color_green}Writing to {output_xlsx} {color_reset}')
@@ -183,11 +183,12 @@ def main():
             msg_blurb_square(msg_blurb, color_green)
             
             # data = read_xlsx(input_xlsx)
-            data = read_locations(input_xlsx)
+            (data, coordinates) = read_locations(input_xlsx)
             data = read_gps(data)
             write_locations(data)
             write_kml(data)
-
+            
+            travel_path_kml(coordinates)
             workbook.close()
             msg_blurb = (f'Writing to {output_xlsx}')
             msg_blurb_square(msg_blurb, color_green)
@@ -212,11 +213,12 @@ def main():
                 write_locations(data)
             else:    
                 # data = read_xlsx(input_xlsx)
-                data = read_locations(input_xlsx)
+                (data, coordinates) = read_locations(input_xlsx)
+                # print(f'{coordinates}') # temp
                 # data = read_gps(data)
                 write_locations(data)
                 # write_kml(data)
-
+                travel_path_kml(coordinates)
                 workbook.close()
                 msg_blurb = (f'Writing to {output_xlsx}')
                 msg_blurb_square(msg_blurb, color_green)
@@ -337,6 +339,35 @@ def convert_timestamp(timestamp, time_orig, timezone):
 
     raise ValueError(f"{time_orig} Timestamp format not recognized")
 
+
+def travel_path_kml(coordinates):
+    '''
+    This reads latitude and longitude coordinates and generates a KML file with lines 
+    connecting the points and no icons displayed.
+    '''
+
+    kml = simplekml.Kml()
+    heat = kml.newfolder(name="travel_path")
+    output_file = "travel_path.kml"
+
+    # Create lines between consecutive points
+    for i in range(len(coordinates) - 1):
+        coord1 = coordinates[i]
+        coord2 = coordinates[i + 1]
+        heat.newlinestring(coords=[coord1, coord2])
+
+    # Ensure no icons are visible
+    heat.stylemap.normalstyle.iconstyle.scale = 0
+    heat.stylemap.normalstyle.iconstyle.icon.href = ''
+
+    # Ensure lines are displayed in red
+    heat.stylemap.normalstyle.linestyle.color = simplekml.Color.red
+
+    kml.save(output_file)
+
+    msg_blurb = (f'extra travel_path KML file {output_file} created successfully!')
+    msg_blurb_square(msg_blurb, color_blue)    
+    
 def kml_to_xlsx(kml_file, xlsx_file):
     data = []
     from pykml import parser    # pip install pykml
@@ -1040,7 +1071,8 @@ def read_locations(input_xlsx):
     except ValueError as e:
         print(f"Error reading : {input_xlsx}")
     data = []
-
+    coordinates = []
+    
 # active sheet (current sheet)
     active_sheet = wb.active
     global active_sheet_title
@@ -1404,6 +1436,10 @@ def read_locations(input_xlsx):
                 elif Altitude != '':
                     coordinate = f'{latitude},{longitude},{Altitude}'
 
+
+        if latitude != ''  and longitude != '': # test
+            coordinates.append((longitude, latitude))
+            
 # address
         address = row_data.get("Address")
         if address is None:
@@ -1723,6 +1759,22 @@ def read_locations(input_xlsx):
         elif type_data == "Videos":
             Icon = "Videos"
 
+        '''
+        Apple Maps Trips
+        Google Maps https://banner2.cleanpng.com/lnd/20240523/jeo/axziljwt9.webp
+        Lyft Last Known Location
+        Lyft Location Shortcuts
+        Parked Car Locations
+        PlaceCardTap
+        Apple Maps
+            Show
+        Significant Locations
+        Significant Locations Visits
+        Uber Cached Locations
+
+
+        '''
+
 
 # case    
         case = row_data.get("case")
@@ -1825,7 +1877,8 @@ def read_locations(input_xlsx):
         row_data["time_orig_start"] = time_orig_start
         row_data["timezone_start"] = timezone_start
 
-    return data
+    # print(f'coordinates2 = {coordinates}')   # temp
+    return (data, coordinates)
 
 def point_icon_maker(Icon):        
     # Define different default icons
@@ -2106,13 +2159,13 @@ def write_kml(data):
 
         if origin_latitude != '' and origin_longitude != '':
             point_start = kml.newpoint(
-                name=f"{no}_s",                
+                name=f"{no}_start",                
                 description=f"{description_start}",
                 coords=[(origin_longitude, origin_latitude)]
               
             )
 # Create line and specify style
-            line = kml.newlinestring(name="Line between points", coords=[(longitude, latitude), (origin_longitude, origin_latitude)])
+            line = kml.newlinestring(name="trip line", coords=[(longitude, latitude), (origin_longitude, origin_latitude)])
             line.style.linestyle.color = simplekml.Color.blue  # Make the line blue
             line.style.linestyle.width = 2  # Set line width
 
@@ -2133,7 +2186,7 @@ def write_locations(data):
     global worksheet
     worksheet = workbook.active
 
-    print(f'Reading {active_sheet_title} sheet\n')
+    # print(f'Reading {active_sheet_title} sheet\n')
     worksheet.title = active_sheet_title
     
     # worksheet.title = 'Locations'
@@ -2502,6 +2555,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+try Castviz
 fix radius_azimuth unsupported operand type(s) for /: 'str' and 'float'
 convert Radius to a int()
 integrate altitude & altitudeMode 
