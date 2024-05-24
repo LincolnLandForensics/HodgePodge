@@ -78,7 +78,7 @@ Example:
 
 ![Case Example](images/GPS.png)
 
-Icon	Icon Description
+Icons
 *   Car -Lpr red car (License Plate Reader)
 *   Car2 -Lpr yellow car
 *   Car3 -Lpr greeen car with circle
