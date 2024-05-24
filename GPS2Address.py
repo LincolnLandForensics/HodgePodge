@@ -22,12 +22,19 @@ import simplekml    # pip install simplekml
 import geohash2    # pip install geohash2
 from datetime import datetime
 
+from geopy.distance import distance # test
+from math import radians, cos, sin  # test
+
 from openpyxl import Workbook
-from openpyxl.styles import PatternFill
+from openpyxl.styles import PatternFill, Font, Alignment
+# from openpyxl.styles import Font, Alignment, PatternFill
+
+# from openpyxl.styles import Font
+
+
 
 import argparse  # for menu system
 from openpyxl import load_workbook, Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
 
 from geopy.geocoders import Nominatim   # pip install geopy
 geolocator = Nominatim(user_agent="GeoTraxer")
@@ -106,9 +113,13 @@ def main():
         input_kml = args.input
     else:
         input_xlsx = args.input
-   
+
+    datatype = input_xlsx
+    datatype = datatype.replace('.xlsx', '')
+
     if not args.output: 
-        output_xlsx = "Locations_.xlsx"        
+        output_xlsx = (f'Locations_{datatype}.xlsx') 
+      
     else:
         output_xlsx = args.output
 
@@ -287,7 +298,7 @@ def convert_timestamp(timestamp, time_orig, timezone):
     formats = [
         "%B %d, %Y, %I:%M:%S %p %Z",    # June 13, 2022, 9:41:33 PM CDT (Flock)
         "%Y:%m:%d %H:%M:%S",
-        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",    # 2005-10-18 10:58:29
         "%m/%d/%Y %I:%M:%S %p",
         "%m/%d/%Y %I:%M:%S.%f %p", # '3/8/2024 11:06:47.358 AM  # task
         "%m/%d/%Y %I:%M %p",  # timestamps without seconds
@@ -339,7 +350,6 @@ def kml_to_xlsx(kml_file, xlsx_file):
         name = placemark.name.text
         coordinate = placemark.Point.coordinates.text
         coords = placemark.Point.coordinates.text.split(',')
-        # Altitude = placemark.Point.altitudeMode.text  #  no such child:
         latitude = coords[1]
         longitude = coords[0]
         try:
@@ -397,6 +407,26 @@ def kml_to_xlsx(kml_file, xlsx_file):
         })
 
     return data
+
+def long_lat_flip(latitude, longitude, coordinate, Altitude):
+    coordinate = coordinate.replace('(', '').replace(')', '')
+    if latitude == ''  and longitude == '' and coordinate != '':
+        if ',' in coordinate:
+            coordinate_split = coordinate.split(',')
+            latitude = coordinate_split[0].strip()
+            longitude = coordinate_split[1].strip()
+            try:
+                if Altitude == '':
+                    Altitude = coordinate_split[2].strip()
+            except:pass
+                
+            if Altitude == '':
+                # coordinate = f'{latitude},{longitude}'
+                coordinate = f'{longitude},{latitude}'
+            elif Altitude != '':
+                # coordinate = f'{latitude},{longitude},{Altitude}' 
+                coordinate = f'{longitude},{latitude},{Altitude}' 
+    return (latitude, longitude, coordinate, Altitude)
  
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
@@ -408,6 +438,76 @@ def msg_blurb_square(msg_blurb, color):
     print(empty_line)
     print(horizontal_line)
     print(f'{color_reset}')
+
+def radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, Altitude, point_icon):
+    try:
+        Radius = float(Radius)
+    except:
+        Radius = 0
+        
+    if Azimuth == '':
+        Azimuth = '.1'
+    if Altitude == '':
+        Altitude = 0
+    # Ensure radius is a float
+
+    # tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
+
+    point = kml.newpoint(
+        name=f"{no}",
+        description=f"{description}",
+        coords=[(longitude, latitude, Altitude)]
+    )
+    point.style.iconstyle.icon.href = point_icon
+    point.altitudemode = simplekml.AltitudeMode.relativetoground
+
+    # Function to calculate destination point given start point, bearing, and distance
+    def destination_point(lat, lon, bearing, distance_km):
+        R = '6371.0'  # Radius of the Earth in kilometers
+        bearing = radians(bearing)
+
+        lat1 = radians(lat)
+        lon1 = radians(lon)
+
+        lat2 = sin(lat1) * cos(distance_km / R) + cos(lat1) * sin(distance_km / R) * cos(bearing)
+        lat2 = degrees(atan2(sin(bearing) * sin(distance_km / R) * cos(lat1), cos(distance_km / R) - sin(lat1) * sin(lat2)))
+        lon2 = lon1 + atan2(sin(bearing) * sin(distance_km / R) * cos(lat1), cos(distance_km / R) - sin(lat1) * sin(lat2))
+        lon2 = degrees(lon2)
+
+        return lat2, lon2
+
+    # Calculate circle points
+    num_points = 360  # number of points in the circle
+    circle_points = []
+    for i in range(num_points):
+        angle = i
+        destination = distance(kilometers=Radius / 1000.0).destination((latitude, longitude), angle)
+        circle_points.append((destination.longitude, destination.latitude, Altitude))
+
+    # Add the circle to the KML
+    pol = kml.newpolygon(name="Circle", outerboundaryis=circle_points)
+    pol.altitudemode = simplekml.AltitudeMode.relativetoground
+    pol.style.linestyle.color = simplekml.Color.red  # Circle outline color
+    pol.style.linestyle.width = 2  # Circle outline width
+    pol.style.polystyle.color = simplekml.Color.changealphaint(100, simplekml.Color.red)  # Circle fill color with transparency
+
+    try:
+        # Calculate the azimuth point
+        azimuth_distance = Radius / 1000.0  # convert radius to kilometers
+        destination = distance(kilometers=azimuth_distance).destination((latitude, longitude), Azimuth)
+        azimuth_point = (destination.longitude, destination.latitude, Altitude)
+
+        # Add the azimuth line to the KML
+        line = kml.newlinestring(name="Azimuth Line", coords=[(longitude, latitude, Altitude), azimuth_point])
+        line.altitudemode = simplekml.AltitudeMode.relativetoground
+        line.style.linestyle.color = simplekml.Color.blue  # Line color
+        line.style.linestyle.width = 2  # Line width
+
+        # Save the KML object to a file
+        # kml.save("my_point_with_circle_and_azimuth.kml")
+    except:
+        pass
+    return (kml, point)
     
 def read_gps(data): 
 
@@ -417,6 +517,8 @@ def read_gps(data):
     for each row with headers as keys and cell values as values.
     
     """
+
+
     coordinates_list = [] # a list of coordinate and fulladdress   
 
     for row_index, row_data in enumerate(data):
@@ -451,6 +553,7 @@ def read_gps(data):
         number = row_data.get("number")
         street = row_data.get("street")
         city = row_data.get("city")
+        Time = row_data.get("Time")
         county = row_data.get("county")
         state = row_data.get("state")
         zipcode = row_data.get("zipcode")
@@ -461,7 +564,18 @@ def read_gps(data):
         coordinate = row_data.get("Coordinate")
         row_data["Index"] = (row_index + 2)
         PlusCode = row_data.get("PlusCode")
+        Radius = row_data.get("Radius") 
+        Azimuth = row_data.get("Azimuth") # test
 
+        if Radius is None:
+            Radius == ''
+        else:
+            try:
+                Radius = float(Radius)
+            except ValueError:
+                Radius == ''
+
+        
 # add uniq coordinates to coordinates_list
         
         # Iterate over the list of coordinate and fulladdress
@@ -541,9 +655,10 @@ def read_gps(data):
                 fulladdress = ''
                 skip == 'skip'
 
-    # coordinate        
-            if latitude != '' and longitude != '':
+# coordinate        
+            if latitude != '' and longitude != '' and coordinate == '':
                 coordinate = (f'{latitude},{longitude}')
+                # coordinate = (f'{longitude},{latitude}')
 
                 time.sleep(8)   # Sleep for x seconds
 
@@ -623,7 +738,7 @@ def read_gps(data):
                         street = address_parts[2]
 
                 if "United States" in country:
-                    country = "US" 
+                    country = "United States" 
 
                 if street.endswith(" Township"):
                     street == ''                
@@ -660,35 +775,39 @@ def read_gps(data):
             except Exception as e:
                 print(f"{color_red}Error : {str(e)}{color_reset} Business = <{business}> Full address =<{address_parts}>")  
 
+        if type_data == '':
+            type_data = active_sheet_title
+        print(f'active_sheet_title = {active_sheet_title}   type_data = {type_data}') # temp
+
 # Icon    
         Icon = row_data.get("Icon")
         if Icon is None:
             Icon = ''
 
-        # if Icon != "":
-            # Icon = Icon        
-        # elif type_data == "Calendar":
-            # Icon = "Calendar"
-        # elif type_data == "LPR":
-            # Icon = "LPR"
-        # elif type_data == "Images":
-            # Icon = "Images"
-        # elif type_data == "Intel":
-            # Icon = "Intel"
-        # elif type_data == "Locations":
-            # Icon = "Locations"
-            # if Subgroup == "SearchedPlaces":
-                # Icon = "Searched"
-            # elif Subgroup == "Shared":
-                # Icon = "Shared"   
-            # elif Subgroup == "Mentioned":
-                # Icon = "Locations"  # task
-        # elif type_data == "Searched Items":
-            # Icon = "Searched"
-        # elif type_data == "Toll":
-            # Icon = "Toll"
-        # elif type_data == "Videos":
-            # Icon = "Videos"
+        if Icon != "":
+            Icon = Icon        
+        elif type_data == "Calendar":
+            Icon = "Calendar"
+        elif type_data == "LPR":
+            Icon = "LPR"
+        elif type_data == "Images":
+            Icon = "Images"
+        elif type_data == "Intel":
+            Icon = "Intel"
+        elif type_data == "Locations":
+            Icon = "Locations"
+            if Subgroup == "SearchedPlaces":
+                Icon = "Searched"
+            elif Subgroup == "Shared":
+                Icon = "Shared"   
+            elif Subgroup == "Mentioned":
+                Icon = "Locations"  # task
+        elif type_data == "Searched Items":
+            Icon = "Searched"
+        elif type_data == "Toll":
+            Icon = "Toll"
+        elif type_data == "Videos":
+            Icon = "Videos"
 
 
 
@@ -710,6 +829,7 @@ def read_gps(data):
         row_data["Coordinate"] = coordinate
         row_data["PlusCode"] = PlusCode
         row_data["Icon"] = Icon
+        row_data["Radius"] = Radius
         
         print(f'\nName: {name_data}\nCoordinate: {coordinate}\naddress = {address}\nbusiness = {business}\nfulladdress = {fulladdress}\n')
 
@@ -722,6 +842,12 @@ def read_intel(input_xlsx):
     wb = openpyxl.load_workbook(input_xlsx)
     ws = wb.active
     data = []
+
+# active sheet (current sheet)
+    active_sheet = wb.active
+    global active_sheet_title
+    active_sheet_title = active_sheet.title   
+
 
     # get header values from first row
     global headers
@@ -748,7 +874,7 @@ def read_intel(input_xlsx):
         (group, subgroup, number, street, county, zipcode) = ('', '', '', '', '', '')
         (country, query, plate, capture_time, hwy, direction) = ('', '', '', '', '', '')
         (end_time, category, time_orig, timezone, PlusCode, Icon) = ('', '', '', '', '', '')
-
+        (Radius) = ('')
 # Time
         # Time = ''
         Time = row_data.get("Time")
@@ -890,6 +1016,7 @@ def read_intel(input_xlsx):
         # row_data["Time Original"] = time_orig
         # row_data["Timezone"] = timezone
         # row_data["PlusCode"] = PlusCode
+        # row_data["Radius"] = Radius
         row_data["Icon"] = Icon
         row_data["original_file"] = original_file # test
         # index
@@ -907,9 +1034,17 @@ def read_locations(input_xlsx):
     first row and then iterates through the data rows.    
     """
 
-    wb = openpyxl.load_workbook(input_xlsx)
-    ws = wb.active
+    try:
+        wb = openpyxl.load_workbook(input_xlsx)
+        ws = wb.active
+    except ValueError as e:
+        print(f"Error reading : {input_xlsx}")
     data = []
+
+# active sheet (current sheet)
+    active_sheet = wb.active
+    global active_sheet_title
+    active_sheet_title = active_sheet.title   
 
     # get header values from first row
     global headers
@@ -927,6 +1062,11 @@ def read_locations(input_xlsx):
     if not data:
         print(f"{color_red}No data found in the Excel file.{color_reset}")
         return None
+
+# active sheet (current sheet)
+    active_sheet = wb.active
+    active_sheet_title = active_sheet.title   
+
 
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
@@ -969,6 +1109,10 @@ def read_locations(input_xlsx):
             if Time is None:
                 Time = ''
 
+        if Time == '':
+            Time = row_data.get("Timestamp Date/Time - UTC+00:00 (M/d/yyyy)")   # Find my locations (Axiom)
+            if Time is None:
+                Time = ''
 
 
 # Start Time
@@ -1039,6 +1183,10 @@ def read_locations(input_xlsx):
             if time_local != '':
                 Time = time_local
                 capture_date = time_local
+        if Time == '':
+            Time  = row_data.get("Start Date/Time - UTC+00:00 (M/d/yyyy)") 
+            if Time is None:
+                Time = ''               
 
 
 # timezone
@@ -1067,48 +1215,55 @@ def read_locations(input_xlsx):
         if time_orig == '' and Time != '': # copy the original time
             time_orig = Time
 
-        try:
-            (Time, time_orig, timezone) = convert_timestamp(Time, time_orig, timezone)
-            Time = Time.strftime(output_format)
-            
-            # print(f'            Time = {Time}   time_orig = {time_orig}')   # temp
-            if Time is None:
-                Time = ''              
-            
-        except ValueError as e:
-            print(f"Error time2: {e} - {Time}")
-            Time = ''    # temp rem of this
-            pass
+        if Time != '':
+            try:
+                (Time, time_orig, timezone) = convert_timestamp(Time, time_orig, timezone)
+                Time = Time.strftime(output_format)
+                
+                # print(f'            Time = {Time}   time_orig = {time_orig}')   # temp
+                if Time is None:
+                    Time = ''              
+                
+            except ValueError as e:
+                print(f"Error time2: {e} - {Time}")
+                Time = ''    # temp rem of this
+                pass
 
 # start time convert
         if time_orig_start == '' and start_time != '': # copy the original time
             time_orig_start = start_time
 
-        try:
-            (start_time, time_orig_start, timezone_start) = convert_timestamp(start_time, time_orig_start, timezone_start)
-            start_time = start_time.strftime(output_format)
+        if start_time != '':
+            try:
+                (start_time, time_orig_start, timezone_start) = convert_timestamp(start_time, time_orig_start, timezone_start)
+                start_time = start_time.strftime(output_format)
 
-            if start_time is None:
-                start_time = ''              
-            
-        except ValueError as e:
-            print(f"Error time3: {e} - {start_time}")
-            start_time = ''    # temp rem of this
-            pass
+                if start_time is None:
+                    start_time = ''              
+                
+            except ValueError as e:
+                # print(f"Error time3: {e} - {start_time}")
+                start_time = '' # temp rem of this
+                pass
 
-
-
-        
 # End time
         end_time = row_data.get("End time")
         if end_time is None:
             end_time = ''        
+        if end_time == '':
+            end_time = row_data.get("End Date/Time - UTC+00:00 (M/d/yyyy)")
+            if end_time is None:
+                end_time = '' 
 
 # Category
         category = row_data.get("Category")
         if category is None:
             category = ''        
 
+# Altitude
+        Altitude = row_data.get("Altitude")
+        if Altitude is None:
+            Altitude = ''  
 # gps
 
         latitude = row_data.get("Latitude")
@@ -1158,8 +1313,6 @@ def read_locations(input_xlsx):
             if longitude is None or longitude == 'None':
                 longitude = '' 
 
-
-
         origin_latitude = row_data.get("Origin Latitude")
         origin_latitude = str(origin_latitude)
         if origin_latitude is None or origin_latitude == 'None':
@@ -1170,33 +1323,86 @@ def read_locations(input_xlsx):
         if origin_longitude is None or origin_longitude == 'None':
             origin_longitude = ''  
 
+        if origin_longitude == '' and start_time == '': # cellebrite journey
+            to_point = row_data.get("To point")
+            if to_point is None or to_point == 'None':
+                to_point = '' 
+            from_point = row_data.get("From point")
+            if from_point is None or from_point == 'None':
+                from_point = ''             
+            
+            if '): (' in to_point:
+                to_point = to_point.split('): (')
+                if Time == '':
+                    if '(' in to_point[0]:
+                        Time = to_point[0].split('(')[0]
+                        if Time != "":
+                            (Time, time_orig, timezone) = convert_timestamp(Time, time_orig, timezone)
+                        
+                        timezone = to_point[0].split('(')[1]    # test
+                        if latitude == '':
+                            coordinate = to_point[1].split('), ')[0]
+                            address = to_point[1].split('), ')[1]
+
+                if start_time == '':
+                    if '): (' in from_point:
+                        start_time = from_point.split('): (')[0]
+                        start_time = start_time.split('(')[0]
+                        from_point = from_point.split('): (')[1]    # .replace('),','')
+                        if start_time != "":
+                            (start_time, time_orig_start, timezone_start) = convert_timestamp(start_time, timezone_start, timezone_start)   # test
+                        timezone_start = ''
+                        
+                        if origin_latitude == '':
+                            
+                            coordinate_start = from_point[1].split('),')[0]
+                            
+                            from_point = from_point.split(', ')
+                            origin_latitude = from_point[0]
+                            origin_longitude = from_point[1]    # .split('),')[0]
+                            origin_longitude = origin_longitude.replace(')', '')    # .strip()
+
 
 
 # coordinate        
 
-        if latitude != '' and longitude != '':
+        if latitude != '' and longitude != '' and Altitude != '':
+            coordinate = (f'{latitude},{longitude},{Altitude}')
+            # coordinate = (f'{longitude},{latitude},{Altitude}')
+        elif latitude != '' and longitude != '':
             coordinate = (f'{latitude},{longitude}')
+            # coordinate = (f'{longitude},{latitude}')
+   
         elif row_data.get("Coordinate") != None:
             coordinate = row_data.get("Coordinate")
-            
+            # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
         elif row_data.get("Capture Location") != None:
             coordinate = row_data.get("Capture Location")
+            # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
         elif row_data.get("Capture Location (Latitude,Longitude)") != None:
             coordinate = row_data.get("Capture Location (Latitude,Longitude)")
+            # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
         elif row_data.get("Coordinate(Lat., Long)") != None:
             coordinate = row_data.get("Coordinate(Lat., Long)")
+            # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
 
+        # if len(coordinate) > 6:
+        coordinate = coordinate.replace('(', '').replace(')', '')
 
-
-        if len(coordinate) > 6:
-           
-            coordinate = coordinate.replace('(', '').replace(')', '')
+        if latitude == ''  and longitude == '' and coordinate != '':
             if ',' in coordinate:
-                coordinate = coordinate.split(',')
-                latitude = coordinate[0].strip()
-                longitude = coordinate[1].strip()
-                longitude = coordinate[1].strip()
-                coordinate = (f'{latitude},{longitude}')
+                coordinate_split = coordinate.split(',')
+                latitude = coordinate_split[0].strip()
+                longitude = coordinate_split[1].strip()
+                try:
+                    if Altitude == '':
+                        Altitude = coordinate_split[2].strip()
+                except:pass
+                    
+                if Altitude == '':
+                    coordinate = f'{latitude},{longitude}'
+                elif Altitude != '':
+                    coordinate = f'{latitude},{longitude},{Altitude}'
 
 # address
         address = row_data.get("Address")
@@ -1213,10 +1419,38 @@ def read_locations(input_xlsx):
         if subgroup is None:
             subgroup = ''
 
-# type
-        type_data = row_data.get("Type")
+# type_data
+
+
+        if type_data == '':
+            type_data = row_data.get("Type")
         if type_data is None:
             type_data = ''  
+
+        if type_data == '':
+            type_data = active_sheet_title
+        # print(f'active_sheet_title = {active_sheet_title}   type_data = {type_data}') # temp
+
+
+
+
+        # Icon = row_data.get("Icon")
+        if type_data is None:
+            type_data = ''
+
+
+
+        if type_data == '':
+            if "Searched" in original_file:
+               type_data = "Searched"
+            elif "Chats" in original_file:
+               type_data = "Chats"
+            elif active_sheet_title == 'Apple Maps Searches':
+                type_data = "Searched"
+                Icon = "Searched" 
+            elif active_sheet_title == 'Apple Maps Trips':
+                type_data = "Trip"
+                # Icon = "Searched" 
 
 # tag
         tag = row_data.get("Tag")
@@ -1244,6 +1478,8 @@ def read_locations(input_xlsx):
         if source is None:
             source = ''
 
+        if source == '':
+            source = active_sheet_title # test
 
 
 
@@ -1281,6 +1517,13 @@ def read_locations(input_xlsx):
         fulladdress  = row_data.get("fulladdress")
         if fulladdress is None:
             fulladdress = ''       
+        if fulladdress == '':
+            fulladdress  = row_data.get("Location Address") # Find My Locations (Axiom)
+            if fulladdress is None:
+                fulladdress = ''         
+        
+        
+
 
 # query
         query  = row_data.get("query")
@@ -1343,6 +1586,19 @@ def read_locations(input_xlsx):
         if state == '':
             if state_ftk != '':
                 state = state_ftk
+
+        if state == '' and latitude != '' and longitude != '':
+            if 36.970298 <= float(latitude) <= 42.508337 and -91.516837 <= float(longitude) <= -87.023965:
+                state = 'Illinois'
+            elif 40.61364 <= float(latitude) <= 40.61364 and -95.774704 <= float(longitude) <= -89.098843:
+                state = 'Missouri'
+            elif 41.761089 <= float(latitude) <= 41.761089 and -84.809582 <= float(longitude) <= -84.784579:
+                state = 'Indiana'
+
+        if country == '' and latitude != '' and longitude != '':
+            if 24.396308 <= float(latitude) <= 49.384358 and -125.001402 <= float(longitude) <= -66.93457:
+                country = 'US'
+                
 
 # zipcode  
         zipcode = row_data.get("zipcode")
@@ -1489,8 +1745,28 @@ def read_locations(input_xlsx):
         if Azimuth is None:
             Azimuth = '' 
 
+# Radius
+        if Radius == '':
+            Radius  = row_data.get("Radius")
+            if Radius is None:
+                Radius = ''  
+        if Radius == '':
+            Radius  = row_data.get("Accuracy (meters)")
+            if Radius is None:
+                Radius = ''  
+        if Radius == '':
+            Radius  = row_data.get("Accuracy")
+            if Radius is None:
+                Radius = ''  
 
-        
+        if Radius is None:
+            Radius == ''
+        else:
+            try:
+                Radius = float(Radius)
+            except ValueError:
+                Radius == ''
+
 # write rows to data
         row_data["#"] = no
         row_data["Time"] = Time
@@ -1539,7 +1815,7 @@ def read_locations(input_xlsx):
         row_data["Icon"] = Icon        
         row_data["original_file"] = original_file
         row_data["case"] = case 
-        row_data["Origin Latitude"] = origin_longitude
+        row_data["Origin Latitude"] = origin_latitude
         row_data["Origin Longitude"] = origin_longitude
         row_data["Start Time"] = start_time
         row_data["Location"] = location
@@ -1551,16 +1827,7 @@ def read_locations(input_xlsx):
 
     return data
 
-
-def write_kml(data):
-    '''
-    The write_kml() function receives the processed data as a list of 
-    dictionaries and writes it to a kml using simplekml. 
-    '''
-
-    # Create KML object
-    kml = simplekml.Kml()
-
+def point_icon_maker(Icon):        
     # Define different default icons
     # square_icon = 'http://maps.google.com/mapfiles/kml/shapes/square.png'
     # triangle_icon = 'http://maps.google.com/mapfiles/kml/shapes/triangle.png'
@@ -1590,6 +1857,8 @@ def write_kml(data):
 
     searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon9.png'
     shared_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon20.png'
+    tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
+    # tower_icon = 'https://earth.google.com/earth/rpc/cc/icon?color=1976d2&amp;id=2051&amp;scale=4' # test
     
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
@@ -1598,9 +1867,106 @@ def write_kml(data):
     s_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-8.png'
     w_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-12.png'
       
+   
+    if Icon == "Lpr" or Icon == "Car":
+        point_icon = car_icon
+    elif Icon == "Car2":
+        point_icon = car2_icon
+    elif Icon == "Car3":
+        point_icon = car3_icon
+    elif Icon == "Car4":
+        point_icon = car4_icon
+    elif Icon == "Truck":
+        point_icon = truck_icon
+    elif Icon == "Calendar":
+        point_icon = calendar_icon
+    elif Icon == "Chat":
+        point_icon = chat_icon
+    elif Icon == "Home":
+        point_icon = home_icon
+    elif Icon == "Images":
+        point_icon = images_icon
+    elif Icon == "Intel":
+        point_icon = intel_icon
+    elif Icon == "Office":
+        point_icon = office_icon
+    elif Icon == "Payment":
+        point_icon = payment_icon
+    elif Icon == "Searched":
+        point_icon = searched_icon
+    elif Icon == "Shared":
+        point_icon = shared_icon
+    elif Icon == "Videos":
+        point_icon = videos_icon
+    elif Icon == "Locations":
+        point_icon = locations_icon
+    elif Icon == "Toll":
+        point_icon = toll_icon
+    elif Icon == "Tower":
+        point_icon = tower_icon
+        # (kml, point) = radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, Altitude, point_icon)
+    elif Icon == "N":
+        point_icon = n_icon
+    elif Icon == "E":
+        point_icon = e_icon
+    elif Icon == "S":
+        point_icon = s_icon
+    elif Icon == "W":
+        point_icon = w_icon
+    else:
+        point_icon = default_icon
+
+    return point_icon
     
+def write_kml(data):
+    '''
+    The write_kml() function receives the processed data as a list of 
+    dictionaries and writes it to a kml using simplekml. 
+    '''
+
+    # Create KML object
+    kml = simplekml.Kml()
+
+    # Define different default icons
+    # square_icon = 'http://maps.google.com/mapfiles/kml/shapes/square.png'
+    # triangle_icon = 'http://maps.google.com/mapfiles/kml/shapes/triangle.png'
+    # star_icon = 'http://maps.google.com/mapfiles/kml/shapes/star.png'
+    # polygon_icon = 'http://maps.google.com/mapfiles/kml/shapes/polygon.png'
+    # circle_icon = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+    # yellow_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/ylw-circle.png'
+    # red_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/red-circle.png'
+    # white_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/wht-circle.png'
+
+    # default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
+
+    # car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
+    # car2_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon47.png'  # yellow car
+    # car3_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon54.png'  # green car with circle
+    # car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
+
+    # truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
+    # calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
+    # chat_icon = 'https://maps.google.com/mapfiles/kml/shapes/post_office.png' # email
+    # locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
+    # home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
+    # images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
+    # intel_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon44.png'
+    # office_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon21.png'
+    # payment_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon50.png'
+
+    # searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon9.png'
+    # shared_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon20.png'
+    # tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
+
+    # toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
+    # videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
+    # n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
+    # e_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-4.png'
+    # s_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-8.png'
+    # w_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-12.png'
 
     for row_index, row_data in enumerate(data):
+        (description_start) = ('')
         index_data = row_index + 2  # excel row starts at 2, not 0
         
         no = row_data.get("#") #
@@ -1629,14 +1995,32 @@ def write_kml(data):
         Icon = row_data.get("Icon")
         original_file = row_data.get("original_file")
         case = row_data.get("case")
+
         start_time = row_data.get("Start Time") # test
+        origin_latitude = row_data.get("Origin Latitude") # test
+        origin_longitude = row_data.get("Origin Longitude") # test
+
+        # print(f'2origin_longitude = {origin_longitude}   origin_latitude = {origin_latitude}')   # temp
+
         Azimuth = row_data.get("Azimuth") # test
         Radius = row_data.get("Radius") # test
         Altitude = row_data.get("Altitude") # test
         time_orig_start = row_data.get("time_orig_start") # test
         timezone_start = row_data.get("timezone_start") # test
 
+# Radius
+        if Radius is None:
+            Radius = ''
+        else:
+            try:
+                Radius = float(Radius)
+                # Radius = float_radius
+            except ValueError:
+                Radius = ''
 
+        if Altitude == '' or Altitude is None:
+            Altitude == ''
+        
         if name_data != '':
             (description) = (f'{description}\nNAME: {name_data}')
         
@@ -1670,203 +2054,48 @@ def write_kml(data):
         if group_data != '':
             (description) = (f'{description} / {group_data}')
 
-        if subgroup != '' and subgroup != 'Unknown':
+        if subgroup != '' and subgroup != 'UNKNOWN':
             (description) = (f'{description} / {subgroup}')
 
         if business != '':
-            (description) = (f'{description}\nBusiness: {business}')
+            (description) = (f'{description}\nBUSINESS: {business}')
             
         if plate != '':
             (description) = (f'{description}\nPLATE: {plate}')
         if case != '' and case is not None:
             (description) = (f'{description}\nCASE: {case}')
+        if Altitude != '' and Altitude != '0' :
+            (description) = (f'{description}\nALTITUDE: {Altitude}')
+        if Azimuth != '' and Azimuth != '0' :
+            (description) = (f'{description}\nAZIMUTH: {Azimuth}')
+        if Radius != '' and Radius != '0' :
+            (description) = (f'{description}\nRadius: {Radius}')
         if original_file != '':
             (description) = (f'{description}\nSOURCE: {original_file}')
 
-
+# description_start
+        if start_time != '' and start_time is not None:
+            (description_start) = (f'{description_start}START TIME: {start_time}')
 
         point = ''  # Initialize point variable outside the block
+        point_icon = point_icon_maker(Icon)
+        point_start = ''
         
         if latitude == '' or longitude == '' or latitude == None or longitude == None:
-            print(f'skipping row {index_data} - No GPS')
+            # print(f'skipping row {index_data} - No GPS')
+            skip = 'skip'   # useless variable
 
-        elif Icon == "Lpr" or Icon == "Car":
+        elif isinstance(Radius, float):
+            (kml, point) = radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, Altitude, point_icon)
+
+        elif point_icon != '':
             point = kml.newpoint(
-                # name=f"{index_data}",
                 name=f"{no}",                
                 description=f"{description}",
-                coords=[(longitude, latitude)]
+                coords=[(longitude, latitude, Altitude)]
             )
-            point.style.iconstyle.icon.href = car_icon  # red car
-
-        elif Icon == "Car2":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = car2_icon  # yellow car
-
-        elif Icon == "Car3":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = car3_icon  # green car
-
-        elif Icon == "Car4":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = car4_icon  # red car (with circle)
-
-        elif Icon == "Truck":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = truck_icon
-
-        elif Icon == "Calendar":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = calendar_icon
-
-        elif Icon == "Chat":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = chat_icon
-            
-        elif Icon == "Home":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = home_icon
-
-        elif Icon == "Images":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = images_icon
-
-        elif Icon == "Intel":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = intel_icon
-
-        elif Icon == "Office":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = office_icon
-
-        elif Icon == "Payment":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = payment_icon
-
-
-        elif Icon == "Searched":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = searched_icon
-
-        elif Icon == "Shared":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = shared_icon
-            
-        elif Icon == "Videos":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = videos_icon
-
-        elif Icon == "Locations":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = locations_icon    # yellow paddle
-
-        elif Icon == "Toll":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = toll_icon
-
-        elif Icon == "N":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = n_icon
-
-        elif Icon == "E":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = e_icon
-
-        elif Icon == "S":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = s_icon
-
-        elif Icon == "W":
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = w_icon
-
-        else:
-            point = kml.newpoint(
-                name=f"{no}",
-                description=f"{description}",
-                coords=[(longitude, latitude)]
-            )
-            point.style.iconstyle.icon.href = default_icon    # orange paddle
+            point.style.iconstyle.icon.href = point_icon
+            point.altitudemode = simplekml.AltitudeMode.relativetoground
 
         if tag != '':   # mark label yellow if tag is not blank
             try:
@@ -1875,10 +2104,22 @@ def write_kml(data):
             except Exception as e:
                 print(f"{color_red}Error printing line: {str(e)}{color_reset}")
 
+        if origin_latitude != '' and origin_longitude != '':
+            point_start = kml.newpoint(
+                name=f"{no}_s",                
+                description=f"{description_start}",
+                coords=[(origin_longitude, origin_latitude)]
+              
+            )
+# Create line and specify style
+            line = kml.newlinestring(name="Line between points", coords=[(longitude, latitude), (origin_longitude, origin_latitude)])
+            line.style.linestyle.color = simplekml.Color.blue  # Make the line blue
+            line.style.linestyle.width = 2  # Set line width
+
     kml.save(output_kml)    # Save the KML document to the specified output file
 
-    print(f"KML file '{output_kml}' created successfully!")
-
+    msg_blurb = (f'KML file {output_kml} created successfully!')
+    msg_blurb_square(msg_blurb, color_blue)
 
 def write_locations(data):
     '''
@@ -1887,16 +2128,23 @@ def write_locations(data):
     It defines the column headers, sets column widths, and then iterates 
     through each row of data, writing it into the Excel worksheet.
     '''
-    print(f'write_locations')   # temp
     global workbook
     workbook = Workbook()
     global worksheet
     worksheet = workbook.active
 
-    worksheet.title = 'Locations'
-    header_format = {'bold': True, 'border': True}
+    print(f'Reading {active_sheet_title} sheet\n')
+    worksheet.title = active_sheet_title
+    
+    # worksheet.title = 'Locations'
+    # header_format = {'bold': True, 'border': True}
     worksheet.freeze_panes = 'B2'  # Freeze cells
     worksheet.selection = 'B2'
+
+    # Apply default style to the header row (bold font)
+    for cell in worksheet[1]:   # test
+        cell.font = Font(bold=True)
+
 
     headers = [
         "#", "Time", "Latitude", "Longitude", "Address", "Group", "Subgroup"
@@ -1984,13 +2232,13 @@ def write_locations(data):
     worksheet.column_dimensions['AV'].width = 10 # case
     worksheet.column_dimensions['AW'].width = 20 # Origin Latitude
     worksheet.column_dimensions['AX'].width = 20 # Origin Longitude
-    worksheet.column_dimensions['AY'].width = 13 # Start Time
+    worksheet.column_dimensions['AY'].width = 25 # Start Time
     worksheet.column_dimensions['AZ'].width = 20 # Azimuth
     worksheet.column_dimensions['BA'].width = 6 # Radius
     worksheet.column_dimensions['BB'].width = 20 # Altitude
     worksheet.column_dimensions['BC'].width = 20 # Location
-    worksheet.column_dimensions['BD'].width = 6 # time_orig_start
-    worksheet.column_dimensions['BE'].width = 6 # timezone_start
+    worksheet.column_dimensions['BD'].width = 25 # time_orig_start
+    worksheet.column_dimensions['BE'].width = 17 # timezone_start
     worksheet.column_dimensions['BF'].width = 6 # Index
 
     
@@ -2037,8 +2285,14 @@ def write_locations(data):
     color_worksheet.row_dimensions[22].height = 38
     color_worksheet.row_dimensions[23].height = 6
     color_worksheet.row_dimensions[24].height = 15
-    color_worksheet.row_dimensions[25].height = 6
-    color_worksheet.row_dimensions[26].height = 15
+    color_worksheet.row_dimensions[25].height = 15
+    color_worksheet.row_dimensions[26].height = 20
+    color_worksheet.row_dimensions[27].height = 30  # test Tower
+    color_worksheet.row_dimensions[28].height = 15
+    color_worksheet.row_dimensions[29].height = 15
+    color_worksheet.row_dimensions[30].height = 15
+    color_worksheet.row_dimensions[31].height = 15
+    color_worksheet.row_dimensions[32].height = 15
 
 
     
@@ -2073,9 +2327,10 @@ def write_locations(data):
         ('', '', ''),
         ('', 'Yellow font', 'Tagged'),
         ('', 'Chats', 'Chats'),   # 
-
-
+        ('', 'Tower', 'Bullseye'),
         ('', '', ''),
+        ('', 'blue lines', 'trips with a start and end'),
+        ('', 'red circles', 'indicate radius of the signal and/or accuracy of the point'),
         ('', 'NOTE', 'visit https://earth.google.com/ <file><Import KML> select gps.kml <open>'),
     ]
 
@@ -2100,12 +2355,15 @@ def write_locations(data):
     payment_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon50.png'
     searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon0.png'  #  
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
+    tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
+    # tower_icon = 'https://earth.google.com/earth/rpc/cc/icon?color=1976d2&amp;id=2051&amp;scale=4' # test
+
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
     n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
     e_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-4.png'
     s_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-8.png'
     w_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-12.png'
-
+    
     try:
         # Insert graphic from URL into cell of color_worksheet
 
@@ -2192,6 +2450,10 @@ def write_locations(data):
         response = requests.get(payment_icon)   # task
         img = Image(io.BytesIO(response.content))
         color_worksheet.add_image(img, 'A26')  
+
+        response = requests.get(tower_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A27')
         
     except:
         pass
@@ -2240,6 +2502,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+fix radius_azimuth unsupported operand type(s) for /: 'str' and 'float'
+convert Radius to a int()
 integrate altitude & altitudeMode 
 figure out clustering (many identical coordinates get one pin
 convert .kml to xlsx
@@ -2265,6 +2529,7 @@ if it's less than 3000 skip the sleep timer
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+avoid processing Google Maps Tiles and 
 connection timeout after about 4000 attempts
 with the sleep timer set to 10 (sec) it doesn't crap out.
 
