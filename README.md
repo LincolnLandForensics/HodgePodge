@@ -79,36 +79,34 @@ Example:
 ![Case Example](images/GPS.png)
 
 Icon	Icon Description
-*   Car	Lpr red car (License Plate Reader)
-*   Car2	Lpr yellow car
-*   Car3	Lpr greeen car with circle
-*   Car4	Lpr red car with circle
-*   Truck	Lpr truck
+*   Car -Lpr red car (License Plate Reader)
+*   Car2 -Lpr yellow car
+*   Car3 -Lpr greeen car with circle
+*   Car4 -Lpr red car with circle
+*   Truck -Lpr truck
 	
 *   Calendar
 *   Home
-*   Images	Photo
-*   Intel	I
-*   Locations	Reticle
-*   default	Yellow flag
+*   Images -Photo
+*   Intel -I
+*   Locations -Reticle
+*   default -Yellow flag
 *   Office
-*   Searched	Searched Item
-*   Videos	Video clip
+*   Searched -Searched Item
+*   Videos -Video clip
 	
-*   Toll	Blue square
-*   N	Northbound blue arrow
-*   E	Eastbound blue arrow
-*   S	Southbound blue arrow
-*   W	Westbound blue arrow
+*   Toll -Blue square
+*   N -Northbound blue arrow
+*   E -Eastbound blue arrow
+*   S -Southbound blue arrow
+*   W -Westbound blue arrow
 	
 *   Chats
-*   Tower	Bullseye
+*   Tower -Bullseye
 
-*   Yellow font	Tagged
-*   blue lines	trips with a start and end
-*   red circles	indicate radius of the signal and/or accuracy of the point
-
-*   visit https://earth.google.com/ <file><Import KML> select gps.kml <open>
+*   Yellow font -Tagged
+*   blue lines -trips with a start and end
+*   red circles -indicate radius of the signal and/or accuracy of the point
 
 ---
 ## translatinator.py
