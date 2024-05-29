@@ -1130,12 +1130,6 @@ STATUS:{status}
             Time = row_data.get("Call Date/Time - UTC+00:00 (M/d/yyyy)")
             if Time is None:
                 Time = ''        
-    
-    
-    
-
-
-
 
         if (Coordinate == '' or Coordinate is None) and Altitude == '':
             if Latitude is None:

@@ -360,8 +360,12 @@ def travel_path_kml(coordinates):
     heat.stylemap.normalstyle.iconstyle.scale = 0
     heat.stylemap.normalstyle.iconstyle.icon.href = ''
 
-    # Ensure lines are displayed in red
-    heat.stylemap.normalstyle.linestyle.color = simplekml.Color.red
+    # Ensure lines are displayed in color
+    # heat.style.linestyle.color = simplekml.Color.blue
+    # heat.stylemap.normalstyle.linestyle.color = simplekml.Color.blue # only does white
+
+    heat.style.linestyle.color = simplekml.Color.blue  # Make the line blue
+    heat.style.linestyle.width = 2  # Set line width
 
     kml.save(output_file)
 
@@ -1145,17 +1149,29 @@ def read_locations(input_xlsx):
             Time = row_data.get("Timestamp Date/Time - UTC+00:00 (M/d/yyyy)")   # Find my locations (Axiom)
             if Time is None:
                 Time = ''
-
+        if Time == '':
+            Time = row_data.get("END_DATE")   # Sprint CDMA Cell dump
+            if Time is None:
+                Time = ''
 
 # Start Time
         start_time = row_data.get("Start Date/Time - UTC-06:00 (M/d/yyyy)[DST]")
         if start_time is None:
             start_time = ''
+        if start_time == '':
+            start_time = row_data.get("Start Date/Time - UTC+00:00 (M/d/yyyy)")
+            if start_time is None:
+                start_time = ''
 
         if start_time == '':
             start_time = row_data.get("Vicinity Entry Date/Time")
             if start_time is None:
                 start_time = ''
+        if Time == '':
+            Time = row_data.get("START_DATE")   # Sprint CDMA Cell dump
+            if Time is None:
+                Time = ''
+
 
 # Start Time original
         time_orig_start = row_data.get("time_orig_start")
