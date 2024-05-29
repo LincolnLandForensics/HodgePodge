@@ -1153,6 +1153,13 @@ def read_locations(input_xlsx):
             Time = row_data.get("END_DATE")   # Sprint CDMA Cell dump
             if Time is None:
                 Time = ''
+        if Time == '':
+            Time = row_data.get("Created Date/Time - UTC+00:00 (M/d/yyyy)")   # Axiom Apple Maps Searches
+            if Time is None:
+                Time = ''
+
+
+
 
 # Start Time
         start_time = row_data.get("Start Date/Time - UTC-06:00 (M/d/yyyy)[DST]")
