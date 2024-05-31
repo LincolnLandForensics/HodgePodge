@@ -27,9 +27,6 @@ from math import radians, cos, sin  # test
 
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment
-# from openpyxl.styles import Font, Alignment, PatternFill
-
-# from openpyxl.styles import Font
 
 
 
@@ -73,7 +70,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.2.6'
+version = '1.3.2'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -103,7 +100,6 @@ def main():
     # global input_xlsx
     global output_xlsx
     global output_kml
-    output_kml = 'GPS_.kml'
     input_kml = ''
     
     if not args.input: 
@@ -114,8 +110,11 @@ def main():
     else:
         input_xlsx = args.input
 
+    global datatype
     datatype = input_xlsx
     datatype = datatype.replace('.xlsx', '')
+    
+    output_kml = (f'GPS_{datatype}.kml')
 
     if not args.output: 
         output_xlsx = (f'Locations_{datatype}.xlsx') 
@@ -217,7 +216,7 @@ def main():
                 # print(f'{coordinates}') # temp
                 # data = read_gps(data)
                 write_locations(data)
-                # write_kml(data)
+                write_kml(data)
                 travel_path_kml(coordinates)
                 workbook.close()
                 msg_blurb = (f'Writing to {output_xlsx}')
@@ -239,6 +238,13 @@ def main():
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+def case_number_prompt():
+    # Prompt the user to enter the case number
+    case_number = input("Please enter the Case Number: ")
+    # Assign the entered value to Case
+    case_prompt = case_number
+    return case_prompt
 
 
 def convert_timestamp(timestamp, time_orig, timezone):
@@ -339,17 +345,35 @@ def convert_timestamp(timestamp, time_orig, timezone):
 
     raise ValueError(f"{time_orig} Timestamp format not recognized")
 
+def gps_cleanup(latitude, longitude):
+    latitude = latitude.replace("'", '').replace("\"", '').replace("°", '.')   # don't replace .
+    longitude = longitude.replace("'", '').replace("\"", '').replace("°", '.')    
 
+    latitude = re.sub(r'[a-zA-Z]', '', latitude)
+    longitude = re.sub(r'[a-zA-Z]', '', longitude)
+
+    try:
+        # Convert the cleaned string to a float
+        latitude = float(latitude)
+        longitude = float(longitude)
+    except ValueError:
+        # print(f'Error: {ValueError}') 
+        # print(f'latitude type = {type(latitude)} = {latitude}') # temp
+        pass
+    return (latitude, longitude)
+    
+    
 def travel_path_kml(coordinates):
     '''
     This reads latitude and longitude coordinates and generates a KML file with lines 
     connecting the points and no icons displayed.
     '''
 
-    kml = simplekml.Kml()
-    heat = kml.newfolder(name="travel_path")
-    output_file = "travel_path.kml"
+    kml2 = simplekml.Kml()
+    heat = kml2.newfolder(name="travel_path")
 
+    # output_file = "travel_path.kml"
+    output_file = (f'travel_path_{datatype}.kml') 
     # Create lines between consecutive points
     for i in range(len(coordinates) - 1):
         coord1 = coordinates[i]
@@ -364,10 +388,22 @@ def travel_path_kml(coordinates):
     # heat.style.linestyle.color = simplekml.Color.blue
     # heat.stylemap.normalstyle.linestyle.color = simplekml.Color.blue # only does white
 
-    heat.style.linestyle.color = simplekml.Color.blue  # Make the line blue
+    heat.style.linestyle.color = simplekml.Color.red  # Make the line red
+    # heat.style.linestyle.color = simplekml.Color.orange  # Make the line orange
+    # heat.style.linestyle.color = simplekml.Color.yellow  # Make the line yellow
+    # heat.style.linestyle.color = simplekml.Color.green  # Make the line green
+    # heat.style.linestyle.color = simplekml.Color.blue  # Make the line blue
+    # heat.style.linestyle.color = simplekml.Color.purple  # Make the line purple
+    # heat.style.linestyle.color = simplekml.Color.white  # Make the line white
+    # heat.style.linestyle.color = simplekml.Color.black  # Make the line black
+
+
+
+
+
     heat.style.linestyle.width = 2  # Set line width
 
-    kml.save(output_file)
+    kml2.save(output_file)
 
     msg_blurb = (f'extra travel_path KML file {output_file} created successfully!')
     msg_blurb_square(msg_blurb, color_blue)    
@@ -515,10 +551,13 @@ def radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, A
     num_points = 360  # number of points in the circle
     circle_points = []
     for i in range(num_points):
-        angle = i
-        destination = distance(kilometers=Radius / 1000.0).destination((latitude, longitude), angle)
-        circle_points.append((destination.longitude, destination.latitude, Altitude))
-
+        try:
+            angle = i
+            destination = distance(kilometers=Radius / 1000.0).destination((latitude, longitude), angle)
+            circle_points.append((destination.longitude, destination.latitude, Altitude))
+        except ValueError:
+            print(f'Radius Error {ValueError} {latitude} {angle}') # temp
+            pass
     # Add the circle to the KML
     pol = kml.newpolygon(name="Circle", outerboundaryis=circle_points)
     pol.altitudemode = simplekml.AltitudeMode.relativetoground
@@ -535,7 +574,17 @@ def radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, A
         # Add the azimuth line to the KML
         line = kml.newlinestring(name="Azimuth Line", coords=[(longitude, latitude, Altitude), azimuth_point])
         line.altitudemode = simplekml.AltitudeMode.relativetoground
-        line.style.linestyle.color = simplekml.Color.blue  # Line color
+
+
+        # line.style.linestyle.color = simplekml.Color.red  # Make the line red
+        line.style.linestyle.color = simplekml.Color.orange  # Make the line orange
+        # line.style.linestyle.color = simplekml.Color.yellow  # Make the line yellow
+        # line.style.linestyle.color = simplekml.Color.green  # Make the line green
+        # line.style.linestyle.color = simplekml.Color.blue  # Make the line blue
+        # line.style.linestyle.color = simplekml.Color.purple  # Make the line purple
+        # line.style.linestyle.color = simplekml.Color.white  # Make the line white
+        # line.style.linestyle.color = simplekml.Color.black  # Make the line black
+        # line.style.linestyle.color = simplekml.Color.blue  # Line color
         line.style.linestyle.width = 2  # Line width
 
         # Save the KML object to a file
@@ -1104,6 +1153,9 @@ def read_locations(input_xlsx):
     active_sheet_title = active_sheet.title   
 
 
+    case_prompt = case_number_prompt()
+
+
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
         (state, fulladdress, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
@@ -1119,16 +1171,28 @@ def read_locations(input_xlsx):
         (origin_latitude, origin_longitude, start_time, location) = ('', '', '', '')
         (Azimuth, Radius, Altitude, time_orig_start, timezone_start) = ('', '', '', '', '')
 
+
+        if Icon == '':  # there is an icon section at the bottom
+            Icon = row_data.get("Icon")
+        if Icon is None:
+            Icon = ''
+
+# Name
         name_data = row_data.get("Name")
         if name_data is None:
             name_data = ''
+        if name_data == '':
+            name_data = row_data.get("File Name")   # Axiom Pictures
+            if name_data is None:
+                name_data = ''            
 
 # no 
         no = row_data.get("#")
         if no is None:
             no = ''
-        if no == '':
-            no = row_index + 2
+        # add row number as pin name
+        # if no == '':
+            # no = row_index + 2
 
 # Description    
         description = row_data.get("Description")
@@ -1147,6 +1211,7 @@ def read_locations(input_xlsx):
 
         if Time == '':
             Time = row_data.get("Timestamp Date/Time - UTC+00:00 (M/d/yyyy)")   # Find my locations (Axiom)
+            Timezone = 'GMT'
             if Time is None:
                 Time = ''
         if Time == '':
@@ -1155,6 +1220,7 @@ def read_locations(input_xlsx):
                 Time = ''
         if Time == '':
             Time = row_data.get("Created Date/Time - UTC+00:00 (M/d/yyyy)")   # Axiom Apple Maps Searches
+            timezone = 'GMT'    # test
             if Time is None:
                 Time = ''
 
@@ -1319,6 +1385,14 @@ def read_locations(input_xlsx):
         Altitude = row_data.get("Altitude")
         if Altitude is None:
             Altitude = ''  
+
+        if Altitude == '':
+            Altitude = row_data.get("Altitude (meters)")    # test Axiom Live Photos
+            if Altitude is None:
+                Altitude = ''  
+
+
+
 # gps
 
         latitude = row_data.get("Latitude")
@@ -1350,23 +1424,56 @@ def read_locations(input_xlsx):
             if latitude is None or latitude == 'None':
                 latitude = ''        
 
-        if longitude == '':
-            longitude = row_data.get("Capture Location Longitude")
-            longitude = str(longitude)
-            if longitude is None or longitude == 'None':
-                longitude = ''        
+        if latitude == '': 
+            latitude = row_data.get("LAT")
+            latitude = str(latitude)
+            if latitude is None or latitude == 'None':
+                latitude = ''  
+                
+      
 
         if latitude == '': 
             latitude = row_data.get("Destination Latitude")
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = ''   
-
+        if latitude == '': 
+            latitude = row_data.get("GPS Latitude")
+            latitude = str(latitude)
+            if latitude is None or latitude == 'None':
+                latitude = '' 
+                
+        if longitude == '':
+            longitude = row_data.get("Capture Location Longitude")
+            longitude = str(longitude)
+            if longitude is None or longitude == 'None':
+                longitude = ''  
+                
         if longitude == '': 
             longitude = row_data.get("Destination Longitude")
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = '' 
+
+        if longitude == '': 
+            longitude = row_data.get("LONG")
+            longitude = str(longitude)
+            if longitude is None or longitude == 'None':
+                longitude = '' 
+
+        if longitude == '': 
+            longitude = row_data.get("GPS Longitude")
+            longitude = str(longitude)
+            if longitude is None or longitude == 'None':
+                longitude = '' 
+            else:
+                longitude_ref = row_data.get("GPS Longitude Reference")
+                
+                if longitude_ref == 'West':
+                    longitude = '-' + longitude
+
+
+        (latitude, longitude) = gps_cleanup(latitude, longitude)
 
         origin_latitude = row_data.get("Origin Latitude")
         origin_latitude = str(origin_latitude)
@@ -1467,7 +1574,10 @@ def read_locations(input_xlsx):
         address = row_data.get("Address")
         if address is None:
             address = ''        
-
+        if address == '':
+            address = row_data.get("TOWER ADDR")
+            if address is None:
+                address = ''    
 # group
         group = row_data.get("Group")
         if group is None:
@@ -1475,9 +1585,21 @@ def read_locations(input_xlsx):
 
 # subgroup
         subgroup = row_data.get("Subgroup")
-        if subgroup is None:
+        if subgroup is None or subgroup == 'None':
             subgroup = ''
-
+        
+        if subgroup == '':
+            subgroup = row_data.get("Location Type")    # Axiom find my location / Significant Locations 
+            if subgroup is None or subgroup == 'None':
+                subgroup = ''
+            if subgroup == "Safe Location" or subgroup == "Home":
+                tag = 'Of interest'
+            
+            if subgroup == "Home":
+                # tag = 'Of interest'
+                if Icon == '' :
+                        Icon = 'Home'   # task
+                  
 # type_data
 
 
@@ -1500,21 +1622,35 @@ def read_locations(input_xlsx):
 
 
         if type_data == '':
-            if "Searched" in original_file:
-               type_data = "Searched"
-            elif "Chats" in original_file:
-               type_data = "Chats"
-            elif active_sheet_title == 'Apple Maps Searches':
+            if subgroup == '':
+                type_data = subgroup
+            elif "Search" in original_file:
                 type_data = "Searched"
-                Icon = "Searched" 
+                if Icon == '':
+                    Icon = "Searched" 
+            elif "Chats" in original_file:
+                type_data = "Chats"
+
+            elif "Search" in active_sheet_title:    # test
+                # type_data = "Searched"
+                if Icon == '':
+                    Icon = "Searched" 
             elif active_sheet_title == 'Apple Maps Trips':
-                type_data = "Trip"
+                type_data = "Apple Maps Trips"
                 # Icon = "Searched" 
 
+            elif active_sheet_title == 'Searched Items':
+                type_data = "Searched"
+                if Icon == '':
+                    Icon = "Searched" 
+
+
+
 # tag
-        tag = row_data.get("Tag")
-        if tag is None:
-            tag = ''
+        if tag == '':
+            tag = row_data.get("Tag")
+            if tag is None:
+                tag = ''
         
         if tag == '':
             tag = row_data.get("Tags")
@@ -1533,10 +1669,12 @@ def read_locations(input_xlsx):
 
 
 # source
-        source = row_data.get("Source")
+        if source == '':
+            source = row_data.get("Source")
         if source is None:
             source = ''
-
+        if type_data == 'Unknown' or type_data == 'Locations':  # cellebrite Journeys
+            type_data = source
         if source == '':
             source = active_sheet_title # test
 
@@ -1559,7 +1697,8 @@ def read_locations(input_xlsx):
 
 
         if 'Apple Maps' in original_file:
-            source = 'Apple Maps'
+            # source = 'Apple Maps'
+            type_data = 'Apple Maps'
             if type_data == '':
                 type_data = 'Locations'
         elif 'Google Maps' in original_file:
@@ -1647,17 +1786,20 @@ def read_locations(input_xlsx):
                 state = state_ftk
 
         if state == '' and latitude != '' and longitude != '':
-            if 36.970298 <= float(latitude) <= 42.508337 and -91.516837 <= float(longitude) <= -87.023965:
-                state = 'Illinois'
-            elif 40.61364 <= float(latitude) <= 40.61364 and -95.774704 <= float(longitude) <= -89.098843:
-                state = 'Missouri'
-            elif 41.761089 <= float(latitude) <= 41.761089 and -84.809582 <= float(longitude) <= -84.784579:
-                state = 'Indiana'
-
+            try:
+                if 36.970298 <= float(latitude) <= 42.508337 and -91.516837 <= float(longitude) <= -87.023965:
+                    state = 'Illinois'
+                elif 40.61364 <= float(latitude) <= 40.61364 and -95.774704 <= float(longitude) <= -89.098843:
+                    state = 'Missouri'
+                elif 41.761089 <= float(latitude) <= 41.761089 and -84.809582 <= float(longitude) <= -84.784579:
+                    state = 'Indiana'
+            except:
+                pass
         if country == '' and latitude != '' and longitude != '':
-            if 24.396308 <= float(latitude) <= 49.384358 and -125.001402 <= float(longitude) <= -66.93457:
-                country = 'US'
-                
+            try:
+                if 24.396308 <= float(latitude) <= 49.384358 and -125.001402 <= float(longitude) <= -66.93457:
+                    country = 'United States'
+            except:pass    
 
 # zipcode  
         zipcode = row_data.get("zipcode")
@@ -1669,6 +1811,10 @@ def read_locations(input_xlsx):
             if zipcode is None:
                 zipcode = ''        
 
+        if zipcode == '':
+            zipcode = row_data.get("ZIP")
+            if zipcode is None:
+                zipcode = ''    
 
 # number  
         number = row_data.get("number")
@@ -1694,6 +1840,11 @@ def read_locations(input_xlsx):
         if city == '':
             if city_ftk != '':
                 city = city_ftk 
+ 
+        if city == '':
+            city = row_data.get("CITY")
+            if city is None:
+                city = ''
             
 # hwy
         hwy  = row_data.get("Highway Name")
@@ -1737,13 +1888,12 @@ def read_locations(input_xlsx):
             PlusCode = ''  
 
 # Icon    
-        Icon = row_data.get("Icon")
+        if Icon == '':
+            Icon = row_data.get("Icon")
         if Icon is None:
             Icon = ''
         if Icon != "":
             Icon = Icon[0].upper() + Icon[1:].lower()
-
-# Icon    
 
         if Icon != "":
             Icon = Icon        
@@ -1753,24 +1903,38 @@ def read_locations(input_xlsx):
             Icon = "LPR"
         elif type_data == "Images":
             Icon = "Images"
+        elif type_data == "Picture":    # axiom
+            type_data == "Images"   # task
+            Icon = "Images"
+        elif type_data == "Pictures":    # axiom Pictures
+            type_data == "Images"   # task
+            Icon = "Images"
+        elif type_data == "Live Photos":    # axiom Live Photos
+            type_data == "Images"   # task
+            if subgroup == '':
+                subgroup = 'Live Photos'
+            Icon = "Images"
         elif type_data == "Intel":
             Icon = "Intel"
-        elif type_data == "Locations":
-            Icon = "Locations"
-            if subgroup == "SearchedPlaces":
-                Icon = "Searched"
-            elif subgroup == "Shared":
-                Icon = "Shared"   
-            elif subgroup == "Mentioned":
-                Icon = "Locations"  # task
-            elif subgroup == "HarvestedCellTower":
-                Icon = "Locations"   # task add a phone icon or tower
-            elif subgroup == "MediaProbablyCaptured":
-                Icon = "Images"  
-            elif subgroup == "MobilePayment":
-                Icon = "Payment"  # add $ icon
-            elif subgroup == "VehicleParked":
-                Icon = "Car"  
+        elif type_data == "Find My Locations":    # axiom
+            # type_data == "Images"   # task
+            Icon = "Yellow"
+        # elif type_data            
+            # if subgroup == "SearchedPlaces":
+                # Icon = "Searched"
+            # elif subgroup == "Shared":
+                # Icon = "Shared"   
+            # elif subgroup == "Mentioned":
+                # Icon = "Locations"  # task
+            # elif subgroup == "HarvestedCellTower":
+                # Icon = "Locations"   # task add a phone icon or tower
+            # elif subgroup == "MediaProbablyCaptured":
+                # Icon = "Images"  
+            # elif subgroup == "MobilePayment":
+                # Icon = "Payment"  # add $ icon
+            # elif subgroup == "VehicleParked":
+                # Icon = "Car"  ations"
+
 
         elif type_data == "Cell Towers":
             Icon = "Locations"  # task add a phone icon or tower
@@ -1781,6 +1945,24 @@ def read_locations(input_xlsx):
             Icon = "Toll"
         elif type_data == "Videos":
             Icon = "Videos"
+
+        elif subgroup == "SearchedPlaces":  # cellebrite poi searches 
+            Icon = "Searched"
+        elif subgroup == "Shared":
+            Icon = "Shared"   
+        elif subgroup == "Mentioned":
+            Icon = "Locations"  # task
+        elif subgroup == "HarvestedCellTower":
+            Icon = "Locations"   # task add a phone icon or tower
+        elif subgroup == "MediaProbablyCaptured":
+            Icon = "Images"  
+        elif subgroup == "MobilePayment":
+            Icon = "Payment"  # add $ icon
+        elif subgroup == "VehicleParked":
+            Icon = "Car"  
+        elif tag != "":
+            Icon = "Red"  
+
 
         '''
         Apple Maps Trips
@@ -1800,15 +1982,18 @@ def read_locations(input_xlsx):
 
 
 # case    
-        case = row_data.get("case")
+        if case == '':
+            case = row_data.get("case")
         if case is None:
             case = ''
+        if case == '':
+            case = case_prompt
             
  # case 2   
-        if case == '':
-            case = row_data.get("Evidence number")
-            if case is None:
-                case = ''           
+        # if case == '':
+            # case = row_data.get("Evidence number")  # breaks Axiom "Find my locations"
+            # if case is None:
+                # case = ''           
 
 # location
         location  = row_data.get("Location")
@@ -1914,7 +2099,9 @@ def point_icon_maker(Icon):
     # red_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/red-circle.png'
     # white_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/wht-circle.png'
 
-    default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
+    # default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
+    default_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'   # yellow pin
+
 
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car2_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon47.png'  # yellow car
@@ -1935,7 +2122,9 @@ def point_icon_maker(Icon):
     shared_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon20.png'
     tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
     # tower_icon = 'https://earth.google.com/earth/rpc/cc/icon?color=1976d2&amp;id=2051&amp;scale=4' # test
-    
+    yellow_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'
+    red_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
+
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
     n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
@@ -1981,6 +2170,12 @@ def point_icon_maker(Icon):
     elif Icon == "Tower":
         point_icon = tower_icon
         # (kml, point) = radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, Altitude, point_icon)
+    elif Icon == "Yellow":
+        point_icon = yellow_icon
+    elif Icon == "Red":
+        point_icon = red_icon
+    elif Icon == "Red":
+        point_icon = red_icon
     elif Icon == "N":
         point_icon = n_icon
     elif Icon == "E":
@@ -2003,51 +2198,15 @@ def write_kml(data):
     # Create KML object
     kml = simplekml.Kml()
 
-    # Define different default icons
-    # square_icon = 'http://maps.google.com/mapfiles/kml/shapes/square.png'
-    # triangle_icon = 'http://maps.google.com/mapfiles/kml/shapes/triangle.png'
-    # star_icon = 'http://maps.google.com/mapfiles/kml/shapes/star.png'
-    # polygon_icon = 'http://maps.google.com/mapfiles/kml/shapes/polygon.png'
-    # circle_icon = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
-    # yellow_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/ylw-circle.png'
-    # red_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/red-circle.png'
-    # white_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/wht-circle.png'
-
-    # default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
-
-    # car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
-    # car2_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon47.png'  # yellow car
-    # car3_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon54.png'  # green car with circle
-    # car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
-
-    # truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
-    # calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
-    # chat_icon = 'https://maps.google.com/mapfiles/kml/shapes/post_office.png' # email
-    # locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
-    # home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
-    # images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
-    # intel_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon44.png'
-    # office_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon21.png'
-    # payment_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon50.png'
-
-    # searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon9.png'
-    # shared_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon20.png'
-    # tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
-
-    # toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
-    # videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
-    # n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
-    # e_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-4.png'
-    # s_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-8.png'
-    # w_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-12.png'
-
     for row_index, row_data in enumerate(data):
         (description_start) = ('')
         index_data = row_index + 2  # excel row starts at 2, not 0
         
         no = row_data.get("#") #
-        if no is None or no == '':
-            no = index_data
+        if no is None:
+            no = ''
+        # if no is None or no == '':
+            # no = index_data
 
         Time = row_data.get("Time") #
         latitude = row_data.get("Latitude") #
@@ -2070,7 +2229,7 @@ def write_kml(data):
         category = row_data.get("Category")
         Icon = row_data.get("Icon")
         original_file = row_data.get("original_file")
-        case = row_data.get("case")
+        case = row_data.get("case") # task
 
         start_time = row_data.get("Start Time") # test
         origin_latitude = row_data.get("Origin Latitude") # test
@@ -2149,6 +2308,10 @@ def write_kml(data):
         if original_file != '':
             (description) = (f'{description}\nSOURCE: {original_file}')
 
+# row # in description
+        (description) = (f'{description}\nROW#: {row_index + 2}') # test
+
+
 # description_start
         if start_time != '' and start_time is not None:
             (description_start) = (f'{description_start}START TIME: {start_time}')
@@ -2189,7 +2352,16 @@ def write_kml(data):
             )
 # Create line and specify style
             line = kml.newlinestring(name="trip line", coords=[(longitude, latitude), (origin_longitude, origin_latitude)])
+
+            # line.style.linestyle.color = simplekml.Color.red  # Make the line red
+            # line.style.linestyle.color = simplekml.Color.orange  # Make the line orange
+            # line.style.linestyle.color = simplekml.Color.yellow  # Make the line yellow
+            # line.style.linestyle.color = simplekml.Color.green  # Make the line green
             line.style.linestyle.color = simplekml.Color.blue  # Make the line blue
+            # line.style.linestyle.color = simplekml.Color.purple  # Make the line purple
+            # line.style.linestyle.color = simplekml.Color.white  # Make the line white
+            # line.style.linestyle.color = simplekml.Color.black  # Make the line black
+
             line.style.linestyle.width = 2  # Set line width
 
     kml.save(output_kml)    # Save the KML document to the specified output file
@@ -2333,9 +2505,9 @@ def write_locations(data):
     color_worksheet.freeze_panes = 'B2'  # Freeze cells
 
     # Excel column width
-    color_worksheet.column_dimensions['A'].width = 8# Icon sample
-    color_worksheet.column_dimensions['B'].width = 9# Name
-    color_worksheet.column_dimensions['C'].width = 29# Description
+    color_worksheet.column_dimensions['A'].width = 11# Icon sample
+    color_worksheet.column_dimensions['B'].width = 11# Name
+    color_worksheet.column_dimensions['C'].width = 65# Description
 
     # Excel row height
     color_worksheet.row_dimensions[2].height = 22  # Adjust the height as needed
@@ -2349,7 +2521,7 @@ def write_locations(data):
     color_worksheet.row_dimensions[10].height = 22
     color_worksheet.row_dimensions[11].height = 22
     color_worksheet.row_dimensions[12].height = 23
-    color_worksheet.row_dimensions[13].height = 23
+    color_worksheet.row_dimensions[13].height = 55  # Yellow pin
     color_worksheet.row_dimensions[14].height = 25
     color_worksheet.row_dimensions[15].height = 25
     color_worksheet.row_dimensions[16].height = 23
@@ -2360,15 +2532,17 @@ def write_locations(data):
     color_worksheet.row_dimensions[21].height = 38
     color_worksheet.row_dimensions[22].height = 38
     color_worksheet.row_dimensions[23].height = 6
-    color_worksheet.row_dimensions[24].height = 15
-    color_worksheet.row_dimensions[25].height = 15
-    color_worksheet.row_dimensions[26].height = 20
-    color_worksheet.row_dimensions[27].height = 30  # test Tower
-    color_worksheet.row_dimensions[28].height = 15
+    color_worksheet.row_dimensions[24].height = 15 # yellow font
+    color_worksheet.row_dimensions[25].height = 55  # red_icon
+    color_worksheet.row_dimensions[26].height = 50  # chats
+
+    color_worksheet.row_dimensions[27].height = 28 # payment
+    color_worksheet.row_dimensions[28].height = 50  # test Tower
     color_worksheet.row_dimensions[29].height = 15
     color_worksheet.row_dimensions[30].height = 15
     color_worksheet.row_dimensions[31].height = 15
-    color_worksheet.row_dimensions[32].height = 15
+    color_worksheet.row_dimensions[33].height = 15
+    color_worksheet.row_dimensions[33].height = 15
 
 
     
@@ -2379,18 +2553,18 @@ def write_locations(data):
 
     icon_data = [
 
-        ('', 'Car', 'Lpr red car (License Plate Reader)'),
-        ('', 'Car2', 'Lpr yellow car'),
-        ('', 'Car3', 'Lpr greeen car with circle'),
-        ('', 'Car4', 'Lpr red car with circle'),
-        ('', 'Truck', 'Lpr truck'),         
+        ('', 'Car', 'LPR red car (License Plate Reader)'),
+        ('', 'Car2', 'LPR yellow car'),
+        ('', 'Car3', 'LPR green car with circle'),
+        ('', 'Car4', 'LPR red car with circle'),
+        ('', 'Truck', 'LPR truck'),         
         ('', '', ''),
         ('', 'Calendar', 'Calendar'), 
         ('', 'Home', 'Home'),                
         ('', 'Images', 'Photo'),
-        ('', 'Intel', 'I'),  
+        ('', 'Intel', 'blue I for Intel'),  
         ('', 'Locations', 'Reticle'),  
-        ('', 'default', 'Yellow flag'),  
+        ('', 'Yellow', 'Yellow pin (default)'),  
         ('', 'Office', 'Office'),         
         ('', 'Searched', 'Searched Item'),          
         ('', 'Videos', 'Video clip'),        
@@ -2402,12 +2576,15 @@ def write_locations(data):
         ('', 'W', 'Westbound blue arrow'),
         ('', '', ''),
         ('', 'Yellow font', 'Tagged'),
+        ('', 'Red', 'Red pin for Tagged items'),        
         ('', 'Chats', 'Chats'),   # 
+        ('', 'Payment', 'Payment'),        
         ('', 'Tower', 'Bullseye'),
         ('', '', ''),
         ('', 'blue lines', 'trips with a start and end'),
         ('', 'red circles', 'indicate radius of the signal and/or accuracy of the point'),
         ('', 'NOTE', 'visit https://earth.google.com/ <file><Import KML> select gps.kml <open>'),
+        ('', '', 'Timestamps are in ISO 8601 military time (Year-Month-Day Hour:Minute:Seconds)')
     ]
 
     for row_index, (icon, tag, description) in enumerate(icon_data):
@@ -2420,7 +2597,9 @@ def write_locations(data):
     car3_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon54.png'  # green car with circle
     car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
     truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
-    default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
+    # default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
+    default_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'   # yellow pin
+        
     calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
     chat_icon = 'https://maps.google.com/mapfiles/kml/shapes/post_office.png' # email
     locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
@@ -2433,7 +2612,10 @@ def write_locations(data):
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
     tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
     # tower_icon = 'https://earth.google.com/earth/rpc/cc/icon?color=1976d2&amp;id=2051&amp;scale=4' # test
+    yellow_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'
+    red_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
 
+      
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
     n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
     e_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-4.png'
@@ -2519,17 +2701,22 @@ def write_locations(data):
         img = Image(io.BytesIO(response.content))
         color_worksheet.add_image(img, 'A22')
 
+        response = requests.get(red_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A25')
+
+
         response = requests.get(chat_icon)
         img = Image(io.BytesIO(response.content))
-        color_worksheet.add_image(img, 'A24')     
+        color_worksheet.add_image(img, 'A26')     
 
         response = requests.get(payment_icon)   # task
         img = Image(io.BytesIO(response.content))
-        color_worksheet.add_image(img, 'A26')  
+        color_worksheet.add_image(img, 'A27')  
 
         response = requests.get(tower_icon)
         img = Image(io.BytesIO(response.content))
-        color_worksheet.add_image(img, 'A27')
+        color_worksheet.add_image(img, 'A28')
         
     except:
         pass
@@ -2571,6 +2758,8 @@ if __name__ == '__main__':
 
 """
 
+1.3.1 - Trip path (default blue line, but can change color manually)
+1.3.0 - Injest Celltower dumps (Azimuth, Radius)
 1.2.1 - can populate # with custom display or if it's blank it will put in the column number
 1.2.0 - added icons
 """
@@ -2578,26 +2767,17 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+travel path only does white lines (fix that)
 try Castviz
-fix radius_azimuth unsupported operand type(s) for /: 'str' and 'float'
-convert Radius to a int()
 integrate altitude & altitudeMode 
-figure out clustering (many identical coordinates get one pin
 convert .kml to xlsx
 Output for CellHawk Generic Cell tower output
-Injest Celltower dumps (Azimuth, Radius)
 
-accuracy (horizontal precision (m)), only focus on precision <200m
 bearing (=direction), speed
-make a kml to xlsx module
 
 create a list of coordinates[Coordinate:full address] if the contacts already exists, don't check for the full address
 if the internet isn't connected, don't try to check full address
 
-
-
-
-Country and zipcode are blank
 if address / fulldata only, get lat/long
 if it's less than 3000 skip the sleep timer
 
