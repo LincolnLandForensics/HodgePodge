@@ -46,7 +46,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "read pdfs and convert their tables to a single .xlsx"
-version = '1.0.0'
+version = '1.0.2'
 
 
 
@@ -113,7 +113,7 @@ def main():
         else:
             msg_blurb = (f"Reading pdf's in {input_folder}")
             msg_blurb_square(msg_blurb, color_green)             
-            
+        # process_pdfs_in_directory_old(input_folder, output_excel_path) 
         process_pdfs_in_directory(input_folder, output_excel_path)
         # process_pdfs_in_directory(input_folder, output_excel_path, tables_out=True, sub_folders=True)
 
@@ -148,22 +148,6 @@ def extract_tables_from_pdf(pdf_path):
                     tables.append(df)
     return tables
 
-def extract_invoice_number(tables):
-    """
-    Extract the invoice number from the tables.
-    
-    Parameters:
-    tables (list of pd.DataFrame): List of DataFrames representing tables.
-    
-    Returns:
-    str: The invoice number if found, otherwise None.
-    """
-    for table in tables:
-        if 'Invoice #' in table.columns:
-            invoice_number = table.loc[0, 'Invoice #']
-            return invoice_number
-    return None
-
 def extract_information(tables):
     """
     Extract specific information from the tables.
@@ -183,7 +167,10 @@ def extract_information(tables):
         "Description": None,
         "Price Each": None,
         "Amount": None,
-        "Total": None
+        "Total": None,
+        "Product": None,
+        "Qty": None,
+        "Unit Price": None,
     }
 
     for table in tables:
@@ -230,170 +217,6 @@ def msg_blurb_square(msg_blurb, color):
     print(horizontal_line)
     print(f'{color_reset}')
 
-
-def process_pdfs_in_directory_old(input_folder, output_excel_path):
-    """
-    Loop through all PDFs in the specified directory, extract tables, and export them to an Excel sheet.
-    
-    Parameters:
-    input_folder (str): Path to the directory containing PDF files.
-    output_excel_path (str): Path where the output Excel file will be saved.
-    """
-    if tables_out:
-        writer = pd.ExcelWriter(output_excel_path, engine='openpyxl')
-        
-    all_tables = []
-    data = []
-    
-    for filename in os.listdir(input_folder):
-        if filename.lower().endswith('.pdf'):
-            (date, invoice, billTo, shipTo, quantity, description) = ('', '', '', '', '', '')
-            (priceEach, subtotal, amount, total, billToState, shipToState) = ('', '', '', '', '', '')
-            (customer, state, year, month, day) = ('', '', '', '', '')
-
-            row_data = {}
-            pdf_path = os.path.join(input_folder, filename)
-            tables = extract_tables_from_pdf(pdf_path)
-            all_tables.extend(tables)
-            
-            # Extract and print the invoice number
-            invoice_number = extract_invoice_number(tables)
-            if invoice_number:
-                invoice = invoice_number
-
-            # if 'Date' in table.columns:
-                # date = table.loc[0, 'Date']
-
-            # Extract and print the information
-            data_tables = extract_information(tables)
-            for key, value in data_tables.items():
-                if value:
-                    # print(f"key {key} filename {filename} = value = {value}")
-                    if key == "Amount":
-                        amount = value
-                    elif key == "Date":
-                        date = value
-                    elif key == "Invoice #":
-                        invoice = value
-                    elif key == "Bill To:":
-                        billTo = value
-                    elif key == "Ship To:":
-                        shipTo = value
-                    elif key == "Quantity":
-                        quantity = value
-                    elif key == "Description":
-                        description = value
-                    elif key == "Price Each":
-                        priceEach = value
-                    elif key == "Total":
-                        total = value
-
-# billToState
-            # Regex pattern to match the state abbreviation between ", " and the zipcode
-            pattern1 = r',\s([A-Z]{2})\s\d{5}'
-
-            # Search for the pattern in the billTo string
-            match1 = re.search(pattern1, billTo)
-
-            # Extract the state abbreviation if a match is found
-            if match1:
-                billToState = match1.group(1)
-            else:
-                billToState = ''
-
-# shipToState
-            # Regex pattern to match the state abbreviation between ", " and the zipcode
-            pattern1 = r',\s([A-Z]{2})\s\d{5}'
-
-            # Search for the pattern in the shipTo string
-            match2 = re.search(pattern1, shipTo)
-    
-            # Extract the state abbreviation if a match is found
-            if match2:
-                shipToState = match2.group(1)
-            else:
-                shipToState = ''
-
-# customer
-            # Regex pattern to match the first line of the string
-            pattern3 = r'^(.*)$'
-
-            # Search for the pattern in the shipTo string
-            match3 = re.search(pattern3, shipTo, re.MULTILINE)
-
-            # Extract the first line if a match is found
-            if match3:
-                customer = match3.group(1)
-            else:
-                customer = ''
-
-# total
-            # calculate "total" by adding up all the amounts in amount
-
-            # Regex pattern to match dollar amounts
-            pattern4 = r'\$([0-9]+\.[0-9]{2})'
-
-            # Find all matches of the pattern in the amount string
-            matches = re.findall(pattern4, amount)
-
-            # Convert matched strings to floats and calculate the total
-            total = sum(float(match) for match in matches)
-
-# date
-
-            try:
-                if date.count('/') == 2:
-                    input_date = datetime.strptime(date, '%m/%d/%Y')
-                    
-                    date = input_date.strftime('%Y-%m-%d')
-                    year = input_date.strftime('%Y')
-                    month = input_date.strftime('%m')
-                    day = input_date.strftime('%d')
-                    print(f'input_date = {input_date}') # temp
-                    
-            except Exception as e:
-                print('date = {date}')  # temp
-                print(f"{color_red}Error converting time: {str(e)}{color_reset}")
-
-            
-        
-            # Format datetime object to desired output format
-
-            row_data["filename"] = filename
-
-            try:
-                row_data["date"] = date
-            except:pass    
-            row_data["invoice"] = invoice
-            row_data["billTo"] = billTo
-            row_data["shipTo"] = shipTo
-            row_data["quantity"] = quantity            
-            row_data["description"] = description
-            row_data["priceEach"] = priceEach
-            row_data["subtotal"] = subtotal
-            row_data["amount"] = amount
-            row_data["total"] = total
-            row_data["billToState"] = billToState
-            row_data["shipToState"] = shipToState
-            row_data["customer"] = customer
-            row_data["state"] = state
-            row_data["year"] = year
-            row_data["month"] = month
-            row_data["day"] = day
-
-            data.append(row_data)
-
-    
-    if tables_out:
-        for idx, table in enumerate(all_tables):
-            sheet_name = f'Table{idx+1}'
-            table.to_excel(writer, sheet_name=sheet_name, index=False)
-
-        writer.save()
-        writer.close()
-
-    write_xlsx(data)
-
 def process_pdfs_in_directory(input_folder, output_excel_path):
     """
     Loop through all PDFs in the specified directory (and optionally in subdirectories), extract tables, and export them to an Excel sheet.
@@ -409,7 +232,7 @@ def process_pdfs_in_directory(input_folder, output_excel_path):
         
     all_tables = []
     data = []
-
+    seller = input("SELLER: ")
     # Walk through directories and subdirectories if sub_folders is True
     for root, dirs, files in os.walk(input_folder) if sub_folders else [(input_folder, [], os.listdir(input_folder))]:
         for filename in files:
@@ -423,32 +246,38 @@ def process_pdfs_in_directory(input_folder, output_excel_path):
                 folder = pdf_path
                 tables = extract_tables_from_pdf(pdf_path)
                 all_tables.extend(tables)
-                
-                invoice_number = extract_invoice_number(tables)
-                if invoice_number:
-                    invoice = invoice_number
 
                 data_tables = extract_information(tables)
+            
                 for key, value in data_tables.items():
                     if value:
                         if key == "Amount":
                             amount = value
+
                         elif key == "Date":
                             date = value
                         elif key == "Invoice #":
                             invoice = value
                         elif key == "Bill To:":
                             billTo = value
+
                         elif key == "Ship To:":
                             shipTo = value
                         elif key == "Quantity":
                             quantity = value
+                        elif key == "Qty":
+                            qty = value
                         elif key == "Description":
                             description = value
                         elif key == "Price Each":
                             priceEach = value
                         elif key == "Total":
                             total = value
+                        elif key == "Product":
+                            product = value
+                        elif key == "Unit Price":
+                            unit_price = value
+
 
                 pattern = r',\s([A-Z]{2})\s\d{5}'
 
@@ -470,9 +299,13 @@ def process_pdfs_in_directory(input_folder, output_excel_path):
                 else:
                     customer = ''
 
-                pattern4 = r'\$([0-9]+\.[0-9]{2})'
-                matches = re.findall(pattern4, amount)
-                total = sum(float(match) for match in matches)
+# total
+                # calculate "total" by adding up all the amounts in amount
+                pattern4 = r'\$([0-9,]+\.[0-9]{2})'
+                match4 = re.findall(pattern4, amount)
+
+                total = sum(float(value4.replace(',', '')) for value4 in match4)    
+                total = round(float(total), 2)
 
                 try:
                     if date.count('/') == 2:
@@ -503,7 +336,9 @@ def process_pdfs_in_directory(input_folder, output_excel_path):
                 row_data["month"] = month
                 row_data["day"] = day
                 row_data["folder"] = folder
+                row_data["seller"] = seller
 
+                print(f'{filename}    {total}')   # test
                 data.append(row_data)
 
     if tables_out:
@@ -565,7 +400,7 @@ def write_xlsx(data):
 
     headers = [
         "filename", "date", "invoice", "customer", "total", "billTo", "shipTo", "quantity", "description"
-        , "priceEach", "amount", "billToState", "shipToState", "year", "month", "day", "folder"
+        , "priceEach", "amount", "billToState", "shipToState", "year", "month", "day", "folder", "seller"
     ]
 
     
@@ -594,6 +429,7 @@ def write_xlsx(data):
     worksheet.column_dimensions['O'].width = 12  # 
     worksheet.column_dimensions['P'].width = 12  # 
     worksheet.column_dimensions['Q'].width = 30  # folder
+    worksheet.column_dimensions['R'].width = 15  # seller
 
 
 
@@ -650,6 +486,7 @@ if __name__ == "__main__":
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+-S split pdfs into seperate pages before you process them (-p)
 can be adapated to different table column names
 -t will optionaly print out the tables in different sheet
 """
