@@ -231,11 +231,13 @@ def extract_info_from_text(text, total, date, grand_total, shipping, invoice):
     match_time = re.search(r'Total:\s*\$\s*([\d,]+\.\d{2})', text)
     match_date = re.search(r'Date:\s*(\d{1,2}/\d{1,2}/\d{4})', text)
     match_total = re.search(r'Total\s*\$([\d,]+\.\d{2})', text)
-    match_total2 = re.search(r'Total:\s*\$([0-9]+\.[0-9]{2})', text)
+    # match_total2 = re.search(r'Total:\s*\$([0-9]+\.[0-9]{2})', text)
+    match_total2 = re.search(r'Total:\s*\$\s*([0-9,]+\.[0-9]{2})', text)
+
     match_shipping = re.search(r'Shipping charge 1 \$([0-9]+\.[0-9]{2})', text)
     match_invoice = re.search(r'Willow st, suite #B (\d+)', text)
 
-     
+    # todo one of the grand_total has less spaces when the amount is over $999
     if match_total:
         # Remove commas from the number and return it as a float
         grand_total1 = float(match_total.group(1).replace(',', ''))
@@ -249,12 +251,14 @@ def extract_info_from_text(text, total, date, grand_total, shipping, invoice):
         # print(f'grand_total3 = {grand_total}____________________________') # temp   # todo
     if match_total2:
         grand_total2 = float(match_total2.group(1).replace(',', ''))
+        # print(f'grand_total2-1 = {grand_total2}____________________________') # temp   # todo
+
         if grand_total2 is None:
             grand_total2 = ''
         if grand_total == '':
             grand_total = grand_total2
         else:
-            grand_total = (f'{grand_total}\t{grand_total2}')            
+            grand_total2 = (f'{grand_total}\t{grand_total2}')    # temp        
         # print(f'grand_total2 = {grand_total2}____________________________') # temp   # todo
 
     if match_date:
@@ -274,7 +278,7 @@ def extract_info_from_text(text, total, date, grand_total, shipping, invoice):
     if match_invoice:
         if invoice is None or invoice == '':
             invoice = match_invoice.group(1)
-            print(f'invoice = {invoice}_____________________')  # temp
+            # print(f'invoice = {invoice}_____________________')  # temp
             
     return disclaimer, total, date, grand_total, shipping, invoice
 
