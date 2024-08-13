@@ -9,13 +9,13 @@ agency = "MWW" # ISP, MWW
 global agencyFull
 agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
-divisionFull = "Criminal Investigation Division" # Criminal Investigation Division
+divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.0.3'
+version = '3.0.6'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -51,8 +51,15 @@ d = datetime.today()
 Day = d.strftime("%d")
 Month = d.strftime("%m")    # %B = October
 Year = d.strftime("%Y")        
-todaysDate = d.strftime("%m/%d/%Y")
-todaysDateTime = d.strftime("%m_%d_%Y_%H-%M-%S")
+# todaysDate = d.strftime("%m/%d/%Y")
+# todaysDate = d.strftime("%Y/%m/%d") 
+todaysDate = d.strftime("%Y-%m-%d") 
+
+# todaysDateTime = d.strftime("%m_%d_%Y_%H-%M-%S")
+todaysDateTime = d.strftime("%Y-%m-%d_%H-%M-%S")    # used for uniq file naming
+
+
+
 
 ANNOT_KEY = '/Annots'
 ANNOT_FIELD_KEY = '/T'
@@ -221,6 +228,88 @@ def banner_print():
  \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/   \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ 
     """
     print(f'{color_blue}{art}{color_reset}')
+
+
+def convert_timestamp(timestamp, time_orig, timezone):  # task
+    if timezone is None:
+        timezone = ''
+    if time_orig is None:
+        time_orig = ''
+
+    timestamp = str(timestamp)
+
+    # Regular expression to find all timezones
+    timezone_pattern = r"([A-Za-z ]+)$"
+    matches = re.findall(timezone_pattern, timestamp)
+
+    # Extract the last timezone match
+    if matches:
+        timezone = matches[-1]
+        timestamp = timestamp.replace(timezone, "").strip()
+    else:
+        timezone = ''
+        
+    if time_orig == "":
+        time_orig = timestamp
+    else:
+        timezone = ''
+
+
+    # timestamp = timestamp.replace(' at ', ' ')
+    if "(" in timestamp:
+        timestamp = timestamp.split('(')
+        timezone = timestamp[1].replace(")", '')
+        timestamp = timestamp[0]
+    elif " CDT" in timestamp:
+        timezone = "CDT"
+        timestamp = timestamp.replace(" CDT", "")
+    elif " CST" in timestamp:
+        timezone = "CST"
+        timestamp = timestamp.replace(" CST", "")
+
+    formats = [
+        "%B %d, %Y, %I:%M:%S %p %Z",    # June 13, 2022, 9:41:33 PM CDT (Flock)
+        "%Y:%m:%d %H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",
+        "%m/%d/%Y %I:%M:%S %p",
+        "%m/%d/%Y %I:%M %p",  # timestamps without seconds
+        "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
+        "%m-%d-%y at %I:%M:%S %p %Z", # test 09-10-23 at 4:29:12 PM CDT
+        "%m-%d-%y %I:%M:%S %p",
+        "%B %d, %Y at %I:%M:%S %p %Z",
+        "%B %d, %Y at %I:%M:%S %p",
+        "%B %d, %Y %I:%M:%S %p %Z",
+        "%B %d, %Y %I:%M:%S %p",
+        "%B %d, %Y, %I:%M:%S %p %Z",
+        "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 format with UTC timezone
+        "%Y/%m/%d %H:%M:%S",  # 2022/06/13 21:41:33
+        "%d-%m-%Y %I:%M:%S %p",  # 13-06-2022 9:41:33 PM
+        "%d/%m/%Y %H:%M:%S",  # 13/06/2022 21:41:33
+        "%Y-%m-%d %I:%M:%S %p",  # 2022-06-13 9:41:33 PM
+        "%Y%m%d%H%M%S",  # 20220613214133
+        "%Y%m%d %H%M%S",  # 20220613 214133
+        "%m/%d/%y %H:%M:%S",  # 06/13/22 21:41:33
+        "%d-%b-%Y %I:%M:%S %p",  # 13-Jun-2022 9:41:33 PM
+        "%d/%b/%Y %H:%M:%S",  # 13/Jun/2022 21:41:33
+        "%Y/%b/%d %I:%M:%S %p",  # 2022/Jun/13 9:41:33 PM
+        "%d %b %Y %H:%M:%S",  # 13 Jun 2022 21:41:33
+        "%A, %B %d, %Y %I:%M:%S %p %Z",  # Monday, June 13, 2022 9:41:33 PM CDT ?
+        "%A, %B %d, %Y %I:%M:%S %p"     # Monday, June 13, 2022 9:41:33 PM CDT
+    ]
+
+    for fmt in formats:
+        try:
+            dt_obj = datetime.strptime(timestamp.strip(), fmt)
+            timestamp = dt_obj
+            return timestamp, time_orig, timezone
+                        
+        except ValueError:
+            pass
+
+    raise ValueError(f"{time_orig} Timestamp format not recognized")
+
+
+
     
 def create_docx():
     '''
@@ -458,7 +547,10 @@ def fix_date(date):
     except TypeError as error:
         print(error)
     yr = date[4]
-    date = ('%s/%s/%s %s' %(mo, dy, yr, tm))  # 3/4/2021 9:17
+    # date = ('%s/%s/%s %s' %(mo, dy, yr, tm))  # 3/4/2021 9:17
+    date = ('%s/%s/%s %s' %(yr, mo, dy, tm))  # 3/4/2021 9:17
+     
+    
     return date
 
 def fix_date2(date):
@@ -494,7 +586,10 @@ def fix_date3(date):
     mo = tempDate[1]
     yr = tempDate[2]
 
-    date = ('%s/%s/%s %s' %(mo, dy, yr, tm)).lstrip('0')  # 3/4/2021 9:17
+    # date = ('%s/%s/%s %s' %(mo, dy, yr, tm)).lstrip('0')  # 3/4/2021 9:17
+    date = ('%s/%s/%s %s' %(yr, mo, dy, tm)).lstrip('0')  # 3/4/2021 9:17
+     
+    
     return date
 
 def gui_data_entry():
@@ -704,7 +799,7 @@ def parse_log():
         parse tableau, recon imager, cellebrite triage_windows.cmd and FTK logs
     '''
 
-    # import os
+    import os
     (caseNumber, caseName, exhibit) = ('', '', '')
     if log_type == 'file':  # only ask for exhibit number if it's a single log
         if input_details == "yes":
@@ -1728,6 +1823,7 @@ Exhibit %s
             report = ("%s (Hostname: %s)" %(report, hostname))
 
         if len(dateReceived) != 0:
+            # report = (f'{report} was received on {(dateReceived.replace(" ", " at ", 1))}') # task
             report = ("%s was received on %s" %(report, dateReceived.replace(" ", " at ", 1)))
         else:
             report = ("%s was received" %(report))
@@ -1736,7 +1832,10 @@ Exhibit %s
         # if len(imagingStarted) != 0:
         if len(imagingStarted) != 0 and status != "Not imaged":
             report = ("%s On %s," %(report, imagingStarted.replace(" ", " at ", 1)))
-        report = ("%s Digital Forensic Examiner %s" %(report, forensicExaminer))
+        if forensicExaminer.startswith("DFE"):
+            report = ("%s %s" %(report, forensicExaminer))
+        else:
+            report = ("%s Digital Forensic Examiner %s" %(report, forensicExaminer))
 
         if len(imagingTool) != 0 and imagingType != '' and writeBlocker != '': 
             if imagingType[0].lower() in vowel:
@@ -1820,8 +1919,8 @@ Exhibit %s
         if exportedEvidence == "Y" and 'elevant files were exported' not in notes:
             # report = ("%s Relevant files were exported." %(report.strip()))
             report = ("%s Relevant files were exported." %(report.rstrip()))
-        elif exportedEvidence == "N" and 'search for relevant files was made and no files were found' not in notes:
-            report = ("%s A search for relevant files was made and no files were found." %(report.rstrip()))
+        elif exportedEvidence == "N" and 'search for relevant files was conduced and no files were found' not in notes:
+            report = ("%s A search for relevant files was conduced and no files were found." %(report.rstrip()))
 
         # evidence return
         if "2" in removalDate and "eturned" in storageLocation: # returned or Returned
@@ -2049,7 +2148,7 @@ def write_checklist():  # panda edition
         (analyzed, report, caseNotes, de, deBackup, deAgent) = ('', '', '', '', '', '')
         (memory, triage, edd, password, kape, photo) = ('', '', '', '', '', '')
         (OS, ipIMEI, hostname, arsenal, ip, phoneIMEI) = ('', '', '', '', '', '')
-        (dateReceived, exportedEvidence, analysisTool) = ('', '', '')
+        (dateReceived, exportedEvidence, analysisTool, analysisTool2) = ('', '', '', '')
         caseNumber = row['caseNumber'] 
         caseName = row['caseName']
         subjectBusinessName = row['subjectBusinessName']
@@ -2075,7 +2174,7 @@ def write_checklist():  # panda edition
         imaged = row['status']
         if imaged == 'Imaged':
             imaged = 'Y'
-        elif imaged == 'Not imaged':
+        elif imaged == 'Not Imaged':
             imaged = 'N'            
         imageBackup = imaged    
         analyzed = str(row['analysisTool'])
@@ -2153,6 +2252,11 @@ def write_checklist():  # panda edition
                 hostname = 'Y' 
         except TypeError as error:
             print(error)
+
+        if "arsenal" in analysisTool2.lower():  #test
+            arsenal = "Y"
+
+
     
         print(f"{exhibit}\t{exhibitType}")
         # write_output(df) # temp
@@ -2589,8 +2693,8 @@ def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, 
     """
         write ActivityReport_%s__%s_%s_%s_DRAFT.docx
     """
-    
-    output_docx = ('ActivityReport_%s__%s_%s_%s_DRAFT.docx' %(caseNumber, Month, Day, Year)) 
+
+    output_docx = (f'ActivityReport_{caseNumber}__{Year}-{Month}-{Day}_DRAFT.docx') 
 
     try:
         document = docx.Document("Blank_ActivityReport.docx") # read in the template if it exists
@@ -2763,14 +2867,21 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+if date doesn't have time, don't put 0:0:0
+
+Label GUI - Tkinter screen (Case#, Agent, Case Name, Location, Date, Exhibit, Room) # of stickers <print>
+
+standaradize date format in reporting (Wednesday, July 7, 2021)
+
+
+
 parse .ufdx logs 
 
 figure out DocX tags or variables to insert data into the header fields
 
-fix: forensicsreporter.exe -h blows an unhandled exception in script line 2344
 fix serial and storageSerial for TableauImager_21-41803200001_Ex1_Seagate3TBHDD.txt 
 
-add a brother label printer output to xlsx with qrCode
+add a brother (or Dymo) label printer output to xlsx with qrCode
 qrCode could be caseNumber_exhibit_serial (it depends on what the evidence staff want displayed on their inventory scanner)
 
 parse: GrayKey, MagentAcuire, MagnetAxiom, SumuriReconImager, TableauTX1 (MS shared samples)
