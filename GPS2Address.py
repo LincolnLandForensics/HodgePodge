@@ -8,6 +8,7 @@ and
 read GPS coordinates (xlsx) and convert them to KML
 '''
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
+# from functools import cache
 
 import io
 import requests    # pip install requests
@@ -17,6 +18,7 @@ import os
 import re
 import sys
 import time
+import random
 import openpyxl
 import simplekml    # pip install simplekml
 import geohash2    # pip install geohash2
@@ -73,8 +75,9 @@ description2 = "convert GPS coordinates to addresses or visa versa & create a KM
 version = '1.3.2'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
-
+# @cache
 def main():
+    
     global row
     row = 0  # defines arguments
     # Row = 1  # defines arguments   # if you want to add headers 
@@ -87,7 +90,6 @@ def main():
     parser.add_argument('-k', '--kml', help='xlsx to kml with nothing else', required=False, action='store_true')
     parser.add_argument('-R', '--read', help='read xlsx', required=False, action='store_true')
     parser.add_argument('-r', '--read_basic', help='read basic xlsx', required=False, action='store_true')
-
 
     args = parser.parse_args()
 
@@ -246,7 +248,6 @@ def case_number_prompt():
     case_prompt = case_number
     return case_prompt
 
-
 def convert_timestamp(timestamp, time_orig, timezone):
     if timezone is None:
         timezone = ''
@@ -266,7 +267,8 @@ def convert_timestamp(timestamp, time_orig, timezone):
         dt_obj = dt_obj.replace(microsecond=0)
 
         # Format the datetime object back into a string with the specified format
-        timestamp = dt_obj.strftime("%Y/%m/%d %I:%M:%S %p")
+        # timestamp = dt_obj.strftime("%Y/%m/%d %I:%M:%S %p")
+        timestamp = dt_obj.strftime("%Y-%m-%d %I:%M:%S %p")
 
 
     # Regular expression to find all timezones
@@ -297,11 +299,6 @@ def convert_timestamp(timestamp, time_orig, timezone):
     elif " CST" in timestamp:
         timezone = "CST"
         timestamp = timestamp.replace(" CST", "")
-
-
-
-
-
 
     formats = [
         "%B %d, %Y, %I:%M:%S %p %Z",    # June 13, 2022, 9:41:33 PM CDT (Flock)
@@ -361,34 +358,139 @@ def gps_cleanup(latitude, longitude):
         # print(f'latitude type = {type(latitude)} = {latitude}') # temp
         pass
     return (latitude, longitude)
+        
+def haversine(lat1, lon1, lat2, lon2):
+    from math import radians, cos, sin, sqrt, atan2
+
+    R = 6371.0  # Radius of the Earth in km
+
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    distance = R * c
+
+    return distance
     
+def random_color():
+    return simplekml.Color.rgb(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
     
 def travel_path_kml(coordinates):
     '''
     This reads latitude and longitude coordinates and generates a KML file with lines 
     connecting the points and no icons displayed.
     '''
+    
+    kml2 = simplekml.Kml()
+    heat = kml2.newfolder(name="travel_path")
+
+    # output_file = f'travel_path_example.kml' 
+    output_file = (f'travel_path_{datatype}.kml') 
+    # for coord in coordinates:
+        # lat, long, timestamp = coord
+        # print(f"Latitude: {lat}, Longitude: {long}, Timestamp: {timestamp}")
+        
+    for i in range(len(coordinates) - 1):
+        new_color = simplekml.Color.red    # test
+        # (new_color, linestring) = ('ff2f41ac', '')
+        coord1 = coordinates[i]
+        coord2 = coordinates[i + 1]
+        lat1, lon1, time1 = coord1
+        lat2, lon2, time2 = coord2
+
+        lat_long1 = (f'{lat1},{lon1}')
+        lat_long2 = (f'{lat2},{lon2}')  
+
+        if i == len(coordinates) - 1:
+            print(f"skipping last set")
+        # else:
+            # print(f"Latitude: {lat}, Longitude: {long}, Timestamp: {timestamp}")
+
+        
+        same_day, time_diff = time_compare(time1, time2)
+
+        distance = haversine(lat1, lon1, lat2, lon2)
+        print(f'distance = {distance} km/h') # temp
+        # Assuming an average speed limit of 100 km/h to determine feasibility
+        max_distance_possible = time_diff * 100
+        if 0.001 < time_diff < 1400 and lat_long1 != lat_long2:
+        # if 0.001 < time_diff < 1400 and distance < max_distance_possible:
+            linestring = heat.newlinestring(coords=[(lon1, lat1), (lon2, lat2)])
+            # linestring.style.linestyle.color = random_color()
+            linestring.style.linestyle.color = new_color
+            linestring.style.linestyle.width = 2
+        else:
+            new_color = random_color()
+            # linestring.style.linestyle.color = random_color()
+            print(f'new_color = {new_color}')   # temp
+            
+            
+    # Ensure no icons are visible
+    heat.stylemap.normalstyle.iconstyle.scale = 0
+    heat.stylemap.normalstyle.iconstyle.icon.href = ''
+
+    kml2.save(output_file)
+
+    msg_blurb = (f'extra travel_path KML file {output_file} created successfully!')
+    msg_blurb_square(msg_blurb, color_blue) 
+    
+def travel_path_kml_old(coordinates):
+    '''
+    This reads latitude and longitude coordinates and generates a KML file with lines 
+    connecting the points and no icons displayed.
+    integrate this with (same_day, time_dif) = time_compare(Time_previous, Time)
+    calculate distance between lat1/long1 and lat2/long2. calclulate time to see if this trip was possible
+    randomize line color for different trips
+    '''
 
     kml2 = simplekml.Kml()
     heat = kml2.newfolder(name="travel_path")
 
-    # output_file = "travel_path.kml"
     output_file = (f'travel_path_{datatype}.kml') 
     # Create lines between consecutive points
     for i in range(len(coordinates) - 1):
+        (same_day, time_diff) = ('', '')
         coord1 = coordinates[i]
         coord2 = coordinates[i + 1]
-        heat.newlinestring(coords=[coord1, coord2])
+        try:
+            # Access individual components
+            lat1, long1, time1 = coord1
+            lat2, long2, time2 = coord2            
+
+            long_lat1 = (f'{long1},{lat1}')
+            long_lat2 = (f'{long2},{lat2}')            
+            lat_long1 = (f'{lat1},{long1}')
+            lat_long2 = (f'{lat2},{long2}')            
+
+
+        except ValueError as e:
+            print(f'{e} Time error {Time} {coordinates} ') # temp
+            # print(f'Error: {e}, coord1: {coord1}, coord2: {coord2}')
+        
+        (same_day, time_diff) = time_compare(time1, time2)
+        # if same_day and time_diff != '0.0':
+        if 0.001 < time_diff < 1400 and lat_long1 != lat_long2:
+        
+        # if 0.001 < time_diff < 1400 and long_lat1 != long_lat2:
+        # if same_day and time_diff != '0.0' and long_lat1 != long_lat2:
+            # print(f'less than 1 day with different location {long_lat1} - {long_lat2}')
+            print(f'less than 1 day with different location {lat_long1} - {lat_long2}')
+
+            # heat.newlinestring(coords=[long_lat1, long_lat2])
+            heat.newlinestring(coords=[lat_long1, lat_long2])
 
     # Ensure no icons are visible
     heat.stylemap.normalstyle.iconstyle.scale = 0
     heat.stylemap.normalstyle.iconstyle.icon.href = ''
 
     # Ensure lines are displayed in color
-    # heat.style.linestyle.color = simplekml.Color.blue
     # heat.stylemap.normalstyle.linestyle.color = simplekml.Color.blue # only does white
-
-    heat.style.linestyle.color = simplekml.Color.red  # Make the line red
+    heat.style.linestyle.color = random_color()
+    # heat.style.linestyle.color = simplekml.Color.red  # Make the line red
     # heat.style.linestyle.color = simplekml.Color.orange  # Make the line orange
     # heat.style.linestyle.color = simplekml.Color.yellow  # Make the line yellow
     # heat.style.linestyle.color = simplekml.Color.green  # Make the line green
@@ -396,10 +498,6 @@ def travel_path_kml(coordinates):
     # heat.style.linestyle.color = simplekml.Color.purple  # Make the line purple
     # heat.style.linestyle.color = simplekml.Color.white  # Make the line white
     # heat.style.linestyle.color = simplekml.Color.black  # Make the line black
-
-
-
-
 
     heat.style.linestyle.width = 2  # Set line width
 
@@ -624,13 +722,15 @@ def read_gps(data):
 
         name_data = row_data.get("Name")
         latitude = row_data.get("Latitude") # works
-        latitude = str(latitude)
         if latitude is None:
-            latitude = ''        
+            latitude = ''
+        latitude = str(latitude)
+        
         longitude = row_data.get("Longitude") # works
-        longitude = str(longitude)
         if longitude is None:
-            longitude = ''        
+            longitude = ''  
+        longitude = str(longitude)
+      
         address = row_data.get("Address") # works
         type_data = row_data.get("Type") # works  
         business = row_data.get("business")
@@ -716,6 +816,7 @@ def read_gps(data):
             if len(address) > 3:
 
                 try:
+                    print(f'trying address resolution')
                     location = geolocator.geocode(address)
 
                     if location:
@@ -778,11 +879,12 @@ def read_gps(data):
                 address_parts = fulladdress.split(', ')
                 if country != '' and len(address_parts) >= 1:
                     country = address_parts[-1]
-                if zipcode != '' and len(address_parts) >= 2:
+                if zipcode != '' and len(address_parts) >= 2:   # task
                     zipcode = address_parts[-2]
-                if state == '' and len(address_parts) >= 3:
+                if len(state) <= 2 and len(address_parts) >= 3: # test
+                # if state == '' and len(address_parts) >= 3:
                     state = address_parts[-3]
-                if country != '' and len(address_parts) >= 4:
+                if len(country) <= 2 and len(address_parts) >= 4:
                     county = address_parts[-4]
                 if len(address_parts) >= 6:
                     if "Township" in address_parts[-5]:
@@ -1108,8 +1210,6 @@ def read_intel(input_xlsx):
      
     return data
 
-
-
 def read_locations(input_xlsx):
 
     """Read data from an xlsx file and return as a list of dictionaries.
@@ -1185,6 +1285,10 @@ def read_locations(input_xlsx):
             name_data = row_data.get("File Name")   # Axiom Pictures
             if name_data is None:
                 name_data = ''            
+        if name_data == '':
+            name_data = row_data.get("Network Name (SSID)")   # iOS Wifi
+            if name_data is None:
+                name_data = ''   
 
 # no 
         no = row_data.get("#")
@@ -1223,9 +1327,16 @@ def read_locations(input_xlsx):
             timezone = 'GMT'    # test
             if Time is None:
                 Time = ''
+        if Time == '':
+            Time = row_data.get("Last Joined Date/Time - UTC-06:00 (M/d/yyyy)[DST]")   # Axiom iOS wifi
+            if Time is None:
+                Time = ''
 
-
-
+        if Time == '':
+            Time = row_data.get("Created Date/Time - UTC-06:00 (M/d/yyyy)[DST]")   # Axiom Significant locations
+            if Time is None:
+                Time = ''
+                
 
 # Start Time
         start_time = row_data.get("Start Date/Time - UTC-06:00 (M/d/yyyy)[DST]")
@@ -1442,6 +1553,14 @@ def read_locations(input_xlsx):
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = '' 
+        if latitude == '': 
+            latitude = row_data.get("Latitude (On App Startup)")    # Axiom Uber Accounts
+            latitude = str(latitude)
+            if latitude is None or latitude == 'None':
+                latitude = '' 
+
+
+
                 
         if longitude == '':
             longitude = row_data.get("Capture Location Longitude")
@@ -1471,6 +1590,12 @@ def read_locations(input_xlsx):
                 
                 if longitude_ref == 'West':
                     longitude = '-' + longitude
+
+        if longitude == '': 
+            longitude = row_data.get("Longitude (On App Startup)")  # Axiom Uber Accounts
+            longitude = str(longitude)
+            if longitude is None or longitude == 'None':
+                longitude = '' 
 
 
         (latitude, longitude) = gps_cleanup(latitude, longitude)
@@ -1566,10 +1691,12 @@ def read_locations(input_xlsx):
                 elif Altitude != '':
                     coordinate = f'{latitude},{longitude},{Altitude}'
 
+        if latitude != '' and longitude != '' and Time != '':
+        # if latitude != '' and longitude != '': # test
+            coordinates.append((latitude,longitude, Time))
 
-        if latitude != ''  and longitude != '': # test
-            coordinates.append((longitude, latitude))
-            
+            # coordinates.append((longitude, latitude))
+            # (f"{row['Latitude']}, {row['Longitude']}", row['Time'])
 # address
         address = row_data.get("Address")
         if address is None:
@@ -1637,12 +1764,29 @@ def read_locations(input_xlsx):
                     Icon = "Searched" 
             elif active_sheet_title == 'Apple Maps Trips':
                 type_data = "Apple Maps Trips"
-                # Icon = "Searched" 
+                Icon = "Map" 
 
             elif active_sheet_title == 'Searched Items':
                 type_data = "Searched"
                 if Icon == '':
                     Icon = "Searched" 
+            elif active_sheet_title == 'Parked Car Locations':
+                type_data = "Parked Car Locations"
+                if Icon == '':
+                    Icon = "Car4" 
+
+        # Apple Maps Trips = "Map"
+        # Google Maps https://banner2.cleanpng.com/lnd/20240523/jeo/axziljwt9.webp = "Map"
+        # Lyft Last Known Location
+        # Lyft Location Shortcuts
+        # Parked Car Locations
+        # PlaceCardTap
+        # Apple Maps = "Map"
+            # Show
+        # Significant Locations
+        # Significant Locations Visits
+        # Uber Cached Locations
+
 
 
 
@@ -1699,10 +1843,12 @@ def read_locations(input_xlsx):
         if 'Apple Maps' in original_file:
             # source = 'Apple Maps'
             type_data = 'Apple Maps'
+            icon = "Map"
             if type_data == '':
                 type_data = 'Locations'
         elif 'Google Maps' in original_file:
             source = 'Google Maps'
+            icon = "Map"
             if type_data == '':
                 type_data = 'Locations'
             
@@ -1787,18 +1933,18 @@ def read_locations(input_xlsx):
 
         if state == '' and latitude != '' and longitude != '':
             try:
-                if 36.970298 <= float(latitude) <= 42.508337 and -91.516837 <= float(longitude) <= -87.023965:
-                    state = 'Illinois'
-                elif 40.61364 <= float(latitude) <= 40.61364 and -95.774704 <= float(longitude) <= -89.098843:
-                    state = 'Missouri'
-                elif 41.761089 <= float(latitude) <= 41.761089 and -84.809582 <= float(longitude) <= -84.784579:
-                    state = 'Indiana'
+                if 36.970298 <= float(latitude) <= 42.508337 and -91.516837 <= float(longitude) <= -87.3215:
+                    state = 'Il'
+                elif 40.61364 <= float(latitude) <= 40.61364 and -95.774704 <= float(longitude) <= -89.1745:
+                    state = 'Mo'
+                elif 41.761089 <= float(latitude) <= 41.761089 and --87.3140 <= float(longitude) <= -84.784579:
+                    state = 'In'
             except:
                 pass
         if country == '' and latitude != '' and longitude != '':
             try:
                 if 24.396308 <= float(latitude) <= 49.384358 and -125.001402 <= float(longitude) <= -66.93457:
-                    country = 'United States'
+                    country = 'US'
             except:pass    
 
 # zipcode  
@@ -2085,7 +2231,6 @@ def read_locations(input_xlsx):
         row_data["time_orig_start"] = time_orig_start
         row_data["timezone_start"] = timezone_start
 
-    # print(f'coordinates2 = {coordinates}')   # temp
     return (data, coordinates)
 
 def point_icon_maker(Icon):        
@@ -2115,6 +2260,8 @@ def point_icon_maker(Icon):
     home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
     images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
     intel_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon44.png'
+    map_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon30.png'
+
     office_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon21.png'
     payment_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon50.png'
 
@@ -2124,6 +2271,8 @@ def point_icon_maker(Icon):
     # tower_icon = 'https://earth.google.com/earth/rpc/cc/icon?color=1976d2&amp;id=2051&amp;scale=4' # test
     yellow_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'
     red_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
+    green_icon = 'https://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png'
+    orange_icon = 'https://maps.google.com/mapfiles/kml/paddle/orange-blank.png'
 
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
@@ -2153,6 +2302,8 @@ def point_icon_maker(Icon):
         point_icon = images_icon
     elif Icon == "Intel":
         point_icon = intel_icon
+    elif Icon == "Map":
+        point_icon = map_icon
     elif Icon == "Office":
         point_icon = office_icon
     elif Icon == "Payment":
@@ -2174,8 +2325,11 @@ def point_icon_maker(Icon):
         point_icon = yellow_icon
     elif Icon == "Red":
         point_icon = red_icon
-    elif Icon == "Red":
-        point_icon = red_icon
+    elif Icon == "Green":
+        point_icon = green_icon
+    elif Icon == "Orange":
+        point_icon = orange_icon
+
     elif Icon == "N":
         point_icon = n_icon
     elif Icon == "E":
@@ -2188,6 +2342,30 @@ def point_icon_maker(Icon):
         point_icon = default_icon
 
     return point_icon
+
+def time_compare(time1, time2):
+
+    # Parse the input strings into datetime objects
+    time_format = "%Y-%m-%d %H:%M:%S"
+    time1 = datetime.strptime(time1, time_format)
+    time2 = datetime.strptime(time2, time_format)
+    
+    # Compare the dates
+    if time1.date() == time2.date():
+        same_day = True
+        # print(f"{time1} & {time2} Same day")
+    else:
+        same_day = False
+        # print(f"{time1} & {time2} Not same day")
+    
+    # Calculate the difference in minutes
+    try:
+        time_diff = abs((time2 - time1).total_seconds() / 60.0)
+        # print(f'time_diff = {time_diff} minutes')
+    except:
+        time_diff = ''
+    # print(f"Number of minutes between the two timestamps: {time_diff:.2f}")
+    return (same_day, time_diff)
     
 def write_kml(data):
     '''
@@ -2614,6 +2792,9 @@ def write_locations(data):
     # tower_icon = 'https://earth.google.com/earth/rpc/cc/icon?color=1976d2&amp;id=2051&amp;scale=4' # test
     yellow_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'
     red_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
+    green_icon = 'https://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png'
+    orange_icon = 'https://maps.google.com/mapfiles/kml/paddle/orange-blank.png'
+
 
       
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
@@ -2724,7 +2905,6 @@ def write_locations(data):
     
     workbook.save(output_xlsx)
 
-
 def usage():
     '''
     working examples of syntax
@@ -2767,7 +2947,12 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-travel path only does white lines (fix that)
+research Gx:trax module
+
+compare timestamps and create trips based on timestamp (same day or within so many minutes.)
+(same_day, time_diff) = time_compare(Time_previous, Time)
+placeid (google)
+travel path only does white lines (fix that) randomize trip line colors for different trips
 try Castviz
 integrate altitude & altitudeMode 
 convert .kml to xlsx
@@ -2786,7 +2971,7 @@ if it's less than 3000 skip the sleep timer
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-avoid processing Google Maps Tiles and 
+avoid processing Google Maps Tiles, Apple Maps - Biome App Intents.xlsx, iOS maps
 connection timeout after about 4000 attempts
 with the sleep timer set to 10 (sec) it doesn't crap out.
 
