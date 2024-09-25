@@ -10,6 +10,11 @@ read GPS coordinates (xlsx) and convert them to KML
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 # from functools import cache
 
+from fastkml import kml  # pip install fastkml
+from shapely.geometry import Point, LineString, Polygon  # pip install fastkml shapely openpyxl
+
+
+
 import io
 import requests    # pip install requests
 from openpyxl.drawing.image import Image
@@ -88,6 +93,8 @@ def main():
     parser.add_argument('-c', '--create', help='create blank input sheet', required=False, action='store_true')
     parser.add_argument('-i', '--intel', help='convert intel sheet to locations', required=False, action='store_true')
     parser.add_argument('-k', '--kml', help='xlsx to kml with nothing else', required=False, action='store_true')
+    parser.add_argument('-K', '--kml2xlsx', help='kml to xlsx', required=False, action='store_true')
+
     parser.add_argument('-R', '--read', help='read xlsx', required=False, action='store_true')
     parser.add_argument('-r', '--read_basic', help='read basic xlsx', required=False, action='store_true')
 
@@ -102,19 +109,29 @@ def main():
     # global input_xlsx
     global output_xlsx
     global output_kml
-    input_kml = ''
+
+    global input_kml
+    input_kml = 'Locations.kml'
+
     
     if not args.input: 
         input_xlsx = "locations.xlsx"        
     elif args.input.lower().endswith('.kml'):
-        input_xlsx = args.input
+        # input_xlsx = args.input
         input_kml = args.input
     else:
         input_xlsx = args.input
 
     global datatype
-    datatype = input_xlsx
-    datatype = datatype.replace('.xlsx', '')
+    if args.input is not None:
+        if ".xlsx" in args.input:
+            datatype = input_xlsx
+        elif ".kml" in args.input:
+            datatype = args.input
+    else:
+        datatype = ''
+     
+    datatype = datatype.replace('.xlsx', '').replace('.kml', '')
     
     output_kml = (f'GPS_{datatype}.kml')
 
@@ -147,7 +164,7 @@ def main():
             
             workbook.close()
             # print(f'{color_green}Writing to {output_xlsx} {color_reset}')
-            msg_blurb = (f'Writing to gps.kml')
+            msg_blurb = (f'Writing to {output_kml}')
             msg_blurb_square(msg_blurb, color_blue)
 
             print(f'''\n\n{color_yellow}
@@ -157,6 +174,33 @@ def main():
         else:
             print(f'{color_red}{input_xlsx} does not exist{color_reset}')
             exit()
+    elif args.kml2xlsx:
+        data = []
+        file_exists = os.path.exists(input_kml)
+        if file_exists == True:
+            msg_blurb = (f'Reading {input_kml}')
+            msg_blurb_square(msg_blurb, color_green)
+
+            # (data, coordinates) = kml_to_excel(input_kml, output_xlsx)
+            (data, coordinates) = kml_to_excel(data)
+
+            # create kml file
+            write_locations(data)   # ??
+            # write_kml(data)
+            # travel_path_kml(coordinates)
+            
+            workbook.close()
+            msg_blurb = (f'Writing to {output_xlsx}')
+            msg_blurb_square(msg_blurb, color_blue)
+
+            # print(f'''\n\n{color_yellow}
+            # visit https://earth.google.com/
+            # <file><Import KML> select gps.kml <open>
+            # {color_reset}\n''')
+        else:
+            print(f'{color_red}{input_kml} does not exist{color_reset}')
+            exit()
+
     elif args.intel:
         data = []
         file_exists = os.path.exists(input_xlsx)
@@ -328,6 +372,8 @@ def convert_timestamp(timestamp, time_orig, timezone):
         "%Y/%b/%d %I:%M:%S %p",  # 2022/Jun/13 9:41:33 PM
         "%d %b %Y %H:%M:%S",  # 13 Jun 2022 21:41:33
         "%A, %B %d, %Y %I:%M:%S %p %Z",  # Monday, June 13, 2022 9:41:33 PM CDT ?
+        "%m/%d/%Y %H:%M",               # Month/Day/Year Hour:Minute (new format)    
+        "%Y-%m-%d %H:%M:%S%z",  #         2009-04-11 19:37:36-05:00
         "%A, %B %d, %Y %I:%M:%S %p"     # Monday, June 13, 2022 9:41:33 PM CDT
     ]
 
@@ -342,6 +388,30 @@ def convert_timestamp(timestamp, time_orig, timezone):
 
     raise ValueError(f"{time_orig} Timestamp format not recognized")
 
+def direction_convert(direction):
+    # If the input is a valid direction letter (N, E, S, W), return it directly
+    if isinstance(direction, str) and direction in ["N", "E", "S", "W"]:
+        return direction
+    
+    # If the input is not a number or outside the valid range, return an error
+    if not isinstance(direction, (int, float)) or direction < 0 or direction > 360:
+        return "Invalid input. Must be a degree between 0 and 360, or a valid direction letter."
+    
+    # Simplified cardinal directions with their corresponding ranges
+    directions = [
+        ("N", 0, 45),   # North (0° to 45° or 360°)
+        ("E", 45, 135),  # East (45° to 135°)
+        ("S", 135, 225), # South (135° to 225°)
+        ("W", 225, 315), # West (225° to 315°)
+        ("N", 315, 360)  # North again (315° to 360°)
+    ]
+    
+    # Iterate through each direction and match the degree
+    for dir_label, min_deg, max_deg in directions:
+        if min_deg <= direction < max_deg:
+            return dir_label
+            
+            
 def gps_cleanup(latitude, longitude):
     latitude = latitude.replace("'", '').replace("\"", '').replace("°", '.')   # don't replace .
     longitude = longitude.replace("'", '').replace("\"", '').replace("°", '.')    
@@ -358,6 +428,36 @@ def gps_cleanup(latitude, longitude):
         # print(f'latitude type = {type(latitude)} = {latitude}') # temp
         pass
     return (latitude, longitude)
+
+def get_coordinates(geometry):
+    """Extract latitude, longitude, and formatted coordinates from different KML geometries."""
+    latitude, longitude, coordinate = '', '', ''
+
+    if isinstance(geometry, Point):
+        latitude, longitude = geometry.y, geometry.x
+        coordinate = f'{latitude},{longitude}'
+
+    elif isinstance(geometry, LineString):
+        coordinates = [(point[1], point[0]) for point in geometry.coords]
+        latitude, longitude = coordinates[0]
+        coordinate = ', '.join([f'{lat},{lon}' for lat, lon in coordinates])
+
+    elif isinstance(geometry, Polygon):
+        coordinates = [(point[1], point[0]) for point in geometry.exterior.coords]
+        latitude, longitude = coordinates[0]
+        coordinate = ', '.join([f'{lat},{lon}' for lat, lon in coordinates])
+
+    elif latitude == '':
+        coordinate = str(geometry)
+        coordinate = coordinate.split('(')[1].replace(')', '')
+        coordinate = coordinate.split(' ')
+        longitude = coordinate[0]
+        latitude = coordinate[1]
+
+        # coordinate = (f'{latitude},{longitude}')
+        coordinate = f'{longitude},{latitude}'
+    return latitude, longitude, coordinate
+
         
 def haversine(lat1, lon1, lat2, lon2):
     from math import radians, cos, sin, sqrt, atan2
@@ -375,6 +475,96 @@ def haversine(lat1, lon1, lat2, lon2):
     distance = R * c
 
     return distance
+
+def kml_to_excel(data):
+# def kml_to_excel(input_kml, output_xlsx):
+    coordinates = []
+    from fastkml import kml  # pip install fastkml
+    from shapely.geometry import Point, LineString, Polygon  # pip install fastkml shapely openpyxl
+
+    with open(input_kml, 'rb') as file:  # Open the KML file as binary
+        doc = file.read()
+
+    k = kml.KML()
+    k.from_string(doc)
+    placemarks = []
+
+    # Traverse through features in the KML
+    for feature in k.features():
+        if isinstance(feature, kml.Document) or isinstance(feature, kml.Folder):
+            for placemark in feature.features():
+
+                if isinstance(placemark, kml.Placemark):
+                    (tag, type_data, styleUrl, Altitude, source_file, business) = ('', '', '', '', input_kml, '')
+                    (fulladdress, IconStyle, latitude, longitude, coordinate) = ('', '', '' ,'', '')
+
+                    name = placemark.name or ""
+                    if "/" in name:
+                        name = ''
+                    elif ".MOV" in name or ".mov" in name:
+                        type_data = "Videos"
+                        description = name
+                        IconStyle = 'Videos'                        
+                    
+                    description = placemark.description or ""
+                    description = description.replace('<p>', '').replace('</p>', '')
+                    if "/" in description:
+                        description = ''
+                    if ".JPG" in name or ".jpg" in name or ".jpeg" in name:
+                        type_data = "Images"
+                        description = name
+                        IconStyle = 'Images'
+                        
+                        
+                    # Extract timestamp if present
+                    Time = ""
+                    if placemark.timeStamp:
+                        try:
+                            Time = str(placemark.timeStamp).split('.')[0]
+                        except ValueError:
+                            Time = ""  # Handle invalid timestamp gracefully
+
+                    # Extract coordinate
+                    latitude, longitude, coordinate = get_coordinates(placemark.geometry)
+                    print(f'{Time}  {coordinate}')  # temp
+
+                    data.append({
+                        '#': '',
+                        'Name': name,
+                        'Time': Time,
+                        'Latitude': latitude,
+                        'Longitude': longitude,
+                        'Coordinate': coordinate,            
+                        'Description': description,
+                        'Tag': tag,            
+                        'Type': type_data,            
+                        'styleUrl': styleUrl,
+                        'Altitude': Altitude,
+                        'Source file information': source_file,
+                        'business': business,    
+                        'fulladdress': fulladdress ,    
+                        'Icon': IconStyle
+                    })
+
+    # for idx, placemark in enumerate(placemarks, start=1):
+        # ws.append([idx] + list(placemark))
+
+    # Auto-adjust column widths
+    # for col in ws.columns:
+        # max_length = 0
+        # col_letter = col[0].column_letter
+        # for cell in col:
+            # try:
+                # if len(str(cell.value)) > max_length:
+                    # max_length = len(cell.value)
+            # except:
+                # pass
+        # ws.column_dimensions[col_letter].width = max(max_length, 10)
+
+    # wb.save(output_xlsx)
+
+    return data, coordinates
+
     
 def random_color():
     return simplekml.Color.rgb(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -414,7 +604,7 @@ def travel_path_kml(coordinates):
         same_day, time_diff = time_compare(time1, time2)
 
         distance = haversine(lat1, lon1, lat2, lon2)
-        print(f'distance = {distance} km/h') # temp
+        # print(f'distance = {distance} km/h') # temp
         # Assuming an average speed limit of 100 km/h to determine feasibility
         max_distance_possible = time_diff * 100
         if 0.001 < time_diff < 1400 and lat_long1 != lat_long2:
@@ -426,7 +616,7 @@ def travel_path_kml(coordinates):
         else:
             new_color = random_color()
             # linestring.style.linestyle.color = random_color()
-            print(f'new_color = {new_color}')   # temp
+            # print(f'new_color = {new_color}')   # temp
             
             
     # Ensure no icons are visible
@@ -750,6 +940,8 @@ def read_gps(data):
         PlusCode = row_data.get("PlusCode")
         Radius = row_data.get("Radius") 
         Azimuth = row_data.get("Azimuth") # test
+        speed = row_data.get("speed") # test
+        parked = row_data.get("parked") # test
 
         if Radius is None:
             Radius == ''
@@ -1270,7 +1462,7 @@ def read_locations(input_xlsx):
         (deleted, service_id, carved, sighting_state, sighting_location, manually_decoded) = ('', '', '', '', '', '')
         (origin_latitude, origin_longitude, start_time, location) = ('', '', '', '')
         (Azimuth, Radius, Altitude, time_orig_start, timezone_start) = ('', '', '', '', '')
-
+        (speed, parked) = ('', '')
 
         if Icon == '':  # there is an icon section at the bottom
             Icon = row_data.get("Icon")
@@ -1419,12 +1611,27 @@ def read_locations(input_xlsx):
             Time  = row_data.get("Start Date/Time - UTC+00:00 (M/d/yyyy)") 
             if Time is None:
                 Time = ''               
+# GPS tracker
+        if Time == '':
+            Time  = row_data.get("report_time (GMT)") 
+            if Time is None:
+                Time = ''    
+            else:
+                timezone = 'GMT'
 
-
+# GPS tracker 2
+        if Time == '':
+            Time  = row_data.get("Date Time (CT)") 
+            if Time is None:
+                Time = ''    
+            else:
+                timezone = 'CT'
+                
 # timezone
-        timezone  = row_data.get("Timezone")
-        if timezone is None:
-            timezone = ''  
+        if timezone == '':
+            timezone  = row_data.get("Timezone")
+            if timezone is None:
+                timezone = ''  
 
 # time Gmail warrant retuirn
         time2  = row_data.get("Timestamp (UTC)")
@@ -1501,7 +1708,10 @@ def read_locations(input_xlsx):
             Altitude = row_data.get("Altitude (meters)")    # test Axiom Live Photos
             if Altitude is None:
                 Altitude = ''  
-
+        # if Altitude == '':
+            # Altitude = row_data.get("altitude")    # GPS tracker
+            # if Altitude is None:
+                # Altitude = ''  
 
 
 # gps
@@ -1510,15 +1720,23 @@ def read_locations(input_xlsx):
         latitude = str(latitude)
         if latitude is None or latitude == 'None':
             latitude = ''        
-        # if len(latitude) <3:
-            # print(f'blah {latitude}')   # temp
-            # latitude = ''
-
+        if latitude == '':
+            latitude = row_data.get("latitude")
+            latitude = str(latitude)
+            if latitude is None or latitude == 'None':
+                latitude = ''             
 
         longitude = row_data.get("Longitude")
         longitude = str(longitude)
         if longitude is None or longitude == 'None':
             longitude = ''        
+        if longitude == '':
+            longitude = row_data.get("longitude")
+            longitude = str(longitude)
+            if longitude is None or longitude == 'None':
+                longitude = ''   
+
+
 
         if latitude == '0.0' or latitude == '0':
             latitude = '' 
@@ -1698,6 +1916,7 @@ def read_locations(input_xlsx):
             # coordinates.append((longitude, latitude))
             # (f"{row['Latitude']}, {row['Longitude']}", row['Time'])
 # address
+        
         address = row_data.get("Address")
         if address is None:
             address = ''        
@@ -1705,6 +1924,12 @@ def read_locations(input_xlsx):
             address = row_data.get("TOWER ADDR")
             if address is None:
                 address = ''    
+        if address == '':
+            address = row_data.get("Estimated Address")
+            if address is None:
+                address = ''    
+
+
 # group
         group = row_data.get("Group")
         if group is None:
@@ -1734,6 +1959,11 @@ def read_locations(input_xlsx):
             type_data = row_data.get("Type")
         if type_data is None:
             type_data = ''  
+        if type_data == '':
+            type_data = row_data.get("type")
+        if type_data is None:
+            type_data = ''  
+
 
         if type_data == '':
             type_data = active_sheet_title
@@ -1774,6 +2004,12 @@ def read_locations(input_xlsx):
                 type_data = "Parked Car Locations"
                 if Icon == '':
                     Icon = "Car4" 
+        elif type_data != '' and Icon == '':
+            # if type_data == 'gps':
+            if type_data == 'gps' or type_data == 'cell':
+
+                Icon = 'Car4'
+
 
         # Apple Maps Trips = "Map"
         # Google Maps https://banner2.cleanpng.com/lnd/20240523/jeo/axziljwt9.webp = "Map"
@@ -2007,6 +2243,15 @@ def read_locations(input_xlsx):
         if direction is None:
             direction = ''    
         if direction == '':
+            direction  = row_data.get("direction")
+            if direction is None:
+                direction = ''  
+        if direction == '':
+            direction  = row_data.get("Heading")
+            if direction is None:
+                direction = ''  
+
+        if direction == '':
             match = re.search(r'\((\w+)\)',hwy)
             if ' NB' in hwy:
                 direction = 'N'
@@ -2018,16 +2263,26 @@ def read_locations(input_xlsx):
                 direction = 'W'
             elif match:
                 direction = match.group(1).replace('B','')
+        
+        try:
+            direction = direction.replace('Northbound', 'N')
+            direction = direction.replace('Eastbound', 'E')
+            direction = direction.replace('Southbound', 'S')
+            direction = direction.replace('Westbound', 'W')
+            direction = direction.replace('Unknown', '')
+
+            direction = direction.replace('North', 'N')
+            direction = direction.replace('East', 'E')
+            direction = direction.replace('South', 'S')
+            direction = direction.replace('West', 'W')
+          
             
-        direction = direction.replace('Northbound', 'N')
-        direction = direction.replace('Eastbound', 'E')
-        direction = direction.replace('Southbound', 'S')
-        direction = direction.replace('Westbound', 'W')
-        direction = direction.replace('Unknown', '')
+        except: pass    
+
+        if isinstance(direction, (int, float)) and 0 <= direction <= 360:
+            # add original direction to note:
+            direction = direction_convert(direction)
             
-
-
-
 # PlusCode
         PlusCode  = row_data.get("PlusCode")
         if PlusCode is None:
@@ -2173,6 +2428,26 @@ def read_locations(input_xlsx):
             except ValueError:
                 Radius == ''
 
+# speed
+        if speed == '':
+            speed  = row_data.get("speed")
+            if speed is None:
+                speed = '' 
+        if speed == '':
+            speed  = row_data.get("Speed (mph)")
+            if speed is None:
+                speed = '' 
+
+# parked
+        if parked == '':
+            parked  = row_data.get("parked")
+            if parked is None:
+                parked = '' 
+        if parked == '':
+            parked  = row_data.get("Park Time")
+            if parked is None:
+                parked = '' 
+                
 # write rows to data
         row_data["#"] = no
         row_data["Time"] = Time
@@ -2230,6 +2505,10 @@ def read_locations(input_xlsx):
         row_data["Altitude"] = Altitude
         row_data["time_orig_start"] = time_orig_start
         row_data["timezone_start"] = timezone_start
+        row_data["speed"] = speed
+        row_data["parked"] = parked
+
+
 
     return (data, coordinates)
 
@@ -2420,6 +2699,8 @@ def write_kml(data):
         Altitude = row_data.get("Altitude") # test
         time_orig_start = row_data.get("time_orig_start") # test
         timezone_start = row_data.get("timezone_start") # test
+        speed = row_data.get("speed") # test
+        parked = row_data.get("parked") # test
 
 # Radius
         if Radius is None:
@@ -2485,6 +2766,10 @@ def write_kml(data):
             (description) = (f'{description}\nRadius: {Radius}')
         if original_file != '':
             (description) = (f'{description}\nSOURCE: {original_file}')
+        if speed != '':
+            (description) = (f'{description}\nSPEED: {speed}')
+        if parked != '':
+            (description) = (f'{description}\nPARKED: {parked}')
 
 # row # in description
         (description) = (f'{description}\nROW#: {row_index + 2}') # test
@@ -2560,11 +2845,14 @@ def write_locations(data):
     worksheet = workbook.active
 
     # print(f'Reading {active_sheet_title} sheet\n')
-    worksheet.title = active_sheet_title
-    
+    try:
+        worksheet.title = active_sheet_title
+    except Exception as e:
+        print(f"{color_red}Error : {str(e)}{color_reset}")
+
     # worksheet.title = 'Locations'
     # header_format = {'bold': True, 'border': True}
-    worksheet.freeze_panes = 'B2'  # Freeze cells
+    worksheet.freeze_panes = 'C2'  # Freeze cells
     worksheet.selection = 'B2'
 
     # Apply default style to the header row (bold font)
@@ -2584,7 +2872,7 @@ def write_locations(data):
         , "Manually decoded", "Account", "PlusCode", "Time Original", "Timezone"
         , "Icon", "original_file", "case", "Origin Latitude", "Origin Longitude"
         , "Start Time", "Azimuth", "Radius", "Altitude", "Location"
-        , "time_orig_start", "timezone_start", "Index"
+        , "time_orig_start", "timezone_start", "Index", "speed", "parked"
     ]
 
     # Write headers to the first row
@@ -2916,6 +3204,7 @@ def usage():
     print(f'\nExample:')
     print(f'    {file} -c -O input_blank.xlsx') 
     print(f'    {file} -k -I locations.xlsx  # xlsx 2 kml with no internet processing')     
+    print(f'    {file} -K -I Locations.kml  # kml 2 xlsx with no internet processing')     
 
     print(f'    {file} -r -I locations.xlsx -O Locations_.xlsx')
     print(f'    {file} -R')
