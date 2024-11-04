@@ -77,7 +77,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.3.4'
+version = '1.3.5'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -111,8 +111,8 @@ def main():
     global output_kml
 
     global input_kml
-    input_kml = 'Locations.kml'
-
+    # input_kml = 'Locations.kml'
+    input_kml = ''
     
     if not args.input: 
         input_xlsx = "locations.xlsx"        
@@ -374,6 +374,13 @@ def convert_timestamp(timestamp, time_orig, timezone):
         "%A, %B %d, %Y %I:%M:%S %p %Z",  # Monday, June 13, 2022 9:41:33 PM CDT ?
         "%m/%d/%Y %H:%M",               # Month/Day/Year Hour:Minute (new format)    
         "%Y-%m-%d %H:%M:%S%z",  #         2009-04-11 19:37:36-05:00
+        "%m/%d/%Y",  # date only
+        "%m/%d/%y",  # date only
+        "%m-%d-%y",  # date only, short year
+        "%m-%d-%Y",  # date only, long year        
+        "%Y-%m-%d",  # date only in ISO format        
+        "%Y/%m/%d",  # date only      
+
         "%A, %B %d, %Y %I:%M:%S %p"     # Monday, June 13, 2022 9:41:33 PM CDT
     ]
 
@@ -2717,6 +2724,9 @@ def write_kml(data):
         
         if name_data != '':
             (description) = (f'{description}\nNAME: {name_data}')
+
+        if coordinate != '':
+            (description) = (f'{description}\nCOORDINATE: {coordinate}')    # test
         
         if Time != '':
             (description) = (f'{description}\nTIME: {Time}')
@@ -3236,6 +3246,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+batchgeo.com is an online alternative (similar)
 research Gx:trax module
 
 compare timestamps and create trips based on timestamp (same day or within so many minutes.)
