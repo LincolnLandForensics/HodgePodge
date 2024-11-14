@@ -12,11 +12,16 @@ import time
 from email.policy import default
 import argparse # for menu system
 from datetime import datetime
+try:
+    import textract # pip install textract
+except Exception as e:
+    print(f"extract module is not installed': {e}")
+
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert the content of .txt, .pdf, .docx, and .eml to Markdown, for use in Obsidian"
-version = '0.1.5'
+version = '0.1.6'
 
 # Colorize section
 global color_red
@@ -104,58 +109,82 @@ def main():
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
  
-def extract_text_from_pdf(pdf_path):
+def extract_text_from_pdf(file_path):
     """
     Function to extract text from a PDF file.
     """
     try:
-        doc = fitz.open(pdf_path)
-        # text = f"\n## file_path: {pdf_path}\n"
-        # text = f"\n## file_path: {pdf_path}\n"
-        (creation_time, access_time, modified_time) = get_file_timestamps(pdf_path)    # test
-        text = (f"\n## File: {pdf_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n")                    
+        doc = fitz.open(file_path)
+        # text = f"\n## file_path: {file_path}\n"
+        # text = f"\n## file_path: {file_path}\n"
+        (creation_time, access_time, modified_time) = get_file_timestamps(file_path)    # test
+        text = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n")                    
         
         for page_num in range(doc.page_count):
             page = doc.load_page(page_num)
             text += page.get_text("text")  # Extract text
         return text
     except fitz.EmptyFileError:
-        print(f"{color_red}Cannot open empty or corrupted PDF file:{color_reset} {pdf_path}")
-        # logging.error(f"Cannot open empty or corrupted PDF file: {pdf_path}")
+        print(f"{color_red}Cannot open empty or corrupted PDF file:{color_reset} {file_path}")
+        # logging.error(f"Cannot open empty or corrupted PDF file: {file_path}")
         return ""
     except Exception as e:
-        print(f"{color_red}Error reading PDF file {color_reset}'{pdf_path}': {e}")
-        # logging.error(f"Error reading PDF file '{pdf_path}': {e}")
+        print(f"{color_red}Error reading PDF file {color_reset}'{file_path}': {e}")
+        # logging.error(f"Error reading PDF file '{file_path}': {e}")
         return ""
 
 
-def extract_text_from_docx(docx_path):
+def extract_text_from_doc(file_path):
+    """
+    Function to extract text from .doc files using textract.
+    """
+    text = ""
+    (creation_time, access_time, modified_time) = get_file_timestamps(file_path)
+    
+    # print(f"{color_purple}Trying {file_path}{color_reset}")
+    
+    try:
+        # Use textract to process the .doc file
+        text = textract.process(file_path).decode('utf-8')
+    except Exception as e:
+        print(f"{color_red}Error reading .doc file {color_reset}'{file_path}': {e}")
+
+    # Add metadata header
+    header = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n")
+    text = header + text
+    
+    return text
+    
+    
+def extract_text_from_docx(file_path):
     '''
     Function to extract text from DOCX file
     '''    
-    (creation_time, access_time, modified_time) = get_file_timestamps(docx_path)    # test
-    doc = docx.Document(docx_path)
-    # text = f"\n## file_path: {docx_path}\n"
-    text = (f"\n## File: {docx_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n")                    
-          
-    
-    for para in doc.paragraphs:
-        text += para.text + "\n"
+    (creation_time, access_time, modified_time) = get_file_timestamps(file_path)
+    text = ""
+    try:
+        doc = docx.Document(file_path)
+        for para in doc.paragraphs:
+            text += para.text + "\n"
+    except Exception as e:
+        print(f"{color_red}Error reading docx file {color_reset}'{file_path}': {e}")
+
+    text = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n{text}")                    
+
     return text
 
 
-def extract_text_from_eml(eml_path):
+def extract_text_from_eml(file_path):
     '''
     Function to extract text from EML file
     ''' 
-    (creation_time, access_time, modified_time) = get_file_timestamps(eml_path)    # test
+    (creation_time, access_time, modified_time) = get_file_timestamps(file_path)    # test
 
-    with open(eml_path, 'r', encoding='utf-8') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         msg = email.message_from_file(f, policy=default)
 
-    text = f"\n## File: {eml_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n\nSubject: {msg['subject']}\nFrom: {msg['from']}\nTo: {msg['to']}\n\n"
-    # text = (f"\n## File: {eml_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n")                    
-    
+    text = f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n\nSubject: {msg['subject']}\nFrom: {msg['from']}\nTo: {msg['to']}\n\n"
+
     # Extract email body
     if msg.is_multipart():
         for part in msg.iter_parts():
@@ -166,54 +195,47 @@ def extract_text_from_eml(eml_path):
     
     return text
 
+def parse_text_file(file_path):
+    """
+    Parses plain text files (.txt, .md, .cmd, .py), handles encoding errors,
+    and returns the content as a string formatted for Markdown.
+    """
+    creation_time, access_time, modified_time = get_file_timestamps(file_path)
+    header = f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n"
+    base_name, extension = os.path.splitext(file_path)
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except UnicodeDecodeError:
+        try:
+            with open(file_path, 'r', encoding='ISO-8859-1') as f:
+                content = f.read()
+        except UnicodeDecodeError:
+            print(f"{color_red}Cannot decode {color_reset} {file_path} with UTF-8 or ISO-8859-1.") 
+            return None
+
+    if extension.lower() in (".py", ".cmd", ".sh", ".bat", ".ps1", ".vbs"):
+        return header + "\n\n\n" + "```" +content + "```" + "\n\n\n"
+    else:
+        return header + content + "\n"
+
 
 def convert_to_markdown(file_path, output_folder):
     '''
     Function to convert the content of .txt, .pdf, .docx, and .eml to Markdown
     ''' 
     file_name = os.path.basename(file_path)
-    base_name = os.path.splitext(file_name)[0]  # Remove the file extension
+    base_name, extension = os.path.splitext(file_name)
     target_file_path = os.path.join(output_folder, base_name + ".md")
 
-    # (creation_time, access_time, modified_time) = get_file_timestamps(file_path)    # test
-    
-    # Extract content based on file type
-    if file_path.lower().endswith(".txt") or file_path.lower().endswith(".py"):
-    # if file_path.endswith(".txt"):
-        # Attempt to open the file with utf-8 encoding first, with fallback
-
-        (creation_time, access_time, modified_time) = get_file_timestamps(file_path)    # test
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                # content = f.read()
-                text2 = f.read()
-                content = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n\n{text2}\n")
-                # content = (f"\n## file_path: {file_path}\n{text2}\n")
-
-
-        except UnicodeDecodeError:
-            print(f"{color_red}UTF-8 decoding failed for {color_reset} {file_path}, trying ISO-8859-1 encoding.")
-                     
-            # logging.warning(f"UTF-8 decoding failed for {file_path}, trying ISO-8859-1 encoding.")
-            
-            try:
-                with open(file_path, 'r', encoding='ISO-8859-1') as f:
-                    # content = f.read()
-                    text2 = f.read()
-                    # content = (f"\n## file_path: {file_path}\n{text2}\n")                    
-                    content = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n{text2}\n")                    
-                      
-                    # content = (f"\n## file_path: {file_path}\nf.read()")
-                    # content = f.read()
-            except UnicodeDecodeError:
-                print(f"{color_red}Cannot decode {color_reset} {file_path} with UTF-8 or ISO-8859-1.")                
-                # logging.error(f"Cannot decode {file_path} with UTF-8 or ISO-8859-1.")
-                return  # Skip this file if decoding fails
+    if extension.lower() in (".py", ".txt", ".md", ".cmd", ".sh", ".bat", ".ps1", ".vbs"):
+        content = parse_text_file(file_path)
     elif file_path.lower().endswith(".pdf"):    
-    # elif file_path.endswith(".pdf"):
-        content = extract_text_from_pdf(file_path)
-    elif file_path.lower().endswith(".docx"):
-        content = extract_text_from_docx(file_path)
+        content = extract_text_from_pdf(file_path) 
+    elif extension.lower() in (".docx"):
+        content = extract_text_from_docx(file_path) 
+    # elif extension.lower() in (".doc"):
+        # content = extract_text_from_doc(file_path)
     elif file_path.lower().endswith(".eml"):
         content = extract_text_from_eml(file_path)
     else:
@@ -275,8 +297,9 @@ def process_files(root_folder, output_folder):
     for subdir, _, files in os.walk(root_folder):
         for file in files:
             file_path = os.path.join(subdir, file)
-            # Check for file extensions: .txt, .pdf, .docx, .eml
-            if file.lower().endswith(('.txt', '.pdf', '.docx', '.eml')):
+            base_name, extension = os.path.splitext(file_path)
+            # if 1==1:
+            if extension.lower() in (".py", ".txt", ".md", ".cmd", ".txt", ".pdf", ".docx", ".eml", ".sh", ".bat", ".ps1", ".vbs"):
                 convert_to_markdown(file_path, output_folder)
     
     msg_blurb = (f'See {output_folder}')
@@ -285,6 +308,15 @@ def process_files(root_folder, output_folder):
 
 def setup_obsidian(output_folder):
     # output_folder = r'ObsidianNotebook'  # Default output path
+
+    app = {
+      "alwaysUpdateLinks": True,
+      "newFileLocation": "current",
+      "newLinkFormat": "relative",
+      "showUnsupportedFiles": True,
+      "attachmentFolderPath": "Images"
+    }
+
     appearance = {
         "theme": "obsidian",
         "accentColor": "#5cb2f5",
@@ -294,6 +326,30 @@ def setup_obsidian(output_folder):
         "baseFontSize": 17,
         "baseFontSizeAction": True
     }
+
+    community_plugins = [
+      "obsidian-excalidraw-plugin",
+      "dataview",
+      "obsidian-icon-folder",
+      "obsidian-kanban",
+      "calendar",
+      "obsidian-tasks-plugin",
+      "obsidian-advanced-slides",
+      "obsidian-annotator",
+      "homepage",
+      "omnisearch",
+      "periodic-notes",
+      "url-into-selection",
+      "obsidian-textgenerator-plugin",
+      "obsidian-banners",
+      "obsidian-plugin-toc",
+      "media-extended",
+      "settings-search",
+      "emoji-shortcodes",
+      "smart-connections",
+      "obsidian-plugin-update-tracker",
+      "janitor"
+    ]
 
     core_plugins = {
         "file-explorer": True,
@@ -330,29 +386,47 @@ def setup_obsidian(output_folder):
 
     # Path to the .obsidian folder and the appearance.json file
     obsidian_folder = os.path.join(output_folder, '.obsidian')
+    images_folder = os.path.join(output_folder, 'Images')
+    templates_folder = os.path.join(output_folder, 'Templates')
+
+    app_file = os.path.join(obsidian_folder, 'app.json')
     appearance_file = os.path.join(obsidian_folder, 'appearance.json')
+    community_plugins_file = os.path.join(obsidian_folder, 'community-plugins.json')
+
     core_plugins_file = os.path.join(obsidian_folder, 'core-plugins.json')
 
     # Check if the .obsidian folder exists, if not, create it
     if not os.path.exists(obsidian_folder):
         os.makedirs(obsidian_folder)
         print(f".obsidian folder created at {obsidian_folder}")
-    else:
-        print(f".obsidian folder already exists at {obsidian_folder}")
 
-    # Check if appearance.json exists in the .obsidian folder
+    # Check if the Images folder exists, if not, create it
+    if not os.path.exists(images_folder):
+        os.makedirs(images_folder)
+        print(f"Images folder created at {images_folder}")
+
+    # Check if the Templates folder exists, if not, create it
+    if not os.path.exists(templates_folder):
+        os.makedirs(templates_folder)
+        print(f"Templates folder created at {templates_folder}")
+        
+
+    if not os.path.exists(app_file):
+        with open(app_file, 'w') as f:
+            json.dump(app, f, indent=4)
+        print(f"app.json created at {app_file}")
     if not os.path.exists(appearance_file):
-        # Create the appearance.json file and add the appearance data
         with open(appearance_file, 'w') as f:
             json.dump(appearance, f, indent=4)
         print(f"appearance.json created at {appearance_file}")
+    if not os.path.exists(community_plugins_file):
+        with open(community_plugins_file, 'w') as f:
+            json.dump(community_plugins, f, indent=4)
+        print(f"community_plugins.json created at {community_plugins_file}")
     if not os.path.exists(core_plugins_file):
-        # Create the appearance.json file and add the appearance data
         with open(core_plugins_file, 'w') as f:
             json.dump(core_plugins, f, indent=4)
         print(f"core_plugins.json created at {core_plugins_file}")
-
-
 
 def Usage():
     file = sys.argv[0].split('\\')[-1]
@@ -386,6 +460,10 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+create seperate module to parse text based files such as .txt, .py, .md, and .cmd
+
+The script’s Windows-specific checks (e.g., file creation time) could potentially be improved for cross-platform compatibility. You might use pathlib for better handling of file paths across platforms.
+
 this will overwrite files with the same name, create a way of if file exists, save it with a unique name
 
 import additional extensions such as .py
