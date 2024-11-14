@@ -11,13 +11,43 @@ import email
 import time
 from email.policy import default
 import argparse # for menu system
-
+from datetime import datetime
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert the content of .txt, .pdf, .docx, and .eml to Markdown, for use in Obsidian"
-version = '0.1.3'
+version = '0.1.5'
 
+# Colorize section
+global color_red
+global color_yellow
+global color_green
+global color_blue
+global color_purple
+global color_reset
+color_red = ''
+color_yellow = ''
+color_green = ''
+color_blue = ''
+color_purple = ''
+color_reset = ''
+
+if sys.version_info > (3, 7, 9) and os.name == "nt":
+    version_info = os.sys.getwindowsversion()
+    major_version = version_info.major
+    build_version = version_info.build
+
+    if major_version >= 10 and build_version >= 22000: # Windows 11 and above
+        import colorama
+        from colorama import Fore, Back, Style  
+        print(f'{Back.BLACK}') # make sure background is black
+        color_red = Fore.RED
+        color_yellow = Fore.YELLOW
+        color_green = Fore.GREEN
+        color_blue = Fore.BLUE
+        color_purple = Fore.MAGENTA
+        color_reset = Style.RESET_ALL
+        
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
@@ -29,6 +59,7 @@ def main():
     parser.add_argument('-I', '--input', help='Input folder path', required=False)
     parser.add_argument('-O', '--output', help='Output folder path', required=False)
     parser.add_argument('-c', '--convert', help='Convert files to markdown', required=False, action='store_true')
+    parser.add_argument('-b', '--blank', help='create a blank obsidian folder', required=False, action='store_true')
 
     args = parser.parse_args()
 
@@ -61,6 +92,8 @@ def main():
     if args.convert:
         # logging.info(f'Starting conversion of files in {input_folder} to markdown format in {output_folder}.')
         process_files(input_folder, output_folder)
+    elif args.blank:
+        setup_obsidian(output_folder)
     else:
         parser.print_help()
         Usage()
@@ -77,18 +110,21 @@ def extract_text_from_pdf(pdf_path):
     """
     try:
         doc = fitz.open(pdf_path)
-        text = f"\n## file_path: {pdf_path}\n"
-
+        # text = f"\n## file_path: {pdf_path}\n"
+        # text = f"\n## file_path: {pdf_path}\n"
+        (creation_time, access_time, modified_time) = get_file_timestamps(pdf_path)    # test
+        text = (f"\n## File: {pdf_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n")                    
+        
         for page_num in range(doc.page_count):
             page = doc.load_page(page_num)
             text += page.get_text("text")  # Extract text
         return text
     except fitz.EmptyFileError:
-        print(f"Cannot open empty or corrupted PDF file: {pdf_path}")
+        print(f"{color_red}Cannot open empty or corrupted PDF file:{color_reset} {pdf_path}")
         # logging.error(f"Cannot open empty or corrupted PDF file: {pdf_path}")
         return ""
     except Exception as e:
-        print(f"Error reading PDF file '{pdf_path}': {e}")
+        print(f"{color_red}Error reading PDF file {color_reset}'{pdf_path}': {e}")
         # logging.error(f"Error reading PDF file '{pdf_path}': {e}")
         return ""
 
@@ -97,8 +133,12 @@ def extract_text_from_docx(docx_path):
     '''
     Function to extract text from DOCX file
     '''    
+    (creation_time, access_time, modified_time) = get_file_timestamps(docx_path)    # test
     doc = docx.Document(docx_path)
-    text = f"\n## file_path: {docx_path}\n"
+    # text = f"\n## file_path: {docx_path}\n"
+    text = (f"\n## File: {docx_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n")                    
+          
+    
     for para in doc.paragraphs:
         text += para.text + "\n"
     return text
@@ -108,10 +148,13 @@ def extract_text_from_eml(eml_path):
     '''
     Function to extract text from EML file
     ''' 
+    (creation_time, access_time, modified_time) = get_file_timestamps(eml_path)    # test
+
     with open(eml_path, 'r', encoding='utf-8') as f:
         msg = email.message_from_file(f, policy=default)
 
-    text = f"\n## file_path: {eml_path}\nSubject: {msg['subject']}\nFrom: {msg['from']}\nTo: {msg['to']}\n\n"
+    text = f"\n## File: {eml_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n\nSubject: {msg['subject']}\nFrom: {msg['from']}\nTo: {msg['to']}\n\n"
+    # text = (f"\n## File: {eml_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n")                    
     
     # Extract email body
     if msg.is_multipart():
@@ -131,19 +174,25 @@ def convert_to_markdown(file_path, output_folder):
     file_name = os.path.basename(file_path)
     base_name = os.path.splitext(file_name)[0]  # Remove the file extension
     target_file_path = os.path.join(output_folder, base_name + ".md")
+
+    # (creation_time, access_time, modified_time) = get_file_timestamps(file_path)    # test
     
     # Extract content based on file type
     if file_path.lower().endswith(".txt") or file_path.lower().endswith(".py"):
     # if file_path.endswith(".txt"):
         # Attempt to open the file with utf-8 encoding first, with fallback
+
+        (creation_time, access_time, modified_time) = get_file_timestamps(file_path)    # test
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 # content = f.read()
                 text2 = f.read()
-                content = (f"\n## file_path: {file_path}\n{text2}\n")
+                content = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n\n{text2}\n")
+                # content = (f"\n## file_path: {file_path}\n{text2}\n")
+
 
         except UnicodeDecodeError:
-            print(f"UTF-8 decoding failed for {file_path}, trying ISO-8859-1 encoding.")
+            print(f"{color_red}UTF-8 decoding failed for {color_reset} {file_path}, trying ISO-8859-1 encoding.")
                      
             # logging.warning(f"UTF-8 decoding failed for {file_path}, trying ISO-8859-1 encoding.")
             
@@ -151,12 +200,13 @@ def convert_to_markdown(file_path, output_folder):
                 with open(file_path, 'r', encoding='ISO-8859-1') as f:
                     # content = f.read()
                     text2 = f.read()
-                    content = (f"\n## file_path: {file_path}\n{text2}\n")                    
-                    
+                    # content = (f"\n## file_path: {file_path}\n{text2}\n")                    
+                    content = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n{text2}\n")                    
+                      
                     # content = (f"\n## file_path: {file_path}\nf.read()")
                     # content = f.read()
             except UnicodeDecodeError:
-                print(f"Cannot decode {file_path} with UTF-8 or ISO-8859-1.")                
+                print(f"{color_red}Cannot decode {color_reset} {file_path} with UTF-8 or ISO-8859-1.")                
                 # logging.error(f"Cannot decode {file_path} with UTF-8 or ISO-8859-1.")
                 return  # Skip this file if decoding fails
     elif file_path.lower().endswith(".pdf"):    
@@ -167,19 +217,19 @@ def convert_to_markdown(file_path, output_folder):
     elif file_path.lower().endswith(".eml"):
         content = extract_text_from_eml(file_path)
     else:
-        print(f"Unsupported file type: {file_path}")
+        print(f"{color_red}Unsupported file type: {color_reset}{file_path}")
         return
     
     # Write the content to a Markdown file
     with open(target_file_path, 'w', encoding='utf-8') as md_file:
         md_file.write(content)
     
-    print(f"Converted '{file_name}' to '{base_name}.md'.")
+    print(f"{color_green}Converted {color_reset}'{file_name}' to '{base_name}.md'.")
 
 
 def get_file_timestamps(file_path):
     """
-    Returns the creation, last accessed, and last modified times of a file.
+    Returns the creation, last accessed, and last modified times of a file in YYYY-MM-DD hh:mm:ss format.
 
     :param file_path: The file path for which timestamps are needed.
     :return: A tuple containing (creation_time, access_time, modified_time)
@@ -195,18 +245,31 @@ def get_file_timestamps(file_path):
     access_time = file_stats.st_atime
     modified_time = file_stats.st_mtime
 
-    # Convert from timestamps to human-readable format
-    creation_time = time.ctime(creation_time)
-    access_time = time.ctime(access_time)
-    modified_time = time.ctime(modified_time)
+    # Convert from timestamps to human-readable YYYY-MM-DD hh:mm:ss format
+    creation_time = datetime.fromtimestamp(creation_time).strftime('%Y-%m-%d %H:%M:%S')
+    access_time = datetime.fromtimestamp(access_time).strftime('%Y-%m-%d %H:%M:%S')
+    modified_time = datetime.fromtimestamp(modified_time).strftime('%Y-%m-%d %H:%M:%S')
 
     return creation_time, access_time, modified_time
+
+
+def msg_blurb_square(msg_blurb, color):
+    horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
+    empty_line = f"| {' ' * (len(msg_blurb))} |"
+
+    print(color + horizontal_line)
+    print(empty_line)
+    print(f"| {msg_blurb} |")
+    print(empty_line)
+    print(horizontal_line)
+    print(f'{color_reset}')
+    
 def process_files(root_folder, output_folder):
     '''
     Function to walk through all files and convert
     ''' 
 
-    setup_obsidian(output_folder)   # test
+    setup_obsidian(output_folder)   # create a default obsidian setup, if it doesn't exist
 
     # Walk through all files and subdirectories in root_folder
     for subdir, _, files in os.walk(root_folder):
@@ -215,12 +278,16 @@ def process_files(root_folder, output_folder):
             # Check for file extensions: .txt, .pdf, .docx, .eml
             if file.lower().endswith(('.txt', '.pdf', '.docx', '.eml')):
                 convert_to_markdown(file_path, output_folder)
+    
+    msg_blurb = (f'See {output_folder}')
+    msg_blurb_square(msg_blurb, color_green)    
+
 
 def setup_obsidian(output_folder):
     # output_folder = r'ObsidianNotebook'  # Default output path
     appearance = {
         "theme": "obsidian",
-        "accentColor": "#5c6ef5",
+        "accentColor": "#5cb2f5",
         "interfaceFontFamily": "Times New Roman",
         "textFontFamily": "Times New Roman",
         "monospaceFontFamily": "Times New Roman",
@@ -264,7 +331,7 @@ def setup_obsidian(output_folder):
     # Path to the .obsidian folder and the appearance.json file
     obsidian_folder = os.path.join(output_folder, '.obsidian')
     appearance_file = os.path.join(obsidian_folder, 'appearance.json')
-    core_plugins_file = os.path.join(obsidian_folder, 'core_plugins.json')
+    core_plugins_file = os.path.join(obsidian_folder, 'core-plugins.json')
 
     # Check if the .obsidian folder exists, if not, create it
     if not os.path.exists(obsidian_folder):
@@ -288,15 +355,16 @@ def setup_obsidian(output_folder):
 
 
 def Usage():
-    print("\nDescription: " + description)
-    print(sys.argv[0] +" Version: %s by %s" % (version, author ))
-    #~ print("\nExample:)"
-    print("\t" + sys.argv[0] +" -c")
-    print("\t" + sys.argv[0] +" -c -I C:\Forensics\scripts\python\Files -O ObsidianNotebook") 
-    print("\t" + sys.argv[0] +" -c -O ObsidianNotebook") 
-    print("\t" + sys.argv[0] +" -c -I test_files -O ObsidianNotebook") 
-         
-    
+    file = sys.argv[0].split('\\')[-1]
+
+    print(f'\nDescription: {color_green}{description}{color_reset}')
+    print(f'{file} Version: {version} by {author}')
+    print("    {file} -b")
+    print("    {file} -c")
+    print("    {file} -c -I C:\Forensics\scripts\python\Files -O ObsidianNotebook") 
+    print("    {file} -c -O ObsidianNotebook") 
+    print("    {file} -c -I test_files -O ObsidianNotebook") 
+
 
 if __name__ == '__main__':
     main()
@@ -306,7 +374,8 @@ if __name__ == '__main__':
 
 
 """
-
+0.1.4 - (creation_time, access_time, modified_time) = get_file_timestamps(file_path)
+0.1.3 - -t option to create a default obsidian folder/files
 0.1.2 - create obsidian config files if they don't exist
 0.1.1 - Convert the content of .txt, .pdf, .docx, and .eml to Markdown, for use in Obsidian
 0.0.9 - converted to template version
@@ -317,11 +386,11 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-get_file_timestamps = creation_time, access_time, modified_time
+this will overwrite files with the same name, create a way of if file exists, save it with a unique name
 
-if .obsidian doesn't exist in create it
-if app.json doesn't exist, create it and add contents
-if appearance.json doesn't exist, create it and add contents
+import additional extensions such as .py
+
+
 
 """
 
