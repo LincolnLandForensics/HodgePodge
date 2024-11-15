@@ -10,6 +10,7 @@ import docx
 import email
 import time
 from email.policy import default
+from email import policy  # Import the policy module to handle email parsing correctly
 import argparse # for menu system
 from datetime import datetime
 try:
@@ -178,21 +179,52 @@ def extract_text_from_eml(file_path):
     '''
     Function to extract text from EML file
     ''' 
-    (creation_time, access_time, modified_time) = get_file_timestamps(file_path)    # test
+    creation_time, access_time, modified_time = get_file_timestamps(file_path)
+    msg = ''
 
-    with open(file_path, 'r', encoding='utf-8') as f:
-        msg = email.message_from_file(f, policy=default)
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            msg = email.message_from_file(f, policy=policy.default)  # Use the 'policy' module here
 
-    text = f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n\nSubject: {msg['subject']}\nFrom: {msg['from']}\nTo: {msg['to']}\n\n"
 
-    # Extract email body
-    if msg.is_multipart():
-        for part in msg.iter_parts():
-            if part.get_content_type() == "text/plain":
-                text += part.get_content()
-    else:
-        text += msg.get_content()
-    
+            # x_received = msg.get('X-Received', 'N/A')  # Default to 'N/A' if header doesn't exist
+            # received = msg.get('Received', 'N/A')  # Default to 'N/A' if header doesn't exist
+            # date = msg.get('Date', 'N/A')  # Default to 'N/A' if header doesn't exist
+
+
+            # text += f"X-Received: {x_received}\n"
+            # text += f"Received: {received}\n"
+            # text += f"Date: {date}\n"
+
+            # Start building the text output
+            text = f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n"
+            text += f"Subject: {msg['subject']}\nFrom: {msg['from']}\nTo: {msg['to']}\nDate: {msg['date']}\n\n"
+            # text += f"X-Received: {msg['x_received']}\nReceived: {msg['received']}\nDate: {msg['date']}\n\n"
+
+            
+            # Extract the email body
+            if msg.is_multipart():
+                for part in msg.iter_parts():
+                    content_type = part.get_content_type()
+                    charset = part.get_content_charset()  # Get the charset of the part
+
+                    if content_type == "text/plain":
+                        # If charset is None, fallback to 'utf-8'
+                        charset = charset if charset else 'utf-8'
+                        text += part.get_payload(decode=True).decode(charset, errors='replace')
+                    elif content_type == "text/html":
+                        # Handle HTML content if needed
+                        pass  # You can process HTML content if necessary
+            else:
+                charset = msg.get_content_charset()  # Get the charset of the whole message
+                charset = charset if charset else 'utf-8'
+                text += msg.get_payload(decode=True).decode(charset, errors='replace')
+    except Exception as e:
+        color_red = "\033[91m"
+        color_reset = "\033[0m"
+        text = f"{color_red}Error reading EML file: {file_path} - {e}{color_reset}"
+        print(text)
+
     return text
 
 def parse_text_file(file_path):
@@ -460,7 +492,6 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-create seperate module to parse text based files such as .txt, .py, .md, and .cmd
 
 The script’s Windows-specific checks (e.g., file creation time) could potentially be improved for cross-platform compatibility. You might use pathlib for better handling of file paths across platforms.
 
