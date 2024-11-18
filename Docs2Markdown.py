@@ -3,26 +3,43 @@
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 import os
+import re
 import sys
 import fitz  # pip install PyMuPDF
 import json
 import docx
 import email
 import time
+import shutil
 from email.policy import default
-from email import policy  # Import the policy module to handle email parsing correctly
+from striprtf.striprtf import rtf_to_text   # pip install striprtf
+
 import argparse # for menu system
+import msg_parser   # pip install msg_parser, extract-msg
+
 from datetime import datetime
 try:
     import textract # pip install textract
 except Exception as e:
     print(f"extract module is not installed': {e}")
-
+from markdownify import markdownify as md   # pip install markdownify
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
+global file_types
+file_types = [
+    ".bat", ".cmd", ".csv", ".docx", ".eml", ".html", ".htm", ".ini", ".json", ".log", ".md", 
+    ".msg", ".pdf", ".py", ".sh", ".ps1", ".rtf", ".txt", ".vbs", ".xml", ".yml", ".yaml"
+]
+global plain_text
+plain_text = [
+    ".bat", ".cmd", ".csv", ".ini", ".json", ".log", ".md", 
+    ".py", ".sh", ".ps1", ".txt", ".vbs", ".xml", ".yml", ".yaml"
+]
+
+
 author = 'LincolnLandForensics'
-description = "Convert the content of .txt, .pdf, .docx, and .eml to Markdown, for use in Obsidian"
-version = '0.1.6'
+description = "Convert the content of various file types to Markdown, for use in Obsidian"
+version = '0.1.8'
 
 # Colorize section
 global color_red
@@ -109,28 +126,55 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
- 
+
 def extract_text_from_pdf(file_path):
     """
-    Function to extract text from a PDF file.
+    Function to extract text from a PDF file, copy it to a new location in the assets folder,
+    and generate a link to the original file.
     """
     try:
+        # Open the PDF file
         doc = fitz.open(file_path)
-        # text = f"\n## file_path: {file_path}\n"
-        # text = f"\n## file_path: {file_path}\n"
-        (creation_time, access_time, modified_time) = get_file_timestamps(file_path)    # test
-        text = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n")                    
-        
+
+        # Get file timestamps
+        creation_time, access_time, modified_time = get_file_timestamps(file_path)
+
+        # If timestamps are not found, return empty text
+        if creation_time is None or access_time is None or modified_time is None:
+            return ""
+
+        # Copy the PDF to the assets folder
+        if not os.path.exists(assets_folder):
+            os.makedirs(assets_folder)  # Create the assets folder if it doesn't exist
+
+        file_name = os.path.basename(file_path)
+
+        new_file_path_link = os.path.join('assets', file_name) 
+        new_file_path_link = new_file_path_link.replace("\\", "/")
+        new_file_path = os.path.join(assets_folder, file_name)
+
+        # Copy the PDF file to the new path
+        shutil.copy(file_path, new_file_path)
+
+        # Initialize the text output with metadata and the file link
+        text = (f"\n## [File]({new_file_path_link}): {file_path}\n"
+                f"## Creation: {creation_time}\n"
+                f"## Modified: {modified_time}\n\n")
+
+        # Extract text from each page
         for page_num in range(doc.page_count):
             page = doc.load_page(page_num)
-            text += page.get_text("text")  # Extract text
+            page_text = page.get_text("text")  # Extract plain text
+            text += page_text
+
         return text
+
     except fitz.EmptyFileError:
-        print(f"{color_red}Cannot open empty or corrupted PDF file:{color_reset} {file_path}")
+        print(f"Cannot open empty or corrupted PDF file: {file_path}")
         # logging.error(f"Cannot open empty or corrupted PDF file: {file_path}")
         return ""
     except Exception as e:
-        print(f"{color_red}Error reading PDF file {color_reset}'{file_path}': {e}")
+        print(f"Error reading PDF file '{file_path}': {e}")
         # logging.error(f"Error reading PDF file '{file_path}': {e}")
         return ""
 
@@ -155,83 +199,162 @@ def extract_text_from_doc(file_path):
     text = header + text
     
     return text
+   
+
+
+def extract_text_from_msg(file_path):
+    """
+    Function to extract text from MSG files.
+    """
+    from extract_msg import Message
+
+    # Get file timestamps
+    creation_time, access_time, modified_time = get_file_timestamps(file_path)
+
+    # Parse the .msg file
+    msg = Message(file_path)
+
+    # Extract metadata and message content
+    text = (
+        f"\n## File: {file_path}\n"
+        f"## Creation: {creation_time}\n"
+        f"## Modified: {modified_time}\n\n"
+        f"Subject: {msg.subject}\n"
+        f"From: {msg.sender}\n"
+        f"To: {msg.to}\n\n"
+        f"Body:\n{msg.body}\n"
+    )
+
+    # Replace 'From: None' with 'From: '
+    text = text.replace('From: None', 'From: ')
+    
+    return text
     
     
-def extract_text_from_docx(file_path):
+def extract_text_from_docx_with_formatting(file_path):
     '''
-    Function to extract text from DOCX file
-    '''    
-    (creation_time, access_time, modified_time) = get_file_timestamps(file_path)
+    Function to extract formatted text from DOCX file and return in Markdown format with metadata.
+    '''
+    # Get file timestamps (creation, access, modified)
+    creation_time, access_time, modified_time = get_file_timestamps(file_path)
+    
     text = ""
+
     try:
+        # Copy the doc to the assets folder
+
+        file_name = os.path.basename(file_path)
+
+        new_file_path_link = os.path.join('assets', file_name) 
+        new_file_path_link = new_file_path_link.replace("\\", "/")
+        new_file_path = os.path.join(assets_folder, file_name)
+
+        # Copy the PDF file to the new path
+        shutil.copy(file_path, new_file_path)
+
+        # Initialize the text output with metadata and the file link
+        text = (f"\n## [File]({new_file_path_link}): {file_path}\n"
+                f"## Creation: {creation_time}\n"
+                f"## Modified: {modified_time}\n\n")
+    except Exception as e:
+        print(f"{color_red}Error copying document {color_reset}'{file_path}': {e}")
+
+    try:
+        # Load DOCX file
         doc = docx.Document(file_path)
+        
+        # Add metadata to the extracted text
+        # text += f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n"
+        
+        # Extract formatted text from paragraphs
         for para in doc.paragraphs:
-            text += para.text + "\n"
+            para_text = handle_paragraph_formatting(para)
+            text += para_text + "\n"
+    
     except Exception as e:
         print(f"{color_red}Error reading docx file {color_reset}'{file_path}': {e}")
-
-    text = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n{text}")                    
-
+    
+    # Return the extracted text with metadata and Markdown formatting
     return text
-
 
 def extract_text_from_eml(file_path):
-    '''
-    Function to extract text from EML file
-    ''' 
+    """
+    Function to extract text from EML file, including metadata and email content.
+    """
+    # Get file timestamps
     creation_time, access_time, modified_time = get_file_timestamps(file_path)
-    msg = ''
 
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            msg = email.message_from_file(f, policy=policy.default)  # Use the 'policy' module here
+    # Read the EML file
+    with open(file_path, 'r', encoding='utf-8') as f:
+        msg = email.message_from_file(f, policy=default)
 
+    # Extract metadata
+    text = (
+        f"\n## File: {file_path}\n"
+        f"## Creation: {creation_time}\n"
+        f"## Modified: {modified_time}\n\n"
+        f"Subject: {msg['subject']}\n"
+        f"From: {msg['from']}\n"
+        f"To: {msg['to']}\n\n"
+    )
 
-            # x_received = msg.get('X-Received', 'N/A')  # Default to 'N/A' if header doesn't exist
-            # received = msg.get('Received', 'N/A')  # Default to 'N/A' if header doesn't exist
-            # date = msg.get('Date', 'N/A')  # Default to 'N/A' if header doesn't exist
-
-
-            # text += f"X-Received: {x_received}\n"
-            # text += f"Received: {received}\n"
-            # text += f"Date: {date}\n"
-
-            # Start building the text output
-            text = f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n"
-            text += f"Subject: {msg['subject']}\nFrom: {msg['from']}\nTo: {msg['to']}\nDate: {msg['date']}\n\n"
-            # text += f"X-Received: {msg['x_received']}\nReceived: {msg['received']}\nDate: {msg['date']}\n\n"
-
-            
-            # Extract the email body
-            if msg.is_multipart():
-                for part in msg.iter_parts():
-                    content_type = part.get_content_type()
-                    charset = part.get_content_charset()  # Get the charset of the part
-
-                    if content_type == "text/plain":
-                        # If charset is None, fallback to 'utf-8'
-                        charset = charset if charset else 'utf-8'
-                        text += part.get_payload(decode=True).decode(charset, errors='replace')
-                    elif content_type == "text/html":
-                        # Handle HTML content if needed
-                        pass  # You can process HTML content if necessary
-            else:
-                charset = msg.get_content_charset()  # Get the charset of the whole message
-                charset = charset if charset else 'utf-8'
-                text += msg.get_payload(decode=True).decode(charset, errors='replace')
-    except Exception as e:
-        color_red = "\033[91m"
-        color_reset = "\033[0m"
-        text = f"{color_red}Error reading EML file: {file_path} - {e}{color_reset}"
-        print(text)
+    # Extract email body
+    if msg.is_multipart():
+        for part in msg.iter_parts():
+            content_type = part.get_content_type()
+            if content_type == "text/plain":
+                text += part.get_content()
+            elif content_type == "text/html":
+                text += f"\n[HTML Content Skipped for Readability]\n"
+    else:
+        text += msg.get_content()
 
     return text
 
+def extract_html(file_path):
+
+    (creation_time, access_time, modified_time) = get_file_timestamps(file_path)    # test
+
+    try:
+        # Copy the doc to the assets folder
+
+        file_name = os.path.basename(file_path)
+
+        new_file_path_link = os.path.join('assets', file_name) 
+        new_file_path_link = new_file_path_link.replace("\\", "/")
+        new_file_path = os.path.join(assets_folder, file_name)
+
+        # Copy the PDF file to the new path
+        shutil.copy(file_path, new_file_path)
+
+        # Initialize the text output with metadata and the file link
+        text = (f"\n## [File]({new_file_path_link}): {file_path}\n"
+                f"## Creation: {creation_time}\n"
+                f"## Modified: {modified_time}\n\n")
+    except Exception as e:
+        print(f"{color_red}Error copying document {color_reset}'{file_path}': {e}")
+
+
+    # Read the HTML content from the file
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            html_content = file.read()
+
+        # Convert the HTML content to Markdown using markdownify
+        text = (f'({text}\n{md(html_content)}')
+ 
+    except UnicodeDecodeError:
+        print(f"{color_red}Cannot decode {color_reset} {file_path}.") 
+
+    return text
+    
 def parse_text_file(file_path):
     """
     Parses plain text files (.txt, .md, .cmd, .py), handles encoding errors,
     and returns the content as a string formatted for Markdown.
     """
+    print(f'hello world4')  # temp
+    
     creation_time, access_time, modified_time = get_file_timestamps(file_path)
     header = f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n"
     base_name, extension = os.path.splitext(file_path)
@@ -244,32 +367,60 @@ def parse_text_file(file_path):
                 content = f.read()
         except UnicodeDecodeError:
             print(f"{color_red}Cannot decode {color_reset} {file_path} with UTF-8 or ISO-8859-1.") 
-            return None
+            # return None
 
-    if extension.lower() in (".py", ".cmd", ".sh", ".bat", ".ps1", ".vbs"):
-        return header + "\n\n\n" + "```" +content + "```" + "\n\n\n"
+    if extension.lower() in (".py"):
+        return header + "\n\n\n" + "```python\n" +content + "```" + "\n\n\n"
+        print(f'hello world2')    # temp
+        # Check if the .obsidian folder exists, if not, create it
+        if not os.path.exists('scripts'):
+            print('hello world')    # temp
+            os.makedirs('scripts')
+            print(f"scripts folder created at scripts")
+  
+    elif extension.lower() in (".ps1"):
+        return header + "\n\n\n" + "```powershell\n" +content + "\n```" + "\n\n\n"
+    elif extension.lower() in (".sh"):
+        return header + "\n\n\n" + "```bash\n" +content + "\n```" + "\n\n\n"
+    elif extension.lower() in (".cmd", ".bat"):
+        return header + "\n\n\n" + "```cmd\n" +content + "\n```" + "\n\n\n"
+
+    elif extension.lower() in (".vbs"):
+        return header + "\n\n\n" + "```vbs\n" +content + "\n```" + "\n\n\n"
     else:
         return header + content + "\n"
 
+    print(f'hello world3')  # temp
 
 def convert_to_markdown(file_path, output_folder):
     '''
-    Function to convert the content of .txt, .pdf, .docx, and .eml to Markdown
+    Function to convert the content of .txt, .pdf, .docx, and .eml to Markdown 
     ''' 
     file_name = os.path.basename(file_path)
     base_name, extension = os.path.splitext(file_name)
     target_file_path = os.path.join(output_folder, base_name + ".md")
 
-    if extension.lower() in (".py", ".txt", ".md", ".cmd", ".sh", ".bat", ".ps1", ".vbs"):
-        content = parse_text_file(file_path)
-    elif file_path.lower().endswith(".pdf"):    
+
+    if file_path.lower().endswith(".pdf"):    
         content = extract_text_from_pdf(file_path) 
     elif extension.lower() in (".docx"):
-        content = extract_text_from_docx(file_path) 
+        content = extract_text_from_docx_with_formatting(file_path)
     # elif extension.lower() in (".doc"):
         # content = extract_text_from_doc(file_path)
     elif file_path.lower().endswith(".eml"):
         content = extract_text_from_eml(file_path)
+    elif file_path.lower().endswith(".msg"):
+        content = extract_text_from_msg(file_path)
+    elif file_path.lower().endswith(".rtf"):
+        content = convert_rtf(file_path)
+    elif file_path.lower().endswith(('.html', '.htm')):
+        content = extract_html(file_path)
+    elif extension.lower() in plain_text:
+    # elif extension.lower() in (".py", ".txt", ".md", ".cmd", ".sh", ".bat", ".ps1", ".vbs"):
+        # print(f"{color_yellow}file type: {color_reset}{file_path}")
+
+        content = parse_text_file(file_path)
+
     else:
         print(f"{color_red}Unsupported file type: {color_reset}{file_path}")
         return
@@ -277,6 +428,11 @@ def convert_to_markdown(file_path, output_folder):
     # Write the content to a Markdown file
     with open(target_file_path, 'w', encoding='utf-8') as md_file:
         md_file.write(content)
+    # try:
+        # with open(target_file_path, 'w', encoding='utf-8') as md_file:
+            # md_file.write(content)
+    # except Exception as e:
+        # return f"Error writing {file_path}: {e}"
     
     print(f"{color_green}Converted {color_reset}'{file_name}' to '{base_name}.md'.")
 
@@ -306,6 +462,33 @@ def get_file_timestamps(file_path):
 
     return creation_time, access_time, modified_time
 
+def handle_paragraph_formatting(para):
+    '''
+    Convert paragraph content to Markdown format considering styles.
+    '''
+    para_text = ""
+    
+    # Check if the paragraph is a heading (Heading 1, Heading 2, etc.)
+    if para.style.name.startswith('Heading'):
+        level = int(para.style.name.split()[-1])  # Extract level of the heading
+        para_text += "#" * level + " " + para.text
+    else:
+        # For normal paragraphs, handle runs (bold, italic, etc.)
+        for run in para.runs:
+            text = run.text
+            
+            # Bold text
+            if run.bold:
+                text = f"**{text}**"
+                
+            # Italic text
+            if run.italic:
+                text = f"*{text}*"
+            
+            para_text += text
+
+    return para_text    
+    
 
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
@@ -331,12 +514,59 @@ def process_files(root_folder, output_folder):
             file_path = os.path.join(subdir, file)
             base_name, extension = os.path.splitext(file_path)
             # if 1==1:
-            if extension.lower() in (".py", ".txt", ".md", ".cmd", ".txt", ".pdf", ".docx", ".eml", ".sh", ".bat", ".ps1", ".vbs"):
+            if extension.lower() in file_types:
+
+            # if extension.lower() in (".py", ".txt", ".md", ".cmd", ".txt", ".pdf", ".docx", ".eml", ".msg", ".sh", ".bat", ".ps1", ".vbs", ".html", ".htm"):
                 convert_to_markdown(file_path, output_folder)
     
     msg_blurb = (f'See {output_folder}')
     msg_blurb_square(msg_blurb, color_green)    
 
+def convert_rtf(file_path):
+    """
+    Converts an RTF file to Markdown format by extracting the plain text.
+    Formatting will be basic (like bold, italics, etc.), but more advanced formatting would need
+    manual conversion.
+    """
+    # Read the RTF file
+    try:
+        with open(file_path, 'r', encoding='utf-8') as rtf_file:
+            rtf_content = rtf_file.read()
+    except Exception as e:
+        return f"Error reading RTF file: {e}"
+
+    # Convert the RTF content to plain text
+    plain_text = rtf_to_text(rtf_content)
+
+    # Convert plain text into Markdown:
+    text = convert_rtf_to_md2(plain_text)
+    (creation_time, access_time, modified_time) = get_file_timestamps(file_path)
+    text = (f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n{text}")                    
+        
+    return text
+
+
+def convert_rtf_to_md2(plain_text):
+    """
+    Converts the plain text extracted from the RTF to basic Markdown.
+    This function is designed for simple formatting.
+    """
+    # Example: Convert any instances of **bold** text to Markdown
+    markdown_content = plain_text
+    markdown_content = re.sub(r'\\b (.*?) \\b0', r'**\1**', markdown_content)  # Bold text
+    markdown_content = re.sub(r'\\i (.*?) \\i0', r'*\1*', markdown_content)  # Italics text
+    markdown_content = re.sub(r'\\ul (.*?) \\ulnone', r'_\1_', markdown_content)  # Underline text
+    markdown_content = re.sub(r'•\s*(.*?)\n', r'- \1\n', markdown_content)  # bullet lists
+    markdown_content = re.sub(r'\\pard (.*?) \\pard0', r'\1', markdown_content)  # Paragraphs
+    markdown_content = re.sub(r'\\pard\s*(.*?)\\pard0', r'\1\n\n', markdown_content)    # Convert paragraphs
+    markdown_content = markdown_content.strip() # Clean up extra spaces and formatting errors
+
+    try:
+        markdown_content = re.sub(r'**(.*?)**\n', r'# \1\n', markdown_content)  # simple bold headings
+    except:
+        pass
+
+    return markdown_content
 
 def setup_obsidian(output_folder):
     # output_folder = r'ObsidianNotebook'  # Default output path
@@ -420,6 +650,9 @@ def setup_obsidian(output_folder):
     obsidian_folder = os.path.join(output_folder, '.obsidian')
     images_folder = os.path.join(output_folder, 'Images')
     templates_folder = os.path.join(output_folder, 'Templates')
+    global assets_folder
+    assets_folder = os.path.join(output_folder, 'assets')
+
 
     app_file = os.path.join(obsidian_folder, 'app.json')
     appearance_file = os.path.join(obsidian_folder, 'appearance.json')
@@ -436,6 +669,12 @@ def setup_obsidian(output_folder):
     if not os.path.exists(images_folder):
         os.makedirs(images_folder)
         print(f"Images folder created at {images_folder}")
+
+    # Check if the assets folder exists, if not, create it
+    if not os.path.exists(assets_folder):
+        os.makedirs(assets_folder)
+        print(f"assets folder created at {assets_folder}")
+
 
     # Check if the Templates folder exists, if not, create it
     if not os.path.exists(templates_folder):
@@ -480,6 +719,12 @@ if __name__ == '__main__':
 
 
 """
+
+
+
+extract_html
+
+
 0.1.4 - (creation_time, access_time, modified_time) = get_file_timestamps(file_path)
 0.1.3 - -t option to create a default obsidian folder/files
 0.1.2 - create obsidian config files if they don't exist
@@ -492,6 +737,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+fix rtf converter - doesn't do all formatting like bold
+create seperate module to parse text based files such as .txt, .py, .md, and .cmd
 
 The script’s Windows-specific checks (e.g., file creation time) could potentially be improved for cross-platform compatibility. You might use pathlib for better handling of file paths across platforms.
 
