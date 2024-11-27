@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>AppName</key>
+    <string>ChatterFlow</string>
+    <key>Version</key>
+    <string>1.2.3</string>
+    <key>Developer</key>
+    <string>SocialApps Inc.</string>
+    <key>UserSettings</key>
+    <dict>
+        <key>Username</key>
+        <string>JohnDoe123</string>
+        <key>NotificationsEnabled</key>
+        <true/>
+        <key>DarkMode</key>
+        <false/>
+        <key>Language</key>
+        <string>English</string>
+    </dict>
+    <key>Friends</key>
+    <array>
+        <dict>
+            <key>Username</key>
+            <string>JaneSmith89</string>
+            <key>Status</key>
+            <string>Online</string>
+        </dict>
+        <dict>
+            <key>Username</key>
+            <string>MikeTheTraveler</string>
+            <key>Status</key>
+            <string>Offline</string>
+        </dict>
+        <dict>
+            <key>Username</key>
+            <string>SaraSunshine</string>
+            <key>Status</key>
+            <string>Busy</string>
+        </dict>
+    </array>
+    <key>RecentPosts</key>
+    <array>
+        <dict>
+            <key>PostID</key>
+            <string>101</string>
+            <key>Content</key>
+            <string>Exploring the mountains today! #Adventure</string>
+            <key>Likes</key>
+            <integer>45</integer>
+            <key>Comments</key>
+            <integer>12</integer>
+        </dict>
+        <dict>
+            <key>PostID</key>
+            <string>102</string>
+            <key>Content</key>
+            <string>Loving this new app update! #TechLife</string>
+            <key>Likes</key>
+            <integer>67</integer>
+            <key>Comments</key>
+            <integer>25</integer>
+        </dict>
+    </array>
+</dict>
+</plist>
