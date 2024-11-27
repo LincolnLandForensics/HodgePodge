@@ -4,6 +4,7 @@ convert Cellebrite contacts, account, web history, chats and call exports to int
 
 note: the spreadsheet has to have the top row deleted so that the columns become the first row.
 
+
 Installation:
 ```
 python pip install -r requirements_cellebrite_parser.txt
@@ -20,10 +21,9 @@ create blank input_blank.xlsx
 python cellebrite_parser.py -b -O input_blank.xlsx
 ```
 
-Example menu
-
+help menu
 ```
-python cellebrite_parser.py -b -O input_blank.xlsx
+python cellebrite_parser.py
 ```
 
 Example:
@@ -34,3 +34,7 @@ Example:
     cellebrite_parser.py -C -I Contacts.xlsx
     cellebrite_parser.py -C -I SearchedItems.xlsx
     cellebrite_parser.py -C -I WebHistory.xlsx
+	
+	
+![sample output](images/Intel_Contacts_Sample.png)	
+	
