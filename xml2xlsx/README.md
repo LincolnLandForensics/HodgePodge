@@ -16,8 +16,11 @@ python xml2xlsx.py
 ```
 
 example output
+
 Reading XML files out of the xml folder
+
         1. Parsing sample_xml_1.xml ...
+		
         2. Parsing sample_xml_2.xml ...
 		
 Saving to output.xlsx
