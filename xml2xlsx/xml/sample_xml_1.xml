@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SalesReport>
+    <StoreDetails>
+        <StoreName>Reliable Tire Shop</StoreName>
+        <Location>1234 Main Street, Springfield, USA</Location>
+        <Date>2024-11-27</Date>
+    </StoreDetails>
+    <Sales>
+        <Sale>
+            <InvoiceNumber>1001</InvoiceNumber>
+            <Date>2024-11-27</Date>
+            <Customer>
+                <Name>John Doe</Name>
+                <ContactNumber>555-1234</ContactNumber>
+            </Customer>
+            <Items>
+                <Item>
+                    <ProductName>All-Season Tire</ProductName>
+                    <Quantity>4</Quantity>
+                    <UnitPrice>120.00</UnitPrice>
+                    <TotalPrice>480.00</TotalPrice>
+                </Item>
+                <Item>
+                    <ProductName>Tire Pressure Gauge</ProductName>
+                    <Quantity>1</Quantity>
+                    <UnitPrice>15.00</UnitPrice>
+                    <TotalPrice>15.00</TotalPrice>
+                </Item>
+            </Items>
+            <TotalSale>495.00</TotalSale>
+        </Sale>
+        <Sale>
+            <InvoiceNumber>1002</InvoiceNumber>
+            <Date>2024-11-27</Date>
+            <Customer>
+                <Name>Jane Smith</Name>
+                <ContactNumber>555-5678</ContactNumber>
+            </Customer>
+            <Items>
+                <Item>
+                    <ProductName>Winter Tire</ProductName>
+                    <Quantity>2</Quantity>
+                    <UnitPrice>150.00</UnitPrice>
+                    <TotalPrice>300.00</TotalPrice>
+                </Item>
+            </Items>
+            <TotalSale>300.00</TotalSale>
+        </Sale>
+    </Sales>
+    <Summary>
+        <TotalSales>2</TotalSales>
+        <TotalRevenue>795.00</TotalRevenue>
+    </Summary>
+</SalesReport>
