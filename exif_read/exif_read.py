@@ -5,8 +5,10 @@
 
 import os
 import sys
-import exifread
-import openpyxl
+import exifread   # pip install exifread
+import hashlib   # pip install hashlib
+import openpyxl   # pip install openpyx
+import argparse # for menu system
 from datetime import datetime
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -16,7 +18,7 @@ description = "exif data reader"
 version = '0.1.0'
 
 global image_types
-image_types = ['.heic', '.jpg', '.jpeg', '.png', '.tiff', '.tif', '.webp']
+image_types = ['.jpg', '.jpeg', '.heic', '.heif', '.png', '.tiff', '.tif', '.webp']
 
 # Colorize section
 global color_red
@@ -50,24 +52,46 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-
+    
 def main():
+    """
+    Main function to parse arguments and initiate file conversion.
+    """
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-I', '--input', help='Input folder', required=False)
+    parser.add_argument('-e', '--exif', help='extract exif data from photos', required=False, action='store_true')
+
+    args = parser.parse_args()
+
     # Folder containing photos
     photos_folder = 'photos'  # Change this to your folder path
     timestamp = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
     output_file = f'exif_data_{timestamp}.xlsx'
+
+    file = sys.argv[0].split('\\')[-1]
+
+    # Set input and output folders based on arguments, if provided
+    if args.input:
+        photos_folder = args.input
+
+    # Ensure the input folder exists
+    if not os.path.exists(photos_folder):
+
+        msg_blurb = (f"Input folder {photos_folder} doesn't exist.")
+        msg_blurb_square(msg_blurb, color_red) 
+        return 1
 
     # Create a new workbook and add basic formatting
     workbook = openpyxl.Workbook()
     sheet = workbook.active
     sheet.title = "FileMetadata"
 
-    # Define headers based on EXIF data keys
+    # Define headers based on EXIF data headers
     headers = [
         'Name', 'DateCreated', 'DateTimeOriginal', 'FileCreateDate', 'FileModifyDate', 'Timezone',
         'DeviceManufacturer', 'ExifToolVersion', 'FileSize', 'FileType', 'FileTypeExtension', 'LensMake',
         'Software', 'HostComputer', 'LensInfo', 'LensModel', 'Model', 'NumberOfImages', 
-        'Altitude', 'Latitude', 'Longitude', 'Coordinate', 'Time', 'Type', 'Icon', 'Description'
+        'Altitude', 'Latitude', 'Longitude', 'Coordinate', 'Time', 'Type', 'Icon', 'Description', 'MD5'
     ]
     sheet.append(headers)
 
@@ -143,6 +167,23 @@ def get_file_timestamps(file_path):
     return creation_time, access_time, modified_time
 
 
+def hashfile(file_path):
+    """
+    Computes and returns the MD5 hash of a file.
+    """
+    # Create an MD5 hash object
+    hash_md5 = hashlib.md5()
+
+    # Open the file in binary read mode
+    with open(file_path, "rb") as f:
+        # Read the file in chunks to avoid memory overload with large files
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    
+    # Return the hexadecimal representation of the hash
+    return hash_md5.hexdigest()
+    
+
 def read_exif_data(file_path):
     """Reads selected EXIF data from an image file."""
     with open(file_path, 'rb') as f:
@@ -156,6 +197,14 @@ def read_exif_data(file_path):
     latitude = convert_to_decimal(gps_latitude.values, gps_latitude_ref.values[0]) if gps_latitude and gps_latitude_ref else ""
     longitude = convert_to_decimal(gps_longitude.values, gps_longitude_ref.values[0]) if gps_longitude and gps_longitude_ref else ""
 
+    # Generate MD5 hash for the file
+    try:
+        hash_md5 = hashfile(file_path)
+
+    except Exception as e:
+        print(f"Error hashing '{file_path}': {e}")        
+        hash_md5 = ""
+        
     exif_data = {
         'Name': os.path.basename(file_path),
         'DateCreated': tags.get('Image DateTime'),
@@ -181,7 +230,9 @@ def read_exif_data(file_path):
         'ExifToolVersion': tags.get('Exif ExifToolVersion'),
         'Icon': 'Images',
         'Type': 'Images',
-        'Time': tags.get('EXIF DateTimeOriginal')
+        'Time': tags.get('EXIF DateTimeOriginal'),
+        'Description': '',        
+        'MD5': hash_md5
     }
 
     for key, value in exif_data.items():
@@ -202,6 +253,16 @@ def msg_blurb_square(msg_blurb, color):
     print(f'{color_reset}')
 
 
+def Usage():
+    file = sys.argv[0].split('\\')[-1]
+
+    print(f'\nDescription: {color_green}{description}{color_reset}')
+    print(f'{file} Version: {version} by {author}')
+    print(f"    {file}")
+    print(f"    {file} -I photos")
+
+
+
 if __name__ == "__main__":
     main()
 
@@ -212,7 +273,7 @@ if __name__ == "__main__":
 
 
 """
-
+0.2.0 - added menu and usage
 0.0.1 - exif data to xlsx
 """
 
@@ -220,8 +281,8 @@ if __name__ == "__main__":
 
 
 """
-add a menu system / usage
 
+hash each file
 
 """
 
