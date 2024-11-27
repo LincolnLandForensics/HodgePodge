@@ -2,6 +2,7 @@
 ## cellebrite_parser.py 
 convert Cellebrite contacts, account, web history, chats and call exports to intel format
 
+note: the spreadsheet has to have the top row deleted so that the columns become the first row.
 
 Installation:
 ```
