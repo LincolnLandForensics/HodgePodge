@@ -42,5 +42,11 @@ options:
   -p PROCESSES, --processes PROCESSES
                         Number of parallel processes
 						
-						
-						
+
+Sample video analysis
+
+![Case Example](images/people_detection1.png)
+
+Output example 
+
+![Case Example](images/videos_xlsx.png)
