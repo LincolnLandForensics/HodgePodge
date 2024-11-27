@@ -2,9 +2,11 @@
 ## peopleCount2.py 
 counts the approximate number of people in a folder of videos
 
+This needs tuning to get accurate numbers. It's a ballpark guess right now.
+
 Installation:
 ```
-python pip install -r requirements_exif_read.txt
+python pip install -r requirements.txt
 ```
 
 Usage:
