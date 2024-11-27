@@ -36,5 +36,5 @@ Example:
     cellebrite_parser.py -C -I WebHistory.xlsx
 	
 	
-![sample output](images/Intel_Contacts_Sample.png|400)	
+![sample output](images/Intel_Contacts_Sample.png)	
 	
