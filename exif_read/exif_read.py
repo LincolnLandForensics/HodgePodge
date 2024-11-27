@@ -13,7 +13,7 @@ from datetime import datetime
 
 author = 'LincolnLandForensics'
 description = "exif data reader"
-version = '0.0.3'
+version = '0.1.0'
 
 global image_types
 image_types = ['.heic', '.jpg', '.jpeg', '.png', '.tiff', '.tif', '.webp']
@@ -96,6 +96,7 @@ def main():
             try:
                 exif_data, Description = read_exif_data(file_path)
                 # Append the EXIF data to the sheet
+                print(f"{color_green}{filename}{color_reset}")
                 sheet.append([exif_data.get(header, "") for header in headers])
             except Exception as e:
                 print(f"{color_red}Error processing {filename}: {e}{color_reset}")
