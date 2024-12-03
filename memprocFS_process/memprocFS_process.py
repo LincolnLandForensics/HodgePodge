@@ -3,7 +3,7 @@
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Copyright        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-# Copyright (C) 2023 LincolnLandForensics
+# Copyright (C) 2024 LincolnLandForensics
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License version 2, as published by the
@@ -70,7 +70,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description = "process a memproc"
-version = '0.0.1'
+version = '0.0.2'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
