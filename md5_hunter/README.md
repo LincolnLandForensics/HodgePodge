@@ -5,6 +5,11 @@ and words for password cracking and file hunting.
 
 filetypes: .pdf, .txt, .docx
 
+throw lots of files into the 'pdfs' folder and run the script.
+
+Exe version available upon request.
+
+
 
 Installation:
 ```
