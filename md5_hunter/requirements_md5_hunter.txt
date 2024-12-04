@@ -1,2 +1,2 @@
 pdfplumber
-docx
+python-docx

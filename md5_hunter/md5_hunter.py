@@ -3,8 +3,8 @@
 
 import os
 import re
-import pdfplumber
-import docx
+import pdfplumber   # pip install pdfplumber
+import docx # pip install python-docx
 from datetime import datetime
 
 '''
@@ -16,18 +16,14 @@ and words for password cracking and file hunting.
 
 author = 'LincolnLandForensics'
 description = "read files and pull out md5 hashes and words"
-version = '0.1.1'
+version = '0.1.2'
 
-input_folder = "pdfs"
+input_folder = "md5_hashes"
 
 file_types = [
-    '.bash', '.bat', '.bmp', '.c', '.cmd', '.cpp', '.cs', '.css', '.csv',
-    '.docx', '.drawio', '.eml', '.flac', '.gif', '.go', '.heic', '.heif', '.htm', '.html',
-    '.ini', '.java', '.jl', '.jpeg', '.jpg', '.js', '.json', '.kt', '.log',
-    '.m', '.m4a', '.md', '.mermaid', '.mkv', '.mov', '.mp3', '.mp4', '.msg',
-    '.ogg', '.ogv', '.pdf', '.php', '.png', '.ppt', '.pptx', '.ps1', '.py', '.r', '.rb',
-    '.rs', '.rtf', '.sh', '.sql', '.svg', '.swift', '.tif', '.tiff', '.ts', '.tsv', '.txt',
-    '.vbs', '.wav', '.webm', '.xlsx', '.xml', '.yaml', '.yml'
+    '.csv', '.docx', '.eml', '.htm', '.html', '.ini', '.json', '.log',
+    '.md', '.msg', '.pdf', '.php', '.pptx', '.py', '.rtf', '.sql', '.tsv', '.txt',
+    '.xlsx', '.xml'
 ]
 
 plain_text = [
@@ -39,7 +35,7 @@ plain_text = [
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-def check_and_create_folder(folder_path):
+def check_folder(folder_path):
     """Check if the folder exists, and create it if it does not."""
     if not os.path.exists(folder_path):
         # os.makedirs(folder_path)
@@ -47,7 +43,7 @@ def check_and_create_folder(folder_path):
         print(f"{folder_path} folder doesnt exist. create one, add files and retry this")
         exit()
     else:
-        print(f"reading files in {folder_path} .")
+        print(f"reading files in {folder_path} folder.")
 
 def extract_text_from_pdf(file_path):
     """Extracts text from a PDF file using pdfplumber."""
@@ -74,6 +70,19 @@ def extract_text_from_docx(file_path):
         text += para.text + "\n"
     return text
 
+def extract_text_from_txt(text):
+    """Process the extracted text, split by space, clean, and return unique sorted words."""
+    words = text.split()  # Split by spaces to get a list of words
+    cleaned_words = [re.sub(r'[.,]$', '', word) for word in words]  # Remove commas and periods
+    return set(cleaned_words)  # Return a set of unique words
+
+
+def find_md5_hashes(words):
+    """Find and return all MD5 hashes in the list of words."""
+    md5_pattern = re.compile(r'\b[a-f0-9]{32}\b', re.IGNORECASE)  # Regex for MD5 hashes
+    return {word for word in words if md5_pattern.match(word)}
+
+
 def process_files(input_folder, file_types, plain_text):
     words = set()  # Set to store unique words
 
@@ -89,30 +98,20 @@ def process_files(input_folder, file_types, plain_text):
             if file_extension in plain_text:
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
                     text = file.read()
-                    words.update(process_text(text))
+                    words.update(extract_text_from_txt(text))
 
             # If the file is a PDF
             elif file_extension == '.pdf':
                 text = extract_text_from_pdf(file_path)
-                words.update(process_text(text))
+                words.update(extract_text_from_txt(text))
 
             # If the file is a DOCX
             elif file_extension == '.docx':
                 text = extract_text_from_docx(file_path)
-                words.update(process_text(text))
+                words.update(extract_text_from_txt(text))
 
     return sorted(words)
 
-def process_text(text):
-    """Process the extracted text, split by space, clean, and return unique sorted words."""
-    words = text.split()  # Split by spaces to get a list of words
-    cleaned_words = [re.sub(r'[.,]$', '', word) for word in words]  # Remove commas and periods
-    return set(cleaned_words)  # Return a set of unique words
-
-def find_md5_hashes(words):
-    """Find and return all MD5 hashes in the list of words."""
-    md5_pattern = re.compile(r'\b[a-f0-9]{32}\b', re.IGNORECASE)  # Regex for MD5 hashes
-    return {word for word in words if md5_pattern.match(word)}
 
 def save_words_to_file(words, filename):
     """Save the words to a file, one word per line."""
@@ -121,7 +120,7 @@ def save_words_to_file(words, filename):
             f.write(word + '\n')
 
 # Check and create the input folder if it doesn't exist
-check_and_create_folder(input_folder)
+check_folder(input_folder)
 
 # Process all files in the input folder and get sorted unique words
 unique_sorted_words = process_files(input_folder, file_types, plain_text)
@@ -144,5 +143,37 @@ md5_filename = f"md5_hashes_{current_date}.txt"
 save_words_to_file(unique_sorted_md5, md5_filename)
 
 # Print paths of the saved files
-print(f"Saved unique sorted words to: {words_filename}")
-print(f"Saved unique sorted MD5 hashes to: {md5_filename}")
+print(f"Saved {len(unique_sorted_words)} unique sorted words to: {words_filename}")
+print(f"Saved {len(unique_sorted_md5)} unique sorted MD5 hashes to: {md5_filename}")
+
+
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+"""
+
+0.1.1 - working prototype
+"""
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+"""
+menu system so you can specify a new input_folder
+count unique words and md5's , print that to screen.
+html parser
+test each file type
+other hashes like sha256?
+"""
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+"""
+Is it only checking specfied file types?
+
+
+"""
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      The End        >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+test = 'test'
+
