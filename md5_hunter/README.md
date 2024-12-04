@@ -3,9 +3,9 @@
 read pdf's and other specific filetypes and export out unique md5 hashes
 and words for password cracking and file hunting.
 
-filetypes: .pdf, .txt, .docx
+filetypes: .pdf, .txt, .docx (and more)
 
-throw lots of files into the 'pdfs' folder and run the script.
+throw lots of files into the 'md5_hashes' folder and run the script.
 
 Exe version available upon request.
 
@@ -32,7 +32,7 @@ If you throw in an old list of md5's it will combine them all with a unique sort
 
 Example output:
 
-reading files in pdfs folder.
+reading files in md5_hashes folder.
 
 Saved 908 unique sorted words to: words_2024-12-04.txt
 
