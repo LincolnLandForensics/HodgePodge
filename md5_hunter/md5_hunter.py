@@ -1,11 +1,12 @@
-
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 import os
 import re
-import pdfplumber   # pip install pdfplumber
-import docx # pip install python-docx
+import pdfplumber  # pip install pdfplumber
+import docx  # pip install python-docx
 from datetime import datetime
+import json
+from bs4 import BeautifulSoup  # pip install beautifulsoup4
 
 '''
 read pdf's and other specific filetypes and export out unique md5 hashes
@@ -27,23 +28,19 @@ file_types = [
 ]
 
 plain_text = [
-    ".bat", ".cmd", ".csv", ".ini", ".json", ".log", ".md", 
+    ".bat", ".cmd", ".csv", ".ini", ".log", ".md",
     ".py", ".sh", ".ps1", ".txt", ".vbs", ".xml", ".yml", ".yaml"
 ]
-
-
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 def check_folder(folder_path):
     """Check if the folder exists, and create it if it does not."""
     if not os.path.exists(folder_path):
-        # os.makedirs(folder_path)
-        # print(f"Folder '{folder_path}' was created.")
-        print(f"{folder_path} folder doesnt exist. create one, add files and retry this")
+        print(f"{folder_path} folder doesn't exist. Create one, add files, and retry.")
         exit()
     else:
-        print(f"reading files in {folder_path} folder.")
+        print(f"Reading files in {folder_path} folder.")
 
 def extract_text_from_pdf(file_path):
     """Extracts text from a PDF file using pdfplumber."""
@@ -70,18 +67,46 @@ def extract_text_from_docx(file_path):
         text += para.text + "\n"
     return text
 
+def extract_text_from_json(file_path):
+    """Extracts text from a JSON file."""
+    text = ''
+
+    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+        try:
+            data = json.load(f)
+            text = json.dumps(data, indent=2)  # Convert JSON data to a formatted string
+            text = text.replace('"', ' ')
+        except json.JSONDecodeError:
+            print(f"Warning: Could not decode JSON in {file_path}")
+    return text
+
+def extract_text_from_html(file_path):
+    """Extracts visible text from an HTML file using BeautifulSoup."""
+    text = ''
+    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+        soup = BeautifulSoup(f, 'html.parser')
+        # Extract visible text
+        text = soup.get_text(separator='\n')
+    return text
+
 def extract_text_from_txt(text):
     """Process the extracted text, split by space, clean, and return unique sorted words."""
     words = text.split()  # Split by spaces to get a list of words
     cleaned_words = [re.sub(r'[.,]$', '', word) for word in words]  # Remove commas and periods
     return set(cleaned_words)  # Return a set of unique words
 
-
+# def find_md5_hashes(words):
+    # """Find and return all MD5 hashes in the list of words."""
+    # md5_pattern = re.compile(r'\b[a-f0-9]{32}\b', re.IGNORECASE)  # Regex for MD5 hashes
+    # return {word for word in words if md5_pattern.match(word)}
+    
 def find_md5_hashes(words):
     """Find and return all MD5 hashes in the list of words."""
-    md5_pattern = re.compile(r'\b[a-f0-9]{32}\b', re.IGNORECASE)  # Regex for MD5 hashes
-    return {word for word in words if md5_pattern.match(word)}
-
+    # Regex to match exactly 32 hexadecimal characters (MD5 hash)
+    md5_pattern = re.compile(r'\b[a-f0-9]{32}\b', re.IGNORECASE)
+    return {word for word in words if md5_pattern.fullmatch(word)}    
+    
+    
 
 def process_files(input_folder, file_types, plain_text):
     words = set()  # Set to store unique words
@@ -94,14 +119,8 @@ def process_files(input_folder, file_types, plain_text):
         if os.path.isfile(file_path):
             file_extension = os.path.splitext(filename)[1].lower()
 
-            # If the file matches plain text types
-            if file_extension in plain_text:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
-                    text = file.read()
-                    words.update(extract_text_from_txt(text))
-
             # If the file is a PDF
-            elif file_extension == '.pdf':
+            if file_extension == '.pdf':
                 text = extract_text_from_pdf(file_path)
                 words.update(extract_text_from_txt(text))
 
@@ -110,8 +129,25 @@ def process_files(input_folder, file_types, plain_text):
                 text = extract_text_from_docx(file_path)
                 words.update(extract_text_from_txt(text))
 
-    return sorted(words)
+            # If the file is a JSON
+            elif file_extension == '.json':
+                text = extract_text_from_json(file_path)
+                words.update(extract_text_from_txt(text))
 
+            # If the file is an HTML
+            elif file_extension in ['.html', '.htm']:
+                text = extract_text_from_html(file_path)
+                words.update(extract_text_from_txt(text))
+
+            # If the file matches plain text types
+            elif file_extension in plain_text:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
+                    text = file.read()
+                    words.update(extract_text_from_txt(text))
+
+
+
+    return sorted(words)
 
 def save_words_to_file(words, filename):
     """Save the words to a file, one word per line."""
@@ -147,7 +183,6 @@ print(f"Saved {len(unique_sorted_words)} unique sorted words to: {words_filename
 print(f"Saved {len(unique_sorted_md5)} unique sorted MD5 hashes to: {md5_filename}")
 
 
-
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
@@ -175,5 +210,5 @@ Is it only checking specfied file types?
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      The End        >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-test = 'test'
+print(f'All done')
 
