@@ -49,7 +49,11 @@ NCMEC\5678\test5.pdf
 See text files in NCMEC\_output folder.
 
 1 emails
+
 14 IPs
+
 5 MD5 hashes
+
 1 phone numbers
+
 3 users
