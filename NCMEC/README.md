@@ -15,6 +15,11 @@ it will export the emails, ip's, md5's, phone numbers and users into _output fol
 ```
 python pip install -r requirements_NCMEC.txt
 ```
+or 
+```
+pip install PyPDF2
+```
+
 
 ## Usage:
 
