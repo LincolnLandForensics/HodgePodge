@@ -24,7 +24,7 @@ python NCMEC_PDF_parser.py
 ```
 
 
-script flowchart	
+Flowchart:
 	
 ![sample output](images/NCMEC_flowchart.png)
 
