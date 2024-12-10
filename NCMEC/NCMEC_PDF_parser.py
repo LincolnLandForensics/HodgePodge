@@ -191,8 +191,8 @@ def process_pdfs_and_unzip(pdf_folder, target_folder):
 
     # Prepare data for export
     export_data = {
-        # f"words_{today}.txt": unique_sorted(word_list),
-        # f"sentences_{today}.txt": unique_sorted(sentence_list),
+        f"words_{today}.txt": unique_sorted(word_list),
+        f"sentences_{today}.txt": unique_sorted(sentence_list),
         f"emails_{today}.txt": unique_sorted(email_list),
         f"md5_hashes_{today}.txt": unique_sorted(md5_list),
         f"ips_{today}.txt": unique_sorted(ip_list),

@@ -23,6 +23,13 @@ Usage:
 python NCMEC_PDF_parser.py
 ```
 
+
+script flowchart	
+	
+![sample output](images/NCMEC_flowchart.png)
+
+
+
 Sample output: 
 
 NCMEC_PDFs_parser.py
