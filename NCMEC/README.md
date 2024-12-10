@@ -49,3 +49,9 @@ Processing PDFs in NCMEC folder....
         NCMEC\compressed_pdf_unlocked_2024-12-10\test2.pdf
 
 See text files in NCMEC\_output folder.
+
+        1 emails
+        14 IPs
+        5 MD5 hashes
+        1 phone numbers
+        3 users
