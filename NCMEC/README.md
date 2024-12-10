@@ -4,19 +4,19 @@
 Dump all of your NCMEC .zip or .pdf files into the NCMEC folder.
 it will export the emails, ip's, md5's, phone numbers and users into _output folder
 
-Example:
+## Example:
     python NCMEC_PDFs_parser.py
 
-Note:
+## Note:
 	try md5_hunter.py for one that just does md5's.
 
 
-Installation:
+## Installation:
 ```
 python pip install -r requirements_NCMEC.txt
 ```
 
-Usage:
+## Usage:
 
 
 ```
@@ -24,34 +24,32 @@ python NCMEC_PDF_parser.py
 ```
 
 
-Flowchart:
+## Flowchart:
 	
 ![sample output](images/NCMEC_flowchart.png)
 
 
 
-Sample output: 
-
-NCMEC_PDFs_parser.py
+## Sample output: 
 
 5 files unzipped in NCMEC folder
 
 Processing PDFs in NCMEC folder....
 
-        NCMEC\compressed_pdf_unlocked\test.pdf
+NCMEC\1234\test1.pdf
 
-        NCMEC\compressed_pdf_unlocked\tes2.pdf
+NCMEC\2345\tes2.pdf
 
-        NCMEC\compressed_pdf_unlocked\tester.pdf
+NCMEC\3456\test3.pdf
 
-        NCMEC\compressed_pdf_unlocked_2024-12-10\test.pdf
+NCMEC\4567\test4.pdf
 
-        NCMEC\compressed_pdf_unlocked_2024-12-10\test2.pdf
+NCMEC\5678\test5.pdf
 
 See text files in NCMEC\_output folder.
 
-        1 emails
-        14 IPs
-        5 MD5 hashes
-        1 phone numbers
-        3 users
+1 emails
+14 IPs
+5 MD5 hashes
+1 phone numbers
+3 users
