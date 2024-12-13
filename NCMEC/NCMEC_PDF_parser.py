@@ -32,7 +32,7 @@ sys.stdout.reconfigure(encoding='utf-8')  # Python 3.7+
 
 author = 'LincolnLandForensics'
 description = "read .zip and .pdfs and extract out NCMEC intel"
-version = '0.1.4'
+version = '0.1.5'
 
 
 
@@ -97,6 +97,8 @@ def cleanup_email(email_list):
 
 
 def process_pdfs_and_unzip(input_folder, output_folder):
+    print(f'\nParsing files in {input_folder} folder\n')
+    
     unzip_all_in_folder(input_folder, output_folder)
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -168,7 +170,7 @@ def process_pdfs_and_unzip(input_folder, output_folder):
     print(f"\t{len(unique_sorted(md5_list))} MD5 hashes")
     print(f"\t{len(unique_sorted(phone_list))} phone numbers")
     print(f"\t{len(unique_sorted(user_list))} users")
-    print(f"\nSee text files in {output_folder} folder.")
+    print(f"\nSee output in {output_folder} folder.")
 
 
 def split_word_list(word_list):
@@ -206,7 +208,7 @@ def unzip_all_in_folder(input_folder, output_folder):
                 zip_count += 1
 
     if zip_count != 0:
-        print(f"{zip_count} files unzipped")
+        print(f"\n{zip_count} files unzipped")
     
     return zip_count
 
@@ -231,6 +233,9 @@ if __name__ == '__main__':
 
 """
 split ipv6 in half and add them to the ip list
+delete the unzipped folders at the end of the script 
+
+
 
 """
 
