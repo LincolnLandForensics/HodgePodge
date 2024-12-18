@@ -23,7 +23,6 @@ except Exception as e:
     print(f'pip install pdfplumber')
     sys.exit()
 
-
 sys.stdout.reconfigure(encoding='utf-8')  # Python 3.7+
 
 
@@ -32,7 +31,7 @@ sys.stdout.reconfigure(encoding='utf-8')  # Python 3.7+
 
 author = 'LincolnLandForensics'
 description = "read .zip and .pdfs and extract out NCMEC intel"
-version = '0.1.5'
+version = '0.1.8'
 
 
 
@@ -62,6 +61,9 @@ def main():
         input_folder = args.input
     if args.output:
         output_folder = args.output
+        output_folder = output_folder.lstrip("\\")  # doesn't work with something like \temp
+    # else:
+        # print(f'output folder is: {output_folder}')  # temp        
 
     # Ensure the input folder exists
     if not os.path.exists(input_folder):
@@ -98,7 +100,6 @@ def cleanup_email(email_list):
 
 def process_pdfs_and_unzip(input_folder, output_folder):
     print(f'\nParsing files in {input_folder} folder\n')
-    
     unzip_all_in_folder(input_folder, output_folder)
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -109,7 +110,11 @@ def process_pdfs_and_unzip(input_folder, output_folder):
     ip_pattern = re.compile(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b')
     phone_pattern = re.compile(r'\b(?:\+?\d{1,3})?[ .-]?(?:\(\d{1,4}\)|\d{1,4})[ .-]?\d{1,4}[ .-]?\d{1,4}[ .-]?\d{1,9}\b')
 
+    global pdfs_parsed
+    pdfs_parsed = 0
+        
     def process_pdf(file_path):
+
         nonlocal word_list, sentence_list, email_list, md5_list, ip_list, phone_list, user_list
 
         try:
@@ -138,9 +143,10 @@ def process_pdfs_and_unzip(input_folder, output_folder):
                     email_list.extend(email_pattern.findall(text))
                     md5_list.extend(md5_pattern.findall(text))
                     ip_list.extend(ip_pattern.findall(text))
-
+            # pdfs_parsed += 1
         except Exception as e:
             print(f"Error processing {file_path}: {str(e)}")
+
 
     for root, _, files in os.walk(input_folder):
         for file in files:
@@ -164,6 +170,11 @@ def process_pdfs_and_unzip(input_folder, output_folder):
     for filename, data in export_data.items():
         with open(os.path.join(output_folder, filename), "w", encoding="utf-8", errors="replace") as file:
             file.write("\n".join(data))
+
+    if pdfs_parsed != 0:
+        # print(f"\n{pdfs_parsed} PDfs parsed")
+        print(f"\nPDfs parsed")
+
 
     print(f"\n	{len(unique_sorted(email_list))} emails")
     print(f"\t{len(unique_sorted(ip_list))} IPs")
@@ -214,7 +225,15 @@ def unzip_all_in_folder(input_folder, output_folder):
 
 
 def Usage():
-    print("Usage: Run the script with -p to parse PDFs")
+    """
+    Prints usage information for the script.
+    """
+    print("\nDescription: " + description)
+    print(sys.argv[0] + " Version: %s by %s" % (version, author))
+    print(f'\nExample:')
+    print("\t" + sys.argv[0] + " -p")
+    print("\t" + sys.argv[0] + " -p -I C:\\Forensics\\scripts\\python\\NCMEC -O C:\\Forensics\\scripts\\python\\NCMEC\\_output")
+
 
 
 if __name__ == '__main__':
@@ -232,9 +251,11 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+if -O is other than default, it gives blank output files. Works with full path instead of \temp (for example)
+works with temp but not \temp
+
 split ipv6 in half and add them to the ip list
 delete the unzipped folders at the end of the script 
-
 
 
 """
@@ -244,9 +265,9 @@ delete the unzipped folders at the end of the script
 """
 This assumes NCMEC .zip files have no password
 IP and MD5 don't have to be NCMEC specific
-i remmed out the .7z feature since it's not needed, but it works.
+.7z extraction can be easily added if needed
 
 """
-print(f"\nbob's your uncle\n")
+print(f"\nBob's your uncle\n")
 
 
