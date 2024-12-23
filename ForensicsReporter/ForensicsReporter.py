@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,16 +15,16 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.0.6'
+version = '3.0.5'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 try:
     import docx # pip install python-docx
+    import pdfplumber   # pip install pdfplumber
     import pdfrw    # pip install pdfrw
     import openpyxl # pip install openpyxl
     import tkinter  # -d
-    import pdfplumber   # pip install pdfplumber
     import pandas as pd # new module
 except TypeError as error:
     print(f'{error}')
@@ -229,87 +229,70 @@ def banner_print():
     """
     print(f'{color_blue}{art}{color_reset}')
 
-
-def convert_timestamp(timestamp, time_orig, timezone):  # task
+def convert_timestamp(timestamp, time_orig=None, timezone=None):
     if timezone is None:
         timezone = ''
     if time_orig is None:
-        time_orig = ''
+        time_orig = timestamp
 
     timestamp = str(timestamp)
 
-    # Regular expression to find all timezones
+    # Regular expression to find the timezone
     timezone_pattern = r"([A-Za-z ]+)$"
     matches = re.findall(timezone_pattern, timestamp)
-
-    # Extract the last timezone match
+    
     if matches:
-        timezone = matches[-1]
+        timezone = matches[-1].strip()
         timestamp = timestamp.replace(timezone, "").strip()
-    else:
-        timezone = ''
-        
-    if time_orig == "":
-        time_orig = timestamp
-    else:
-        timezone = ''
-
-
-    # timestamp = timestamp.replace(' at ', ' ')
+    
+    # Handling specific timezones in the timestamp
     if "(" in timestamp:
-        timestamp = timestamp.split('(')
-        timezone = timestamp[1].replace(")", '')
-        timestamp = timestamp[0]
+        timestamp, tz_info = timestamp.split('(')
+        timezone = tz_info.replace(")", '').strip()
     elif " CDT" in timestamp:
         timezone = "CDT"
-        timestamp = timestamp.replace(" CDT", "")
+        timestamp = timestamp.replace(" CDT", "").strip()
     elif " CST" in timestamp:
         timezone = "CST"
-        timestamp = timestamp.replace(" CST", "")
+        timestamp = timestamp.replace(" CST", "").strip()
 
     formats = [
-        "%B %d, %Y, %I:%M:%S %p %Z",    # June 13, 2022, 9:41:33 PM CDT (Flock)
+        "%B %d, %Y, %I:%M:%S %p %Z",  # June 13, 2022, 9:41:33 PM CDT (Flock)
         "%Y:%m:%d %H:%M:%S",
         "%Y-%m-%d %H:%M:%S",
         "%m/%d/%Y %I:%M:%S %p",
-        "%m/%d/%Y %I:%M %p",  # timestamps without seconds
-        "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
-        "%m-%d-%y at %I:%M:%S %p %Z", # test 09-10-23 at 4:29:12 PM CDT
+        "%m/%d/%Y %I:%M %p",  # Timestamps without seconds
+        "%m/%d/%Y %H:%M:%S",  # Military time without seconds
+        "%m-%d-%y at %I:%M:%S %p %Z",  # e.g., 09-10-23 at 4:29:12 PM CDT
         "%m-%d-%y %I:%M:%S %p",
         "%B %d, %Y at %I:%M:%S %p %Z",
         "%B %d, %Y at %I:%M:%S %p",
         "%B %d, %Y %I:%M:%S %p %Z",
         "%B %d, %Y %I:%M:%S %p",
-        "%B %d, %Y, %I:%M:%S %p %Z",
-        "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 format with UTC timezone
-        "%Y/%m/%d %H:%M:%S",  # 2022/06/13 21:41:33
-        "%d-%m-%Y %I:%M:%S %p",  # 13-06-2022 9:41:33 PM
-        "%d/%m/%Y %H:%M:%S",  # 13/06/2022 21:41:33
-        "%Y-%m-%d %I:%M:%S %p",  # 2022-06-13 9:41:33 PM
-        "%Y%m%d%H%M%S",  # 20220613214133
-        "%Y%m%d %H%M%S",  # 20220613 214133
-        "%m/%d/%y %H:%M:%S",  # 06/13/22 21:41:33
-        "%d-%b-%Y %I:%M:%S %p",  # 13-Jun-2022 9:41:33 PM
-        "%d/%b/%Y %H:%M:%S",  # 13/Jun/2022 21:41:33
-        "%Y/%b/%d %I:%M:%S %p",  # 2022/Jun/13 9:41:33 PM
-        "%d %b %Y %H:%M:%S",  # 13 Jun 2022 21:41:33
-        "%A, %B %d, %Y %I:%M:%S %p %Z",  # Monday, June 13, 2022 9:41:33 PM CDT ?
-        "%A, %B %d, %Y %I:%M:%S %p"     # Monday, June 13, 2022 9:41:33 PM CDT
+        "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 with UTC timezone
+        "%Y/%m/%d %H:%M:%S",  # e.g., 2022/06/13 21:41:33
+        "%d-%m-%Y %I:%M:%S %p",  # e.g., 13-06-2022 9:41:33 PM
+        "%d/%m/%Y %H:%M:%S",  # e.g., 13/06/2022 21:41:33
+        "%Y-%m-%d %I:%M:%S %p",  # e.g., 2022-06-13 9:41:33 PM
+        "%Y%m%d%H%M%S",  # e.g., 20220613214133
+        "%Y%m%d %H%M%S",  # e.g., 20220613 214133
+        "%m/%d/%y %H:%M:%S",  # e.g., 06/13/22 21:41:33
+        "%d-%b-%Y %I:%M:%S %p",  # e.g., 13-Jun-2022 9:41:33 PM
+        "%d/%b/%Y %H:%M:%S",  # e.g., 13/Jun/2022 21:41:33
+        "%Y/%b/%d %I:%M:%S %p",  # e.g., 2022/Jun/13 9:41:33 PM
+        "%d %b %Y %H:%M:%S",  # e.g., 13 Jun 2022 21:41:33
+        "%A, %B %d, %Y %I:%M:%S %p %Z",  # e.g., Monday, June 13, 2022 9:41:33 PM CDT
+        "%A, %B %d, %Y %I:%M:%S %p"     # e.g., Monday, June 13, 2022 9:41:33 PM
     ]
 
     for fmt in formats:
         try:
             dt_obj = datetime.strptime(timestamp.strip(), fmt)
-            timestamp = dt_obj
-            return timestamp, time_orig, timezone
-                        
+            return dt_obj, time_orig, timezone
         except ValueError:
-            pass
+            continue
 
-    raise ValueError(f"{time_orig} Timestamp format not recognized")
-
-
-
+    raise ValueError(f"Timestamp format not recognized for: {time_orig}")
     
 def create_docx():
     '''
@@ -345,7 +328,6 @@ def create_docx():
     print(f'{color_green}created {output_docx}{color_reset}')       
     return document
     
-
 def enter_data():
     """
         GUI data input section using tkinter
@@ -548,8 +530,9 @@ def fix_date(date):
         print(error)
     yr = date[4]
     # date = ('%s/%s/%s %s' %(mo, dy, yr, tm))  # 3/4/2021 9:17
-    date = ('%s/%s/%s %s' %(yr, mo, dy, tm))  # 3/4/2021 9:17
-     
+    # date = ('%s/%s/%s %s' %(yr, mo, dy, tm))  # 3/4/2021 9:17
+    date = ('%s-%s-%s %s' %(yr, mo, dy, tm))  # 3/4/2021 9:17
+      
     
     return date
 
@@ -570,7 +553,7 @@ def fix_date3(date):
     '''
         standardize date formatting from Cellebrite
         
-        31/07/2022 11:48:57 (-5) to 7/31/2022 11:48
+        31/07/2022 11:48:57 (-5) to 2022-07-31 11:48
 
     '''
 
@@ -587,9 +570,8 @@ def fix_date3(date):
     yr = tempDate[2]
 
     # date = ('%s/%s/%s %s' %(mo, dy, yr, tm)).lstrip('0')  # 3/4/2021 9:17
-    date = ('%s/%s/%s %s' %(yr, mo, dy, tm)).lstrip('0')  # 3/4/2021 9:17
-     
-    
+    date = ('%s-%s-%s %s' %(yr, mo, dy, tm)).lstrip('0')  # 3/4/2021 9:17
+ 
     return date
 
 def gui_data_entry():
@@ -1646,18 +1628,12 @@ def read_xlsx():
         df = dftemp.fillna('')  # Replace NaN with empty string
  
         print(f'{color_green}Reading {input_file}{color_reset}') 
-    (header, reportStatus, date) = ('', '', '<insert date here>')
+    (header, reportStatus, date) = ('', '', '')
     (body, executiveSummary, evidenceBlurb) = ('', '', '')
     (style) = ('')
 
     (subject, vowel) = ('test', 'aeiou')
 
-    footer = ('''
-    This report contains digital examination of the exhibits provided based on the investigative information and tools available to the analyst at the time of the analysis. Additional artifacts may be provided upon further analysis or additional request.
-
-Evidence:
-    All digital images obtained pursuant to this investigation will be maintained on %s servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an exhibit in the case file. 
-    ''') %(agency)
 
     # read in the spreadsheet
     for index, row in df.iterrows():
@@ -1679,11 +1655,25 @@ Evidence:
         phoneNumber = str(row['phoneNumber'])
         phoneIMEI = str(row['phoneIMEI'])
         mobileCarrier = str(row['mobileCarrier'])
+
         biosTime = str(row['biosTime'])
+        biosTime = biosTime.strip()
+        if biosTime == 'NaT':
+            biosTime = ''  
+            
         currentTime = str(row['currentTime'])
+        currentTime = currentTime.strip()
+        if currentTime == 'NaT':
+            currentTime = ''  
+
         timezone = str(row['timezone'])
         shutdownMethod = str(row['shutdownMethod'])
+
         shutdownTime = str(row['shutdownTime'])
+        shutdownTime = shutdownTime.strip()
+        if shutdownTime == 'NaT':
+            shutdownTime = ''
+
         userName = str(row['userName'])
         userPwd = str(row['userPwd'])
         email = str(row['email'])
@@ -1695,10 +1685,20 @@ Evidence:
         seizedBy = str(row['seizedBy'])
         dateReceived = str(row['dateReceived'])
         receivedBy = str(row['receivedBy'])
+
         removalDate = str(row['removalDate'])
+        removalDate = removalDate.strip()
+        if removalDate == 'NaT':
+            removalDate = ''        
+        
         removalStaff = str(row['removalStaff'])
         reasonForRemoval = str(row['reasonForRemoval'])
+
         inventoryDate = str(row['inventoryDate'])
+        inventoryDate = inventoryDate.strip()
+        if inventoryDate == 'NaT':
+            inventoryDate = ''  
+
         seizureStatus = str(row['seizureStatus'])
         status = str(row['status'])
         imagingTool = str(row['imagingTool'])
@@ -1739,10 +1739,11 @@ Evidence:
             phoneIMEI2 = str(row['phoneIMEI2'])
         except:
             phoneIMEI2 = ''
-            
+        if ' 00:00:00' in dateReceived: 
+            dateReceived = dateReceived.replace(" 00:00:00", "")
         # Summary writer, put a blank space or write your own summary if you don't want one auto generated
         if summary == '' and dateSeized != '' and forensicExaminer != '' and seizureAddress != '' and agency != "ISP":
-            summary = ('On %s %s attended the warrant at %s.' %(dateSeized, forensicExaminer, seizureAddress))
+            summary = ('On %s %s attended the warrant at %s. %s read a copy of the search warrant authorizing the digital forensic analysis of digital computers, -------------- and media.' %(dateSeized, forensicExaminer, seizureAddress, forensicExaminer))
         elif summary != '':
             summary == summary
 
@@ -1763,27 +1764,49 @@ Subject of Activity:                         Case Agent:             Typed by:
 %s
 ____________________________________________________________________________________
 
+Note:
+
+This document contains findings regarding the analysis of digital evidence that was submitted for forensic examination. The data contained in these findings and data extractions should not be regarded as evidence, but rather findings concerning that evidence. Contact the case officer or prosecutor to obtain the evidentiary data.
+
+Data contained in these findings may be sensitive, confidential, or in some cases offensive. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing in not authorized.
+
+It should be noted that not all files were reviewed during this examination. It is incumbent upon the requester to thoroughly review the data and make a determination as to the probative or exculpatory nature of any and all information.
+
 Executive Summary 
-    Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
+
+Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
 ''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, caseAgent, agencyFull, divisionFull, caseType, caseName, summary)
 
-            # output.write(header+'\n')   # output to text
-        
+        header = header.replace(' 00:00:00', '')
+
         if executiveSummary == '':
             executiveSummary = ('''
 %s                                    %s
 
 %s %s                           %s    %s 
 
-Executive Summary 
-    Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
+Note:
+
+This document contains findings regarding the analysis of digital evidence that was submitted for forensic examination. The data contained in these findings and data extractions should not be regarded as evidence, but rather findings concerning that evidence. Contact the case officer or prosecutor to obtain the evidentiary data.
+
+Data contained in these findings may be sensitive, confidential, or in some cases offensive. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing in not authorized.
+
+It should be noted that not all files were reviewed during this examination. It is incumbent upon the requester to thoroughly review the data and make a determination as to the probative or exculpatory nature of any and all information.
+
+
+Executive Summary
+ 
+Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
 ''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseAgent, agencyFull, divisionFull, caseType, caseName, summary)
 
-
-        report = ('''
+        executiveSummary = executiveSummary.replace(' 00:00:00', '')
         
-Exhibit %s
-    ''') %(exhibit)
+        report = ('''
+
+        
+Item %s
+
+''') %(exhibit)
 
         if makeModel != '':
             if makeModel[0].lower() in vowel:
@@ -1823,8 +1846,10 @@ Exhibit %s
             report = ("%s (Hostname: %s)" %(report, hostname))
 
         if len(dateReceived) != 0:
-            # report = (f'{report} was received on {(dateReceived.replace(" ", " at ", 1))}') # task
-            report = ("%s was received on %s" %(report, dateReceived.replace(" ", " at ", 1)))
+            if ' ' in dateReceived:
+                report = ("%s was received on %s" % (report, dateReceived.replace(" ", " at ", 1)))
+            else:
+                report = ("%s was received on %s" % (report, dateReceived))
         else:
             report = ("%s was received" %(report))
         report = ("%s." %(report))
@@ -1858,7 +1883,6 @@ Exhibit %s
             report = ("%s did not conduct a" %(report))  
         else:
             report = ("%s conducted a" %(report))  
-
             
         if phoneNumber != '' and phoneNumber != 'NA' and phoneNumber != 'na' and phoneNumber != 'N/A':
             report = ("%s phone extraction." %(report))
@@ -1883,9 +1907,25 @@ Exhibit %s
         if len(imageMD5) != 0 and exportLocation != '' and len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
             report = ("%s The image (SHA256 Hash: % s) (MD5 Hash: % s) was saved as %s." %(report, imageSHA256, imageMD5, exportLocation.split('\\')[-1])) 
         elif len(imageMD5) != 0 and exportLocation != '':
-            report = ("%s The image (MD5 Hash: % s) was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
+            # report = ("%s The image (MD5 Hash: % s) was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
+
+            report = (
+                f"{report} A write-blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
+                f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
+            )
+
+
+
+
         elif len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
             report = ("%s The image had a SHA256 hash of % s." %(report, imageSHA256))
+
+
+
+        # if "write blocker, to conduct" in report:
+            # report = ("%s A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. " %(report))  
 
         # analysisTool
         if analysisTool != '' and analysisTool2 != '':      # analysisTool2
@@ -1893,6 +1933,7 @@ Exhibit %s
 
         elif analysisTool != '':
             report = ("%s The image was processed with %s." %(report, analysisTool))
+
 
         # add username and password to report
         if len(userName) != 0 and userPwd != '' and exhibitType != '': 
@@ -1994,6 +2035,26 @@ Exhibit %s
             else:   
                 pdf_template = "Blank_EvidenceForm.pdf"
             pdf_fill(pdf_template, pdf_output, my_dict)
+
+
+    footer = ('''
+
+Report Conclusion
+
+
+All forensic equipment and software have been functionally tested/validated without errors prior to use. Where possible, before utilizing stand-alone write blockers, firmware was updated to the current version and functionality was verified.
+
+All forensic acquisition, analysis and write-blocking software used for this case is licensed and/or registered to %s and/or the %s.
+
+This report contains digital examination of the items provided based on the investigative information and tools available to the examiner at the time of the analysis. 
+
+A copy of this report will be given to %s. Additional analysis may be requested after review of the report or as the investigation continues.
+
+All digital images obtained pursuant to this investigation will be maintained on %s servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an item in the case file. 
+    ''') %(forensicExaminer, agencyFull, caseAgent, agency)
+
+
+
 
 
     # write docx report
@@ -2685,6 +2746,18 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
 
     # Append the case data to the DataFrame
     df = pd.concat([df, pd.DataFrame(case_data, index=[0])], ignore_index=True)
+
+    # Save the DataFrame to the Excel file
+    # df.to_excel(file_path, index=False)
+
+    # Load the workbook and set all cells to text format
+    # wb = openpyxl.load_workbook(file_path)
+    # ws = wb.active
+
+    # for row in ws.iter_rows():
+        # for cell in row:
+            # cell.number_format = '@'  # Set cell format to text
+
 
     # Save the DataFrame to the Excel file
     df.to_excel('out_log.xlsx', index=False)
