@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,20 +15,20 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.0.5'
+version = '3.0.8'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 try:
     import docx # pip install python-docx
-    import pdfplumber   # pip install pdfplumber
+    # import pdfplumber   # pip install pdfplumber
     import pdfrw    # pip install pdfrw
     import openpyxl # pip install openpyxl
     import tkinter  # -d
     import pandas as pd # new module
 except TypeError as error:
-    print(f'{error}')
-    print(f'install missing modules:    pip install -r requirements_ForensicsReporter.txt')
+    print(f"{error}")
+    print(f"install missing modules:    pip install -r requirements_ForensicsReporter.txt")
     exit()
 import re
 import os
@@ -92,13 +92,10 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
     major_version = version_info.major
     build_version = version_info.build
 
-    # print(f'major version = {major_version} Build= {build_version} {version_info}')   # temp
-
     if major_version >= 10 and build_version >= 22000: # Windows 11 and above
-        # print(f'major version = {major_version}')   # temp
         import colorama
         from colorama import Fore, Back, Style  
-        print(f'{Back.BLACK}') # make sure background is black
+        print(f"{Back.BLACK}") # make sure background is black
         color_red = Fore.RED
         color_yellow = Fore.YELLOW
         color_green = Fore.GREEN
@@ -227,7 +224,7 @@ def banner_print():
 ( F | o | r | e | n | s | i | c | s ) ( R | e | p | o | r | t | e | r )
  \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/   \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ 
     """
-    print(f'{color_blue}{art}{color_reset}')
+    print(f"{color_blue}{art}{color_reset}")
 
 def convert_timestamp(timestamp, time_orig=None, timezone=None):
     if timezone is None:
@@ -325,7 +322,7 @@ def create_docx():
     # p = document.add_paragraph('%s\t\t\t\t%s\t\t%s' %(subjectBusinessName, caseAgent, forensicExaminer))
 
     document.save(output_docx)   # was output_xlsx
-    print(f'{color_green}created {output_docx}{color_reset}')       
+    print(f"{color_green}created {output_docx}{color_reset}")       
     return document
     
 def enter_data():
@@ -384,13 +381,13 @@ def enter_data():
 
 
             # print out sticker format
-            print(f'Case: {caseNumber} Ex:{exhibit}')
-            print(f'CaseName: {caseName}')
-            print(f'Subject: {subjectBusinessName}')
-            print(f'Make: {makeModel}')
-            print(f'Serial: {serial}')
-            print(f'Agent: {caseAgent}')
-            print(f'------------------------') 
+            print(f"Case: {caseNumber} Ex:{exhibit}")
+            print(f"CaseName: {caseName}")
+            print(f"Subject: {subjectBusinessName}")
+            print(f"Make: {makeModel}")
+            print(f"Serial: {serial}")
+            print(f"Agent: {caseAgent}")
+            print(f"------------------------") 
 
             filepath = "log_case.xlsx"
             
@@ -543,7 +540,7 @@ def fix_date2(date):
         
         31/07/2022 11:48:57 (-5)
     '''
-    print(f'{color_red}fix_date2{color_reset}')  
+    print(f"{color_red}fix_date2{color_reset}")  
     (mo, dy, yr, tm) = ('', '', '', '')
     date = date.strip()
 
@@ -774,7 +771,7 @@ def gui_data_entry():
     button.grid(row=3, column=0, sticky="news", padx=20, pady=10)
 
     win.mainloop()
-    print(f'{color_green}Data written to log_case.xlsx{color_reset}')
+    print(f"{color_green}Data written to log_case.xlsx{color_reset}")
     
 def parse_log():
     '''
@@ -797,8 +794,8 @@ def parse_log():
             caseName = str(input("caseName : ")).strip()
 
         if not os.path.exists(logs_folder):
-            print(f'{color_red}{logs_folder} folder does not exist{color_reset}')
-            print(f'{color_yellow}create a {logs_folder} folder and fill it with logs to parse{color_reset}')            
+            print(f"{color_red}{logs_folder} folder does not exist{color_reset}")
+            print(f"{color_yellow}create a {logs_folder} folder and fill it with logs to parse{color_reset}")            
             exit() 
         else:
                 logs_list = os.listdir(logs_folder)
@@ -811,7 +808,7 @@ def parse_log():
 
         # read section
     for logFile in logs_list:
-        print(f'{color_green}Reading {logFile}{color_reset}')         
+        print(f"{color_green}Reading {logFile}{color_reset}")         
 
         # style = workbook.add_format()
         # style = Workbook.add_format()        
@@ -836,22 +833,13 @@ def parse_log():
         (imagingTool1, imagingTool2, make, model) = ('', '', '', '')
 
         if logFile.lower().endswith('.pdf'):
-            # print(f'Cant process .pdf files at this time, sorry: {logFile}')
             csv_file = ''
             (forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes) = pdf_extract(logFile)
             csv_file = tempNotes.split('\\n')
         else:
             csv_file = open(logFile) 
-            # if os.path.exists(logFile):
-                # csv_file = open(logFile)         
-
-            # if not os.path.exists(logFile):
-                # print(f'{color_red}{logFile} does not exist{color_reset}')
-            # else:
-                # csv_file = open(logFile)
         
         for each_line in csv_file:
-            # print(f'{color_yellow}{each_line}{color_reset}')    # temp
             if "Task:" in each_line:
                 imagingType = re.split("Task: ", each_line, 0)
                 imagingType = str(imagingType[1]).strip().lower()
@@ -1283,7 +1271,7 @@ def parse_log():
 
             elif "MD5 " in each_line:    # GrayKey_R5CR8147V0A.pdf
                 imageMD5 = each_line.lstrip("MD5 ")
-                print(f'{color_yellow}<<<<<<<<<<<   testing  >>>>>>>>>>>>>{color_reset}')    # task
+                print(f"{color_yellow}<<<<<<<<<<<   testing  >>>>>>>>>>>>>{color_reset}")    # task
 
             # imageSHA1
             elif "Disk SHA1: " in each_line:    # Tableau
@@ -1517,7 +1505,7 @@ def parse_log():
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
-    print(f'{color_green}Exporting logs as {spreadsheet}{color_reset}')    
+    print(f"{color_green}Exporting logs as {spreadsheet}{color_reset}")    
         
 def pdf_extract(filename):
     """
@@ -1584,6 +1572,65 @@ def pdf_extract(filename):
 
     return(forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes)
 
+
+
+def pdf_filltest(input_pdf_path, output_pdf_path, data_dict):   
+    """
+    Fill out PDF form fields based on a provided dictionary of values.
+    
+    Parameters:
+    - input_pdf_path: Path to the input PDF template
+    - output_pdf_path: Path to save the filled PDF
+    - data_dict: Dictionary containing field names as keys and values to fill in the fields
+    """
+    # Define the necessary constants
+    ANNOT_KEY = '/Annots'
+    SUBTYPE_KEY = '/Subtype'
+    WIDGET_SUBTYPE_KEY = '/Widget'
+    ANNOT_FIELD_KEY = '/T'
+
+    print(f"data_dict = {data_dict}")  # Debugging: print the data_dict to ensure correct values
+    
+    # Read the input PDF template
+    template_pdf = pdfrw.PdfReader(input_pdf_path)
+    
+    # Iterate through all pages of the PDF
+    for page in template_pdf.pages:
+        annotations = page.get(ANNOT_KEY, [])
+        
+        # Iterate through all annotations (form fields)
+        for annotation in annotations:
+            field_name = annotation.get(ANNOT_FIELD_KEY)
+            
+            if field_name and annotation.get(SUBTYPE_KEY) == WIDGET_SUBTYPE_KEY:
+                field_name = field_name[1:-1]  # Remove the leading/trailing parentheses
+                
+                # Check if the field name exists in the provided data_dict using get()
+                field_value = data_dict.get(field_name)
+                
+                if field_value is not None:  # Only process if the field value exists in the data_dict
+                    print(f"Filling field: {field_name} with value {field_value}")  # Debugging: check the field being filled
+                    
+                    # Handle boolean values (e.g., checkboxes)
+                    if isinstance(field_value, bool):
+                        if field_value:  # If True, check the checkbox
+                            annotation.update(pdfrw.PdfDict(AS=pdfrw.PdfName('Yes')))
+                        else:  # If False, uncheck the checkbox
+                            annotation.update(pdfrw.PdfDict(AS=pdfrw.PdfName('Off')))
+                    else:
+                        # Handle text or other values
+                        annotation.update(pdfrw.PdfDict(V='{}'.format(field_value)))
+                        annotation.update(pdfrw.PdfDict(AP=''))  # Clear appearance if needed
+
+    # Update the NeedAppearances flag to ensure the changes are visible in the PDF
+    template_pdf.Root.AcroForm.update(pdfrw.PdfDict(NeedAppearances=pdfrw.PdfObject('true')))
+    
+    # Write the filled PDF to the output path
+    pdfrw.PdfWriter().write(output_pdf_path, template_pdf)
+
+
+
+
 def pdf_fill(input_pdf_path, output_pdf_path, data_dict):   
     """
         # fill out EvidenceForm
@@ -1591,7 +1638,7 @@ def pdf_fill(input_pdf_path, output_pdf_path, data_dict):
         receives output template with a uniq name
         data_dict is my_dict which is many of the columns needed to write pdf reports
     """
-    
+    print(f"data_dict = {data_dict}")   # temp
     template_pdf = pdfrw.PdfReader(input_pdf_path)
     for page in template_pdf.pages:
         annotations = page[ANNOT_KEY]
@@ -1621,13 +1668,13 @@ def read_xlsx():
     sheet_name = "Forensics"
 
     if not os.path.exists(input_file):
-        print(f'{color_red}{input_file} does not exist{color_reset}')
+        print(f"{color_red}{input_file} does not exist{color_reset}")
         exit() 
     else:
         dftemp = pd.read_excel(input_file, sheet_name=sheet_name)
         df = dftemp.fillna('')  # Replace NaN with empty string
  
-        print(f'{color_green}Reading {input_file}{color_reset}') 
+        print(f"{color_green}Reading {input_file}{color_reset}") 
     (header, reportStatus, date) = ('', '', '')
     (body, executiveSummary, evidenceBlurb) = ('', '', '')
     (style) = ('')
@@ -1742,239 +1789,262 @@ def read_xlsx():
         if ' 00:00:00' in dateReceived: 
             dateReceived = dateReceived.replace(" 00:00:00", "")
         # Summary writer, put a blank space or write your own summary if you don't want one auto generated
-        if summary == '' and dateSeized != '' and forensicExaminer != '' and seizureAddress != '' and agency != "ISP":
-            summary = ('On %s %s attended the warrant at %s. %s read a copy of the search warrant authorizing the digital forensic analysis of digital computers, -------------- and media.' %(dateSeized, forensicExaminer, seizureAddress, forensicExaminer))
-        elif summary != '':
-            summary == summary
+        if not summary and dateSeized and forensicExaminer and seizureAddress and agency != "ISP":
+            summary = (
+                f"On {dateSeized}, {forensicExaminer} attended the warrant at {seizureAddress}. "
+                f"{forensicExaminer} read a copy of the search warrant authorizing the digital forensic analysis of digital computers, "
+                f"-------------- and media."
+            )
+        elif summary:
+            summary = summary
 
-        qrCode = ("%s_%s" %(caseNumber, exhibit))
 
-        pdf_output = ("EvidenceForm_%s_Ex_%s.pdf" %(caseNumber, exhibit))
-        if header == '':
-            header = ('''
+        qrCode = f"{caseNumber}_{exhibit}"
+
+
+        pdf_output = f"EvidenceForm_{caseNumber}_Ex_{exhibit}.pdf"
+        if not header:
+            header = f"""
 ACTIVITY REPORT                              BUREAU OF CRIMINAL INVESTIGATIONS
 ____________________________________________________________________________________
 
 Activity Number:                             Date of Activity:
-%s                               %s
+{caseNumber}                                		\t{todaysDate}
 ____________________________________________________________________________________
 ____________________________________________________________________________________
 Subject of Activity:                         Case Agent:             Typed by:
-%s %s                               %s        %s
-%s
+{caseName} {subjectBusinessName}                        {caseAgent}        	{forensicExaminer}
+{caseType}
 ____________________________________________________________________________________
 
 Note:
 
-This document contains findings regarding the analysis of digital evidence that was submitted for forensic examination. The data contained in these findings and data extractions should not be regarded as evidence, but rather findings concerning that evidence. Contact the case officer or prosecutor to obtain the evidentiary data.
-
-Data contained in these findings may be sensitive, confidential, or in some cases offensive. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing in not authorized.
-
-It should be noted that not all files were reviewed during this examination. It is incumbent upon the requester to thoroughly review the data and make a determination as to the probative or exculpatory nature of any and all information.
+Data contained in these findings may be sensitive, confidential, or in some cases offensive. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing is not authorized.
 
 Executive Summary 
 
-Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
-''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, caseAgent, agencyFull, divisionFull, caseType, caseName, summary)
-
+Special Agent {caseAgent} of the {agencyFull}, {divisionFull}, requested an examination of evidence for any information regarding the {caseType} investigation in the {caseName} case. {summary}
+"""
         header = header.replace(' 00:00:00', '')
 
-        if executiveSummary == '':
-            executiveSummary = ('''
-%s                                    %s
+        if not executiveSummary:
+            executiveSummary = f"""
+{caseNumber}                                        {todaysDate}
 
-%s %s                           %s    %s 
+{caseName} {subjectBusinessName}                              {caseAgent}    {forensicExaminer}
 
 Note:
 
-This document contains findings regarding the analysis of digital evidence that was submitted for forensic examination. The data contained in these findings and data extractions should not be regarded as evidence, but rather findings concerning that evidence. Contact the case officer or prosecutor to obtain the evidentiary data.
-
-Data contained in these findings may be sensitive, confidential, or in some cases offensive. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing in not authorized.
-
-It should be noted that not all files were reviewed during this examination. It is incumbent upon the requester to thoroughly review the data and make a determination as to the probative or exculpatory nature of any and all information.
-
+Data contained in these findings may be sensitive, confidential, or in some cases offensive. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing is not authorized.
 
 Executive Summary
- 
-Special Agent %s of the %s, %s, requested an examination of evidence for any information regarding the %s investigation in the %s case. %s
-''') %(caseNumber, todaysDate, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseAgent, agencyFull, divisionFull, caseType, caseName, summary)
 
+Special Agent {caseAgent} of the {agencyFull}, {divisionFull}, requested an examination of evidence for any information regarding the {caseType} investigation in the {caseName} case. {summary}
+
+
+Forensic Imaging
+"""
         executiveSummary = executiveSummary.replace(' 00:00:00', '')
-        
-        report = ('''
 
-        
-Item %s
-
-''') %(exhibit)
-
-        if makeModel != '':
-            if makeModel[0].lower() in vowel:
-                report = ('''%sAn %s''') %(report, makeModel)
-            else:
-                report = ('''%sA %s''') %(report, makeModel)
-        if len(mobileCarrier) != 0:
-            if exhibitType == 'phone':
-                report = ("%s %s" %(report, mobileCarrier))
-            else:
-                report = ("%s (Carrier: %s)" %(report, mobileCarrier))
+        report = f"""
 
 
+Item {exhibit}
 
-        if len(exhibitType) != 0:
-            report = ("%s %s" %(report, exhibitType))
-
-        if phoneNumber != '' and phoneNumber != 'NA' and phoneNumber != 'na' and phoneNumber != 'N/A':
-            report = ("%s (MSISDN: %s)" %(report, phoneNumber))
-
-        if phoneIMEI != '' and phoneIMEI != 'NA' and phoneIMEI != 'na' and phoneIMEI != 'N/A':
-            report = ("%s (IMEI: %s)" %(report, phoneIMEI))
-        # if len(phoneIMEI2) != 0 and phoneIMEI2 != 'NA' and phoneIMEI2 != 'na' and phoneIMEI2 != 'N/A':
-            # report = ("%s (IMEI 2: %s)" %(report, phoneIMEI2))
+"""
 
 
-        if len(serial) != 0:
-            report = ("%s (S/N: %s)" %(report, serial))
-            
-        if len(OS) != 0:
-            report = ("%s (OS: %s)" %(report, OS))
-            # if OS[0].lower() in vowel:
-                # report = ("%s, with an %s OS" %(report, OS))
-            # else:
-                # report = ("%s, with a %s OS" %(report, OS))          
-        if len(hostname) != 0:
-            report = ("%s (Hostname: %s)" %(report, hostname))
+        if makeModel:
+            article = "An" if makeModel[0].lower() in vowel else "A"
+            report = f"{report}{article} {makeModel}"
 
-        if len(dateReceived) != 0:
-            if ' ' in dateReceived:
-                report = ("%s was received on %s" % (report, dateReceived.replace(" ", " at ", 1)))
-            else:
-                report = ("%s was received on %s" % (report, dateReceived))
+        if mobileCarrier:
+            carrier_info = mobileCarrier if exhibitType == 'phone' else f"(Carrier: {mobileCarrier})"
+            report = f"{report} {carrier_info}"
+        if exhibitType:
+            report = f"{report} {exhibitType}"
+
+        if phoneNumber and phoneNumber not in {'NA', 'na', 'N/A'}:
+            report = f"{report} (MSISDN: {phoneNumber})"
+
+        if phoneIMEI and phoneIMEI not in {'NA', 'na', 'N/A'}:
+            report = f"{report} (IMEI: {phoneIMEI})"
+
+        if serial:
+            report = f"{report} (S/N: {serial})"
+
+        if OS:
+            report = f"{report} (OS: {OS})"
+
+        if hostname:
+            report = f"{report} (Hostname: {hostname})"
+
+        if dateReceived:
+            report = f"{report} was received on {dateReceived.replace(' ', ' at ', 1) if ' ' in dateReceived else dateReceived}"
         else:
-            report = ("%s was received" %(report))
-        report = ("%s." %(report))
-        
-        # if len(imagingStarted) != 0:
-        if len(imagingStarted) != 0 and status != "Not imaged":
-            report = ("%s On %s," %(report, imagingStarted.replace(" ", " at ", 1)))
+            report = f"{report} was received"
+
+        report = f"{report}."
+
+        # Check if imagingStarted is not empty and status is not "Not imaged"
+        if imagingStarted and status != "Not imaged":
+            report = f"{report} On {imagingStarted.replace(' ', ' at ', 1)},"
+
+        # Check if forensic examiner is a Digital Forensic Examiner
         if forensicExaminer.startswith("DFE"):
-            report = ("%s %s" %(report, forensicExaminer))
+            report = f"{report} {forensicExaminer}"
         else:
-            report = ("%s Digital Forensic Examiner %s" %(report, forensicExaminer))
+            report = f"{report} Digital Forensic Examiner {forensicExaminer}"
 
-        if len(imagingTool) != 0 and imagingType != '' and writeBlocker != '': 
-            if imagingType[0].lower() in vowel:
-                report = ("%s used %s, utilizing a %s write blocker, to conduct an %s" %(report, imagingTool, writeBlocker, imagingType))  
-            elif imagingType[0].lower() not in vowel:
-                report = ("%s used %s, utilizing a %s write blocker, to conduct a %s" %(report, imagingTool, writeBlocker, imagingType))  
+        # Imaging tool and type with write blocker
+        if imagingTool and imagingType and writeBlocker:
+            article = "an" if imagingType[0].lower() in vowel else "a"
+            report = f"{report} used {imagingTool}, utilizing a {writeBlocker} write blocker, to conduct {article} {imagingType}"
 
-        elif len(imagingTool) != 0 and imagingType != '':
-            if imagingType[0].lower() in vowel:
-                report = ("%s used %s to conduct an %s" %(report, imagingTool, imagingType))  
-            elif imagingType[0].lower() not in vowel:
-                report = ("%s used %s to conduct a %s" %(report, imagingTool, imagingType))  
+        # Imaging tool and type without write blocker
+        elif imagingTool and imagingType:
+            article = "an" if imagingType[0].lower() in vowel else "a"
+            report = f"{report} used {imagingTool} to conduct {article} {imagingType}"
 
-        elif imagingTool != '':
-            report = ("%s used %s to conduct " %(report, imagingTool))  
+        # Only imaging tool
+        elif imagingTool:
+            report = f"{report} used {imagingTool} to conduct"
 
-        elif imagingType != '' and exportedEvidence != "N":
-            report = ("%s conducted a %s" %(report, imagingType))  
+        # Imaging type and exported evidence is not "N"
+        elif imagingType and exportedEvidence != "N":
+            report = f"{report} conducted a {imagingType}"
+
+        # Exported evidence is "N"
         elif exportedEvidence == "N":
-            report = ("%s did not conduct a" %(report))  
+            report = f"{report} did not conduct a"
+
+        # Default case when nothing else applies
         else:
-            report = ("%s conducted a" %(report))  
+            report = f"{report} conducted a"
+
+
             
-        if phoneNumber != '' and phoneNumber != 'NA' and phoneNumber != 'na' and phoneNumber != 'N/A':
-            report = ("%s phone extraction." %(report))
-        elif imagingStarted != '':        
-            report = ("%s forensic extraction" %(report))
-
-        else:        
-            report = ("%s manual analysis" %(report))
-
-        if len(storageType) != 0 and storageMakeModel != '' and storageSerial != '' and storageSize != '': 
-            report = ("%s on the %s (S/N: %s) %s %s drive." %(report, storageMakeModel, storageSerial, storageSize, storageType))  
-        elif storageMakeModel != '' and storageSerial != '' and storageSize != '': 
-            report = ("%s on the %s (S/N: %s) %s drive." %(report, storageMakeModel, storageSerial, storageSize))  
-        elif storageMakeModel != '' and storageSize != '': 
-            report = ("%s on the %s %s drive." %(report, storageMakeModel, storageSize))  
+        if phoneNumber not in {'', 'NA', 'na', 'N/A'}:
+            report = f"{report} phone extraction."
+        elif imagingStarted:
+            report = f"{report} forensic extraction"
+        else:
+            report = f"{report} manual analysis"
 
 
-        else: 
-            report = ("%s." %(report))  
+        if storageType and storageMakeModel and storageSerial and storageSize:
+            report = f"{report} on the {storageMakeModel} (S/N: {storageSerial}) {storageSize} {storageType} drive."
+        elif storageMakeModel and storageSerial and storageSize:
+            report = f"{report} on the {storageMakeModel} (S/N: {storageSerial}) {storageSize} drive."
+        elif storageMakeModel and storageSize:
+            report = f"{report} on the {storageMakeModel} {storageSize} drive."
+        else:
+            report = f"{report}."
+
     
         # image hash
         if len(imageMD5) != 0 and exportLocation != '' and len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
-            report = ("%s The image (SHA256 Hash: % s) (MD5 Hash: % s) was saved as %s." %(report, imageSHA256, imageMD5, exportLocation.split('\\')[-1])) 
+            # report = ("%s The image (SHA256 Hash: % s) (MD5 Hash: % s) was saved as %s." %(report, imageSHA256, imageMD5, exportLocation.split('\\')[-1])) 
+
+            if writeBlocker != '':
+
+                report = (
+                    f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                    f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                    f"The forensic imaging process was completed successfully and verified with no errors. The source hash was calculated and confirmed unchanged before processing. The acquisition and verification hash values matched, ensuring data integrity.\n"
+                    f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
+                )
+            else:
+                report = (
+                    f"{report}\n"
+                    f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                    f"The forensic imaging process was completed successfully and verified with no errors. The source hash was calculated and confirmed unchanged before processing. The acquisition and verification hash values matched, ensuring data integrity.\n"
+                    f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
+                )
+
+
+
         elif len(imageMD5) != 0 and exportLocation != '':
             # report = ("%s The image (MD5 Hash: % s) was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
-
-            report = (
-                f"{report} A write-blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
-                f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
-                f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
-                f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
-            )
+            if writeBlocker != '':
+                report = (
+                    f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                    f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                    f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
+                    f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
+                )
+            else:
+                report = (
+                    f"{report}\n"
+                    f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                    f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
+                    f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
+                )
 
 
 
 
         elif len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
-            report = ("%s The image had a SHA256 hash of % s." %(report, imageSHA256))
-
-
+            # report = ("%s The image had a SHA256 hash of % s." %(report, imageSHA256))
+            if writeBlocker != '':
+                report = (
+                    f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                    f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
+                    f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
+                    f"\n\tSource MD5 hash:         {imageSHA256}\n\tVerification MD5 hash: {imageSHA256}\n\n"
+                )
+            else:
+                report = (
+                    f"{report}\n"
+                    f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
+                    f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
+                    f"\n\tSource MD5 hash:         {imageSHA256}\n\tVerification MD5 hash: {imageSHA256}\n\n"
+                )
 
         # if "write blocker, to conduct" in report:
             # report = ("%s A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. " %(report))  
+        # Analysis tool processing
+        if analysisTool and analysisTool2:
+            report = f"{report} The image was processed with {analysisTool} and further analyzed with {analysisTool2}. The forensic image hash value was verified prior to processing therby confirming the data remained unaltered prior to processing."
+        elif analysisTool:
+            report = f"{report} The image was processed with {analysisTool}.  The forensic image hash value was verified prior to processing therby confirming the data remained unaltered prior to processing."
 
-        # analysisTool
-        if analysisTool != '' and analysisTool2 != '':      # analysisTool2
-            report = ("%s The image was processed with %s and further analyzed with %s." %(report, analysisTool, analysisTool2))
+        # Username and password to report
+        if userName and userPwd and exhibitType:
+            report = f"{report} \"{userName}\" with a password of \"{userPwd}\" was a login to this {exhibitType}."
+        elif userName and userPwd:
+            report = f"{report} \"{userName}\" with a password of \"{userPwd}\" was a login to this device."
 
-        elif analysisTool != '':
-            report = ("%s The image was processed with %s." %(report, analysisTool))
-
-
-        # add username and password to report
-        if len(userName) != 0 and userPwd != '' and exhibitType != '': 
-            report = ("%s \"%s\" with a password of \"%s\" was a login to this %s." %(report, userName, userPwd, exhibitType)) 
-        elif len(userName) != 0 and userPwd != '': 
-            report = ("%s \"%s\" with a password of \"%s\" was a login to this device." %(report, userName, userPwd)) 
-
-        # add email / password to report
-        if len(email) != 0 and emailPwd != '' and exhibitType != '':  
-            report = ("%s \"%s\" with a password of \"%s\" was an email configured on this %s." %(report, email, emailPwd, exhibitType)) 
-        elif len(email) != 0 and exhibitType != '':  
+        # Email and password to report
+        if email and emailPwd and exhibitType:
+            report = f"{report} \"{email}\" with a password of \"{emailPwd}\" was an email configured on this {exhibitType}."
+        elif email and exhibitType:
             if " and " in email:
-                report = ("%s %s were email addresses configured on this %s." %(report, email, exhibitType)) 
+                report = f"{report} {email} were email addresses configured on this {exhibitType}."
             else:
-                report = ("%s %s was an email configured on this %s." %(report, email, exhibitType)) 
+                report = f"{report} {email} was an email configured on this {exhibitType}."
+        elif email and emailPwd:
+            report = f"{report} \"{email}\" with a password of \"{emailPwd}\" was an email configured on this device."
 
-        elif len(email) != 0 and emailPwd != '':  
-            report = ("%s \"%s\" with a password of \"%s\" was an email configured on this device." %(report, email, userPwd)) 
- 
-        if notes != '':
-            report = ("%s\n\n%s" %(report, notes))
-          
-        # exportedEvidence
+        # Add notes to report if not empty
+        if notes:
+            report = f"{report}\n\n{notes}"
+
+        # Exported evidence check
         if exportedEvidence == "Y" and 'elevant files were exported' not in notes:
-            # report = ("%s Relevant files were exported." %(report.strip()))
-            report = ("%s Relevant files were exported." %(report.rstrip()))
+            report = f"{report.rstrip()} Relevant files were exported."
         elif exportedEvidence == "N" and 'search for relevant files was conduced and no files were found' not in notes:
-            report = ("%s A search for relevant files was conduced and no files were found." %(report.rstrip()))
+            report = f"{report.rstrip()} A search for relevant files was conducted and no files were found."
 
-        # evidence return
-        if "2" in removalDate and "eturned" in storageLocation: # returned or Returned
-            
-            if " " in removalDate:
-                removalDate2 = removalDate.split(' ')[0]
-            else:
-                removalDate2 = removalDate
+        # Evidence return check
+        if "2" in removalDate and "eturned" in storageLocation:  # returned or Returned
+            removalDate2 = removalDate.split(' ')[0] if " " in removalDate else removalDate
 
-            if exhibitType != '':
-                report = ("%s This %s was returned to the owner on %s." %(report, exhibitType, removalDate2)) # test
+            if exhibitType:
+                report = f"{report} This {exhibitType} was returned to the owner on {removalDate2}."
             else:
-                report = ("%s This item was returned to the owner on %s." %(report, removalDate2))  
+                report = f"{report} This item was returned to the owner on {removalDate2}."
+
     
         report = report.replace("    , was received. ", "    ")
         report = report.replace("This was a DVR system was not imaged.","This was a DVR system and was not imaged.")
@@ -1988,9 +2058,9 @@ Item %s
             storageSerial = ' '
 
         print(report)
-        # output.write(report) # output to text
-        # body = ("%s\n%s" %(body, report))
-        body = ("%s%s" %(body, report))
+
+        body = f"{body}{report}"
+
     
         # Write excel
         write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
@@ -2005,7 +2075,6 @@ Item %s
             vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
 
         if case_notes_status == 'True':
-            print(f'exhibit temp = {exhibit}')  # temp
             my_dict = dictionary_build(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
             forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
             phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
@@ -2016,51 +2085,64 @@ Item %s
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
+        else:
+            my_dict = []
+        
         # write an evidence form based on which agency you are from
-            
-            if exhibit != '':
-                pdf_output = ("ExhibitNotes_%s_Ex%s.pdf" %(caseNumber, exhibit))    # output
+        # Set pdf_output based on whether exhibit is provided
+        if exhibit:
+            pdf_output = f"ExhibitNotes_{caseNumber}_Ex{exhibit}.pdf"  # Output with exhibit
+        else:
+            pdf_output = f"ExhibitNotes_{caseNumber}_{todaysDateTime}.pdf"  # Output without exhibit, using today's date
+            time.sleep(2)  # Wait 2 seconds to ensure a unique name
+
+        # Choose the appropriate form based on agency and exhibit type
+        if agency == "ISP":
+            if exhibitType.lower() == 'phone':
+                pdf_template = "EvidenceForm_MDIS.pdf"  # Mobile Device Evidence Sheet
             else:
-                pdf_output = ("ExhibitNotes_%s_%s.pdf" %(caseNumber, todaysDateTime))    # output in case exhibit is empty
-                time.sleep(2)  # wait 2 seconds so the name is uniq
-                
-            # choose which form you fill out based on agency acronym
-            if agency == "ISP":            
-                if exhibitType == 'phone':  # lower(exhibitType)
-                    pdf_template = "EvidenceForm_MDIS.pdf"  # Mobile Device Evidence Sheet
-                else:
-                    pdf_template = "EvidenceForm_EDIS.pdf"  # Electronic Device Evidence Sheet
-            elif agency == "IDOR" and os.path.exists("Blank_EvidenceForm_IDOR.pdf"):   # fix me
-                pdf_template = "Blank_EvidenceForm_IDOR.pdf"
-            else:   
-                pdf_template = "Blank_EvidenceForm.pdf"
+                pdf_template = "EvidenceForm_EDIS.pdf"  # Electronic Device Evidence Sheet
+        elif agency == "IDOR" and os.path.exists("Blank_EvidenceForm_IDOR.pdf"):
+            pdf_template = "Blank_EvidenceForm_IDOR.pdf"
+        else:
+            pdf_template = "Blank_EvidenceForm.pdf"
+
+        # Fill the selected PDF template
+        if my_dict:  # This checks if the dictionary is not empty
             pdf_fill(pdf_template, pdf_output, my_dict)
+            # print(f" ----------------------------   saving {pdf_output}\n {my_dict}")  # temp
 
-
-    footer = ('''
-
+        footer = f'''
 Report Conclusion
 
+This document contains findings regarding the analysis of digital evidence that was submitted for forensic examination. The data contained in these findings and data extractions should not be regarded as evidence, but rather findings concerning that evidence. Contact the case officer or prosecutor to obtain the evidentiary data.
+
+It should be noted that not all files were reviewed during this examination. It is incumbent upon the requester to thoroughly review the data and make a determination as to the probative or exculpatory nature of any and all information.
 
 All forensic equipment and software have been functionally tested/validated without errors prior to use. Where possible, before utilizing stand-alone write blockers, firmware was updated to the current version and functionality was verified.
 
-All forensic acquisition, analysis and write-blocking software used for this case is licensed and/or registered to %s and/or the %s.
+All forensic acquisition, analysis and write-blocking software used for this case is licensed and/or registered to {forensicExaminer} and/or the {agencyFull}.
 
 This report contains digital examination of the items provided based on the investigative information and tools available to the examiner at the time of the analysis. 
 
-A copy of this report will be given to %s. Additional analysis may be requested after review of the report or as the investigation continues.
+A copy of this report will be given to {caseAgent}. Additional analysis may be requested after review of the report or as the investigation continues.
 
-All digital images obtained pursuant to this investigation will be maintained on %s servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an item in the case file. 
-    ''') %(forensicExaminer, agencyFull, caseAgent, agency)
-
-
-
+All digital images obtained pursuant to this investigation will be maintained on {agency} servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an item in the case file.
+'''
 
 
     # write docx report
     write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer)
 
-    # output.write(footer+'\n') # output to text
+def sanitize_filename(name):
+    # Define a pattern for illegal characters
+    name = name.replace('d/b/a ', '')
+    name = name.replace(' ', '_')
+    illegal_chars = r'[<>:"/\\|?*\x00]'
+    # Replace them with an underscore or other safe character
+    return re.sub(illegal_chars, '_', name)
+    
+    
     
 def write_checklist():  # panda edition
     """
@@ -2192,11 +2274,11 @@ def write_checklist():  # panda edition
     # df = pd.read_excel(input_file)
     
     if not os.path.exists(input_file):
-        print(f'{color_red}{input_file} does not exist{color_reset}')
+        print(f"{color_red}{input_file} does not exist{color_reset}")
         
         exit()    
     else:
-        print(f'{color_green}Reading {input_file}{color_reset}')
+        print(f"{color_green}Reading {input_file}{color_reset}")
         
         dftemp = pd.read_excel(input_file, sheet_name=sheet_name)
         df = dftemp.fillna('')  # Replace NaN with empty string
@@ -2228,7 +2310,7 @@ def write_checklist():  # panda edition
         sheetOut = str(row['removalDate'])
         if "nan" in sheetOut:
             sheetOut = "" 
-            print(f'{color_red}nan exists{color_reset}')
+            print(f"{color_red}nan exists{color_reset}")
         elif sheetOut != "":
             sheetOut = ".."
        
@@ -2341,7 +2423,7 @@ def write_checklist():  # panda edition
             cell.border = cell_border
 
         # checklist_sheet.append([exhibit, exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup, analyzed, report, caseNotes, de, deBackup, deAgent, "", "", "", memory, triage, edd, password, kape, photo, OS, ipIMEI, hostname, arsenal])
-    print(f'{color_green}Data written to {output_file}{color_reset}')    
+    print(f"{color_green}Data written to {output_file}{color_reset}")    
 
     # Save the workbook to the output file
     book.save(output_file)
@@ -2372,21 +2454,6 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         book = Workbook()
         sheet = book.active
         sheet.title = "Forensics"
-
-        # Check if the "Checklist" sheet already exists, if not, create it
-        # if "Checklist" not in book.sheetnames:
-            # book.create_sheet("Checklist")
-
-            # Set headers for the "Checklist" sheet
-            # checklist_headers = ["three_data", "one_data", "zero_data"]
-            # sheet_checklist = book["Checklist"]
-            # sheet_checklist.append(checklist_headers)
-
-            #  Set column width for the "Checklist" sheet
-            # sheet_checklist.column_dimensions['A'].width = 45
-            # sheet_checklist.column_dimensions['B'].width = 35
-            # sheet_checklist.column_dimensions['C'].width = 25
-            # sheet_checklist.column_dimensions['D'].width = 15
 
         # Set headers for the "Forensics" sheet
         headers = ["caseNumber", "exhibit", "caseName", "subjectBusinessName", "caseType", "caseAgent"
@@ -2764,15 +2831,17 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     
 def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer): 
     """
-        write ActivityReport_%s__%s_%s_%s_DRAFT.docx
+        write %s__%s_%s_%s_DRAFT.docx
     """
-
-    output_docx = (f'ActivityReport_{caseNumber}__{Year}-{Month}-{Day}_DRAFT.docx') 
+    safe_filename1 = sanitize_filename(caseNumber)
+    safe_filename2 = sanitize_filename(subjectBusinessName)    
+    
+    output_docx = (f"{safe_filename1}_{safe_filename2}_{Year}-{Month}-{Day}_DRAFT.docx") 
 
     try:
         document = docx.Document("Blank_ActivityReport.docx") # read in the template if it exists
     except:
-        print(f'{color_red}You are missing Blank_ActivityReport.docx{color_reset}')        
+        print(f"{color_red}You are missing Blank_ActivityReport.docx{color_reset}")        
 
         document = create_docx()   # create a basic template file
     
@@ -2786,7 +2855,7 @@ def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, 
     
     document.save(output_docx)   # print output to the new file
 
-    print(f'{color_green}Activity report written to {output_docx}{color_reset}')        
+    print(f"{color_green}Activity report written to {output_docx}{color_reset}")        
 
 def write_sticker():
     """
@@ -2799,7 +2868,7 @@ def write_sticker():
     (headers) = []
 
     if not os.path.exists('Avery2x4Labels.docx'):
-        print(f'{color_red}you are missing Avery2x4Labels.docx.... so Im making a lame version{color_reset}')        
+        print(f"{color_red}you are missing Avery2x4Labels.docx.... so Im making a lame version{color_reset}")        
         
         # Create a new Word document
         document = docx.Document()
@@ -2823,10 +2892,10 @@ def write_sticker():
     # Read the Excel file and load the specified sheet into a DataFrame
 
     if not os.path.exists(input_file):
-        print(f'{color_red}{input_file} does not exist{color_reset}')    
+        print(f"{color_red}{input_file} does not exist{color_reset}")    
         exit()
     else:
-        print(f'{color_green}Reading {input_file}{color_reset}')    
+        print(f"{color_green}Reading {input_file}{color_reset}")    
 
         dftemp = pd.read_excel(input_file, sheet_name=sheet_name)
         # df = dftemp.fillna('').sort_values(by='exhibit')  # Replace NaN with empty string and sort by exhibit
@@ -2841,29 +2910,26 @@ def write_sticker():
         subjectBusinessName = row['subjectBusinessName']
         caseAgent = row['caseAgent']
         exhibit = str(row['exhibit']).rstrip('.0')
-        # print(f'exhibit = type: {type(exhibit)}')   # temp
-        print(f'exhibit = {exhibit}')    # temp
-       
         makeModel = row['makeModel']
         serial = str(row['serial'])       
         status = row['status']
 
         if status == 'Imaged':    
             header = (f'''Case#: {caseNumber}      Ex: {exhibit}
-   CaseName: {caseName}
-   Subject: {subjectBusinessName}
-   Make: {makeModel} 
-   Serial: {serial}
-   Agent: {caseAgent}
-   {status}
+CaseName: {caseName}
+Subject: {subjectBusinessName}
+Make: {makeModel} 
+Serial: {serial}
+Agent: {caseAgent}
+{status}
 ''')
         else:
             header = (f'''Case#: {caseNumber}      Ex: {exhibit}
-   CaseName: {caseName}
-   Subject: {subjectBusinessName}
-   Make: {makeModel} 
-   Serial: {serial}
-   Agent: {caseAgent}
+CaseName: {caseName}
+Subject: {subjectBusinessName}
+Make: {makeModel} 
+Serial: {serial}
+Agent: {caseAgent}
 ''')
 
         header = header.strip()
@@ -2882,7 +2948,7 @@ def write_sticker():
         except:
             pass
     document.save(output_docx)
-    print(f'{color_green}Data written to {output_docx}')
+    print(f"{color_green}Data written to {output_docx}")
 
 def usage():
     """
@@ -2892,18 +2958,18 @@ def usage():
     
 
 
-    print(f'\nDescription: {color_green}{description}{color_reset}')
-    print(f'{file} Version: {version} by {author}')
-    print(f'\n    {color_yellow}insert your info into input_case.xlsx')
-    print(f'\n    or insert logs into Logs folder{color_reset}')
-    print(f'\nExample:')
-    print(f'    {file} -C')
-    print(f'    {file} -g')
-    print(f'    {file} -l')
-    print(f'    {file} -L')
-    print(f'    {file} -r')
-    print(f'    {file} -r -c -C -s -I ForensicCasesExample.xlsx')
-    print(f'    {file} -s')
+    print(f"\nDescription: {color_green}{description}{color_reset}")
+    print(f"{file} Version: {version} by {author}")
+    print(f"\n    {color_yellow}insert your info into input_case.xlsx")
+    print(f"\n    or insert logs into Logs folder{color_reset}")
+    print(f"\nExample:")
+    print(f"    {file} -C")
+    print(f"    {file} -g")
+    print(f"    {file} -l")
+    print(f"    {file} -L")
+    print(f"    {file} -r")
+    print(f"    {file} -r -c -C -s -I ForensicCasesExample.xlsx")
+    print(f"    {file} -s")
 
  
 if __name__ == '__main__':
@@ -2912,6 +2978,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+3.0.6 - added lots of new wording and disclaimer based on a report by J.S.
+3.0.5 - converted to print(f" so it's easier to read and update by variables)
 3.0.0 - added color & error checking
 2.9.4 - converted from (xlxriter and xlxreader) to pandas to support multiple lines in Notes column
 2.7.3 - added checklist to xlsx
@@ -2940,19 +3008,21 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+add a -f option if you want it worded in first person perspective (sounds hard to write)
+Add a glossary of terms?
+
+fix pdf output (often blank but sometimes it works)
 if date doesn't have time, don't put 0:0:0
+
+fix serial and storageSerial for TableauImager_21-41803200001_Ex1_Seagate3TBHDD.txt 
 
 Label GUI - Tkinter screen (Case#, Agent, Case Name, Location, Date, Exhibit, Room) # of stickers <print>
 
 standaradize date format in reporting (Wednesday, July 7, 2021)
 
-
-
 parse .ufdx logs 
 
 figure out DocX tags or variables to insert data into the header fields
-
-fix serial and storageSerial for TableauImager_21-41803200001_Ex1_Seagate3TBHDD.txt 
 
 add a brother (or Dymo) label printer output to xlsx with qrCode
 qrCode could be caseNumber_exhibit_serial (it depends on what the evidence staff want displayed on their inventory scanner)
