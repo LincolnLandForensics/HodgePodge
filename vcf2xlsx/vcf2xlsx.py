@@ -569,7 +569,7 @@ def Usage():
     print(f"{file} Version: {version} by {author}")
     print(f"    {file} -c")
     print(f"    {file} -c -I LogsVCF -O contacts_Apple.xlsx")
-    print(f"    {file} -x -O LogsVCF -I VCF_Files")
+    print(f"    {file} -x -O LogsVCF -I contacts_Apple.xlsx")
 
     
 if __name__ == '__main__':

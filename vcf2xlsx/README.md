@@ -13,5 +13,5 @@ Usage:
 ```
 python vcf2xlsx.py -c
 python vcf2xlsx.py -c -I LogsVCF -O contacts_Apple.xlsx
-python vcf2xlsx.py -x -O LogsVCF -I VCF_Files	
+python vcf2xlsx.py -x -I contacts_Apple.xlsx -O LogsVCF	
 ```
