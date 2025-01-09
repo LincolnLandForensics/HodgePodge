@@ -11,17 +11,17 @@ python pip install -r requirements_vcf2xlsx.txt
 
 options:
 
-  -h, --help            show this help message and exit
+  -h	show this help message and exit
 
-  -I INPUT, --input INPUT
+  -I	INPUT
 
-  -O OUTPUT, --output OUTPUT
+  -O	OUTPUT
 
-  -B, --blank           create blank intel sheet
+  -B	create blank intel sheet
 
-  -c, --contacts        Read contacts from .vcf files and create an Excel sheet
+  -c	Read contacts from .vcf files and create an Excel sheet
 
-  -x, --xlsx            Read contacts from .xlsx files and create .vcf files
+  -x	Read contacts from .xlsx files and create .vcf files
 
 
 Usage:
