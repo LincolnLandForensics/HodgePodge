@@ -1,0 +1,14 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Jane Smith
+N:Smith;Jane;;;Dr.
+ORG:Tech Solutions
+TITLE:Chief Technology Officer
+EMAIL;TYPE=INTERNET:jane.smith@techsolutions.com
+TEL;TYPE=HOME,VOICE:+1-555-234-5678
+TEL;TYPE=WORK,VOICE:+1-555-876-5432
+ADR;TYPE=HOME:;;456 Elm Street;San Francisco;CA;94101;USA
+URL:https://www.techsolutions.com
+BDAY:1978-11-22
+NOTE:Keynote speaker at the AI Summit.
+END:VCARD

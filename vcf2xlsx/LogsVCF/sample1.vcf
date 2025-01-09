@@ -1,0 +1,15 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:John Doe
+N:Doe;John;;;Mr.
+ORG:Example Corp;Sales Department
+TITLE:Senior Sales Manager
+EMAIL;TYPE=INTERNET:john.doe@example.com
+EMAIL;TYPE=WORK:john.doe@workexample.com
+TEL;TYPE=WORK,VOICE:+1-555-123-4567
+TEL;TYPE=CELL:+1-555-765-4321
+ADR;TYPE=WORK:;;123 Main Street;New York;NY;10001;USA
+URL:https://www.example.com
+BDAY:1985-05-15
+NOTE:Met at the annual tech conference.
+END:VCARD

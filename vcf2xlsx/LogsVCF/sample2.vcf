@@ -1,0 +1,13 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Michael Johnson
+N:Johnson;Michael;;;Mr.
+ORG:Creative Media
+TITLE:Director of Marketing
+EMAIL;TYPE=INTERNET:michael.johnson@creativemedia.com
+TEL;TYPE=CELL:+1-555-345-6789
+ADR;TYPE=WORK:;;789 Pine Avenue;Los Angeles;CA;90001;USA
+URL:https://www.creativemedia.com
+BDAY:1990-03-10
+NOTE:Follow up for partnership opportunities.
+END:VCARD
