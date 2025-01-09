@@ -15,7 +15,7 @@ from openpyxl.styles import Font, Alignment, PatternFill
 
 author = 'LincolnLandForensics'
 description2 = "Convert a folder of .vcf files to an intel sheet, or visa versa"
-version = '1.1.1'
+version = '1.1.3'
 
 # Colorize section
 global color_red
@@ -65,13 +65,13 @@ def main():
     parser = argparse.ArgumentParser(description=description2)
     parser.add_argument('-I', '--input', help='Input folder path', required=False)
     parser.add_argument('-O', '--output', help='Output file path', required=False)
+    parser.add_argument('-B','--blank', help='create blank intel sheet', required=False, action='store_true')
     parser.add_argument('-c', '--contacts', help='Read contacts from .vcf files and create an Excel sheet', required=False, action='store_true')
     parser.add_argument('-x', '--xlsx', help='Read contacts from .xlsx files and create .vcf files', required=False, action='store_true')
 
     args = parser.parse_args()
 
     global output_xlsx
-
 
     if args.contacts:
         input_folder = args.input or "LogsVCF"
@@ -95,10 +95,17 @@ def main():
 
         message = (f'vCards have been generated in the directory: {output_dir}')
         message_square(message, color_green)  
-
+    elif args.blank:
+        output_xlsx = args.input or "contacts_Apple.xlsx"
+   
+        data = []
+        write_intel(data)
+        return 0 
+        sys.exit()
     else:
         parser.print_help()
         Usage()
+ 
 
     return 0
 
@@ -569,6 +576,7 @@ def Usage():
     print(f"{file} Version: {version} by {author}")
     print(f"    {file} -c")
     print(f"    {file} -c -I LogsVCF -O contacts_Apple.xlsx")
+    print(f"    {file} -B")
     print(f"    {file} -x -O LogsVCF -I contacts_Apple.xlsx")
 
     
@@ -580,7 +588,7 @@ if __name__ == '__main__':
 
 
 """
-
+1.1.3 - -B create a blank intel sheet
 1.0.2 - created a -x version for xlsx 2 vcf conversions
 1.0.1 - it works
 """
