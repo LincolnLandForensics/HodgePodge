@@ -9,10 +9,27 @@ Installation:
 python pip install -r requirements_vcf2xlsx.txt
 ```
 
+options:
+
+  -h, --help            show this help message and exit
+
+  -I INPUT, --input INPUT
+
+  -O OUTPUT, --output OUTPUT
+
+  -B, --blank           create blank intel sheet
+
+  -c, --contacts        Read contacts from .vcf files and create an Excel sheet
+
+  -x, --xlsx            Read contacts from .xlsx files and create .vcf files
+
+
 Usage:
+
 ```
 python vcf2xlsx.py -c
 python vcf2xlsx.py -c -I LogsVCF -O contacts_Apple.xlsx
+python vcf2xlsx.py -B # create a blank
 python vcf2xlsx.py -x -I contacts_Apple.xlsx -O LogsVCF	
 ```
 
