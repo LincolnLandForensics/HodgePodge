@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -21,7 +21,7 @@ version = '3.0.9'
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 try:
     import docx # pip install python-docx
-    # import pdfplumber   # pip install pdfplumber
+    import pdfplumber  # pip install pdfplumber
     import pdfrw    # pip install pdfrw
     import openpyxl # pip install openpyxl
     import tkinter  # -d
@@ -834,7 +834,7 @@ def parse_log():
 
         if logFile.lower().endswith('.pdf'):
             csv_file = ''
-            (forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes) = pdf_extract(logFile)
+            (caseNumber, exhibit, caseType, forensicExaminer, makeModel, OS, status, exhibitType, serial, phoneNumber, phoneIMEI, email, imagingType, imageMD5, imageSHA256, imagingStarted, exportLocation, imagingFinished, imagingTool, imagingType, storageSize, evidenceDataSize, analysisTool, tempNotes, imagingTool) = pdf_extract(logFile)
             csv_file = tempNotes.split('\\n')
         else:
             csv_file = open(logFile) 
@@ -1506,11 +1506,134 @@ def parse_log():
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
             vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
     print(f"{color_green}Exporting logs as {spreadsheet}{color_reset}")    
-        
+
 def pdf_extract(filename):
+    """
+    Extract data from a PDF file and return relevant information as a tuple.
+    """
+    # Initialize variables
+    caseNumber = ''
+    caseType = ''
+    forensicExaminer = ''
+    exhibitType = ''
+    makeModel = ''
+    exhibit = ''
+    serial = ''
+    OS = ''
+    phoneNumber = ''
+    phoneIMEI = ''
+    email = ''
+    status = ''
+    imagingTool = ''
+    imagingType = ''
+    imageMD5 = ''
+    imageSHA256 = ''
+    imagingStarted = ''
+    imagingFinished = ''
+    storageSize = ''
+    evidenceDataSize = ''
+    exportLocation = ''
+    analysisTool = ''
+    tempNotes = ''
+
+    # Open the PDF file
+    with pdfplumber.open(filename) as pdf:
+        for page in pdf.pages:
+            # Extract text from each page and append to tempNotes
+            tempNotes += page.extract_text() + '\n'
+
+        # Extract relevant information using regex
+        caseNumber_match = re.search(r'Case Identifier (.*?)\n', tempNotes)
+        if caseNumber_match:
+            caseNumber = caseNumber_match.group(1).strip()
+
+        forensicExaminer_match = re.search(r'Examiner Name(.*?)\n', tempNotes)  # cellebrite
+        if forensicExaminer_match:
+            forensicExaminer = forensicExaminer_match.group(1).strip()
+    
+        makeModel_match = re.search(r"Device Name / Evidence Number (.*?)\n", tempNotes)    # cellebrite
+        if makeModel_match:
+            makeModel = makeModel_match.group(1).strip()
+
+        os_match = re.search(r'OS Name (.*?)\n', tempNotes)    # cellebrite
+        if os_match:
+            OS = os_match.group(1).strip()
+
+        caseType_match = re.search(r'Crime Type (.*?)\n', tempNotes)
+        if caseType_match:
+            caseType = caseType_match.group(1).strip()
+
+
+
+        exhibit_match = re.search(r'Evidence ID:(.*?)\n', tempNotes)    # graykey
+        if exhibit_match:
+            exhibit = exhibit_match.group(1).strip()
+
+        makeModel_match = re.search(r'Model:(.*?)\n', tempNotes)    # graykey
+        if makeModel_match:
+            makeModel = makeModel_match.group(1).strip()
+
+        serial_match = re.search(r'Serial Number:(.*?)\n', tempNotes)    # graykey
+        if serial_match:
+            serial = serial_match.group(1).strip()
+
+        status_match = re.search(r'Extraction Status Success\n', tempNotes)
+        if status_match:
+            status = "imaged"
+
+
+        imagingTool_match = re.search(r'GrayKey Software: OS Version:(.*?),', tempNotes)    # graykey
+        if imagingTool_match:
+            imagingTool = f"GrayKey {imagingTool_match.group(1).strip()}"
+
+        imagingTool_match2 = re.search(r'Application Version (.*?),', tempNotes)    # cellebrite
+        if imagingTool_match2:
+            imagingTool = f"Cellebrite {imagingTool_match2.group(1).strip()}"
+
+        imagingType_match = re.search(r'Extraction Method (.*?)\n', tempNotes)
+        if imagingType_match:
+            imagingType = imagingType_match.group(1).strip()
+
+
+
+        imagingStarted_match = re.search(r'Report generation time:(.*?)\n', tempNotes)    # graykey
+        if imagingStarted_match:
+            imagingStarted = imagingStarted_match.group(1).strip()
+
+        imagingStarted_match2 = re.search(r'Extraction Start Time (.*?)\n', tempNotes)    # cellebrite
+        if imagingStarted_match2:
+            imagingStarted = imagingStarted_match2.group(1).strip()
+
+        imagingFinished_match = re.search(r'Extraction End Time (.*?)\n', tempNotes)    # cellebrite
+        if imagingFinished_match:
+            imagingFinished = imagingFinished_match.group(1).strip()
+
+        sha256_regex = r'\\b[A-Fa-f0-9]{64}\\b'
+
+        sha256_match = re.search(sha256_regex, tempNotes)
+        if sha256_match:
+            imageSHA256 = sha256_match
+
+        phoneIMEI_match = re.search(r'IMEI:(.*?)\n', tempNotes)    # graykey
+        if phoneIMEI_match:
+            phoneIMEI = phoneIMEI_match.group(1).strip()
+
+        # Add additional extraction logic here as needed for other fields
+
+    # Return all extracted information as a tuple
+    return (
+        caseNumber, exhibit, caseType, forensicExaminer, makeModel, OS, status, exhibitType, serial, phoneNumber,
+        phoneIMEI, email, imagingType, imageMD5, imageSHA256, imagingStarted, exportLocation,
+        imagingFinished, imagingTool, imagingType, storageSize, evidenceDataSize, analysisTool, tempNotes, imagingTool
+    )
+
+
+        
+def pdf_extract_old(filename):
     """
         Extract data from a pdf
     """
+    import pdfplumber   # pip install pdfplumber
     (forensicExaminer, exhibitType, makeModel, serial, OS, phoneNumber) = ('', '', '', '', '', '')
     (phoneIMEI, email, status, imagingType, imageMD5, imageSHA256) = ('', '', '', '', '', '')
     (imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool) = ('', '', '', '', '', '')
@@ -1523,24 +1646,41 @@ def pdf_extract(filename):
             tempNotes = ('''%s %s''') %(tempNotes, page.extract_text())
             phoneIMEI = 'Duncan Donuts'
             forensicExaminer = re.search(r'Examiner Name:(.*?)\n', tempNotes)
-            forensicExaminer = str(forensicExaminer[1]).strip()
-
+            try:
+                forensicExaminer = str(forensicExaminer[1]).strip()
+            except TypeError as error:
+                print(error)
             exhibit = re.search(r'Evidence ID:(.*?)\n', tempNotes)
-            exhibit = str(exhibit[1]).strip()
-
+            try:
+                exhibit = str(exhibit[1]).strip()
+            except TypeError as error:
+                print(error)
             makeModel = re.search(r'Model(.*?)\n', tempNotes)   # todo
-            makeModel = str(makeModel[1]).strip()
-
+            try:
+                makeModel = str(makeModel[1]).strip()
+            except TypeError as error:
+                print(error)
             serial = re.search(r'Serial Number (.*?)\n', tempNotes)
-            serial = str(serial[1]).strip()
-
+            
+            try:
+                serial = str(serial[1]).strip()
+            except: 
+                pass
+                
             imagingTool = re.search(r'GrayKey Software: OS Version:(.*?),', tempNotes)
-            imagingTool = str(imagingTool[1]).strip()
+            
+            
+            try:
+                imagingTool = str(imagingTool[1]).strip()
+            except: 
+                pass
             imagingTool = ('GrayKey %s' %(imagingTool))
 
             imagingStarted = re.search(r'Report generation time:(.*?)\n', tempNotes)
-            imagingStarted = str(imagingStarted[1]).strip()
-
+            try:
+                imagingStarted = str(imagingStarted[1]).strip()
+            except: 
+                pass
             # OS = re.search(r'Software Version (.*?)\n', tempNotes)  # this gets overwritten
             # OS = str(OS[1]).strip()
 
