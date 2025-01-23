@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "IDOR" # ISP, MWW
+agency = "MWW" # ISP, MWW
 global agencyFull
-agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
+agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.0.9'
+version = '3.1.0'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -2131,14 +2131,14 @@ Item {exhibit}
                     f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
                     f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
                     f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
-                    f"\n\tSource MD5 hash:         {imageSHA256}\n\tVerification MD5 hash: {imageSHA256}\n\n"
+                    f"\n\tSource SHA256 hash:         {imageSHA256}\n\tVerification SHA256 hash: {imageSHA256}\n\n"
                 )
             else:
                 report = (
                     f"{report}\n"
                     f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
                     f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
-                    f"\n\tSource MD5 hash:         {imageSHA256}\n\tVerification MD5 hash: {imageSHA256}\n\n"
+                    f"\n\tSource SHA256 hash:         {imageSHA256}\n\tVerification SHA256 hash: {imageSHA256}\n\n"
                 )
 
         # if "write blocker, to conduct" in report:
