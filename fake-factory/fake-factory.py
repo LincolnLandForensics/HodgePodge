@@ -13,7 +13,7 @@ from openpyxl.styles import PatternFill
 
 # Metadata
 Author = "LincolnLandForensics"
-version = "0.1.8"
+version = "1.0.1"
 description2 = 'Create fake data for research and testing. Never use live data in a test database!'
 # Global color variables
 color_red = "\033[31m"
@@ -51,6 +51,37 @@ def check_number(number):
         number = 50  # Assign the default value
     return number
 
+
+def fake_user(first_name, middle_initial, last_name):
+    """
+    Create 20 variations of fake usernames based on first_name, middle_initial, last_name, and a random word.
+    """
+    fake = Faker()
+    usernames = [
+        f"{first_name.lower()}.{last_name.lower()}",
+        f"{first_name.lower()}_{last_name.lower()}{fake.random_int(1, 99)}",
+        f"{first_name.lower()}{middle_initial.lower()}{last_name.lower()}",
+        f"{first_name.lower()}.{middle_initial.lower()}.{last_name.lower()}",
+        f"{first_name.lower()}_{fake.word()}_{last_name.lower()}",
+        f"{first_name.lower()}{fake.random_int(100, 999)}",
+        f"{last_name.lower()}{fake.random_int(10, 99)}",
+        f"{first_name.lower()}_{last_name.lower()}_{fake.word()}",
+        f"{first_name.lower()[0]}{last_name.lower()}{fake.random_int(1, 99)}",
+        f"{last_name.lower()}_{first_name.lower()}{fake.random_int(1, 99)}",
+        f"{first_name.lower()}-{last_name.lower()}",
+        f"{first_name.lower()}{last_name.lower()}{fake.random_int(1000, 9999)}",
+        f"{first_name.lower()}x{last_name.lower()}",
+        f"{first_name.lower()}_{fake.word()}",
+        f"{first_name.lower()}{middle_initial.lower()}{last_name.lower()}{fake.random_int(1, 99)}",
+        f"{last_name.lower()}_{first_name.lower()}",
+        f"{fake.word()}_{first_name.lower()}_{last_name.lower()}",
+        f"{first_name.lower()}_{fake.word()}{fake.random_int(1, 99)}",
+        f"{first_name.lower()}{last_name.lower()}_{fake.word()}",
+        f"{first_name.lower()}.{last_name.lower()}{fake.random_int(10, 99)}"
+    ]
+    return random.choice(usernames)
+
+
     
 # Generate fake data
 def generate_fake_data(output_file, total):
@@ -63,13 +94,6 @@ def generate_fake_data(output_file, total):
     # Freeze cell B2
     sheet.freeze_panes = "B2"  # Freeze the top row and the first column
 
-    # Define headers
-    # headers = [
-        # "ip", "info", "fullname", "url", "email", "user", "phone", "business"
-        # , "fulladdress", "city", "state", "zipcode", "note", "AKA", "DOB", "SEX"
-        # , "SSN", "mothersmaidenname", "firstname", "middlename", "lastname"
-    # ]
-
     headers = [
         "query", "ranking", "fullname", "url", "email", "user", "phone",
         "business", "fulladdress", "city", "state", "country", "zipcode", "AKA",
@@ -77,8 +101,16 @@ def generate_fake_data(output_file, total):
         "associates", "case", "sosfilenumber", "owner", "president", "sosagent",
         "managers", "Time", "Latitude", "Longitude", "Coordinate",
         "original_file", "Source", "Source file information", "Plate", "VIS", "VIN",
-        "VYR", "VMA", "LIC", "LIY", "DLN", "DLS", "content", "referer", "osurl",
+        "VYR", "VMA", "LIC", "LIY", "DLN", "DLS", "job", "referer", "osurl",
         "titleurl", "pagestatus", "ip", "dnsdomain", "Tag", "Icon", "Type"
+    ]
+
+    state_abb = [
+        "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+        "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+        "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+        "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+        "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
     ]
 
 
@@ -94,19 +126,33 @@ def generate_fake_data(output_file, total):
         url = fake.url()
         fullname = fake.name()
         firstname, lastname = fullname.split()[:2]
+        lastname = lastname.upper()
+        
         middle_initial = random.choice(string.ascii_uppercase)
         ssn = fake.ssn()
-        # phone = fake.phone_number()
-        phone = us_phone_number(fake)
         mothers_maiden = fake.last_name()
         gender = random.choice(["M", "F"])
         # email = fake.email()
-        username = f"{firstname.lower()}.{lastname.lower()}"
+        # username = f"{firstname.lower()}.{lastname.lower()}"
+        username = fake_user(firstname, middle_initial, lastname)
+        # username = f"{fake.first_name()}_{fake.word()}{fake.random_int(1, 99)}"
+        
         country = 'US'
         dob = generate_random_dob()
         city = fake.city()
-        # state = fake.state()
         state = fake.state_abbr()
+        while state not in state_abb:
+            state = fake.state_abbr()       
+        
+        phone = us_phone_number(fake)
+        # while len(phone) != 10:
+            # print(f'phone is not 10 long {phone}')  # temp
+            # phone = us_phone_number(fake)        
+        
+        phone = phone_state_check(phone, state)
+        # if len(phone) == 10:
+            # phone = phone_state_check(phone, state)
+
         zip_code = fake.postcode()
         fulladdress = f"{fake.street_address()}, {city}, {state} {zip_code}"
         business = fake.company()
@@ -131,7 +177,7 @@ def generate_fake_data(output_file, total):
         # currency = fake.currency_name()
  
         data = [
-            "", "99 - fake data", fullname, url, email, username, phone, business, fulladdress, city, state, country, zip_code, "", dob, gender, ssn, mothers_maiden, firstname, middle_initial, lastname, associates, "", "", owner, president, sosagent, managers, "", "", "", "", "", "", "", plate, state, VIN, VYR, "", "", "", DLN, state, "", "", "", "", "", ip, "", "", "", ""
+            "", "99 - fake data", fullname, url, email, username, phone, business, fulladdress, city, state, country, zip_code, "", dob, gender, ssn, mothers_maiden, firstname, middle_initial, lastname, associates, "", "", owner, president, sosagent, managers, "", "", "", "", "", "", "", plate, state, VIN, VYR, "", "", "", DLN, state, job, "", "", "", "", ip, "", "", "", ""
             ]
 
         for col, value in enumerate(data, start=1):
@@ -234,13 +280,89 @@ def get_random_year():
     """Returns a random 4-digit year between 2005 and 2024."""
     return random.randint(2005, 2024)
 
+def phone_state_check(phone, state):
+    """
+    Replace the first 3 digits of the number with a random area code from the same state.
+
+    Args:
+        phone (str): The phone number as a string.
+        state (str): The state abbreviation.
+
+    Returns:
+        str: Updated phone number with a random area code from the same state.
+    """
+
+    area_codes_by_state = {
+        "AL": ["205", "251", "256", "334", "938"],
+        "AK": ["907"],
+        "AZ": ["480", "520", "602", "623", "928"],
+        "AR": ["479", "501", "870"],
+        "CA": ["209", "213", "279", "310", "323", "341", "408", "415", "424", "442", "510", "530", "559", "562", "619", "626", "628", "650", "657", "661", "707", "714", "747", "760", "805", "818", "820", "831", "858", "909", "916", "925", "949", "951"],
+        "CO": ["303", "719", "720", "970"],
+        "CT": ["203", "475", "860", "959"],
+        "DE": ["302"],
+        "FL": ["239", "305", "321", "352", "386", "407", "561", "689", "727", "754", "772", "786", "813", "850", "863", "904", "941", "954"],
+        "GA": ["229", "404", "470", "478", "678", "706", "762", "770", "912"],
+        "HI": ["808"],
+        "ID": ["208", "986"],
+        "IL": ["217", "224", "309", "312", "331", "447", "464", "618", "630", "708", "730", "773", "779", "815", "847", "861", "872"], 
+        "IN": ["219", "260", "317", "463", "574", "765", "812", "930"],
+        "IA": ["319", "515", "563", "641", "712"],
+        "KS": ["316", "620", "785", "913"],
+        "KY": ["270", "364", "502", "606", "859"],
+        "LA": ["225", "318", "337", "504", "985"],
+        "ME": ["207"],
+        "MD": ["240", "301", "410", "443", "667"],
+        "MA": ["339", "351", "413", "508", "617", "774", "781", "857", "978"],
+        "MI": ["231", "248", "269", "313", "517", "586", "616", "734", "810", "906", "947", "989"],
+        "MN": ["218", "320", "507", "612", "651", "763", "952"],
+        "MS": ["228", "601", "662", "769"],
+        "MO": ["314", "417", "557", "573", "636", "660", "816", "975"],
+        "MT": ["406"],
+        "NE": ["308", "402", "531"],
+        "NV": ["702", "725", "775"],
+        "NH": ["603"],
+        "NJ": ["201", "551", "609", "640", "732", "848", "856", "862", "908", "973"],
+        "NM": ["505", "575"],
+        "NY": ["212", "315", "329", "332", "347", "363", "516", "518", "585", "607", "631", "646", "680", "716", "718", "838", "845", "914", "917", "929", "934"], 
+        "NC": ["252", "336", "704", "743", "828", "910", "919", "980", "984"],
+        "ND": ["701"],
+        "OH": ["216", "220", "234", "283", "326", "330", "380", "419", "440", "513", "567", "614", "740", "937"],
+        "OK": ["405", "539", "580", "918"],
+        "OR": ["458", "503", "541", "971"],
+        "PA": ["215", "223", "267", "272", "412", "445", "484", "570", "610", "717", "724", "814", "878"],
+        "RI": ["401"],
+        "SC": ["803", "843", "854", "864"],
+        "SD": ["605"],
+        "TN": ["423", "615", "629", "731", "865", "901", "931"],
+        "TX": ["210", "214", "254", "281", "325", "346", "361", "409", "430", "432", "469", "512", "682", "713", "737", "806", "817", "830", "832", "903", "915", "936", "940", "956", "972", "979"],
+        "UT": ["385", "435", "801"],
+        "VT": ["802"],
+        "VA": ["276", "434", "540", "571", "703", "757", "804"],
+        "WA": ["206", "253", "360", "425", "509", "564"],
+        "WV": ["304", "681"],
+        "WI": ["262", "414", "534", "608", "715", "920"],
+        "WY": ["307"]
+    }
+
+    if state in area_codes_by_state:
+        random_area_code = random.choice(area_codes_by_state[state])
+        phone = f"{random_area_code}{phone[3:]}"
+        
+        return phone
     
+    return phone  # Return original phone number if state is invalid
+
 def us_phone_number(fake):
-    phone_number = fake.phone_number()
-    # Ensure the phone number is in the format xxx-xxx-xxxx
-    formatted_phone_number = re.sub(r'\D', '', phone_number)[:10]
-    return f"{formatted_phone_number[:3]}-{formatted_phone_number[3:6]}-{formatted_phone_number[6:]}"
+    # phone_number = fake.phone_number()
+    phone_number = ''.join([str(random.randint(0, 9)) for _ in range(10)])
     
+    # Check if the phone number starts with 0, and replace it if necessary
+    if phone_number.startswith('0'):
+        phone_number = str(random.randint(2, 9)) + phone_number[1:]
+    return phone_number
+
+  
 # Usage instructions
 def usage():
     file = sys.argv[0].split('\\')[-1]
@@ -255,3 +377,25 @@ def usage():
 # Run the script
 if __name__ == "__main__":
     main()
+
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+"""
+
+1.0.0 - inserted only legit states and changed the area codes to matcht the state
+"""
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+"""
+
+"""
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<     notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+"""
+
+"""
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<     The End        >>>>>>>>>>>>>>>>>>>>>>>>>>
