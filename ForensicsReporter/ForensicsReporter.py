@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.1.1'
+version = '3.0.9'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -122,6 +122,7 @@ def main():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='default is input_case.xlsx or input.txt', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
+    # parser.add_argument('-b', '--blank', help='create a blank sheet', required=False, action='store_true')
     parser.add_argument('-c','--caseNotes', help='casenotes module (optional) used with -r', required=False, action='store_true')
     parser.add_argument('-C','--checklist', help='checklist module', required=False, action='store_true')
 
@@ -174,6 +175,11 @@ def main():
     if args.input:  # in case you don't want a different input file
         filename = args.input  
         input_file = args.input  
+
+    # if args.blank:  # test
+        # data = []  
+        # print(f'insert blank write_here')   # temp
+        # read_xlsx()
         
     if args.report:
         global case_notes_status
@@ -346,7 +352,7 @@ def enter_data():
         (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
         (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
         (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
-        (temp, hostame, phoneIMEI2) = ('', '', '')
+        (temp, hostame, phoneIMEI2, phone2) = ('', '', '', '')
 
         caseNumber = caseNumber_entry.get()
         caseName = caseName_entry.get()
@@ -449,7 +455,7 @@ def dictionary_build(caseNumber, exhibit, caseName, subjectBusinessName, caseTyp
     writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
     storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
     storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-    vaultTotal, tempNotes, temp, hostname, phoneIMEI2):    
+    vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2):    
     '''
         build a dictionary file of important columns for writing to a pdf
     '''
@@ -826,7 +832,7 @@ def parse_log():
         (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
         (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
         (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
-        (temp, hostname, phoneIMEI2) = ('', '', '')
+        (temp, hostname, phoneIMEI2, phone2) = ('', '', '', '')
         
         # bonus variables
         (vehicleYear, vehicleManufacturer, vehicleModel) = ('', '', '') # BerlaIVe Acquisition
@@ -1504,7 +1510,7 @@ def parse_log():
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-            vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
+            vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2)
     print(f"{color_green}Exporting logs as {spreadsheet}{color_reset}")    
 
 def pdf_extract(filename):
@@ -1818,7 +1824,7 @@ def read_xlsx():
     (header, reportStatus, date) = ('', '', '')
     (body, executiveSummary, evidenceBlurb) = ('', '', '')
     (style) = ('')
-
+    (caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer) = ('', '', '', '', '', '', '', '', '')
     (subject, vowel) = ('test', 'aeiou')
 
 
@@ -1926,6 +1932,12 @@ def read_xlsx():
             phoneIMEI2 = str(row['phoneIMEI2'])
         except:
             phoneIMEI2 = ''
+        try:
+            phone2 = str(row['phone2'])
+        except:
+            phone2 = ''
+
+
         if ' 00:00:00' in dateReceived: 
             dateReceived = dateReceived.replace(" 00:00:00", "")
         # Summary writer, put a blank space or write your own summary if you don't want one auto generated
@@ -2212,7 +2224,7 @@ Item {exhibit}
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-            vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
+            vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2)
 
         if case_notes_status == 'True':
             my_dict = dictionary_build(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
@@ -2224,7 +2236,7 @@ Item {exhibit}
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-            vaultTotal, tempNotes, temp, hostname, phoneIMEI2)
+            vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2)
         else:
             my_dict = []
         
@@ -2542,8 +2554,6 @@ def write_checklist():  # panda edition
 
     
         print(f"{exhibit}\t{exhibitType}")
-        # write_output(df) # temp
-        # write_output(zero, one, two, three) # temp
 
         cell = checklist_sheet.cell(row=1, column=15, value=caseNumber)
         cell = checklist_sheet.cell(row=2, column=15, value=caseName)
@@ -2577,7 +2587,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
     storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
     storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-    vaultTotal, tempNotes, temp, hostname, phoneIMEI2):
+    vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2):
     """
         Write the output file (xlsx)
     """
@@ -2605,7 +2615,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         , "writeBlocker", "imagingStarted", "imagingFinished", "storageType", "storageMakeModel", "storageSerial"
         , "storageSize", "evidenceDataSize", "analysisTool", "analysisTool2", "exportLocation", "exportedEvidence"
         , "storageLocation", "caseNumberOrig", "priority", "operation", "Action", "vaultCaseNumber", "qrCode"
-        , "vaultTotal", "tempNotes", "temp", "hostname", "phoneimei2"]
+        , "vaultTotal", "tempNotes", "temp", "hostname", "phoneIMEI2", "phone2"]
         sheet.append(headers)
 
         # Set the header row cell colors
@@ -2615,7 +2625,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='FFc000', end_color='FFc000', fill_type='solid')    #orange
 
-        yellow_columns = ['B', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BO', 'BP']
+        yellow_columns = ['B', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BO', 'BP', 'BQ']
         for col in yellow_columns:
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
@@ -2712,6 +2722,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         sheet.column_dimensions['BN'].width = 5 #  temp
         sheet.column_dimensions['BO'].width = 18 #  hostname        
         sheet.column_dimensions['BP'].width = 16 #  phoneIMEI2
+        sheet.column_dimensions['BQ'].width = 16 #  phone2        
 
     # Write data to the "Forensics" sheet
     row_data = [caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
@@ -2723,7 +2734,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
         storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
         storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-        vaultTotal, tempNotes, temp, hostname, phoneIMEI2]    
+        vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2]    
     
     sheet.append(row_data)
 
@@ -2807,7 +2818,8 @@ def create_and_write_xlsx():
         'vaultTotal': [],
         'tempNotes': [],
         'hostname': [],
-        'phoneIMEI2': []
+        'phoneIMEI2': [],
+        'phone2': []        
     }
 
     # Create the DataFrame
@@ -2858,7 +2870,7 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
         storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
         storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-        vaultTotal, tempNotes, hostname, phoneIMEI2):
+        vaultTotal, tempNotes, hostname, phoneIMEI2, phone2):
     """
         write the report to a word document        
     """
@@ -2877,7 +2889,7 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
             'ImagingStarted', 'ImagingFinished', 'StorageType', 'StorageMakeModel', 'StorageSerial',
             'StorageSize', 'EvidenceDataSize', 'AnalysisTool', 'AnalysisTool2', 'ExportLocation',
             'ExportedEvidence', 'StorageLocation', 'CaseNumberOrig', 'Priority', 'Operation', 'Action',
-            'VaultCaseNumber', 'QRCode', 'VaultTotal', 'TempNotes', 'Hostname', 'PhoneIMEI2'
+            'VaultCaseNumber', 'QRCode', 'VaultTotal', 'TempNotes', 'Hostname', 'phoneIMEI2', 'phone2'
         ])
 
     # Create a dictionary of the case data
@@ -2948,7 +2960,8 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         'VaultTotal': vaultTotal,
         'TempNotes': tempNotes,
         'Hostname': hostname,
-        'PhoneIMEI2': phoneIMEI2
+        'phoneIMEI2': phoneIMEI2,
+        'phone2': phone2        
     }
 
     # Append the case data to the DataFrame
