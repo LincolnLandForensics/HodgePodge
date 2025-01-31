@@ -13,8 +13,6 @@ read GPS coordinates (xlsx) and convert them to KML
 from fastkml import kml  # pip install fastkml
 from shapely.geometry import Point, LineString, Polygon  # pip install fastkml shapely openpyxl
 
-
-
 import io
 import requests    # pip install requests
 from openpyxl.drawing.image import Image
@@ -77,7 +75,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.3.5'
+version = '1.3.7'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -132,7 +130,10 @@ def main():
         datatype = ''
      
     datatype = datatype.replace('.xlsx', '').replace('.kml', '')
-    
+
+    if '\\' in datatype:
+        datatype = datatype.split('\\')[-1]
+
     output_kml = (f'GPS_{datatype}.kml')
 
     if not args.output: 
@@ -3246,6 +3247,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+
+https://github.com/UMIT2Lab/iGem
+
 batchgeo.com is an online alternative (similar)
 research Gx:trax module
 
