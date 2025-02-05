@@ -2,6 +2,17 @@
 
 
 ## GPS2Address.py
+read GPS coordinates and convert them to addresses
+
+or
+
+read addresses and convert them to coordinates
+
+and
+
+read GPS coordinates (xlsx) and convert them to KML for review in earth.google.com
+
+additional red lines for trips within a reasonable time. (travel_path_SAMPLE.kml)
 
 Usage:
 ```
