@@ -1,166 +1,223 @@
+#!/usr/bin/env python3
+# coding: utf-8
+
+"""
+This script counts the approximate number of people in a folder of videos
+and outputs the results to an Excel file. Can specify how many to do in parallel (default is 4).
+Can show video (-v) or not.
+"""
+
 import os
+import sys
+import cv2  # pip install opencv-python
 import shutil
-from datetime import datetime
+import datetime
+import argparse  # for menu system
 import numpy as np
-# import pandas as pd
-import xlsxwriter
-from imutils.object_detection import non_max_suppression
-import cv2
+from functools import cache
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill
+from imutils.object_detection import non_max_suppression  # pip install imutils
 
-'''
-This is a clone of
-https://github.com/ndaidong/people-detecting.git
-I am trying to add spreadsheet output for counting people
+author = 'ndaidong'
+coauthor = 'LincolnLandForensics'
+description = "counts the approximate number of people in a folder of videos"
+version = '1.0.7'
 
-'''
+@cache
+def main():
+    global data
+    data = []
 
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-I', '--input', help='Input folder with videos', required=False)
+    parser.add_argument('-O', '--output', help='Output Excel file', required=False)
+    parser.add_argument('-c', '--count', help='Count people', required=False, action='store_true')
+    parser.add_argument('-H', '--Help', help='Display help', required=False, action='store_true')
+    parser.add_argument('-v', '--video', help='Display video while processing', required=False, action='store_true')
+    parser.add_argument('-p', '--processes', help='Number of parallel processes', type=int, default=4)
 
+    args = parser.parse_args()
 
+    global input_folder
+    global output_xlsx
+    global display_video
+    global num_processes
 
-version = '1.0.1'
+    if args.Help:
+        usage()
+        sys.exit()
 
-hog = cv2.HOGDescriptor()
-hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+    input_folder = args.input if args.input else "videos"
+    output_xlsx = args.output if args.output else "videos.xlsx"
+    display_video = args.video
+    num_processes = args.processes
 
-font = cv2.FONT_HERSHEY_SIMPLEX
+    if not os.path.exists(input_folder):
+        create_folder(input_folder)
+        print(f'Fill {input_folder} with videos')
+        sys.exit()
 
-dest_folder = "nobody"
+    if not os.listdir(input_folder):
+        print(f"\n\n\n\tNo videos found in '{input_folder}'.")
+        sys.exit()
 
-# Create a new Excel file
-workbook = xlsxwriter.Workbook('videos.xlsx')
-worksheet = workbook.add_worksheet()
+    file_count = len([name for name in os.listdir(input_folder) if os.path.isfile(os.path.join(input_folder, name))])
+    print(f'\n\tThere are {file_count} files in the {input_folder} folder\n')
 
-# Set column headers
-worksheet.write(0, 0, 'video')
-worksheet.write(0, 1, 'People (approximate)')
-worksheet.write(0, 2, 'FileSize (bytes)')
-# worksheet.write(0, 3, 'creation_time')
-# worksheet.write(0, 4, 'access_time')
-# worksheet.write(0, 5, 'modified_time')
-
-# freeze cells at 1,1
-worksheet.freeze_panes(1, 1)
-# set column widths
-worksheet.set_column(0, 0, 25)
-worksheet.set_column(1, 1, 20)
-worksheet.set_column(2, 2, 16)
-worksheet.set_column(3, 3, 20)
-worksheet.set_column(4, 4, 20)
-worksheet.set_column(5, 5, 20)
-
-def move_file(file_path, dest_folder):
-    if os.path.isfile(file_path):
-        # file_size = os.path.getsize(file_path)
-        if 1==1:
-        # if file_size < 20 * 1024: # 20 KB
-            shutil.move(file_path, dest_folder)
-            print(f"File {file_path} moved to {dest_folder} because nobody was in it.")
-        else:
-            print(f"File {file_path} is too big to move")
+    if args.count:
+        count_people_parallel()
+        write_xlsx(data)
+        print(f'Writing to {output_xlsx}')
     else:
-        print(f"{file_path} is not a valid file")
+        usage()
 
+    input("Press Enter to continue...")
 
+def count_people_parallel():
+    videos = [os.path.join(input_folder, file_name) for file_name in os.listdir(input_folder)]
+    with ProcessPoolExecutor(max_workers=num_processes) as executor:
+        futures = {executor.submit(process_video, video, display_video): video for video in videos}
+        for future in as_completed(futures):
+            video = futures[future]
+            try:
+                result = future.result()
+                if result:
+                    data.append(result)
+            except Exception as e:
+                print(f'Error processing {video}: {e}')
 
-# Iterate through all vidoes in the "videos" folder
-row = 1
-for file_name in os.listdir('videos'):
-    (video, file_size) = ('', '')
-    video = os.path.join('videos', file_name)
-    # if file_name.endswith('.avi'):
-        # video = os.path.join('videos', file_name)
+def process_video(video, display_video):
+    hog = cv2.HOGDescriptor()
+    hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-    file_size = os.path.getsize(video)
+    row_data = {}
 
-    # get creation, access, modified times of the .plist
     file_info = os.stat(video)
+    creation_time, access_time, modified_time = convert_to_iso(file_info)
 
-    # utc date
-    creation_time = os.path.getctime(video)
-    creation_time_utc = datetime.utcfromtimestamp(creation_time)
-
-    modified_time = os.path.getmtime(video)
-    modified_time_utc = datetime.utcfromtimestamp(modified_time)
-
-
-
-    # video = 'vtest2.avi'
     cap = cv2.VideoCapture(video)
+    if not cap.isOpened():
+        print(f"Failed to open video file {video}")
+        return None
 
-    w = cap.get(3)
-    h = cap.get(4)
-    mx = int(w - 400)
-    my = int(h - 24)
+    ret, prev_frame = cap.read()
+    if not ret:
+        print(f"Failed to read first frame of {video}")
+        return None
 
-    results = []
+    w, h = cap.get(3), cap.get(4)
+    mx, my = int(w - 400), int(h - 24)
 
-    people_detected = 0
     max_people_detected = 0
-        
-    while(cap.isOpened()):
+    frame_count = 0
+
+    prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
+
+    while cap.isOpened():
         ret, frame = cap.read()
-
-        if ret is False:
-            break
-        
-        k = cv2.waitKey(30) 
-        if k == 27:
+        if not ret:
             break
 
-        rects, weights = hog.detectMultiScale(
-            frame,
-            winStride=(4, 4), 
-            padding=(8, 8), 
-            scale=1.05
-        )
-        for (x, y, w, h) in rects:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frame_delta = cv2.absdiff(prev_gray, gray)
+        thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
 
-        rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
-        pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
+        if cv2.countNonZero(thresh) > 500:  # Adjust this threshold based on your requirements
+            rects, _ = hog.detectMultiScale(frame, winStride=(4, 4), padding=(8, 8), scale=1.05)
+            rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
+            pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
 
-        people_detected = 0
-        
-        for (xA, yA, xB, yB) in pick:
-            people_detected += 1
-            cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 255, 0), 2)
+            people_detected = len(pick)
+            max_people_detected = max(max_people_detected, people_detected)
 
-        if people_detected > max_people_detected:
-            max_people_detected = people_detected
+            if display_video:
+                for (xA, yA, xB, yB) in pick:
+                    cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 255, 0), 2)
 
-        text = 'People detected: ' + str(people_detected)
-        cv2.putText(
-            frame, 
-            text, 
-            (mx, my), 
-            font, 
-            1, 
-            (255, 255, 255), 
-            1, 
-            cv2.LINE_AA
-        )
-        cv2.imshow('Frame', frame)
+                text = 'People detected: ' + str(people_detected)
+                cv2.putText(frame, text, (mx, my), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1, cv2.LINE_AA)
+                cv2.imshow('Frame', frame)
 
-    results.append({'Video': video, 'People Detected': max_people_detected, 'FileSize': file_size})
-    worksheet.write(row, 0, file_name)
-    worksheet.write(row, 1, max_people_detected)
-    worksheet.write(row, 2, file_size)
-    # worksheet.write(row, 3, creation_time_utc)
-    # worksheet.write(row, 4, access_time)
-    # worksheet.write(row, 5, modified_time_utc)            
-    row += 1
+                if cv2.waitKey(1) == 27:  # Press 'Esc' to exit the video display
+                    break
+
+        prev_gray = gray
+        frame_count += 1
+
+    print(f'    {video}  {max_people_detected}')
+
+    row_data.update({
+        "file_name": os.path.basename(video),
+        "max_people_detected": max_people_detected,
+        "file_size": os.path.getsize(video),
+        "creation_time": creation_time,
+        "access_time": access_time,
+        "modified_time": modified_time
+    })
+
     cap.release()
-    cv2.destroyAllWindows()
-
-    # file_path = "path/to/file.txt"
+    if display_video:
+        cv2.destroyAllWindows()
 
     if max_people_detected == 0:
-        move_file(video, dest_folder)
+        move_file(video, "nobody")
 
+    return row_data
 
-# Write results to an excel file
-# df = pd.DataFrame(results)
-# df.to_excel('output.xlsx', index=False)
+def convert_to_iso(file_info):
+    iso_ctime = datetime.datetime.fromtimestamp(file_info.st_ctime).strftime('%Y-%m-%d %H:%M:%S')
+    iso_atime = datetime.datetime.fromtimestamp(file_info.st_atime).strftime('%Y-%m-%d %H:%M:%S')
+    iso_mtime = datetime.datetime.fromtimestamp(file_info.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+    return iso_ctime, iso_atime, iso_mtime
 
-# Save and close the Excel file
-workbook.close()
+def create_folder(folder_name):
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+        print(f"Folder '{folder_name}' created successfully.")
+
+def move_file(file_path, dest_folder):
+    create_folder(dest_folder)
+    if os.path.isfile(file_path):
+        try:
+            shutil.move(file_path, dest_folder)
+            print(f"File {file_path} moved to {dest_folder} because nobody was in it.")
+        except Exception as e:
+            print("Error:", e)
+
+def write_xlsx(data):
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = 'Videos'
+
+    headers = [
+        "file_name", "max_people_detected", "file_size", "creation_time", "access_time", "modified_time"
+    ]
+
+    for col_index, header in enumerate(headers):
+        cell = worksheet.cell(row=1, column=col_index + 1)
+        cell.value = header
+        cell.fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
+
+    col_widths = [25, 18, 9, 18, 18, 18]
+    for col, width in zip(['A', 'B', 'C', 'D', 'E', 'F'], col_widths):
+        worksheet.column_dimensions[col].width = width
+
+    for row_index, row_data in enumerate(data):
+        for col_index, col_name in enumerate(headers):
+            worksheet.cell(row=row_index + 2, column=col_index + 1).value = row_data.get(col_name)
+
+    workbook.save(output_xlsx)
+
+def usage():
+    file = sys.argv[0].split('/')[-1]
+    print(f'\nDescription: {description}')
+    print(f'{file} Version: {version} by {author} and modified by {coauthor}')
+    print(f'\nInsert your videos into the "videos" folder')
+    print(f'\nExample:')
+    print(f'    {file} -c')
+    print(f'    {file} -c -I videos -O videos.xlsx')
+
+if __name__ == '__main__':
+    main()

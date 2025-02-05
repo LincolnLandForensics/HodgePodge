@@ -8,7 +8,7 @@ read pdf and convert it to pdf
 import re
 import os
 import sys
-import PyPDF2   # splitting
+from PyPDF2 import PdfReader, PdfWriter # splitting
 
 from datetime import datetime
 import argparse
@@ -446,45 +446,51 @@ def process_pdfs_in_directory(input_folder, output_excel_path):
     write_xlsx(data)
 
 def split_pdfs(input_folder, output_split_folder):
-    '''
-    Function to split PDFs into single-page PDFs
-    '''
+    # from PyPDF2 import PdfReader, PdfWriter
+
+    """
+    Function to split PDFs into single-page PDFs.
+    """
     # Create the output folder if it doesn't exist
     if not os.path.exists(output_split_folder):
         os.makedirs(output_split_folder)
+        print(f"Created split PDF folder: {output_split_folder}")
 
-        msg_blurb = (f'Creating split pdf folder: {output_split_folder}')
-        msg_blurb_square(msg_blurb, color_green)
-
-    msg_blurb = (f"Splitting PDFs from {input_folder}")
+    msg_blurb = (f'Splitting PDFs from {input_folder} folder')
     msg_blurb_square(msg_blurb, color_green)
-        
+    
     for root, dirs, files in os.walk(input_folder):
         for filename in files:
-            if filename.lower().endswith('.pdf'):  # Check for .pdf extension in a case-insensitive manner
+            if filename.lower().endswith('.pdf'):  # Check for .pdf extension
                 pdf_path = os.path.join(root, filename)
-                with open(pdf_path, 'rb') as pdf_file:
-                    reader = PyPDF2.PdfFileReader(pdf_file)
-                    for page_num in range(reader.numPages):
-                        writer = PyPDF2.PdfFileWriter()
-                        writer.addPage(reader.getPage(page_num))
+                try:
+                    with open(pdf_path, 'rb') as pdf_file:
+                        reader = PdfReader(pdf_file)
                         
-                        # Construct output path maintaining subdirectory structure
-                        relative_path = os.path.relpath(root, input_folder)
-                        folder = relative_path
-                        output_dir = os.path.join(output_split_folder, relative_path)
-                        if not os.path.exists(output_dir):
-                            os.makedirs(output_dir)
+                        for page_num, page in enumerate(reader.pages, start=1):
+                            writer = PdfWriter()
+                            writer.add_page(page)
+                            
+                            # Construct output path maintaining subdirectory structure
+                            relative_path = os.path.relpath(root, input_folder)
+                            output_dir = os.path.join(output_split_folder, relative_path)
+                            if not os.path.exists(output_dir):
+                                os.makedirs(output_dir)
+                            
+                            output_filename = f"{os.path.splitext(filename)[0]}_page_{page_num}.pdf"
+                            output_path = os.path.join(output_dir, output_filename)
+                            
+                            with open(output_path, 'wb') as output_pdf:
+                                writer.write(output_pdf)
+                            
+                            print(f"Created: {output_path}")
+                except Exception as e:
+                    print(f"Error processing file {pdf_path}: {e}")
 
-                        output_filename = f"{os.path.splitext(filename)[0]}_page_{page_num+1}.pdf"
-                        output_path = os.path.join(output_dir, output_filename)
-                        with open(output_path, 'wb') as output_pdf:
-                            writer.write(output_pdf)
-                        
-                        print(f"Created: {output_path}")
 
-    msg_blurb = (f"writing split pdfs to {output_split_folder}")
+    msg_blurb = (f'Finished writing split PDFs to {output_split_folder} folder')
     msg_blurb_square(msg_blurb, color_green)
+
 
 def table_dump1(input_folder, output_excel_path):
     """

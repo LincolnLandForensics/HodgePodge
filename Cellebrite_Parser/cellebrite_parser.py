@@ -1,7 +1,6 @@
  #!/usr/bin/env python3
 # coding: utf-8
 '''
-convert Cellebrite contacts, account, web history, chats and call exports to intel format
 read xlsx, write xlsx with only openpyxl
 Pandas is too big
 send data all at once so it can be sorted if needed
@@ -125,6 +124,21 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+def clean_data(item):
+    """
+    Cleans the item by removing any unwanted newlines and other characters 
+    that may interfere with Markdown tables.
+
+    Returns:
+        str: The cleaned cell without newlines or extra spaces.
+    """
+    # Remove newlines, extra spaces, and any non-numeric characters (if needed)
+    item_cleaned = re.sub(r'[\n\r]+', ' ', item)  # Replaces newlines with space
+    item_cleaned = item_cleaned.strip()  # Remove leading/trailing spaces
+    item_cleaned = str(item_cleaned)
+    return item_cleaned
+
+
 def convert_timestamp(timestamp, time_orig, timezone):
     if timezone is None:
         timezone = ''
@@ -206,6 +220,22 @@ def convert_timestamp(timestamp, time_orig, timezone):
 
     raise ValueError(f"{time_orig} Timestamp format not recognized")
 
+def clean_phone(phone):
+    """
+  Checks if the given string 'phone' contains only digits and its length is between 7 and 15 (inclusive).
+
+  Args:
+    phone: The string to be validated as a phone number.
+
+  Returns:
+    True if the string is a valid phone number, False otherwise.
+    """
+    phone = re.sub(r'[-+ \(\)]', '', phone).strip() 
+    # phone = phone.replace('+', '').replace('-', '').replace('(', '').replace(')', '').replace(' ', '')
+
+    regex_phone = r"^\d{7,15}$" 
+    return phone if re.match(regex_phone, phone) else ""
+
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
     empty_line = f"| {' ' * (len(msg_blurb))} |"
@@ -246,10 +276,12 @@ def read_cellebrite(input_xlsx):
     phone4_pattern = r'Phone-Phone: (\S+)'
     phone5_pattern = r'Phone-General: (\S+)'
     phone6_pattern = r'Phone-Home: (\S+)'
-    phone7_pattern = r'User ID-User ID: (\S+)'
+    # phone7_pattern = r'User ID-User ID: (\S+)'
     phone8_pattern = r'User ID-SMS: (\S+)'
     phone9_pattern = r'User ID-iMessage: (\S+)'
     phone10_pattern = r'User ID-SMS: (\S+)' # duplicate for future use
+    phone11_pattern = r'Phone 1 - Value(\S+)' # 
+
 
     email1_pattern = r'Email-: (\S+)'
     email2_pattern = r'Email-Email Address: (\S+)'
@@ -305,12 +337,21 @@ def read_cellebrite(input_xlsx):
 # fullname        
         ## replace all None values with '' 
         fullname = row_data.get("Name")
-        if fullname is None:
+        
+
+        if fullname is None or fullname == 'None':
             fullname = ''
-        elif fullname.startswith('+'): 
+
+            
+        elif isinstance(fullname, str) and fullname.startswith('+'):
+        # elif fullname.startswith('+'): 
             fullname = fullname.replace('+', '')
             phone = (f'{phone}\n{fullname}')    # task
             fullname = ''
+        else:
+            fullname = str(fullname)
+
+
         if fullname == '':
             fullname = row_data.get("Partner Name")
             if fullname is None:
@@ -401,7 +442,7 @@ def read_cellebrite(input_xlsx):
         phone4_match = re.search(phone4_pattern, info)
         phone5_match = re.search(phone5_pattern, info)
         phone6_match = re.search(phone6_pattern, info)
-        phone7_match = re.search(phone7_pattern, info)
+        # phone7_match = re.search(phone7_pattern, info)
         phone8_match = re.search(phone8_pattern, info)
         phone9_match = re.search(phone9_pattern, info)
         phone10_match = re.search(phone10_pattern, info)
@@ -435,7 +476,7 @@ def read_cellebrite(input_xlsx):
         phone4 = phone4_match.group(1) if phone4_match else None
         phone5 = phone5_match.group(1) if phone5_match else None
         phone6 = phone6_match.group(1) if phone6_match else None
-        phone7 = phone7_match.group(1) if phone7_match else None
+        # phone7 = phone7_match.group(1) if phone7_match else None
         phone8 = phone8_match.group(1) if phone8_match else None
         phone9 = phone9_match.group(1) if phone9_match else None
         phone10 = phone10_match.group(1) if phone10_match else None
@@ -536,17 +577,18 @@ def read_cellebrite(input_xlsx):
             phone = (f'{phone}\n{phone5}')
         elif phone6 is not None:
             phone = (f'{phone}\n{phone6}')
-        elif phone7 is not None:
-            phone = (f'{phone}\n{phone7}')            
+        # elif phone7 is not None:
+            # phone = (f'{phone}\n{phone7}')            
         elif phone8 is not None:
             phone = (f'{phone}\n{phone8}')            
         elif phone9 is not None:
             phone = (f'{phone}\n{phone9}')            
         elif phone10 is not None:
             phone = (f'{phone}\n{phone10}')            
+        # elif phone11 is not None:
+            # phone = (f'{phone}\n{phone11}')   
 
-
-                                                
+                          
         if phone is None:  
             phone = ''
         
@@ -579,10 +621,20 @@ def read_cellebrite(input_xlsx):
                     phone = ''
                 else:
                     type_data = 'Calls'
+            if phone == '':
+                phone = row_data.get("Phone 1 - Value")
+                if phone is None:
+                    phone = ''
+                
+                phone = str(phone)
+            if phone == '':
+                phone = row_data.get("Mobile Phone")
+                if phone is None:
+                    phone = ''
+                
+                phone = str(phone)
 
-                    
-        # phone cleanup
-        phone = phone.replace('+', '').replace('-', '').replace('(', '').replace(')', '').replace(' ', '')
+
 
 # email
         if email1 is not None:
@@ -785,7 +837,7 @@ def read_cellebrite(input_xlsx):
             if Sender is None:
                 Sender = ''  
 
-        print(f'Sender2 = {Sender}') # Task
+        # print(f'Sender2 = {Sender}') # Task
 
         if Sender != '':
             # Split the string by the first space
@@ -861,7 +913,7 @@ def read_cellebrite(input_xlsx):
             
             if url == '' and sender_id != '':
                 url = (f'https://www.facebook.com/{sender_id}')
-        print(f'trying to write an email from {Sender} to {receiver}')    # temp
+        # print(f'trying to write an email from {Sender} to {receiver}')    # temp
         if receiver != '' and Sender != '':
             print(f'trying to write an email from {Sender}')    # temp
         # if email != '' and Sender != '':
@@ -1182,7 +1234,21 @@ STATUS:{status}
 
         if phone.startswith('+'):
             phone = phone.replace('+', '')
-                
+
+                    
+        # phone cleanup
+        phone = clean_phone(phone)
+
+
+# cleanup cells # test
+        fullname = clean_data(fullname)
+        phone = clean_data(phone)
+        email = clean_data(email)
+        business = clean_data(business)
+        fulladdress = clean_data(fulladdress)
+        aka = clean_data(aka)
+        tag = clean_data(tag)
+
 # write rows to data
         row_data["query"] = query
         row_data["ranking"] = ranking

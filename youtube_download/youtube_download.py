@@ -37,7 +37,7 @@ todaysDateTime = d.strftime("%Y-%m-%d_%H-%M-%S")
 
 author = 'LincolnLandForensics'
 description = "Download a list of Youtube videos from videos.txt, save list in xlsx file"
-version = '1.0.6'
+version = '1.0.7'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -90,8 +90,6 @@ def caption_sort(captions): #beta
     result_string = f"caption = [\n{new_format_captions}\n]"
 
     return result_string
-
-
 
 def check_keywords_in_captions(caption, keywords):
     keyword = ''
@@ -163,8 +161,7 @@ def create_xlsx():
     # Sheet1['N1'] = 'rating'
     Sheet1['O1'] = 'keywords'
 
-
-    
+   
 def finalMessage():
     window = Tk()
     window.geometry("1x1")
@@ -301,7 +298,6 @@ def youtube():
         print(f'{link}  {title}')
         time.sleep(30) #will sleep for 30 seconds
         write_xlsx(link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords)
-
 
     if count == 0:
         noVideos()

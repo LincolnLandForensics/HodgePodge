@@ -11,7 +11,7 @@ import pandas as pd
 
 author = 'LincolnLandForensics'
 description = "Export tables from PDF's to xlsx"
-version = '0.0.2'
+version = '0.0.3'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>

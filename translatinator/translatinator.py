@@ -230,11 +230,15 @@ def detect_language(input_xlsx, output_xlsx):
             note = '...Whatsapp'
         elif "@s.whatsapp.net) added" in original_content:
             note = '...Whatsapp'
-            # source_language = 'Whatsapp'
-        elif original_content is not None and isinstance(original_content, str) and original_content.isalpha() and len(original_content) == 1:
+        elif original_content is not None and isinstance(original_content, str) and all(char.isalpha() and ('a' <= char <= 'z' or 'A' <= char <= 'Z') for char in original_content) \
+            and len(original_content) == 1:
+                note = ''
+                source_language = 'en'
+        elif original_content is not None and isinstance(original_content, str) and original_content.isdigit():
             note = ''
-            source_language = 'en'
-
+            source_language = ''
+        elif original_content is not None and isinstance(original_content, str) and original_content.isalpha() and len(original_content) == 1:
+            note = '..'
 
         source_language = source_language_enhance(source_language)
         sheet.cell(row=row[0].row, column=2, value=translation)
@@ -329,10 +333,16 @@ def length(input_xlsx, output_xlsx):
             note = '...Whatsapp'
         elif "@s.whatsapp.net) added" in original_content:
             note = '...Whatsapp'
-            # source_language = 'Whatsapp'
-        elif original_content is not None and isinstance(original_content, str) and original_content.isalpha() and len(original_content) == 1:
+        elif original_content is not None and isinstance(original_content, str) and all(char.isalpha() and ('a' <= char <= 'z' or 'A' <= char <= 'Z') for char in original_content) \
+            and len(original_content) == 1:
+                note = ''
+                source_language = 'en'
+        elif original_content is not None and isinstance(original_content, str) and original_content.isdigit():
             note = ''
-            source_language = 'en'
+            source_language = ''
+
+        elif original_content is not None and isinstance(original_content, str) and original_content.isalpha() and len(original_content) == 1:
+            note = '..'
 
 
         source_language = source_language_enhance(source_language)
@@ -559,7 +569,7 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
             # elif re.search(word_pattern, original_content):
                 # (translation, source_language, note) = translate_googletrans(original_content, source_language, target_language, note)
 
-                # sleep(1)
+                sleep(1)
                 # if not translation:
                     # note = "Translation failed"
                     # sleep(2)
@@ -617,7 +627,7 @@ def translate_googletrans(text, source_language, target_language, note):
             note = (f'.Error occurred while translating {e}')
             msg_blurb = (f'Error translating_: {e}')
             msg_blurb_square(msg_blurb, color_red)
-            sleep(2)
+            # sleep(2)
 
     return (translation, source_language, note)
 
@@ -724,6 +734,6 @@ Make sure to handle potential issues like rate limiting, certificate verificatio
 """
 
 GoogleTrans works if it is 4.0.0-rc1 or later. 3.0 doesn't work
-
+git-repo\pythonForensics\offlineTranslate\translateGUI.py for a standalone version
 
 """
