@@ -30,6 +30,9 @@ Example:
 
 ![Case Example](images/GPS.png)
 
+
+![XLSX Example](images/GPS_xlsx.png)
+
 Icons
 *   Car -Lpr red car (License Plate Reader)
 *   Car2 -Lpr yellow car
