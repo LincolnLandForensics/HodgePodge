@@ -7,547 +7,1523 @@
                 <scale>1</scale>
                 <heading>0</heading>
                 <Icon id="6">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
                 </Icon>
             </IconStyle>
         </Style>
         <Style id="9">
             <IconStyle id="10">
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>2</scale>
                 <heading>0</heading>
                 <Icon id="11">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="14">
-            <IconStyle id="15">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="16">
-                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="19">
-            <IconStyle id="20">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="21">
                     <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
                 </Icon>
             </IconStyle>
-        </Style>
-        <Style id="24">
-            <IconStyle id="25">
+            <LabelStyle id="12">
+                <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="15">
+            <IconStyle id="16">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
                 <heading>0</heading>
-                <Icon id="26">
+                <Icon id="17">
                     <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="27">
+            <LabelStyle id="18">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>1.2</scale>
             </LabelStyle>
         </Style>
-        <Style id="30">
-            <IconStyle id="31">
+        <Style id="21">
+            <IconStyle id="22">
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>2</scale>
                 <heading>0</heading>
-                <Icon id="32">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="33">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="36">
-            <IconStyle id="37">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="38">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="39">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="42">
-            <IconStyle id="43">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="44">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="45">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="48">
-            <IconStyle id="49">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="50">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="51">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="54">
-            <IconStyle id="55">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="56">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="57">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="60">
-            <IconStyle id="61">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="62">
+                <Icon id="23">
                     <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
                 </Icon>
             </IconStyle>
+            <LabelStyle id="24">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
         </Style>
-        <Style id="65">
-            <IconStyle id="66">
+        <Style id="27">
+            <IconStyle id="28">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="29">
+                    <href>https://maps.google.com/mapfiles/kml/shapes/truck.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="30">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="33">
+            <IconStyle id="34">
                 <colorMode>normal</colorMode>
                 <scale>1</scale>
                 <heading>0</heading>
-                <Icon id="67">
+                <Icon id="35">
                     <href>https://maps.google.com/mapfiles/kml/shapes/truck.png</href>
                 </Icon>
             </IconStyle>
         </Style>
-        <Style id="70">
-            <IconStyle id="71">
+        <Style id="38">
+            <IconStyle id="39">
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>2</scale>
                 <heading>0</heading>
-                <Icon id="72">
-                    <href>https://maps.google.com/mapfiles/kml/pal4/icon15.png</href>
+                <Icon id="40">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="73">
+            <LabelStyle id="41">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>1.2</scale>
             </LabelStyle>
         </Style>
-        <Style id="76">
-            <IconStyle id="77">
+        <Style id="44">
+            <IconStyle id="45">
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>2</scale>
                 <heading>0</heading>
-                <Icon id="78">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="81">
-            <IconStyle id="82">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="83">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="86">
-            <IconStyle id="87">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="88">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-4.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="91">
-            <IconStyle id="92">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="93">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="96">
-            <IconStyle id="97">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="98">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="101">
-            <IconStyle id="102">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="103">
-                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="106">
-            <IconStyle id="107">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="108">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="109">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-            </LabelStyle>
-        </Style>
-        <Style id="112">
-            <IconStyle id="113">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="114">
+                <Icon id="46">
                     <href>https://earth.google.com/images/kml-icons/track-directional/track-12.png</href>
                 </Icon>
             </IconStyle>
+            <LabelStyle id="47">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="50">
+            <IconStyle id="51">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="52">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="53">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="56">
+            <IconStyle id="57">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="58">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="59">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="62">
+            <IconStyle id="63">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="64">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="65">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="68">
+            <IconStyle id="69">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="70">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="71">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="74">
+            <IconStyle id="75">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="76">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon54.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="79">
+            <IconStyle id="80">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="81">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="89">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="86">
+            <LineStyle id="87">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <width>2</width>
+            </LineStyle>
+            <PolyStyle id="88">
+                <color>640000ff</color>
+                <colorMode>normal</colorMode>
+                <fill>1</fill>
+                <outline>1</outline>
+            </PolyStyle>
+        </Style>
+        <Style id="92">
+            <IconStyle id="93">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="94">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="95">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="100">
+            <LineStyle id="101">
+                <color>ffff0000</color>
+                <colorMode>normal</colorMode>
+                <width>2</width>
+            </LineStyle>
+        </Style>
+        <Style id="104">
+            <IconStyle id="105">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="106">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon23.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="114">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="111">
+            <LineStyle id="112">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <width>2</width>
+            </LineStyle>
+            <PolyStyle id="113">
+                <color>640000ff</color>
+                <colorMode>normal</colorMode>
+                <fill>1</fill>
+                <outline>1</outline>
+            </PolyStyle>
         </Style>
         <Style id="117">
             <IconStyle id="118">
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>2</scale>
                 <heading>0</heading>
                 <Icon id="119">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-8.png</href>
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon15.png</href>
                 </Icon>
             </IconStyle>
-        </Style>
-        <Style id="122">
-            <IconStyle id="123">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="124">
-                    <href>https://maps.google.com/mapfiles/kml/pal2/icon23.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="127">
-            <IconStyle id="128">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="129">
-                    <href>https://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="132">
-            <IconStyle id="133">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="134">
-                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="137">
-            <IconStyle id="138">
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="139">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon21.png</href>
-                </Icon>
-            </IconStyle>
-            <LabelStyle id="140">
+            <LabelStyle id="120">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>1.2</scale>
             </LabelStyle>
         </Style>
-        <Style id="143">
-            <IconStyle id="144">
+        <Style id="125">
+            <LineStyle id="126">
+                <color>ffff0000</color>
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <width>2</width>
+            </LineStyle>
+        </Style>
+        <Style id="129">
+            <IconStyle id="130">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
                 <heading>0</heading>
-                <Icon id="145">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
+                <Icon id="131">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
                 </Icon>
             </IconStyle>
-        </Style>
-        <Style id="148">
-            <IconStyle id="149">
+            <LabelStyle id="132">
+                <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="135">
+            <IconStyle id="136">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
                 <heading>0</heading>
-                <Icon id="150">
+                <Icon id="137">
                     <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="151">
+            <LabelStyle id="138">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>1.2</scale>
             </LabelStyle>
         </Style>
-        <Style id="154">
-            <IconStyle id="155">
+        <Style id="141">
+            <IconStyle id="142">
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>2</scale>
                 <heading>0</heading>
-                <Icon id="156">
-                    <href>https://maps.google.com/mapfiles/kml/pal4/icon9.png</href>
+                <Icon id="143">
+                    <href>https://maps.google.com/mapfiles/kml/shapes/truck.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="157">
+            <LabelStyle id="144">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>1.2</scale>
             </LabelStyle>
         </Style>
-        <Style id="160">
-            <IconStyle id="161">
+        <Style id="147">
+            <IconStyle id="148">
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>2</scale>
                 <heading>0</heading>
-                <Icon id="162">
-                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
+                <Icon id="149">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon15.png</href>
                 </Icon>
             </IconStyle>
-            <LabelStyle id="163">
+            <LabelStyle id="150">
                 <color>ff00ffff</color>
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>1.2</scale>
             </LabelStyle>
         </Style>
-        <Style id="166">
-            <IconStyle id="167">
+        <Style id="153">
+            <IconStyle id="154">
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>2</scale>
                 <heading>0</heading>
-                <Icon id="168">
+                <Icon id="155">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon15.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="156">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="159">
+            <IconStyle id="160">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="161">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="162">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="165">
+            <IconStyle id="166">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="167">
                     <href>https://maps.google.com/mapfiles/kml/pal2/icon47.png</href>
                 </Icon>
             </IconStyle>
+            <LabelStyle id="168">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
         </Style>
         <Style id="171">
             <IconStyle id="172">
                 <colorMode>normal</colorMode>
-                <scale>1</scale>
+                <scale>2</scale>
                 <heading>0</heading>
                 <Icon id="173">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="181">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="178">
+            <LineStyle id="179">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <width>2</width>
+            </LineStyle>
+            <PolyStyle id="180">
+                <color>640000ff</color>
+                <colorMode>normal</colorMode>
+                <fill>1</fill>
+                <outline>1</outline>
+            </PolyStyle>
+        </Style>
+        <Style id="184">
+            <IconStyle id="185">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="186">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="187">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="190">
+            <IconStyle id="191">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="192">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon9.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="193">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="196">
+            <IconStyle id="197">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="198">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon23.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="199">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="202">
+            <IconStyle id="203">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="204">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="205">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="208">
+            <IconStyle id="209">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="210">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon15.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="211">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="214">
+            <IconStyle id="215">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="216">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="217">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="220">
+            <IconStyle id="221">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="222">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon21.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="223">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="226">
+            <IconStyle id="227">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="228">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="231">
+            <IconStyle id="232">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="233">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="234">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="237">
+            <IconStyle id="238">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="239">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="242">
+            <IconStyle id="243">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="244">
+                    <href>https://maps.google.com/mapfiles/kml/shapes/truck.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="247">
+            <IconStyle id="248">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="249">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-4.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="252">
+            <IconStyle id="253">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="254">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="257">
+            <IconStyle id="258">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="259">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="262">
+            <IconStyle id="263">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="264">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="265">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="268">
+            <IconStyle id="269">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="270">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-12.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="273">
+            <IconStyle id="274">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="275">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-8.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="278">
+            <IconStyle id="279">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="280">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon23.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="283">
+            <IconStyle id="284">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="285">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="288">
+            <IconStyle id="289">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="290">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="293">
+            <IconStyle id="294">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="295">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-8.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="298">
+            <IconStyle id="299">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="300">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-12.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="303">
+            <IconStyle id="304">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="305">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="308">
+            <IconStyle id="309">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="310">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="313">
+            <IconStyle id="314">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="315">
+                    <href>https://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="318">
+            <IconStyle id="319">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="320">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon30.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="323">
+            <IconStyle id="324">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="325">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon46.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="326">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="329">
+            <IconStyle id="330">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="331">
+                    <href>http://maps.google.com/mapfiles/kml/shapes/target.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="336">
+            <LineStyle id="337">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <width>2</width>
+            </LineStyle>
+            <PolyStyle id="338">
+                <color>640000ff</color>
+                <colorMode>normal</colorMode>
+                <fill>1</fill>
+                <outline>1</outline>
+            </PolyStyle>
+        </Style>
+        <Style id="341">
+            <LineStyle id="342">
+                <color>ff00a5ff</color>
+                <colorMode>normal</colorMode>
+                <width>2</width>
+            </LineStyle>
+        </Style>
+        <Style id="345">
+            <IconStyle id="346">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="347">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon28.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="350">
+            <IconStyle id="351">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="352">
+                    <href>https://maps.google.com/mapfiles/kml/pal3/icon44.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="353">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="356">
+            <IconStyle id="357">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="358">
+                    <href>https://maps.google.com/mapfiles/kml/pal2/icon47.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="361">
+            <IconStyle id="362">
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="363">
                     <href>https://maps.google.com/mapfiles/kml/pal3/icon56.png</href>
                 </Icon>
             </IconStyle>
         </Style>
+        <Style id="366">
+            <IconStyle id="367">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="368">
+                    <href>https://maps.google.com/mapfiles/kml/pal4/icon9.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="369">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="372">
+            <IconStyle id="373">
+                <colorMode>normal</colorMode>
+                <scale>2</scale>
+                <heading>0</heading>
+                <Icon id="374">
+                    <href>https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle id="375">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1.2</scale>
+            </LabelStyle>
+        </Style>
+        <Style id="380">
+            <LineStyle id="381">
+                <color>ffff0000</color>
+                <colorMode>normal</colorMode>
+                <width>2</width>
+            </LineStyle>
+        </Style>
         <Placemark id="3">
-            <name>Haymarket Square</name>
-            <description>On May 4, 1886, a riot broke out between police and labor movement protestors in Haymarket Square after a bomb was reportedly hurled at police, prompting an eruption of gunfire and general chaos. When the smoke had cleared, seven police officers and one civilian were dead, and countless others injured.  
-NAME: The Haymarket Square Riot
-TIME: 1886-05-04 22:23:00
-ADDRESS: Tacombi, 126, North Peoria Street, Fulton Market District, Near West Side, Chicago, West Chicago Township, Cook County, Illinois, 60607, United States
-TYPE: Locations
-Business: Haymarket Square
-CASE: 1886-05-122
-SOURCE: locations_test.xlsx</description>
+            <name/>
+            <description>Capone's former home in Chicago
+COORDINATE: 41.8805,-87.6742
+TIME: 1920-05-09 12:00:00
+914 S W 21st Pl, Chicago, IL
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 3</description>
             <styleUrl>#4</styleUrl>
             <Point id="2">
-                <coordinates>-87.6498211,41.8841319,0.0</coordinates>
+                <coordinates>-87.6742,41.8805,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
         <Placemark id="8">
-            <name>H. H. Holmes’ Hotel</name>
-            <description>
-TIME: 1886-08-07 14:00:00
-ADDRESS: S Wallace Ave &amp; W 63rd St chicago IL
-TYPE: H.H. Holmes's Murder Castle
-Business: H. H. Holmes’ Hotel
-SOURCE: locations_test.xlsx</description>
+            <name>The Green Mill</name>
+            <description>The Green Mill (Capone hangout)
+COORDINATE: 41.881,-87.644
+TIME: 1920-07-01 12:00:00
+105 N Wabash Ave, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 4</description>
             <styleUrl>#9</styleUrl>
             <Point id="7">
-                <coordinates>-87.6425803,41.7798363,0.0</coordinates>
+                <coordinates>-87.644,41.881,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="13">
-            <name>Biograph Theatre</name>
-            <description>IMG_0169.MOV
-NAME: John Dillinger entering movie theater
-TIME: 1934-07-22 20:02:00
-2433 N Lincoln Ave, Chicago, IL 60614
-TYPE: Videos
-Business: Biograph Theatre
-CASE: 1933-22-333
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#14</styleUrl>
-            <Point id="12">
-                <coordinates>-87.6523627,41.9263466,0.0</coordinates>
+        <Placemark id="14">
+            <name>The Congress Hotel</name>
+            <description>The Congress Hotel (Capone’s meetings)
+COORDINATE: 41.8807,-87.6272
+TIME: 1920-08-11 12:00:00
+720 S Michigan Ave, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 5</description>
+            <styleUrl>#15</styleUrl>
+            <Point id="13">
+                <coordinates>-87.6272,41.8807,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="18">
-            <name>John Wayne Gacy</name>
-            <description>IMG_1969.JPG
-NAME: John Wayne Gacy crime scene
-TIME: 1979-12-07 14:23:00
-ADDRESS: 8213 W Summerdale Ave, Chicago, IL 60656
-TYPE: Images
-CASE: 1979-12-222
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#19</styleUrl>
-            <Point id="17">
-                <coordinates>-87.8349639,41.9762196,0.0</coordinates>
+        <Placemark id="20">
+            <name>smuggling stop</name>
+            <description>Capone’s smuggling stop
+COORDINATE: 30.3322,-81.6557
+TIME: 1921-12-08 12:00:00
+Jacksonville, FL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 6</description>
+            <styleUrl>#21</styleUrl>
+            <Point id="19">
+                <coordinates>-81.6557,30.3322,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="23">
-            <name>6</name>
+        <Placemark id="26">
+            <name>Maxwell Street Market</name>
+            <description>Maxwell Street Market (Capone’s racketeering)
+COORDINATE: 41.8916,-87.6475
+TIME: 1922-12-09 12:00:00
+719 W Maxwell St, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 7</description>
+            <styleUrl>#27</styleUrl>
+            <Point id="25">
+                <coordinates>-87.6475,41.8916,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="32">
+            <name/>
+            <description>Capone’s early life
+COORDINATE: 40.7128,-74.006
+TIME: 1922-12-14 12:00:00
+New York, NY
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 8</description>
+            <styleUrl>#33</styleUrl>
+            <Point id="31">
+                <coordinates>-74.006,40.7128,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="37">
+            <name>The Burwood Tap</name>
+            <description>The Burwood Tap (gangster haunt)
+COORDINATE: 41.9066,-87.6347
+TIME: 1923-07-24 12:00:00
+1436 N Wells St, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 9</description>
+            <styleUrl>#38</styleUrl>
+            <Point id="36">
+                <coordinates>-87.6347,41.9066,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="43">
+            <name>liquor warehouses</name>
+            <description>Illegal liquor warehouses
+COORDINATE: 41.9755,-87.9099
+TIME: 1924-02-29 12:00:00
+10000 W O’Hare Ave, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 10</description>
+            <styleUrl>#44</styleUrl>
+            <Point id="42">
+                <coordinates>-87.9099,41.9755,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="49">
+            <name>S.M.C. Cartage Co</name>
+            <description>S.M.C. Cartage Co. (massacre garage)
+COORDINATE: 41.9286,-87.6318
+TIME: 1924-08-07 12:00:00
+2128 N Clark St, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 11</description>
+            <styleUrl>#50</styleUrl>
+            <Point id="48">
+                <coordinates>-87.6318,41.9286,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="55">
+            <name>Four Deuces</name>
+            <description>Four Deuces (Capone’s first job under Torrio)
+COORDINATE: 41.8806,-87.6305
+TIME: 1924-12-28 12:00:00
+1340 S Michigan Ave, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 12</description>
+            <styleUrl>#56</styleUrl>
+            <Point id="54">
+                <coordinates>-87.6305,41.8806,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="61">
+            <name>Hawthorne Inn</name>
+            <description>Hawthorne Inn (Capone's Cicero HQ)
+COORDINATE: 41.8917,-87.6552
+TIME: 1925-01-28 12:00:00
+2222 S Deering Ave, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 13</description>
+            <styleUrl>#62</styleUrl>
+            <Point id="60">
+                <coordinates>-87.6552,41.8917,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="67">
+            <name>Riviera Theatre</name>
+            <description>Riviera Theatre (Capone’s speakeasy)
+COORDINATE: 41.9616,-87.6571
+TIME: 1926-04-28 12:00:00
+4707 N Broadway, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 14</description>
+            <styleUrl>#68</styleUrl>
+            <Point id="66">
+                <coordinates>-87.6571,41.9616,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="73">
+            <name/>
+            <description>Bootlegging smuggling route
+COORDINATE: 41.8881,-87.625
+TIME: 1926-07-28 12:00:00
+Chicago River, Chicago, IL
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 15</description>
+            <styleUrl>#74</styleUrl>
+            <Point id="72">
+                <coordinates>-87.625,41.8881,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="78">
+            <name/>
             <description>Al Capone Hang out
 NAME: https://greenmilljazz.com/location/
+COORDINATE: 41.9692095,-87.6624785
 TIME: 1927-02-15 08:08:00
 4802 N. BROADWAY AVE. CHICAGO, IL 60640
 TAG: Important
 TYPE: Intel
-Business: The Green Mill Cocktail Lounge 
+BUSINESS: The Green Mill Cocktail Lounge 
 CASE: 1927-03-333
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#24</styleUrl>
-            <Point id="22">
-                <coordinates>-87.6624785,41.9692095,0.0</coordinates>
+Radius: 53.4453352726708
+SOURCE: Locations_test.xlsx
+ROW#: 16</description>
+            <styleUrl>#79</styleUrl>
+            <Point id="77">
+                <coordinates>-87.6624785,41.9692095,0</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="29">
-            <name>7</name>
+        <Placemark id="83">
+            <name>Circle</name>
+            <styleUrl>#86</styleUrl>
+            <Polygon id="82">
+                <altitudeMode>relativeToGround</altitudeMode>
+                <outerBoundaryIs>
+                    <LinearRing id="84">
+                        <coordinates>-87.6624785,41.969690674401,0 -87.66246724714725,41.96969060111525,0 -87.66245599772229,41.969690381280365,0 -87.6624447551519,41.96969001496328,0 -87.66243352286075,41.969689502275585,0 -87.66242230427038,41.96968884337347,0 -87.66241110279816,41.96968803845762,0 -87.66239992185623,41.96968708777324,0 -87.66238876485052,41.96968599160992,0 -87.6623776351796,41.9696847503016,0 -87.66236653623378,41.96968336422637,0 -87.66235547139395,41.96968183380645,0 -87.66234444403067,41.969680159508044,0 -87.66233345750304,41.96967834184116,0 -87.66232251515771,41.969676381359506,0 -87.66231162032794,41.96967427866026,0 -87.66230077633243,41.96967203438395,0 -87.66228998647445,41.96966964921421,0 -87.66227925404074,41.9696671238776,0 -87.6622685823006,41.96966445914338,0 -87.6622579745048,41.96966165582328,0 -87.6622474338846,41.969658714771235,0 -87.66223696365088,41.96965563688313,0 -87.66222656699301,41.96965242309654,0 -87.66221624707796,41.96964907439043,0 -87.66220600704933,41.9696455917849,0 -87.66219585002641,41.96964197634076,0 -87.66218577910315,41.969638229159365,0 -87.6621757973473,41.96963435138215,0 -87.66216590779946,41.96963034419036,0 -87.66215611347211,41.969626208804634,0 -87.66214641734874,41.96962194648467,0 -87.6621368223829,41.969617558528874,0 -87.66212733149739,41.96961304627384,0 -87.66211794758321,41.96960841109409,0 -87.66210867349886,41.96960365440159,0 -87.66209951206933,41.96959877764527,0 -87.66209046608529,41.969593782310675,0 -87.66208153830229,41.96958866991946,0 -87.66207273143979,41.96958344202895,0 -87.66206404818051,41.969578100231615,0 -87.66205549116945,41.96957264615465,0 -87.66204706301318,41.96956708145947,0 -87.662038766279,41.96956140784115,0 -87.66203060349417,41.96955562702795,0 -87.6620225771452,41.9695497407808,0 -87.66201468967694,41.96954375089274,0 -87.662006943492,41.96953765918836,0 -87.66199934094998,41.96953146752328,0 -87.66199188436663,41.9695251777836,0 -87.66198457601332,41.969518791885235,0 -87.66197741811624,41.969512311773435,0 -87.66197041285571,41.96950573942212,0 -87.66196356236559,41.96949907683334,0 -87.66195686873259,41.96949232603659,0 -87.66195033399566,41.96948548908825,0 -87.66194396014528,41.96947856807097,0 -87.66193774912297,41.96947156509298,0 -87.66193170282065,41.96946448228747,0 -87.66192582308003,41.96945732181198,0 -87.66192011169211,41.969450085847654,0 -87.6619145703966,41.96944277659868,0 -87.66190920088141,41.969435396291566,0 -87.66190400478206,41.96942794717442,0 -87.66189898368133,41.96942043151635,0 -87.66189413910861,41.96941285160672,0 -87.66188947253958,41.96940520975447,0 -87.66188498539569,41.9693975082874,0 -87.66188067904368,41.969389749551475,0 -87.66187655479526,41.9693819359101,0 -87.66187261390665,41.9693740697434,0 -87.66186885757827,41.969366153447524,0 -87.66186528695422,41.96935818943384,0 -87.66186190312212,41.96935018012831,0 -87.66185870711263,41.96934212797065,0 -87.66185569989923,41.96933403541363,0 -87.6618528823979,41.96932590492234,0 -87.66185025546679,41.96931773897345,0 -87.66184781990601,41.969309540054354,0 -87.6618455764574,41.96930131066257,0 -87.66184352580426,41.969293053304845,0 -87.66184166857118,41.96928477049645,0 -87.66184000532381,41.969276464760455,0 -87.66183853656871,41.969268138626845,0 -87.6618372627532,41.969259794631846,0 -87.66183618426523,41.96925143531715,0 -87.66183530143324,41.969243063229065,0 -87.66183461452607,41.96923468091783,0 -87.6618341237529,41.96922629093678,0 -87.66183382926312,41.96921789584158,0 -87.66183373114637,41.96920949818948,0 -87.66183382943245,41.969201100538456,0 -87.66183412409137,41.96919270544653,0 -87.66183461503327,41.969184315470926,0 -87.66183530210853,41.96917593316731,0 -87.6618361851078,41.969167561088994,0 -87.66183726376202,41.96915920178622,0 -87.66183853774255,41.96915085780529,0 -87.66184000666125,41.969142531687844,0 -87.66184167007059,41.96913422597011,0 -87.66184352746382,41.969125943182085,0 -87.66184557827506,41.96911768584674,0 -87.66184782187956,41.96910945647937,0 -87.66185025759384,41.9691012575867,0 -87.66185288467587,41.96909309166615,0 -87.66185570232533,41.969084961205176,0 -87.6618587096839,41.96907686868033,0 -87.66186190583542,41.969068816556714,0 -87.66186528980627,41.969060807287015,0 -87.66186886056556,41.96905284331095,0 -87.66187261702558,41.969044927054384,0 -87.661876558042,41.96903706092869,0 -87.66188068241428,41.969029247329935,0 -87.66188498888604,41.96902148863819,0 -87.66188947614546,41.969013787216824,0 -87.6618941428256,41.96900614541174,0 -87.6618989875049,41.96899856555067,0 -87.66190400870755,41.96899104994251,0 -87.66190920490403,41.96898360087656,0 -87.66191457451148,41.96897622062184,0 -87.66192011589423,41.968968911426444,0 -87.66192582736426,41.96896167551678,0 -87.66193170718175,41.968954515096954,0 -87.66193775355566,41.96894743234808,0 -87.66194396464414,41.96894042942761,0 -87.66195033855522,41.96893350846867,0 -87.66195687334731,41.96892667157943,0 -87.66196356702982,41.96891992084244,0 -87.66197041756375,41.968913258314004,0 -87.66197742286238,41.96890668602358,0 -87.6619845807918,41.968900205973114,0 -87.6619918891716,41.96889382013648,0 -87.66199934577557,41.968887530458815,0 -87.66200694833236,41.968881338856,0 -87.66201469452616,41.96887524721403,0 -87.66202258199736,41.96886925738844,0 -87.66203060834341,41.96886337120377,0 -87.66203877111936,41.96885759045298,0 -87.66204706783878,41.9688519168969,0 -87.66205549597441,41.96884635226374,0 -87.66206405295898,41.96884089824851,0 -87.66207273618595,41.96883555651252,0 -87.66208154301033,41.968830328682884,0 -87.6620904707495,41.968825216352045,0 -87.66209951668402,41.96882022107721,0 -87.66210867805842,41.96881534437997,0 -87.66211795208208,41.96881058774579,0 -87.66212733593007,41.968805952623576,0 -87.66213682674402,41.96880144042519,0 -87.66214642163295,41.96879705252506,0 -87.66215611767421,41.968792790259755,0 -87.66216591191434,41.9687886549276,0 -87.66217580136995,41.968784647788205,0 -87.66218578302865,41.96878077006219,0 -87.66219585385,41.968777022930695,0 -87.66220601076633,41.968773407535124,0 -87.66221625068383,41.96876992497675,0 -87.66222657048337,41.96876657631634,0 -87.66223696702149,41.96876336257393,0 -87.66224743713136,41.968760284728454,0 -87.66225797762371,41.9687573437174,0 -87.6622685852879,41.96875454043663,0 -87.66227925689279,41.96875187574002,0 -87.66228998918776,41.96874935043927,0 -87.6623007789037,41.96874696530356,0 -87.66231162275402,41.96874472105942,0 -87.66232251743567,41.96874261839047,0 -87.66233345963009,41.96874065793718,0 -87.66234444600423,41.96873884029672,0 -87.6623554732116,41.968737166022734,0 -87.66236653789332,41.9687356356252,0 -87.66237763667901,41.968734249570325,0 -87.66238876618796,41.96873300828025,0 -87.66239992303008,41.96873191213312,0 -87.66241110380697,41.9687309614628,0 -87.66242230511294,41.968730156558884,0 -87.66243352353604,41.96872949766654,0 -87.66244475565908,41.96872898498646,0 -87.66245599806076,41.96872861867481,0 -87.66246724731658,41.968728398843176,0 -87.6624785,41.96872832555854,0 -87.66248975268343,41.968728398843176,0 -87.66250100193925,41.96872861867481,0 -87.66251224434093,41.96872898498646,0 -87.66252347646397,41.96872949766654,0 -87.66253469488707,41.968730156558884,0 -87.66254589619304,41.9687309614628,0 -87.66255707696993,41.96873191213312,0 -87.66256823381205,41.96873300828025,0 -87.662579363321,41.968734249570325,0 -87.66259046210669,41.9687356356252,0 -87.66260152678841,41.968737166022734,0 -87.66261255399579,41.96873884029672,0 -87.66262354036992,41.96874065793718,0 -87.66263448256434,41.96874261839047,0 -87.662645377246,41.96874472105942,0 -87.66265622109631,41.96874696530356,0 -87.66266701081226,41.96874935043927,0 -87.66267774310722,41.96875187574002,0 -87.66268841471211,41.96875454043663,0 -87.6626990223763,41.9687573437174,0 -87.66270956286866,41.968760284728454,0 -87.66272003297853,41.96876336257393,0 -87.66273042951664,41.96876657631634,0 -87.66274074931619,41.96876992497675,0 -87.66275098923369,41.968773407535124,0 -87.66276114615002,41.968777022930695,0 -87.66277121697136,41.96878077006219,0 -87.66278119863006,41.968784647788205,0 -87.66279108808567,41.9687886549276,0 -87.6628008823258,41.968792790259755,0 -87.66281057836706,41.96879705252506,0 -87.662820173256,41.96880144042519,0 -87.66282966406995,41.968805952623576,0 -87.66283904791793,41.96881058774579,0 -87.6628483219416,41.96881534437997,0 -87.66285748331599,41.96882022107721,0 -87.66286652925051,41.968825216352045,0 -87.66287545698968,41.968830328682884,0 -87.66288426381406,41.96883555651252,0 -87.66289294704103,41.96884089824851,0 -87.6629015040256,41.96884635226374,0 -87.66290993216123,41.9688519168969,0 -87.66291822888066,41.96885759045298,0 -87.6629263916566,41.96886337120377,0 -87.66293441800265,41.96886925738844,0 -87.66294230547385,41.96887524721403,0 -87.66295005166765,41.968881338856,0 -87.66295765422444,41.968887530458815,0 -87.66296511082841,41.96889382013648,0 -87.66297241920822,41.968900205973114,0 -87.66297957713763,41.96890668602358,0 -87.66298658243626,41.968913258314004,0 -87.6629934329702,41.96891992084244,0 -87.6630001266527,41.96892667157943,0 -87.6630066614448,41.96893350846867,0 -87.66301303535587,41.96894042942761,0 -87.66301924644435,41.96894743234808,0 -87.66302529281826,41.968954515096954,0 -87.66303117263575,41.96896167551678,0 -87.66303688410578,41.968968911426444,0 -87.66304242548853,41.96897622062184,0 -87.66304779509598,41.96898360087656,0 -87.66305299129246,41.96899104994251,0 -87.66305801249511,41.96899856555067,0 -87.66306285717441,41.96900614541174,0 -87.66306752385455,41.969013787216824,0 -87.66307201111397,41.96902148863819,0 -87.66307631758573,41.969029247329935,0 -87.66308044195802,41.96903706092869,0 -87.66308438297443,41.969044927054384,0 -87.66308813943445,41.96905284331095,0 -87.66309171019374,41.969060807287015,0 -87.66309509416459,41.969068816556714,0 -87.66309829031611,41.96907686868033,0 -87.66310129767469,41.969084961205176,0 -87.66310411532415,41.96909309166615,0 -87.66310674240617,41.9691012575867,0 -87.66310917812045,41.96910945647937,0 -87.66311142172495,41.96911768584674,0 -87.6631134725362,41.969125943182085,0 -87.66311532992943,41.96913422597011,0 -87.66311699333876,41.969142531687844,0 -87.66311846225746,41.96915085780529,0 -87.66311973623799,41.96915920178622,0 -87.66312081489221,41.969167561088994,0 -87.66312169789148,41.96917593316731,0 -87.66312238496674,41.969184315470926,0 -87.66312287590864,41.96919270544653,0 -87.66312317056756,41.969201100538456,0 -87.66312326885364,41.96920949818948,0 -87.6631231707369,41.96921789584158,0 -87.66312287624712,41.96922629093678,0 -87.66312238547394,41.96923468091783,0 -87.66312169856677,41.969243063229065,0 -87.66312081573479,41.96925143531715,0 -87.66311973724682,41.969259794631846,0 -87.6631184634313,41.969268138626845,0 -87.6631169946762,41.969276464760455,0 -87.66311533142883,41.96928477049645,0 -87.66311347419575,41.969293053304845,0 -87.66311142354262,41.96930131066257,0 -87.663109180094,41.969309540054354,0 -87.66310674453322,41.96931773897345,0 -87.66310411760212,41.96932590492234,0 -87.66310130010078,41.96933403541363,0 -87.66309829288738,41.96934212797065,0 -87.6630950968779,41.96935018012831,0 -87.66309171304579,41.96935818943384,0 -87.66308814242174,41.969366153447524,0 -87.66308438609336,41.9693740697434,0 -87.66308044520476,41.9693819359101,0 -87.66307632095634,41.969389749551475,0 -87.66307201460432,41.9693975082874,0 -87.66306752746043,41.96940520975447,0 -87.6630628608914,41.96941285160672,0 -87.66305801631869,41.96942043151635,0 -87.66305299521795,41.96942794717442,0 -87.6630477991186,41.969435396291566,0 -87.66304242960341,41.96944277659868,0 -87.6630368883079,41.969450085847654,0 -87.66303117691999,41.96945732181198,0 -87.66302529717936,41.96946448228747,0 -87.66301925087704,41.96947156509298,0 -87.66301303985473,41.96947856807097,0 -87.66300666600435,41.96948548908825,0 -87.66300013126742,41.96949232603659,0 -87.66299343763443,41.96949907683334,0 -87.6629865871443,41.96950573942212,0 -87.66297958188377,41.969512311773435,0 -87.66297242398669,41.969518791885235,0 -87.66296511563338,41.9695251777836,0 -87.66295765905004,41.96953146752328,0 -87.66295005650801,41.96953765918836,0 -87.66294231032307,41.96954375089274,0 -87.66293442285482,41.9695497407808,0 -87.66292639650584,41.96955562702795,0 -87.66291823372102,41.96956140784115,0 -87.66290993698684,41.96956708145947,0 -87.66290150883056,41.96957264615465,0 -87.6628929518195,41.969578100231615,0 -87.66288426856022,41.96958344202895,0 -87.66287546169772,41.96958866991946,0 -87.66286653391472,41.969593782310675,0 -87.66285748793068,41.96959877764527,0 -87.66284832650115,41.96960365440159,0 -87.6628390524168,41.96960841109409,0 -87.66282966850262,41.96961304627384,0 -87.6628201776171,41.969617558528874,0 -87.66281058265128,41.96962194648467,0 -87.6628008865279,41.969626208804634,0 -87.66279109220055,41.96963034419036,0 -87.66278120265271,41.96963435138215,0 -87.66277122089686,41.969638229159365,0 -87.6627611499736,41.96964197634076,0 -87.66275099295068,41.9696455917849,0 -87.66274075292205,41.96964907439043,0 -87.662730433007,41.96965242309654,0 -87.66272003634913,41.96965563688313,0 -87.66270956611541,41.969658714771235,0 -87.66269902549521,41.96966165582328,0 -87.66268841769941,41.96966445914338,0 -87.66267774595927,41.9696671238776,0 -87.66266701352556,41.96966964921421,0 -87.66265622366758,41.96967203438395,0 -87.66264537967207,41.96967427866026,0 -87.6626344848423,41.969676381359506,0 -87.66262354249697,41.96967834184116,0 -87.66261255596935,41.969680159508044,0 -87.66260152860606,41.96968183380645,0 -87.66259046376624,41.96968336422637,0 -87.66257936482042,41.9696847503016,0 -87.6625682351495,41.96968599160992,0 -87.66255707814378,41.96968708777324,0 -87.66254589720185,41.96968803845762,0 -87.66253469572963,41.96968884337347,0 -87.66252347713926,41.969689502275585,0 -87.66251224484812,41.96969001496328,0 -87.66250100227772,41.969690381280365,0 -87.66248975285276,41.96969060111525,0</coordinates>
+                    </LinearRing>
+                </outerBoundaryIs>
+            </Polygon>
+        </Placemark>
+        <Placemark id="91">
+            <name/>
             <description>Al Capone Hang out
 NAME: https://www.exchequerpub.com/
+COORDINATE: 41.8787485,-87.6291376
 TIME: 1927-03-16 23:28:00
 226 S Wabash Ave, Chicago, IL 60604 
 TAG: Important
 TYPE: Intel
-Business: EXCHEQUER RESTAURANT &amp; PUB
+BUSINESS: EXCHEQUER RESTAURANT &amp; PUB
 CASE: 1927-03-333
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#30</styleUrl>
-            <Point id="28">
-                <coordinates>-87.6291376,41.8787485,0.0</coordinates>
+AZIMUTH: 55
+SOURCE: Locations_test.xlsx
+ROW#: 17</description>
+            <styleUrl>#92</styleUrl>
+            <Point id="90">
+                <coordinates>-87.6291376,41.8787485,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="35">
-            <name>8</name>
+        <Placemark id="97">
+            <name>_start</name>
+            <description/>
+            <Point id="96">
+                <coordinates>-87.6824585,41.9692095,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="99">
+            <name>trip line</name>
+            <styleUrl>#100</styleUrl>
+            <LineString id="98">
+                <coordinates>-87.6291376,41.8787485,0.0 -87.6824585,41.9692095,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="103">
+            <name/>
             <description>Al Capone’s Barber
 NAME: https://www.theblackstonehotel.com/
+COORDINATE: 41.873364,-87.6270749
 TIME: 1927-04-13 13:22:00
 636 South Michigan Avenue, Chicago, Illinois 60605
 TAG: Important
 TYPE: Intel
-Business: South Holden Court
+BUSINESS: South Holden Court
 CASE: 1927-03-333
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#36</styleUrl>
-            <Point id="34">
-                <coordinates>-87.6270749,41.873364,0.0</coordinates>
+Radius: 41.8718348601936
+SOURCE: Locations_test.xlsx
+ROW#: 18</description>
+            <styleUrl>#104</styleUrl>
+            <Point id="102">
+                <coordinates>-87.6270749,41.873364,0</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="41">
-            <name>9</name>
+        <Placemark id="108">
+            <name>Circle</name>
+            <styleUrl>#111</styleUrl>
+            <Polygon id="107">
+                <altitudeMode>relativeToGround</altitudeMode>
+                <outerBoundaryIs>
+                    <LinearRing id="109">
+                        <coordinates>-87.6270749,41.87374098318538,0 -87.62706609713186,41.873740925768686,0 -87.62705729694521,41.873740753536076,0 -87.62704850212072,41.87374046654001,0 -87.62703971533742,41.87374006486793,0 -87.62703093927189,41.87373954864219,0 -87.62702217659746,41.873738918020024,0 -87.62701342998338,41.87373817319353,0 -87.62700470209398,41.8737373143896,0 -87.62699599558793,41.87373634186985,0 -87.62698731311734,41.87373525593051,0 -87.62697865732702,41.87373405690238,0 -87.62697003085366,41.87373274515069,0 -87.62696143632502,41.87373132107502,0 -87.62695287635908,41.8737297851092,0 -87.62694435356339,41.87372813772106,0 -87.62693587053407,41.87372637941244,0 -87.6269274298552,41.87372451071895,0 -87.62691903409791,41.873722532209804,0 -87.62691068581968,41.87372044448771,0 -87.62690238756352,41.8737182481886,0 -87.62689414185718,41.87371594398152,0 -87.62688595121244,41.873713532568345,0 -87.62687781812427,41.87371101468363,0 -87.62686974507012,41.87370839109437,0 -87.62686173450915,41.873705662599725,0 -87.6268537888815,41.87370283003086,0 -87.6268459106075,41.87369989425062,0 -87.62683810208699,41.873696856153245,0 -87.62683036569852,41.873693716664235,0 -87.62682270379874,41.87369047673988,0 -87.62681511872152,41.873687137367135,0 -87.62680761277741,41.873683699563216,0 -87.62680018825279,41.87368016437532,0 -87.62679284740925,41.87367653288032,0 -87.62678559248293,41.87367280618442,0 -87.62677842568375,41.87366898542281,0 -87.6267713491948,41.87366507175938,0 -87.62676436517168,41.87366106638626,0 -87.62675747574178,41.873656970523555,0 -87.62675068300372,41.873652785418905,0 -87.62674398902662,41.873648512347174,0 -87.62673739584956,41.87364415260998,0 -87.62673090548088,41.873639707535354,0 -87.6267245198976,41.87363517847734,0 -87.62671824104486,41.87363056681555,0 -87.62671207083524,41.873625873954765,0 -87.62670601114826,41.873621101324474,0 -87.62670006382973,41.8736162503785,0 -87.6266942306913,41.873611322594485,0 -87.62668851350975,41.87360631947352,0 -87.62668291402662,41.8736012425396,0 -87.62667743394752,41.873596093339245,0 -87.62667207494175,41.873590873440975,0 -87.6266668386417,41.873585584434814,0 -87.62666172664238,41.873580227931875,0 -87.62665674050095,41.873574805563806,0 -87.6266518817362,41.87356931898234,0 -87.62664715182812,41.873563769858755,0 -87.62664255221753,41.87355815988339,0 -87.62663808430545,41.87355249076511,0 -87.62663374945284,41.87354676423078,0 -87.6266295489801,41.87354098202481,0 -87.62662548416671,41.8735351459085,0 -87.62662155625085,41.87352925765961,0 -87.62661776642895,41.87352331907177,0 -87.62661411585539,41.87351733195396,0 -87.62661060564217,41.87351129812991,0 -87.62660723685846,41.873505219437604,0 -87.62660401053043,41.87349909772867,0 -87.6266009276408,41.873492934867876,0 -87.6265979891286,41.87348673273246,0 -87.62659519588891,41.87348049321171,0 -87.62659254877254,41.87347421820622,0 -87.62659004858578,41.87346790962745,0 -87.62658769609018,41.873461569397044,0 -87.62658549200228,41.873455199446326,0 -87.62658343699344,41.87344880171564,0 -87.62658153168958,41.87344237815381,0 -87.62657977667104,41.873435930717534,0 -87.62657817247238,41.87342946137074,0 -87.62657671958218,41.8734229720841,0 -87.626575418443,41.87341646483427,0 -87.6265742694511,41.87340994160347,0 -87.62657327295645,41.87340340437873,0 -87.62657242926252,41.873396855151334,0 -87.6265717386263,41.87339029591629,0 -87.62657120125809,41.873383728671556,0 -87.62657081732154,41.873377155417614,0 -87.62657058693355,41.87337057815674,0 -87.62657051016426,41.873363998892415,0 -87.626570587037,41.87335741962877,0 -87.62657081752829,41.87335084236988,0 -87.6265712015679,41.87334426911927,0 -87.62657173903878,41.87333770187921,0 -87.62657242977718,41.87333114265012,0 -87.62657327357266,41.87332459343004,0 -87.6265742701681,41.87331805621389,0 -87.62657541925994,41.87331153299298,0 -87.62657672049805,41.87330502575434,0 -87.62657817348605,41.873298536480135,0 -87.62657977778132,41.87329206714705,0 -87.62658153289507,41.87328561972569,0 -87.6265834382927,41.87327919618002,0 -87.62658549339372,41.87327279846669,0 -87.62658769757209,41.8732664285345,0 -87.62659005015637,41.873260088323796,0 -87.62659255042989,41.87325377976584,0 -87.626595197631,41.873247504782285,0 -87.62659799095331,41.87324126528453,0 -87.6266009295459,41.87323506317319,0 -87.62660401251361,41.873228900337466,0 -87.62660723891732,41.8732227786546,0 -87.62661060777415,41.87321669998932,0 -87.62661411805794,41.87321066619323,0 -87.62661776869936,41.87320467910426,0 -87.62662155858638,41.87319874054614,0 -87.6266254865645,41.87319285232778,0 -87.62662955143722,41.87318701624279,0 -87.6266337519663,41.87318123406886,0 -87.6266380868722,41.87317550756732,0 -87.62664255483443,41.87316983848246,0 -87.626647154492,41.87316422854116,0 -87.62665188444377,41.87315867945222,0 -87.62665674324894,41.87315319290593,0 -87.62666172942747,41.87314777057357,0 -87.62666684146048,41.873142414106766,0 -87.62667207779077,41.87313712513716,0 -87.62667743682331,41.8731319052758,0 -87.62668291692567,41.8731267561127,0 -87.62668851642854,41.87312167921632,0 -87.62669423362627,41.8731166761331,0 -87.62670006677733,41.873111748387046,0 -87.62670601410485,41.87310689747914,0 -87.62671207379726,41.87310212488702,0 -87.62671824400869,41.873097432064455,0 -87.62672452285962,41.873092820440874,0 -87.62673090843748,41.87308829142105,0 -87.62673739879715,41.8730838463845,0 -87.62674399196162,41.873079486685256,0 -87.62675068592252,41.873075213651276,0 -87.62675747864084,41.87307102858414,0 -87.62676436804746,41.87306693275868,0 -87.62677135204382,41.87306292742248,0 -87.6267784285025,41.8730590137956,0 -87.626785595268,41.87305519307015,0 -87.62679285015726,41.87305146640993,0 -87.62680019096037,41.87304783495012,0 -87.62680761544128,41.87304429979687,0 -87.62681512133842,41.87304086202701,0 -87.62682270636549,41.873037522687696,0 -87.626830368212,41.87303428279613,0 -87.6268381045441,41.87303114333917,0 -87.62684591300528,41.87302810527313,0 -87.62685379121703,41.8730251695234,0 -87.62686173677957,41.87302233698423,0 -87.62686974727268,41.87301960851846,0 -87.62687782025627,41.873016984957154,0 -87.62688595327128,41.87301446709946,0 -87.62689414384037,41.873012055712366,0 -87.62690238946863,41.87300975153034,0 -87.6269106876444,41.87300755525529,0 -87.62691903584,41.87300546755621,0 -87.62692743151254,41.873003489069006,0 -87.62693587210465,41.87300162039632,0 -87.6269443550453,41.8729998621074,0 -87.62695287775053,41.87299821473779,0 -87.62696143762426,41.872996678789306,0 -87.62697003205916,41.87299525472981,0 -87.6269786584373,41.872993942993055,0 -87.62698731413103,41.87299274397862,0 -87.62699599650381,41.87299165805172,0 -87.62700470291092,41.87299068554314,0 -87.6270134307004,41.87298982674911,0 -87.62702217721369,41.87298908193123,0 -87.62703093978655,41.87298845131635,0 -87.6270397157499,41.87298793509658,0 -87.62704850243053,41.87298753342915,0 -87.62705729715196,41.87298724643644,0 -87.6270660972353,41.872987074205824,0 -87.6270749,41.87298701678979,0 -87.6270837027647,41.872987074205824,0 -87.62709250284803,41.87298724643644,0 -87.62710129756947,41.87298753342915,0 -87.62711008425009,41.87298793509658,0 -87.62711886021344,41.87298845131635,0 -87.6271276227863,41.87298908193123,0 -87.62713636929959,41.87298982674911,0 -87.62714509708907,41.87299068554314,0 -87.62715380349618,41.87299165805172,0 -87.62716248586896,41.87299274397862,0 -87.6271711415627,41.872993942993055,0 -87.62717976794083,41.87299525472981,0 -87.62718836237573,41.872996678789306,0 -87.62719692224947,41.87299821473779,0 -87.6272054449547,41.8729998621074,0 -87.62721392789534,41.87300162039632,0 -87.62722236848745,41.873003489069006,0 -87.62723076415999,41.87300546755621,0 -87.6272391123556,41.87300755525529,0 -87.62724741053137,41.87300975153034,0 -87.62725565615962,41.873012055712366,0 -87.62726384672871,41.87301446709946,0 -87.62727197974372,41.873016984957154,0 -87.62728005272731,41.87301960851846,0 -87.62728806322042,41.87302233698423,0 -87.62729600878296,41.8730251695234,0 -87.62730388699471,41.87302810527313,0 -87.62731169545589,41.87303114333917,0 -87.627319431788,41.87303428279613,0 -87.6273270936345,41.873037522687696,0 -87.62733467866157,41.87304086202701,0 -87.62734218455871,41.87304429979687,0 -87.62734960903963,41.87304783495012,0 -87.62735694984273,41.87305146640993,0 -87.62736420473199,41.87305519307015,0 -87.62737137149749,41.8730590137956,0 -87.62737844795618,41.87306292742248,0 -87.62738543195253,41.87306693275868,0 -87.62739232135915,41.87307102858414,0 -87.62739911407748,41.873075213651276,0 -87.62740580803838,41.873079486685256,0 -87.62741240120285,41.8730838463845,0 -87.62741889156251,41.87308829142105,0 -87.62742527714038,41.873092820440874,0 -87.62743155599131,41.873097432064455,0 -87.62743772620273,41.87310212488702,0 -87.62744378589514,41.87310689747914,0 -87.62744973322266,41.873111748387046,0 -87.62745556637373,41.8731166761331,0 -87.62746128357145,41.87312167921632,0 -87.62746688307432,41.8731267561127,0 -87.62747236317668,41.8731319052758,0 -87.62747772220922,41.87313712513716,0 -87.62748295853952,41.873142414106766,0 -87.62748807057253,41.87314777057357,0 -87.62749305675105,41.87315319290593,0 -87.62749791555622,41.87315867945222,0 -87.62750264550799,41.87316422854116,0 -87.62750724516556,41.87316983848246,0 -87.62751171312779,41.87317550756732,0 -87.6275160480337,41.87318123406886,0 -87.62752024856277,41.87318701624279,0 -87.62752431343549,41.87319285232778,0 -87.62752824141361,41.87319874054614,0 -87.62753203130063,41.87320467910426,0 -87.62753568194205,41.87321066619323,0 -87.62753919222584,41.87321669998932,0 -87.62754256108268,41.8732227786546,0 -87.62754578748638,41.873228900337466,0 -87.62754887045409,41.87323506317319,0 -87.62755180904668,41.87324126528453,0 -87.62755460236899,41.873247504782285,0 -87.6275572495701,41.87325377976584,0 -87.62755974984363,41.873260088323796,0 -87.6275621024279,41.8732664285345,0 -87.62756430660627,41.87327279846669,0 -87.6275663617073,41.87327919618002,0 -87.62756826710492,41.87328561972569,0 -87.62757002221868,41.87329206714705,0 -87.62757162651394,41.873298536480135,0 -87.62757307950194,41.87330502575434,0 -87.62757438074006,41.87331153299298,0 -87.62757552983189,41.87331805621389,0 -87.62757652642733,41.87332459343004,0 -87.62757737022281,41.87333114265012,0 -87.62757806096121,41.87333770187921,0 -87.6275785984321,41.87334426911927,0 -87.6275789824717,41.87335084236988,0 -87.627579212963,41.87335741962877,0 -87.62757928983574,41.873363998892415,0 -87.62757921306644,41.87337057815674,0 -87.62757898267846,41.873377155417614,0 -87.6275785987419,41.873383728671556,0 -87.6275780613737,41.87339029591629,0 -87.62757737073747,41.873396855151334,0 -87.62757652704354,41.87340340437873,0 -87.6275755305489,41.87340994160347,0 -87.627574381557,41.87341646483427,0 -87.62757308041782,41.8734229720841,0 -87.62757162752762,41.87342946137074,0 -87.62757002332896,41.873435930717534,0 -87.62756826831041,41.87344237815381,0 -87.62756636300655,41.87344880171564,0 -87.62756430799772,41.873455199446326,0 -87.62756210390981,41.873461569397044,0 -87.62755975141421,41.87346790962745,0 -87.62755725122746,41.87347421820622,0 -87.62755460411108,41.87348049321171,0 -87.6275518108714,41.87348673273246,0 -87.6275488723592,41.873492934867876,0 -87.62754578946956,41.87349909772867,0 -87.62754256314153,41.873505219437604,0 -87.62753919435782,41.87351129812991,0 -87.6275356841446,41.87351733195396,0 -87.62753203357104,41.87352331907177,0 -87.62752824374914,41.87352925765961,0 -87.62752431583328,41.8735351459085,0 -87.62752025101989,41.87354098202481,0 -87.62751605054716,41.87354676423078,0 -87.62751171569454,41.87355249076511,0 -87.62750724778246,41.87355815988339,0 -87.62750264817187,41.873563769858755,0 -87.6274979182638,41.87356931898234,0 -87.62749305949905,41.873574805563806,0 -87.62748807335761,41.873580227931875,0 -87.6274829613583,41.873585584434814,0 -87.62747772505824,41.873590873440975,0 -87.62747236605247,41.873596093339245,0 -87.62746688597338,41.8736012425396,0 -87.62746128649025,41.87360631947352,0 -87.6274555693087,41.873611322594485,0 -87.62744973617026,41.8736162503785,0 -87.62744378885174,41.873621101324474,0 -87.62743772916475,41.873625873954765,0 -87.62743155895514,41.87363056681555,0 -87.62742528010239,41.87363517847734,0 -87.62741889451911,41.873639707535354,0 -87.62741240415043,41.87364415260998,0 -87.62740581097337,41.873648512347174,0 -87.62739911699627,41.873652785418905,0 -87.62739232425821,41.873656970523555,0 -87.62738543482831,41.87366106638626,0 -87.6273784508052,41.87366507175938,0 -87.62737137431624,41.87366898542281,0 -87.62736420751706,41.87367280618442,0 -87.62735695259074,41.87367653288032,0 -87.6273496117472,41.87368016437532,0 -87.62734218722258,41.873683699563216,0 -87.62733468127847,41.873687137367135,0 -87.62732709620126,41.87369047673988,0 -87.62731943430147,41.873693716664235,0 -87.627311697913,41.873696856153245,0 -87.6273038893925,41.87369989425062,0 -87.62729601111849,41.87370283003086,0 -87.62728806549084,41.873705662599725,0 -87.62728005492987,41.87370839109437,0 -87.62727198187572,41.87371101468363,0 -87.62726384878755,41.873713532568345,0 -87.62725565814281,41.87371594398152,0 -87.62724741243647,41.8737182481886,0 -87.62723911418031,41.87372044448771,0 -87.62723076590208,41.873722532209804,0 -87.62722237014479,41.87372451071895,0 -87.62721392946592,41.87372637941244,0 -87.6272054464366,41.87372813772106,0 -87.62719692364091,41.8737297851092,0 -87.62718836367497,41.87373132107502,0 -87.62717976914634,41.87373274515069,0 -87.62717114267298,41.87373405690238,0 -87.62716248688265,41.87373525593051,0 -87.62715380441206,41.87373634186985,0 -87.62714509790601,41.8737373143896,0 -87.62713637001661,41.87373817319353,0 -87.62712762340253,41.873738918020024,0 -87.6271188607281,41.87373954864219,0 -87.62711008466258,41.87374006486793,0 -87.62710129787928,41.87374046654001,0 -87.62709250305478,41.873740753536076,0 -87.62708370286813,41.873740925768686,0</coordinates>
+                    </LinearRing>
+                </outerBoundaryIs>
+            </Polygon>
+        </Placemark>
+        <Placemark id="116">
+            <name/>
+            <description>Al Capone Hotel
+COORDINATE: 41.8529443,-87.6229247
+TIME: 1927-05-13 15:22:00
+ADDRESS: East Cermak Road, Near South Side, Chicago, Cook County, Illinois, 60616, United States
+TAG: Important
+TYPE: Locations
+BUSINESS: Lexington Hotel
+CASE: 1927-03-333
+SOURCE: Locations_test.xlsx
+ROW#: 19</description>
+            <styleUrl>#117</styleUrl>
+            <Point id="115">
+                <coordinates>-87.6229247,41.8529443,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="122">
+            <name>_start</name>
+            <description/>
+            <Point id="121">
+                <coordinates>-87.6162866,41.8911897,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="124">
+            <name>trip line</name>
+            <styleUrl>#125</styleUrl>
+            <LineString id="123">
+                <coordinates>-87.6229247,41.8529443,0.0 -87.6162866,41.8911897,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="128">
+            <name>Capone’s Home</name>
             <description>Al Capone’s Home
+COORDINATE: 41.7625038,-87.6213478
 TIME: 1927-05-14 15:22:00
 7244 S Prairie Ave, Chicago, IL 60619
 TAG: Important
 TYPE: Intel
 CASE: 1927-03-333
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#42</styleUrl>
-            <Point id="40">
-                <coordinates>-87.6213478,41.7625038,0.0</coordinates>
+SOURCE: Locations_test.xlsx
+ROW#: 20</description>
+            <styleUrl>#129</styleUrl>
+            <Point id="127">
+                <coordinates>-87.6213478,41.7625038,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="47">
-            <name>10</name>
+        <Placemark id="134">
+            <name>Chicago Coliseum</name>
+            <description>Chicago Coliseum (gangster meetings)
+COORDINATE: 41.8529,-87.6326
+TIME: 1927-05-14 15:52:00
+3500 S Giles Ave, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 21</description>
+            <styleUrl>#135</styleUrl>
+            <Point id="133">
+                <coordinates>-87.6326,41.8529,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="140">
+            <name>Burnham’s dump</name>
+            <description>Burnham’s dump (Capone’s body disposal site)
+COORDINATE: 41.8056,-87.5972
+TIME: 1927-05-14 16:22:00
+Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 22</description>
+            <styleUrl>#141</styleUrl>
+            <Point id="139">
+                <coordinates>-87.5972,41.8056,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="146">
+            <name/>
+            <description>
+NAME: Test – LPR red car
+COORDINATE: 41.821174151816635,-87.76324840980894
+TIME: 1927-05-14 18:23:00
+ADDRESS: South Central Avenue, Stickney, Stickney Township, Cook County, Illinois, 60459, United States
+HWY NAME: 09  Central/Pershing (SB)
+DIRECTION: S
+TAG: Important
+TYPE: LPR
+BUSINESS: Lpr
+PLATE: No_Plate2
+SOURCE: Locations_test.xlsx
+ROW#: 23</description>
+            <styleUrl>#147</styleUrl>
+            <Point id="145">
+                <coordinates>-87.76324840980894,41.821174151816635,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="152">
+            <name>Capone’s hideout</name>
+            <description>Capone’s hideout
+COORDINATE: 41.9742,-87.8651
+TIME: 1927-05-14 19:33:00
+5400 N River Rd, Rosemont, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 24</description>
+            <styleUrl>#153</styleUrl>
+            <Point id="151">
+                <coordinates>-87.8651,41.9742,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="158">
+            <name/>
+            <description>Al Capone’s Home
+COORDINATE: 41.7625038,-87.6213478
+TIME: 1927-05-14 19:33:00
+7244 S Prairie Ave, Chicago, IL 60619
+TAG: Important
+TYPE: Intel
+CASE: 1927-03-333
+SOURCE: Locations_test.xlsx
+ROW#: 25</description>
+            <styleUrl>#159</styleUrl>
+            <Point id="157">
+                <coordinates>-87.6213478,41.7625038,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="164">
+            <name/>
             <description>Al Capone Hang out
+COORDINATE: 41.8911897,-87.6262266
 TIME: 1927-06-15 15:22:00
 505 N. Michigan Ave Chicago, Illinois 60611 
 TAG: Important
 TYPE: Intel
-Business: Medinah Athletic Club
+BUSINESS: Medinah Athletic Club
 CASE: 1927-03-333
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#48</styleUrl>
-            <Point id="46">
-                <coordinates>-87.6262266,41.8911897,0.0</coordinates>
+SOURCE: Locations_test.xlsx
+ROW#: 26</description>
+            <styleUrl>#165</styleUrl>
+            <Point id="163">
+                <coordinates>-87.6262266,41.8911897,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="53">
-            <name>ST. VALENTINE’S MASSACRE</name>
+        <Placemark id="170">
+            <name/>
+            <description>Radius / Altitude test
+COORDINATE: 41.8788764,-87.6384898,200
+TIME: 1927-08-21 11:06:47
+ADDRESS: Sears Tower, Chicago, West Chicago Township, Cook County, Illinois, 60606, United States
+TAG: Of interest
+TYPE: Significant Locations Visits
+BUSINESS: Sears Tower
+CASE: 1927-03-333
+ALTITUDE: 200
+Radius: 43.4453352726708
+SOURCE: Locations_test.xlsx
+ROW#: 27</description>
+            <styleUrl>#171</styleUrl>
+            <Point id="169">
+                <coordinates>-87.6384898,41.8788764,200</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="175">
+            <name>Circle</name>
+            <styleUrl>#178</styleUrl>
+            <Polygon id="174">
+                <altitudeMode>relativeToGround</altitudeMode>
+                <outerBoundaryIs>
+                    <LinearRing id="176">
+                        <coordinates>-87.6384898,41.87926754944783,200 -87.63848066554223,41.879267489873506,200 -87.63847153386696,41.8792673111687,200 -87.63846240775582,41.87926701338785,200 -87.63845328998879,41.879266596621655,200 -87.63844418334325,41.879266060997075,200 -87.63843509059325,41.87926540667726,200 -87.63842601450857,41.87926463386153,200 -87.63841695785392,41.87926374278532,200 -87.63840792338809,41.87926273372002,200 -87.63839891386311,41.879261606973046,200 -87.63838993202344,41.87926036288759,200 -87.63838098060508,41.87925900184264,200 -87.63837206233474,41.87925752425281,200 -87.63836317992907,41.879255930568156,200 -87.6383543360938,41.87925422127414,200 -87.63834553352285,41.879252396891474,200 -87.63833677489767,41.87925045797586,200 -87.63832806288622,41.879248405117934,200 -87.63831940014231,41.87924623894303,200 -87.63831078930475,41.87924396011099,200 -87.63830223299654,41.879241569315994,200 -87.63829373382401,41.879239067286285,200 -87.63828529437615,41.879236454784035,200 -87.63827691722373,41.87923373260508,200 -87.63826860491857,41.87923090157858,200 -87.63826035999267,41.879227962566944,200 -87.6382521849576,41.879224916465425,200 -87.63824408230352,41.87922176420192,200 -87.63823605449865,41.87921850673665,200 -87.63822810398835,41.879215145061885,200 -87.63822023319446,41.879211680201635,200 -87.63821244451451,41.87920811321134,200 -87.63820474032104,41.87920444517759,200 -87.63819712296086,41.87920067721769,200 -87.63818959475428,41.87919681047942,200 -87.63818215799449,41.87919284614065,200 -87.63817481494682,41.87918878540897,200 -87.63816756784806,41.87918462952134,200 -87.63816041890576,41.87918037974369,200 -87.63815337029753,41.87917603737056,200 -87.6381464241705,41.879171603724735,200 -87.63813958264052,41.879167080156705,200 -87.63813284779158,41.87916246804446,200 -87.6381262216752,41.8791577687929,200 -87.63811970630977,41.87915298383347,200 -87.6381133036799,41.87914811462374,200 -87.63810701573593,41.87914316264694,200 -87.63810084439321,41.87913812941151,200 -87.63809479153157,41.87913301645064,200 -87.63808885899479,41.87912782532181,200 -87.63808304858996,41.87912255760629,200 -87.63807736208697,41.87911721490871,200 -87.63807180121799,41.87911179885651,200 -87.63806636767688,41.87910631109953,200 -87.63806106311876,41.87910075330937,200 -87.6380558891594,41.87909512717901,200 -87.63805084737486,41.87908943442226,200 -87.63804593930084,41.879083676773206,200 -87.63804116643242,41.87907785598568,200 -87.63803653022342,41.87907197383279,200 -87.63803203208603,41.87906603210629,200 -87.63802767339043,41.87906003261611,200 -87.63802345546429,41.87905397718979,200 -87.63801937959238,41.87904786767185,200 -87.63801544701623,41.87904170592337,200 -87.63801165893372,41.87903549382125,200 -87.6380080164987,41.87902923325779,200 -87.63800452082064,41.87902292614003,200 -87.63800117296434,41.8790165743892,200 -87.63799797394952,41.87901017994009,200 -87.63799492475064,41.879003744740565,200 -87.63799202629646,41.87899727075083,200 -87.6379892794698,41.878990759942944,200 -87.63798668510738,41.87898421430018,200 -87.6379842439994,41.878977635816405,200 -87.6379819568894,41.878971026495506,200 -87.63797982447402,41.878964388350745,200 -87.63797784740277,41.87895772340419,200 -87.63797602627781,41.87895103368604,200 -87.63797436165387,41.878944321234066,200 -87.63797285403794,41.87893758809295,200 -87.6379715038892,41.87893083631367,200 -87.63797031161889,41.8789240679529,200 -87.63796927759012,41.87891728507234,200 -87.6379684021178,41.87891048973815,200 -87.63796768546861,41.87890368402023,200 -87.63796712786076,41.87889686999169,200 -87.63796672946405,41.87889004972814,200 -87.6379664903998,41.87888322530711,200 -87.63796641074077,41.87887639880738,200 -87.63796649051119,41.87886957230836,200 -87.6379667296867,41.878862747889485,200 -87.63796712819438,41.87885592762952,200 -87.63796768591281,41.878849113605995,200 -87.63796840267204,41.87884230789452,200 -87.63796927825369,41.878835512568166,200 -87.63797031239102,41.878828729696885,200 -87.63797150476894,41.87882196134677,200 -87.63797285502422,41.87881520957952,200 -87.63797436274548,41.87880847645181,200 -87.63797602747343,41.878801764014575,200 -87.63797784870093,41.87879507431253,200 -87.63797982587315,41.87878840938335,200 -87.63798195838778,41.87878177125728,200 -87.63798424559523,41.87877516195634,200 -87.6379866867987,41.878768583493766,200 -87.63798928125456,41.87876203787341,200 -87.63799202817246,41.87875552708914,200 -87.63799492671563,41.87874905312418,200 -87.63799797600109,41.87874261795054,200 -87.63800117509997,41.878736223528456,200 -87.63800452303775,41.87872987180569,200 -87.63800801879457,41.87872356471703,200 -87.63801166130558,41.87871730418368,200 -87.6380154494612,41.87871109211263,200 -87.63801938210744,41.87870493039612,200 -87.63802345804639,41.87869882091108,200 -87.63802767603643,41.87869276551846,200 -87.63803203479272,41.87868676606282,200 -87.63803653298746,41.8786808243716,200 -87.63804116925049,41.8786749422547,200 -87.63804594216948,41.87866912150385,200 -87.63805085029057,41.878663363892095,200 -87.63805589211866,41.87865767117324,200 -87.63806106611793,41.87865204508131,200 -87.63806637071232,41.87864648733008,200 -87.638071804286,41.87864099961244,200 -87.63807736518383,41.878635583600015,200 -87.63808305171187,41.87863024094254,200 -87.63808886213796,41.87862497326744,200 -87.63809479469217,41.87861978217925,200 -87.63810084756737,41.87861466925923,200 -87.63810701891981,41.87860963606481,200 -87.63811330686961,41.878604684129115,200 -87.63811970950142,41.87859981496054,200 -87.63812622486492,41.87859503004228,200 -87.63813285097548,41.87859033083182,200 -87.63813958581468,41.87858571876057,200 -87.6381464273311,41.878581195233416,200 -87.6381533734407,41.878576761628224,200 -87.63816042202765,41.878572419295516,200 -87.63816757094492,41.878568169557965,200 -87.63817481801483,41.87856401371009,200 -87.63818216102995,41.87855995301777,200 -87.63818959775345,41.87855598871791,200 -87.6381971259201,41.87855212201808,200 -87.63820474323677,41.87854835409606,200 -87.63821244738315,41.87854468609961,200 -87.63822023601251,41.878541119146,200 -87.63822810675241,41.87853765432175,200 -87.63823605720532,41.87853429268226,200 -87.63824408494952,41.87853103525151,200 -87.63825218753969,41.87852788302172,200 -87.63826036250774,41.87852483695308,200 -87.63826860736351,41.878521897973435,200 -87.63827691959561,41.878519066978015,200 -87.63828529667204,41.87851634482915,200 -87.63829373604112,41.87851373235601,200 -87.63830223513217,41.87851123035439,200 -87.63831079135632,41.87850883958638,200 -87.6383194021073,41.87850656078025,200 -87.63832806476222,41.87850439463013,200 -87.63833677668242,41.8785023417958,200 -87.63834553521419,41.878500402902624,200 -87.63835433768962,41.87849857854114,200 -87.63836318142747,41.878496869267096,200 -87.63837206373387,41.87849527560112,200 -87.63838098190324,41.87849379802866,200 -87.63838993321906,41.87849243699981,200 -87.63839891495472,41.87849119292911,200 -87.63840792437436,41.87849006619553,200 -87.63841695873366,41.878489057142275,200 -87.6384260152807,41.87848816607671,200 -87.63843509125684,41.878487393270234,200 -87.63844418389748,41.87848673895829,200 -87.63845329043298,41.87848620334013,200 -87.63846240808944,41.87848578657896,200 -87.63847153408959,41.87848548880169,200 -87.63848066565362,41.87848531009905,200 -87.6384898,41.87848525052545,200 -87.63849893434639,41.87848531009905,200 -87.63850806591041,41.87848548880169,200 -87.63851719191057,41.87848578657896,200 -87.63852630956703,41.87848620334013,200 -87.63853541610253,41.87848673895829,200 -87.63854450874317,41.878487393270234,200 -87.6385535847193,41.87848816607671,200 -87.63856264126635,41.878489057142275,200 -87.63857167562564,41.87849006619553,200 -87.63858068504528,41.87849119292911,200 -87.63858966678094,41.87849243699981,200 -87.63859861809676,41.87849379802866,200 -87.63860753626614,41.87849527560112,200 -87.63861641857254,41.878496869267096,200 -87.63862526231038,41.87849857854114,200 -87.63863406478582,41.878500402902624,200 -87.63864282331758,41.8785023417958,200 -87.63865153523778,41.87850439463013,200 -87.6386601978927,41.87850656078025,200 -87.63866880864369,41.87850883958638,200 -87.63867736486783,41.87851123035439,200 -87.63868586395888,41.87851373235601,200 -87.63869430332797,41.87851634482915,200 -87.63870268040439,41.878519066978015,200 -87.63871099263649,41.878521897973435,200 -87.63871923749227,41.87852483695308,200 -87.63872741246031,41.87852788302172,200 -87.63873551505048,41.87853103525151,200 -87.63874354279469,41.87853429268226,200 -87.6387514932476,41.87853765432175,200 -87.63875936398749,41.878541119146,200 -87.63876715261685,41.87854468609961,200 -87.63877485676323,41.87854835409606,200 -87.6387824740799,41.87855212201808,200 -87.63879000224655,41.87855598871791,200 -87.63879743897006,41.87855995301777,200 -87.63880478198517,41.87856401371009,200 -87.63881202905509,41.878568169557965,200 -87.63881917797235,41.878572419295516,200 -87.6388262265593,41.878576761628224,200 -87.63883317266891,41.878581195233416,200 -87.63884001418532,41.87858571876057,200 -87.63884674902452,41.87859033083182,200 -87.63885337513508,41.87859503004228,200 -87.63885989049858,41.87859981496054,200 -87.63886629313039,41.878604684129115,200 -87.6388725810802,41.87860963606481,200 -87.63887875243263,41.87861466925923,200 -87.63888480530784,41.87861978217925,200 -87.63889073786204,41.87862497326744,200 -87.63889654828813,41.87863024094254,200 -87.63890223481617,41.878635583600015,200 -87.638907795714,41.87864099961244,200 -87.63891322928768,41.87864648733008,200 -87.63891853388208,41.87865204508131,200 -87.63892370788135,41.87865767117324,200 -87.63892874970944,41.878663363892095,200 -87.63893365783052,41.87866912150385,200 -87.63893843074952,41.8786749422547,200 -87.63894306701255,41.8786808243716,200 -87.63894756520729,41.87868676606282,200 -87.63895192396357,41.87869276551846,200 -87.63895614195361,41.87869882091108,200 -87.63896021789256,41.87870493039612,200 -87.63896415053881,41.87871109211263,200 -87.63896793869442,41.87871730418368,200 -87.63897158120544,41.87872356471703,200 -87.63897507696225,41.87872987180569,200 -87.63897842490003,41.878736223528456,200 -87.63898162399892,41.87874261795054,200 -87.63898467328437,41.87874905312418,200 -87.63898757182754,41.87875552708914,200 -87.63899031874544,41.87876203787341,200 -87.6389929132013,41.878768583493766,200 -87.63899535440477,41.87877516195634,200 -87.63899764161222,41.87878177125728,200 -87.63899977412686,41.87878840938335,200 -87.63900175129908,41.87879507431253,200 -87.63900357252658,41.878801764014575,200 -87.63900523725452,41.87880847645181,200 -87.63900674497579,41.87881520957952,200 -87.63900809523106,41.87882196134677,200 -87.63900928760899,41.878828729696885,200 -87.63901032174631,41.878835512568166,200 -87.63901119732796,41.87884230789452,200 -87.63901191408719,41.878849113605995,200 -87.63901247180563,41.87885592762952,200 -87.63901287031331,41.878862747889485,200 -87.63901310948881,41.87886957230836,200 -87.63901318925923,41.87887639880738,200 -87.6390131096002,41.87888322530711,200 -87.63901287053595,41.87889004972814,200 -87.63901247213924,41.87889686999169,200 -87.6390119145314,41.87890368402023,200 -87.6390111978822,41.87891048973815,200 -87.63901032240989,41.87891728507234,200 -87.63900928838112,41.8789240679529,200 -87.6390080961108,41.87893083631367,200 -87.63900674596206,41.87893758809295,200 -87.63900523834613,41.878944321234066,200 -87.63900357372219,41.87895103368604,200 -87.63900175259724,41.87895772340419,200 -87.63899977552599,41.878964388350745,200 -87.6389976431106,41.878971026495506,200 -87.6389953560006,41.878977635816405,200 -87.63899291489263,41.87898421430018,200 -87.6389903205302,41.878990759942944,200 -87.63898757370355,41.87899727075083,200 -87.63898467524936,41.879003744740565,200 -87.63898162605048,41.87901017994009,200 -87.63897842703567,41.8790165743892,200 -87.63897507917936,41.87902292614003,200 -87.6389715835013,41.87902923325779,200 -87.63896794106628,41.87903549382125,200 -87.63896415298377,41.87904170592337,200 -87.63896022040763,41.87904786767185,200 -87.63895614453571,41.87905397718979,200 -87.63895192660958,41.87906003261611,200 -87.63894756791397,41.87906603210629,200 -87.63894306977659,41.87907197383279,200 -87.63893843356759,41.87907785598568,200 -87.63893366069917,41.879083676773206,200 -87.63892875262515,41.87908943442226,200 -87.6389237108406,41.87909512717901,200 -87.63891853688125,41.87910075330937,200 -87.63891323232312,41.87910631109953,200 -87.63890779878201,41.87911179885651,200 -87.63890223791303,41.87911721490871,200 -87.63889655141004,41.87912255760629,200 -87.63889074100521,41.87912782532181,200 -87.63888480846843,41.87913301645064,200 -87.6388787556068,41.87913812941151,200 -87.63887258426408,41.87914316264694,200 -87.6388662963201,41.87914811462374,200 -87.63885989369024,41.87915298383347,200 -87.63885337832481,41.8791577687929,200 -87.63884675220842,41.87916246804446,200 -87.63884001735948,41.879167080156705,200 -87.6388331758295,41.879171603724735,200 -87.63882622970247,41.87917603737056,200 -87.63881918109425,41.87918037974369,200 -87.63881203215195,41.87918462952134,200 -87.63880478505318,41.87918878540897,200 -87.63879744200551,41.87919284614065,200 -87.63879000524572,41.87919681047942,200 -87.63878247703914,41.87920067721769,200 -87.63877485967896,41.87920444517759,200 -87.6387671554855,41.87920811321134,200 -87.63875936680554,41.879211680201635,200 -87.63875149601165,41.879215145061885,200 -87.63874354550136,41.87921850673665,200 -87.63873551769649,41.87922176420192,200 -87.63872741504241,41.879224916465425,200 -87.63871924000733,41.879227962566944,200 -87.63871099508144,41.87923090157858,200 -87.63870268277627,41.87923373260508,200 -87.63869430562386,41.879236454784035,200 -87.63868586617599,41.879239067286285,200 -87.63867736700347,41.879241569315994,200 -87.63866881069525,41.87924396011099,200 -87.6386601998577,41.87924623894303,200 -87.63865153711379,41.879248405117934,200 -87.63864282510234,41.87925045797586,200 -87.63863406647715,41.879252396891474,200 -87.6386252639062,41.87925422127414,200 -87.63861642007093,41.879255930568156,200 -87.63860753766527,41.87925752425281,200 -87.63859861939493,41.87925900184264,200 -87.63858966797656,41.87926036288759,200 -87.63858068613689,41.879261606973046,200 -87.63857167661192,41.87926273372002,200 -87.63856264214608,41.87926374278532,200 -87.63855358549144,41.87926463386153,200 -87.63854450940676,41.87926540667726,200 -87.63853541665675,41.879266060997075,200 -87.63852631001122,41.879266596621655,200 -87.63851719224418,41.87926701338785,200 -87.63850806613304,41.8792673111687,200 -87.63849893445777,41.879267489873506,200</coordinates>
+                    </LinearRing>
+                </outerBoundaryIs>
+            </Polygon>
+        </Placemark>
+        <Placemark id="183">
+            <name>City Hall</name>
+            <description>City Hall (Capone’s bribery dealings)
+COORDINATE: 41.8758,-87.6395
+TIME: 1928-05-17 12:00:00
+120 N LaSalle St, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 28</description>
+            <styleUrl>#184</styleUrl>
+            <Point id="182">
+                <coordinates>-87.6395,41.8758,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="189">
+            <name>Colosimo's Café</name>
+            <description>Colosimo's Café (early Capone haunt)
+COORDINATE: 41.8789,-87.6359
+TIME: 1928-06-14 12:00:00
+2220 S Wabash Ave, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 29</description>
+            <styleUrl>#190</styleUrl>
+            <Point id="188">
+                <coordinates>-87.6359,41.8789,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="195">
+            <name>Federal court</name>
+            <description>Federal court (Capone's tax trial)
+COORDINATE: 41.8827,-87.629
+TIME: 1928-07-17 12:00:00
+431 S Dearborn St, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 30</description>
+            <styleUrl>#196</styleUrl>
+            <Point id="194">
+                <coordinates>-87.629,41.8827,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="201">
+            <name>train station</name>
+            <description>Capone’s getaway train station
+COORDINATE: 41.8858,-87.6278
+TIME: 1928-10-12 12:00:00
+Chicago Union Station, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 31</description>
+            <styleUrl>#202</styleUrl>
+            <Point id="200">
+                <coordinates>-87.6278,41.8858,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="207">
+            <name>Wrigley Field</name>
+            <description>Wrigley Field (Capone attended games)
+COORDINATE: 41.9469,-87.6553
+TIME: 1928-12-03 12:00:00
+3733 N Sheffield Ave, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 32</description>
+            <styleUrl>#208</styleUrl>
+            <Point id="206">
+                <coordinates>-87.6553,41.9469,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="213">
+            <name/>
             <description>ST. VALENTINE’S MASSACRE
+COORDINATE: 41.9208803,-87.6404249
 TIME: 1929-02-14 10:30:00
 2122 N Clark St, Chicago, IL 60614
 TAG: Important
 TYPE: Locations
-Business: SMC Cartage Company garage
+BUSINESS: SMC Cartage Company garage
 CASE: 1929-02-142
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#54</styleUrl>
-            <Point id="52">
-                <coordinates>-87.6404249,41.9208803,0.0</coordinates>
+SOURCE: Locations_test.xlsx
+ROW#: 33</description>
+            <styleUrl>#214</styleUrl>
+            <Point id="212">
+                <coordinates>-87.6404249,41.9208803,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="59">
-            <name>12</name>
+        <Placemark id="219">
+            <name>office</name>
+            <description>Capone’s business office
+COORDINATE: 41.8906,-87.6233
+TIME: 1929-12-27 12:00:00
+1250 S Michigan Ave, Chicago, IL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 34</description>
+            <styleUrl>#220</styleUrl>
+            <Point id="218">
+                <coordinates>-87.6233,41.8906,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="225">
+            <name/>
+            <description>Capone’s liquor transport route
+COORDINATE: 41.4925,-99.9018
+TIME: 1930-05-25 12:00:00
+US Route 66
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 35</description>
+            <styleUrl>#226</styleUrl>
+            <Point id="224">
+                <coordinates>-99.9018,41.4925,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="230">
+            <name>mansion</name>
+            <description>Al Capone's mansion on Palm Island
+COORDINATE: 25.7617,-80.1918
+TIME: 1930-09-27 12:00:00
+Miami Beach, FL
+TAG: Important
+TYPE: Capone_Locations
+CASE: 1929-0234
+SOURCE: Capone_Locations.xlsx
+ROW#: 36</description>
+            <styleUrl>#231</styleUrl>
+            <Point id="229">
+                <coordinates>-80.1918,25.7617,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="236">
+            <name/>
             <description>IMG_1045.JPG
 NAME: Test – gps only Images
+COORDINATE: 41.8637888888889,-87.8146277777778
 TIME: 2021-07-15 17:21:51
-ADDRESS: Crazy Grill Buffet, Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60130, United States
 TYPE: Images
-Business: Crazy Grill Buffet
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#60</styleUrl>
-            <Point id="58">
-                <coordinates>-87.8146277777778,41.8637888888889,0.0</coordinates>
+BUSINESS: Crazy Grill Buffet
+SOURCE: Locations_test.xlsx
+ROW#: 40</description>
+            <styleUrl>#237</styleUrl>
+            <Point id="235">
+                <coordinates>-87.8146277777778,41.8637888888889,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="64">
-            <name>13</name>
+        <Placemark id="241">
+            <name/>
             <description>
 NAME: Test – Truck icon
+COORDINATE: 41.8832069138184,-87.6369670043945
 TIME: 2021-09-22 13:02:45
 End Time: 9/22/2021 1:02:45 PM(UTC-5)
 ADDRESS: West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
@@ -555,292 +1531,431 @@ HWY NAME: West Washington Street
 DIRECTION: W
 TYPE: LPR
 PLATE: No_Plate
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#65</styleUrl>
-            <Point id="63">
-                <coordinates>-87.6369670043945,41.8832069138184,0.0</coordinates>
+SOURCE: Locations_test.xlsx
+ROW#: 41</description>
+            <styleUrl>#242</styleUrl>
+            <Point id="240">
+                <coordinates>-87.6369670043945,41.8832069138184,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="69">
-            <name>14</name>
-            <description>
-NAME: Test – LPR red car
-TIME: 2022-06-13 21:41:33
-ADDRESS: South Central Avenue, Stickney, Stickney Township, Cook County, Illinois, 60459, United States
-HWY NAME: 09  Central/Pershing (SB)
-DIRECTION: S
-TAG: Important
-TYPE: LPR
-Business: Lpr
-PLATE: No_Plate2
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#70</styleUrl>
-            <Point id="68">
-                <coordinates>-87.76324840980894,41.821174151816635,0.0</coordinates>
-            </Point>
-        </Placemark>
-        <Placemark id="75">
-            <name>15</name>
-            <description>
-NAME: Test – gps only Intel
-TIME: 2022-07-26 14:33:12
-ADDRESS: Tri-State Tollway, Justice, Lyons Township, Cook County, Illinois, 60458, United States
-TYPE: Intel
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#76</styleUrl>
-            <Point id="74">
-                <coordinates>-87.8328635429077,41.7431510003286,0.0</coordinates>
-            </Point>
-        </Placemark>
-        <Placemark id="80">
-            <name>16</name>
-            <description>
-NAME: Test – gps only Toll w/ no direction arrow (blue square)
-TIME: 2022-07-26 14:33:12
-ADDRESS: 8701, Industrial Drive, Justice, Lyons Township, Cook County, Illinois, 60458, United States
-HWY NAME: I-294
-TYPE: Toll
-PLATE: No_Plate2
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#81</styleUrl>
-            <Point id="79">
-                <coordinates>-87.8369635429077,41.7431510003286,0.0</coordinates>
-            </Point>
-        </Placemark>
-        <Placemark id="85">
-            <name>17</name>
+        <Placemark id="246">
+            <name/>
             <description>
 NAME: Test – Eastbound
+COORDINATE: 41.9836875,-87.9707624
 TIME: 2023-01-02 17:42:00
 ADDRESS: Illinois Tollway Plaza 320 - Westbound, IL 390, Wood Dale, IL 60191
 HWY NAME: I-390 &amp; Lively Blvd
 DIRECTION: E
 TYPE: Toll
-Business: E
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#86</styleUrl>
-            <Point id="84">
-                <coordinates>-87.9707624,41.9836875,0.0</coordinates>
+BUSINESS: E
+SOURCE: Locations_test.xlsx
+ROW#: 42</description>
+            <styleUrl>#247</styleUrl>
+            <Point id="245">
+                <coordinates>-87.9707624,41.9836875,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="90">
-            <name>18</name>
+        <Placemark id="251">
+            <name/>
             <description>
 NAME: Test – Toll
+COORDINATE: 41.9843125,-88.0100124
 TIME: 2023-01-20 19:17:00
 ADDRESS: Illinois Tollway Plaza 324 - Westbound, IL 390, Itasca, IL 60143
 HWY NAME: I-390 &amp; Hamilton Lakes Blvd
 TYPE: Toll
-Business: Toll
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#91</styleUrl>
-            <Point id="89">
-                <coordinates>-88.0100124,41.9843125,0.0</coordinates>
+BUSINESS: Toll
+SOURCE: Locations_test.xlsx
+ROW#: 43</description>
+            <styleUrl>#252</styleUrl>
+            <Point id="250">
+                <coordinates>-88.0100124,41.9843125,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="95">
-            <name>19</name>
+        <Placemark id="256">
+            <name/>
             <description>
 NAME: Test – gps only Locations Yelow paddle
+COORDINATE: 41.8637869888889,-87.8169277777778
 TIME: 2023-09-20 15:26:38
-ADDRESS: Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
 TYPE: Locations
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#96</styleUrl>
-            <Point id="94">
-                <coordinates>-87.8169277777778,41.8637869888889,0.0</coordinates>
+SOURCE: Locations_test.xlsx
+ROW#: 44</description>
+            <styleUrl>#257</styleUrl>
+            <Point id="255">
+                <coordinates>-87.8169277777778,41.8637869888889,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="100">
-            <name>20</name>
-            <description>IMG_0069.MOV
-NAME: Test – Fulladdress,gps and address videos
-TIME: 2023-12-24 10:24:20
-Roosevelt Road, Forest Park, Proviso Township, Cook County, Illinois, 60154, United States
-TYPE: Videos
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#101</styleUrl>
-            <Point id="99">
-                <coordinates>-87.8169277777778,41.8636988888889,0.0</coordinates>
-            </Point>
-        </Placemark>
-        <Placemark id="105">
-            <name>21</name>
+        <Placemark id="261">
+            <name/>
             <description>
 NAME: Test – gps only Locations Yelow paddle
+COORDINATE: 41.8832054138184,-87.6369670043945
 TIME: 2023-12-26 11:01:31
-ADDRESS: West Washington Street, Loop, Chicago, Cook County, Illinois, 60606, United States
 TAG: Important
 TYPE: Locations
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#106</styleUrl>
-            <Point id="104">
-                <coordinates>-87.6369670043945,41.8832054138184,0.0</coordinates>
+SOURCE: Locations_test.xlsx
+ROW#: 46</description>
+            <styleUrl>#262</styleUrl>
+            <Point id="260">
+                <coordinates>-87.6369670043945,41.8832054138184,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="111">
-            <name>22</name>
+        <Placemark id="267">
+            <name/>
             <description>
 NAME: Test – Westbound
+COORDINATE: 41.8485625,-87.9437624
 TIME: 2023-12-27 16:59:00
 ADDRESS: Illinois Tollway Plaza 51, Chicago - Kansas City Expressway, Illinois 110, W 22nd St, Oak Brook, IL 60523
 HWY NAME: I-88 &amp; York Rd
 DIRECTION: W
 TYPE: Toll
-Business: Illinois Tollway Plaza 51
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#112</styleUrl>
-            <Point id="110">
-                <coordinates>-87.9437624,41.8485625,0.0</coordinates>
+BUSINESS: Illinois Tollway Plaza 51
+SOURCE: Locations_test.xlsx
+ROW#: 47</description>
+            <styleUrl>#268</styleUrl>
+            <Point id="266">
+                <coordinates>-87.9437624,41.8485625,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="116">
-            <name>23</name>
+        <Placemark id="272">
+            <name/>
             <description>
 NAME: Test – Southbound
+COORDINATE: 41.7330625,-88.0377624
 TIME: 2023-12-27 17:11:00
 ADDRESS: Illinois Tollway Plaza 89 Southbound, Veterans Memorial Tollway S, Woodridge, IL 60517
 HWY NAME: I-355 &amp; Boughton Rd Mainline
 DIRECTION: S
 TYPE: Toll
-Business: S
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#117</styleUrl>
-            <Point id="115">
-                <coordinates>-88.0377624,41.7330625,0.0</coordinates>
+BUSINESS: S
+SOURCE: Locations_test.xlsx
+ROW#: 48</description>
+            <styleUrl>#273</styleUrl>
+            <Point id="271">
+                <coordinates>-88.0377624,41.7330625,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="121">
-            <name>24</name>
+        <Placemark id="277">
+            <name/>
             <description>Flight: EY 242 from LHE to AUH
 NAME: Test – gps only Calendar
+COORDINATE: 41.7856916,-87.7508994935715
 TIME: 2024-01-07 13:39:20
-ADDRESS: Chicago Midway International Airport, 5700, South Cicero Avenue, Garfield Ridge, Chicago, Lake Township, Cook County, Illinois, 60638, United States
 TYPE: Calendar
-Business: Chicago Midway International Airport
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#122</styleUrl>
-            <Point id="120">
-                <coordinates>-87.7508994935715,41.7856916,0.0</coordinates>
+BUSINESS: Chicago Midway International Airport
+SOURCE: Locations_test.xlsx
+ROW#: 49</description>
+            <styleUrl>#278</styleUrl>
+            <Point id="276">
+                <coordinates>-87.7508994935715,41.7856916,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="126">
-            <name>25</name>
+        <Placemark id="282">
+            <name/>
+            <description>
+COORDINATE: 41.920103,-87.673827
+TIME: 2024-01-09 13:39:20
+DIRECTION: N
+TYPE: LPR
+SOURCE: Locations_test.xlsx
+ROW#: 50</description>
+            <styleUrl>#283</styleUrl>
+            <Point id="281">
+                <coordinates>-87.673827,41.920103,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="287">
+            <name/>
+            <description>
+COORDINATE: 41.954183,-87.731145
+TIME: 2024-01-09 13:42:20
+DIRECTION: N
+TYPE: LPR
+SOURCE: Locations_test.xlsx
+ROW#: 51</description>
+            <styleUrl>#288</styleUrl>
+            <Point id="286">
+                <coordinates>-87.731145,41.954183,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="292">
+            <name/>
+            <description>
+COORDINATE: 41.951087,-87.74732
+TIME: 2024-01-09 13:52:20
+DIRECTION: S
+TYPE: LPR
+SOURCE: Locations_test.xlsx
+ROW#: 52</description>
+            <styleUrl>#293</styleUrl>
+            <Point id="291">
+                <coordinates>-87.74732,41.951087,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="297">
+            <name/>
+            <description>
+COORDINATE: 41.9497736,-87.7534868
+TIME: 2024-01-09 14:12:20
+DIRECTION: W
+SOURCE: Locations_test.xlsx
+ROW#: 53</description>
+            <styleUrl>#298</styleUrl>
+            <Point id="296">
+                <coordinates>-87.7534868,41.9497736,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="302">
+            <name/>
             <description>
 NAME: N-bound icon : Toll Tag ID:12345678
+COORDINATE: 41.7394375,-87.8291374
 TIME: 2024-01-19 14:15:00
 ADDRESS: 83rd St Toll Plaza 39 Northbound, Tri-State Tollway, Justice, IL 60458
 HWY NAME: I-294 &amp; 83rd St
 DIRECTION: N
 TYPE: Toll
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#127</styleUrl>
-            <Point id="125">
-                <coordinates>-87.8291374,41.7394375,0.0</coordinates>
+SOURCE: Locations_test.xlsx
+ROW#: 54</description>
+            <styleUrl>#303</styleUrl>
+            <Point id="301">
+                <coordinates>-87.8291374,41.7394375,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="131">
-            <name>26</name>
+        <Placemark id="307">
+            <name/>
+            <description>
+NAME: Test – gps only Intel
+COORDINATE: 41.7431510003286,-87.8328635429077
+TIME: 2024-01-19 14:35:00
+TYPE: Intel
+SOURCE: Locations_test.xlsx
+ROW#: 55</description>
+            <styleUrl>#308</styleUrl>
+            <Point id="306">
+                <coordinates>-87.8328635429077,41.7431510003286,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="312">
+            <name/>
+            <description>
+NAME: Test – gps only Toll w/ no direction arrow (blue square)
+COORDINATE: 41.7431510003286,-87.8369635429077
+TIME: 2024-01-19 15:32:00
+HWY NAME: I-294
+TYPE: Toll
+PLATE: No_Plate2
+SOURCE: Locations_test.xlsx
+ROW#: 56</description>
+            <styleUrl>#313</styleUrl>
+            <Point id="311">
+                <coordinates>-87.8369635429077,41.7431510003286,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="317">
+            <name/>
             <description>IMG_1969.MOV
 NAME: Test – gps only (yellow pin) with business
+COORDINATE: 41.8285843,-87.7510767237512
+TIME: 2024-01-25 21:42:00
 3501 S Laramie Ave, Cicero, IL 60804
 TYPE: Videos
-Business: Hawthorne Racecourse
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#132</styleUrl>
-            <Point id="130">
-                <coordinates>-87.7510767237512,41.8285843,0.0</coordinates>
+BUSINESS: Hawthorne Racecourse
+SOURCE: Locations_test.xlsx
+ROW#: 57</description>
+            <styleUrl>#318</styleUrl>
+            <Point id="316">
+                <coordinates>-87.7510767237512,41.8285843,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="136">
-            <name>28</name>
-            <description>
-NAME: Test – address only office w/ yellow font
-Willis Tower, 233, South Wacker Drive, Chicago, Illinois, 60606
-TAG: Review
-TYPE: Intel
-Business: Willis Tower
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#137</styleUrl>
-            <Point id="135">
-                <coordinates>-87.6359612118808,41.87873805,0.0</coordinates>
-            </Point>
-        </Placemark>
-        <Placemark id="142">
-            <name>29</name>
-            <description>Last Position
-NAME: Test – gps only yellow paddle w/ tag
-ADDRESS: Urban Air, 7401, West 25th Street, North Riverside Plaza, North Riverside, Riverside Township, Cook County, Illinois, 60546, United States
-TYPE: Locations
-Business: Urban Air
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#143</styleUrl>
-            <Point id="141">
-                <coordinates>-87.80702,41.8458074,0.0</coordinates>
-            </Point>
-        </Placemark>
-        <Placemark id="147">
-            <name>30</name>
+        <Placemark id="322">
+            <name/>
             <description>
 NAME: Test – gps only Images w/ yellow font
-ADDRESS: Chicago Midway International Airport, 5700, South Cicero Avenue, Garfield Ridge, Chicago, Lake Township, Cook County, Illinois, 60638, United States
+COORDINATE: 41.78543165,-87.7508486935769
 TAG: blah
 TYPE: Images
-Business: Chicago Midway International Airport
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#148</styleUrl>
-            <Point id="146">
-                <coordinates>-87.7508486935769,41.78543165,0.0</coordinates>
+BUSINESS: Chicago Midway International Airport
+SOURCE: Locations_test.xlsx
+ROW#: 58</description>
+            <styleUrl>#323</styleUrl>
+            <Point id="321">
+                <coordinates>-87.7508486935769,41.78543165,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="153">
-            <name>31</name>
+        <Placemark id="328">
+            <name/>
+            <description>Cell Tower Test
+NAME: coordinate test with altitude
+COORDINATE: 41.8523443,-87.6229247,30
+ADDRESS: South Indiana Avenue, Near South Side, Chicago, Cook County, Illinois, 60616, United States
+TYPE: Locations
+ALTITUDE: 30
+AZIMUTH: 175
+Radius: 600.0
+SOURCE: Locations_test.xlsx
+ROW#: 60</description>
+            <styleUrl>#329</styleUrl>
+            <Point id="327">
+                <coordinates>-87.6229247,41.8523443,30</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="333">
+            <name>Circle</name>
+            <styleUrl>#336</styleUrl>
+            <Polygon id="332">
+                <altitudeMode>relativeToGround</altitudeMode>
+                <outerBoundaryIs>
+                    <LinearRing id="334">
+                        <coordinates>-87.6229247,41.857746275896986,30 -87.62279859125513,41.857745453081044,30 -87.6226725209339,41.857742984883956,30 -87.62254652744825,41.8577388720577,30 -87.62242064918665,41.85773311585544,30 -87.62229492450248,41.85772571803098,30 -87.62216939170227,41.857716680838344,30 -87.62204408903405,41.85770600703101,30 -87.62191905467567,41.85769369986116,30 -87.62179432672318,41.85767976307859,30 -87.62166994317917,41.85766420092963,30 -87.62154594194128,41.857647018155824,30 -87.62142236079053,41.85762821999248,30 -87.62129923737984,41.857607812167146,30 -87.62117660922262,41.85758580089772,30 -87.6210545136812,41.85756219289068,30 -87.62093298795556,41.85753699533901,30 -87.62081206907192,41.857510215919966,30 -87.62069179387149,41.85748186279276,30 -87.62057219899917,41.8574519445961,30 -87.62045332089251,41.8574204704455,30 -87.62033519577042,41.857387449930556,30 -87.62021785962231,41.857352893112,30 -87.62010134819698,41.8573168105186,30 -87.61998569699182,41.857279213144,30 -87.61987094124189,41.85724011244334,30 -87.61975711590925,41.85719952032981,30 -87.61964425567236,41.85715744917091,30 -87.61953239491532,41.85711391178481,30 -87.6194215677176,41.857068921436344,30 -87.61931180784347,41.85702249183301,30 -87.6192031487319,41.8569746371208,30 -87.61909562348617,41.85692537187985,30 -87.61898926486394,41.85687471112002,30 -87.61888410526716,41.85682267027632,30 -87.61878017673223,41.85676926520421,30 -87.61867751092029,41.856714512174705,30 -87.61857613910749,41.85665842786953,30 -87.61847609217548,41.856601029375916,30 -87.61837740060206,41.856542334181476,30 -87.6182800944518,41.85648236016882,30 -87.61818420336697,41.85642112561011,30 -87.6180897565584,41.85635864916156,30 -87.61799678279672,41.85629494985764,30 -87.61790531040344,41.85623004710536,30 -87.6178153672425,41.856163960678295,30 -87.61772698071157,41.8560967107106,30 -87.6176401777339,41.856028317690836,30 -87.61755498475,41.85595880245577,30 -87.61747142770963,41.855888186183996,30 -87.61738953206391,41.85581649038946,30 -87.6173093227575,41.85574373691492,30 -87.6172308242211,41.85566994792534,30 -87.61715406036394,41.85559514590101,30 -87.61707905456649,41.85551935363087,30 -87.61700582967345,41.855442594205364,30 -87.61693440798663,41.85536489100956,30 -87.61686481125835,41.85528626771593,30 -87.6167970606846,41.855206748277226,30 -87.61673117689878,41.855126356919065,30 -87.61666717996533,41.85504511813262,30 -87.61660508937365,41.85496305666717,30 -87.61654492403211,41.85488019752246,30 -87.61648670226238,41.85479656594125,30 -87.61643044179381,41.854712187401425,30 -87.61637615975806,41.854627087608385,30 -87.61632387268385,41.85454129248714,30 -87.61627359649196,41.8544548281744,30 -87.61622534649042,41.85436772101065,30 -87.61617913736976,41.85427999753212,30 -87.61613498319865,41.8541916844627,30 -87.61609289741953,41.854102808705726,30 -87.61605289284465,41.85401339733586,30 -87.616014981652,41.85392347759086,30 -87.61597917538178,41.8538330768632,30 -87.61594548493278,41.85374222269174,30 -87.61591392055912,41.85365094275341,30 -87.61588449186716,41.8535592648547,30 -87.61585720781251,41.853467216923214,30 -87.61583207669736,41.85337482699914,30 -87.61580910616797,41.85328212322677,30 -87.61578830321234,41.85318913384581,30 -87.61576967415809,41.85309588718294,30 -87.61575322467051,41.85300241164301,30 -87.61573895975096,41.85290873570054,30 -87.61572688373516,41.85281488789089,30 -87.61571700029212,41.85272089680173,30 -87.61570931242282,41.852626791064175,30 -87.61570382245945,41.85253259934423,30 -87.61570053206466,41.852438350333884,30 -87.61569944223105,41.852344072742504,30 -87.61570055328087,41.852249795288,30 -87.61570386486603,41.85215554668815,30 -87.6157093759681,41.852061355651806,30 -87.61571708489868,41.85196725087014,30 -87.61572698929992,41.851873261007945,30 -87.6157390861453,41.85177941469489,30 -87.61575337174045,41.851685740516785,30 -87.61576984172443,41.851592267006886,30 -87.61578849107094,41.85149902263719,30 -87.61580931408996,41.851406035809816,30 -87.61583230442939,41.85131333484825,30 -87.61585745507715,41.851220947988836,30 -87.61588475836315,41.8511289033721,30 -87.61591420596179,41.85103722903422,30 -87.61594578889438,41.85094595289844,30 -87.61597949753198,41.850855102766644,30 -87.61601532159834,41.8507647063108,30 -87.61605325017293,41.85067479106458,30 -87.61609327169442,41.850585384415005,30 -87.61613537396414,41.850496513594024,30 -87.61617954414977,41.85040820567032,30 -87.61622576878936,41.850320487541,30 -87.61627403379534,41.85023338592338,30 -87.61632432445883,41.850146927346934,30 -87.61637662545425,41.85006113814516,30 -87.61643092084383,41.84997604444758,30 -87.61648719408257,41.84989167217177,30 -87.61654542802327,41.84980804701549,30 -87.61660560492176,41.84972519444883,30 -87.61666770644229,41.849643139706465,30 -87.61673171366311,41.849561907780014,30 -87.61679760708235,41.84948152341037,30 -87.61686536662383,41.849402011080194,30 -87.61693497164322,41.84932339500646,30 -87.61700640093439,41.84924569913309,30 -87.61707963273581,41.84916894712366,30 -87.61715464473721,41.849093162354194,30 -87.61723141408639,41.84901836790602,30 -87.61730991739613,41.84894458655881,30 -87.61739013075139,41.848871840783566,30 -87.61747202971658,41.848800152735855,30 -87.61755558934293,41.84872954424901,30 -87.61764078417623,41.8486600368275,30 -87.61772758826444,41.84859165164039,30 -87.6178159751657,41.84852440951488,30 -87.61790591795632,41.848458330930015,30 -87.61799738923905,41.84839343601039,30 -87.61809036115135,41.848329744520015,30 -87.6181848053739,41.8482672758564,30 -87.6182806931393,41.84820604904454,30 -87.61837799524069,41.84814608273116,30 -87.61847668204076,41.848087395179085,30 -87.61857672348079,41.848030004261624,30 -87.61867808908961,41.84797392745712,30 -87.61878074799318,41.8479191818437,30 -87.61888466892373,41.84786578409402,30 -87.61898982022942,41.8478137504702,30 -87.61909616988395,41.847763096818916,30 -87.61920368549623,41.84771383856648,30 -87.61931233432041,41.84766599071426,30 -87.6194220832657,41.84761956783404,30 -87.6195328989065,41.847574584063594,30 -87.61964474749256,41.84753105310242,30 -87.61975759495928,41.84748898820755,30 -87.61987140693807,41.84744840218947,30 -87.6199861487668,41.847409307408306,30 -87.62010178550035,41.84737171577001,30 -87.62021828192125,41.847335638722726,30 -87.62033560255045,41.847301087253356,30 -87.62045371165802,41.847268071884145,30 -87.62057257327407,41.847236602669554,30 -87.62069215119978,41.84720668919315,30 -87.62081240901826,41.84717834056474,30 -87.62093331010577,41.847151565417505,30 -87.6210548176428,41.84712637190548,30 -87.62117689462528,41.84710276770101,30 -87.62129950387585,41.847080759992416,30 -87.62142260805517,41.84706035548183,30 -87.62154616967332,41.84704156038317,30 -87.62167015110116,41.84702438042019,30 -87.62179451458178,41.847008820824776,30 -87.62191922224201,41.84699488633539,30 -87.62204423610399,41.84698258119557,30 -87.62216951809661,41.84697190915262,30 -87.62229503006724,41.84696287345656,30 -87.6224207337932,41.84695547685908,30 -87.62254659099352,41.84694972161268,30 -87.62267256334049,41.84694560947004,30 -87.62279861247134,41.846943141683425,30 -87.6229247,41.84694231900438,30 -87.62305078752865,41.846943141683425,30 -87.62317683665951,41.84694560947004,30 -87.62330280900647,41.84694972161268,30 -87.62342866620679,41.84695547685908,30 -87.62355436993276,41.84696287345656,30 -87.62367988190339,41.84697190915262,30 -87.62380516389601,41.84698258119557,30 -87.62393017775798,41.84699488633539,30 -87.62405488541822,41.847008820824776,30 -87.62417924889884,41.84702438042019,30 -87.62430323032667,41.84704156038317,30 -87.62442679194483,41.84706035548183,30 -87.62454989612415,41.847080759992416,30 -87.62467250537472,41.84710276770101,30 -87.6247945823572,41.84712637190548,30 -87.62491608989423,41.847151565417505,30 -87.62503699098174,41.84717834056474,30 -87.62515724880022,41.84720668919315,30 -87.62527682672592,41.847236602669554,30 -87.62539568834198,41.847268071884145,30 -87.62551379744954,41.847301087253356,30 -87.62563111807874,41.847335638722726,30 -87.62574761449964,41.84737171577001,30 -87.6258632512332,41.847409307408306,30 -87.62597799306192,41.84744840218947,30 -87.62609180504072,41.84748898820755,30 -87.62620465250744,41.84753105310242,30 -87.6263165010935,41.847574584063594,30 -87.6264273167343,41.84761956783404,30 -87.62653706567959,41.84766599071426,30 -87.62664571450377,41.84771383856648,30 -87.62675323011605,41.847763096818916,30 -87.62685957977058,41.8478137504702,30 -87.62696473107627,41.84786578409402,30 -87.62706865200681,41.8479191818437,30 -87.62717131091038,41.84797392745712,30 -87.62727267651921,41.848030004261624,30 -87.62737271795923,41.848087395179085,30 -87.6274714047593,41.84814608273116,30 -87.6275687068607,41.84820604904454,30 -87.6276645946261,41.8482672758564,30 -87.62775903884865,41.848329744520015,30 -87.62785201076095,41.84839343601039,30 -87.62794348204368,41.848458330930015,30 -87.6280334248343,41.84852440951488,30 -87.62812181173555,41.84859165164039,30 -87.62820861582377,41.8486600368275,30 -87.62829381065707,41.84872954424901,30 -87.62837737028342,41.848800152735855,30 -87.62845926924861,41.848871840783566,30 -87.62853948260387,41.84894458655881,30 -87.6286179859136,41.84901836790602,30 -87.62869475526279,41.849093162354194,30 -87.62876976726419,41.84916894712366,30 -87.62884299906561,41.84924569913309,30 -87.62891442835678,41.84932339500646,30 -87.62898403337617,41.849402011080194,30 -87.62905179291765,41.84948152341037,30 -87.62911768633688,41.849561907780014,30 -87.62918169355771,41.849643139706465,30 -87.62924379507824,41.84972519444883,30 -87.62930397197673,41.84980804701549,30 -87.62936220591743,41.84989167217177,30 -87.62941847915617,41.84997604444758,30 -87.62947277454575,41.85006113814516,30 -87.62952507554117,41.850146927346934,30 -87.62957536620466,41.85023338592338,30 -87.62962363121063,41.850320487541,30 -87.62966985585022,41.85040820567032,30 -87.62971402603586,41.850496513594024,30 -87.62975612830557,41.850585384415005,30 -87.62979614982707,41.85067479106458,30 -87.62983407840166,41.8507647063108,30 -87.62986990246802,41.850855102766644,30 -87.62990361110562,41.85094595289844,30 -87.62993519403821,41.85103722903422,30 -87.62996464163685,41.8511289033721,30 -87.62999194492285,41.851220947988836,30 -87.63001709557061,41.85131333484825,30 -87.63004008591004,41.851406035809816,30 -87.63006090892905,41.85149902263719,30 -87.63007955827557,41.851592267006886,30 -87.63009602825954,41.851685740516785,30 -87.6301103138547,41.85177941469489,30 -87.63012241070008,41.851873261007945,30 -87.63013231510132,41.85196725087014,30 -87.6301400240319,41.852061355651806,30 -87.63014553513396,41.85215554668815,30 -87.63014884671912,41.852249795288,30 -87.63014995776895,41.852344072742504,30 -87.63014886793533,41.852438350333884,30 -87.63014557754055,41.85253259934423,30 -87.63014008757717,41.852626791064175,30 -87.63013239970788,41.85272089680173,30 -87.63012251626483,41.85281488789089,30 -87.63011044024904,41.85290873570054,30 -87.63009617532948,41.85300241164301,30 -87.63007972584191,41.85309588718294,30 -87.63006109678766,41.85318913384581,30 -87.63004029383202,41.85328212322677,30 -87.63001732330264,41.85337482699914,30 -87.62999219218749,41.853467216923214,30 -87.62996490813283,41.8535592648547,30 -87.62993547944087,41.85365094275341,30 -87.62990391506722,41.85374222269174,30 -87.62987022461822,41.8538330768632,30 -87.629834418348,41.85392347759086,30 -87.62979650715535,41.85401339733586,30 -87.62975650258046,41.854102808705726,30 -87.62971441680135,41.8541916844627,30 -87.62967026263024,41.85427999753212,30 -87.62962405350957,41.85436772101065,30 -87.62957580350803,41.8544548281744,30 -87.62952552731615,41.85454129248714,30 -87.62947324024194,41.854627087608385,30 -87.62941895820619,41.854712187401425,30 -87.62936269773762,41.85479656594125,30 -87.62930447596788,41.85488019752246,30 -87.62924431062635,41.85496305666717,30 -87.62918222003466,41.85504511813262,30 -87.62911822310122,41.855126356919065,30 -87.6290523393154,41.855206748277226,30 -87.62898458874164,41.85528626771593,30 -87.62891499201336,41.85536489100956,30 -87.62884357032655,41.855442594205364,30 -87.62877034543351,41.85551935363087,30 -87.62869533963605,41.85559514590101,30 -87.6286185757789,41.85566994792534,30 -87.62854007724249,41.85574373691492,30 -87.62845986793609,41.85581649038946,30 -87.62837797229037,41.855888186183996,30 -87.62829441525,41.85595880245577,30 -87.6282092222661,41.856028317690836,30 -87.62812241928843,41.8560967107106,30 -87.6280340327575,41.856163960678295,30 -87.62794408959655,41.85623004710536,30 -87.62785261720327,41.85629494985764,30 -87.62775964344159,41.85635864916156,30 -87.62766519663303,41.85642112561011,30 -87.62756930554819,41.85648236016882,30 -87.62747199939794,41.856542334181476,30 -87.62737330782451,41.856601029375916,30 -87.62727326089251,41.85665842786953,30 -87.6271718890797,41.856714512174705,30 -87.62706922326777,41.85676926520421,30 -87.62696529473284,41.85682267027632,30 -87.62686013513606,41.85687471112002,30 -87.62675377651382,41.85692537187985,30 -87.6266462512681,41.8569746371208,30 -87.62653759215652,41.85702249183301,30 -87.6264278322824,41.857068921436344,30 -87.62631700508467,41.85711391178481,30 -87.62620514432764,41.85715744917091,30 -87.62609228409075,41.85719952032981,30 -87.62597845875811,41.85724011244334,30 -87.62586370300818,41.857279213144,30 -87.62574805180301,41.8573168105186,30 -87.62563154037768,41.857352893112,30 -87.62551420422957,41.857387449930556,30 -87.62539607910749,41.8574204704455,30 -87.62527720100083,41.8574519445961,30 -87.62515760612851,41.85748186279276,30 -87.62503733092808,41.857510215919966,30 -87.62491641204444,41.85753699533901,30 -87.6247948863188,41.85756219289068,30 -87.62467279077738,41.85758580089772,30 -87.62455016262015,41.857607812167146,30 -87.62442703920946,41.85762821999248,30 -87.62430345805872,41.857647018155824,30 -87.62417945682083,41.85766420092963,30 -87.62405507327682,41.85767976307859,30 -87.62393034532433,41.85769369986116,30 -87.62380531096595,41.85770600703101,30 -87.62368000829773,41.857716680838344,30 -87.62355447549751,41.85772571803098,30 -87.62342875081335,41.85773311585544,30 -87.62330287255175,41.8577388720577,30 -87.6231768790661,41.857742984883956,30 -87.62305080874486,41.857745453081044,30</coordinates>
+                    </LinearRing>
+                </outerBoundaryIs>
+            </Polygon>
+        </Placemark>
+        <Placemark id="340">
+            <name>Azimuth Line</name>
+            <styleUrl>#341</styleUrl>
+            <LineString id="339">
+                <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-87.6229247,41.8523443,30 -87.62229503006724,41.84696287345656,30</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="344">
+            <name/>
+            <description>Last Position
+NAME: Test – gps only yellow paddle w/ tag
+COORDINATE: 41.8458074,-87.80702
+TYPE: Locations
+BUSINESS: Urban Air
+SOURCE: Locations_test.xlsx
+ROW#: 62</description>
+            <styleUrl>#345</styleUrl>
+            <Point id="343">
+                <coordinates>-87.80702,41.8458074,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="349">
+            <name/>
+            <description>
+NAME: Test – full address/gps and address Intel Important
+COORDINATE: 41.82621495,-87.8192555677286
+Riverside Public Library, 1 Burling Rd, Riverside, IL 60546
+TAG: Important
+TYPE: Locations
+BUSINESS: Riverside Public Library
+SOURCE: Locations_test.xlsx
+ROW#: 63</description>
+            <styleUrl>#350</styleUrl>
+            <Point id="348">
+                <coordinates>-87.8192555677286,41.82621495,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="355">
+            <name/>
+            <description>
+NAME: Test – Car2 coordinate only
+COORDINATE: 41.9629122,-87.8814396
+ADDRESS: Montrose Avenue, O'Hare, Chicago, Jefferson Township, Cook County, Illinois, 60176, United States
+TYPE: Locations
+SOURCE: Locations_test.xlsx
+ROW#: 64</description>
+            <styleUrl>#356</styleUrl>
+            <Point id="354">
+                <coordinates>-87.8814396,41.9629122,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="360">
+            <name/>
+            <description>
+NAME: Test – Home coordinate only
+COORDINATE: 41.8923463,-87.8031364
+ADDRESS: 313, North Marion Street, Samuel A Rothermel Houses, Oak Park, Cook County, Illinois, 60302, United States
+TYPE: Locations
+SOURCE: Locations_test.xlsx
+ROW#: 65</description>
+            <styleUrl>#361</styleUrl>
+            <Point id="359">
+                <coordinates>-87.8031364,41.8923463,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
+            </Point>
+        </Placemark>
+        <Placemark id="365">
+            <name/>
             <description>Little Red Schoolhouse Nature Center
 NAME: Test – gps / address Searched
+COORDINATE: 41.7090584,-87.877258885395
 Little Red Schoolhouse Nature Center, 9800 Willow Springs Rd, Willow Springs, IL 60480
 TAG: Review
 TYPE: Searched Items
-Business: Little Red Schoolhouse Nature Center
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#154</styleUrl>
-            <Point id="152">
-                <coordinates>-87.877258885395,41.7090584,0.0</coordinates>
+BUSINESS: Little Red Schoolhouse Nature Center
+SOURCE: Locations_test.xlsx
+ROW#: 66</description>
+            <styleUrl>#366</styleUrl>
+            <Point id="364">
+                <coordinates>-87.877258885395,41.7090584,</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="159">
-            <name>32</name>
-            <description>
-NAME: Test – full address/gps and address Intel Important
-Riverside Public Library, 1 Burling Rd, Riverside, IL 60546
-TAG: Important
-Business: Riverside Public Library
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#160</styleUrl>
-            <Point id="158">
-                <coordinates>-87.8192555677286,41.82621495,0.0</coordinates>
+        <Placemark id="371">
+            <name/>
+            <description>test
+NAME: test
+COORDINATE: 34.0304049,50.6707877,17
+End Time: test
+test
+HWY NAME: test
+DIRECTION: test
+TAG: test
+TYPE: test / test / test
+BUSINESS: test
+PLATE: test
+CASE: test
+ALTITUDE: 17
+SOURCE: Locations_test.xlsx
+ROW#: 67</description>
+            <styleUrl>#372</styleUrl>
+            <Point id="370">
+                <coordinates>50.6707877,34.0304049,17</coordinates>
+                <altitudeMode>relativeToGround</altitudeMode>
             </Point>
         </Placemark>
-        <Placemark id="165">
-            <name>33</name>
-            <description>
-NAME: Test – Car2 coordinate only
-ADDRESS: Montrose Avenue, O'Hare, Chicago, Jefferson Township, Cook County, Illinois, 60176, United States
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#166</styleUrl>
-            <Point id="164">
-                <coordinates>-87.8814396,41.9629122,0.0</coordinates>
+        <Placemark id="377">
+            <name>_start</name>
+            <description/>
+            <Point id="376">
+                <coordinates>test,test,0.0</coordinates>
             </Point>
         </Placemark>
-        <Placemark id="170">
-            <name>34</name>
-            <description>
-NAME: Test – Home coordinate only
-ADDRESS: 313, North Marion Street, Samuel A Rothermel Houses, Oak Park, Cook County, Illinois, 60302, United States
-SOURCE: locations_test.xlsx</description>
-            <styleUrl>#171</styleUrl>
-            <Point id="169">
-                <coordinates>-87.8031364,41.8923463,0.0</coordinates>
-            </Point>
+        <Placemark id="379">
+            <name>trip line</name>
+            <styleUrl>#380</styleUrl>
+            <LineString id="378">
+                <coordinates>50.6707877,34.0304049,0.0 test,test,0.0</coordinates>
+            </LineString>
         </Placemark>
     </Document>
 </kml>

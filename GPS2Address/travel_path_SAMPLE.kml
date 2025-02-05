@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="383">
+        <Folder id="384">
+            <Style id="387">
+                <LineStyle id="388">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="391">
+                <LineStyle id="392">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="395">
+                <LineStyle id="396">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="399">
+                <LineStyle id="400">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="403">
+                <LineStyle id="404">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="407">
+                <LineStyle id="408">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="411">
+                <LineStyle id="412">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="415">
+                <LineStyle id="416">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="419">
+                <LineStyle id="420">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="423">
+                <LineStyle id="424">
+                    <color>ff0000ff</color>
+                    <colorMode>normal</colorMode>
+                    <width>2</width>
+                </LineStyle>
+            </Style>
+            <Style id="426">
+                <IconStyle id="427">
+                    <colorMode>normal</colorMode>
+                    <scale>0</scale>
+                    <heading>0</heading>
+                    <Icon id="428">
+                        <href/>
+                    </Icon>
+                </IconStyle>
+            </Style>
+            <Style id="429"/>
+            <StyleMap id="425">
+                <Pair>
+                    <key>normal</key>
+                    <styleUrl>#426</styleUrl>
+                </Pair>
+                <Pair>
+                    <key>highlight</key>
+                    <styleUrl>#429</styleUrl>
+                </Pair>
+            </StyleMap>
+            <name>travel_path</name>
+            <styleUrl>#425</styleUrl>
+            <Placemark id="386">
+                <styleUrl>#387</styleUrl>
+                <LineString id="385">
+                    <coordinates>-87.6213478,41.7625038,0.0 -87.6326,41.8529,0.0</coordinates>
+                </LineString>
+            </Placemark>
+            <Placemark id="390">
+                <styleUrl>#391</styleUrl>
+                <LineString id="389">
+                    <coordinates>-87.6326,41.8529,0.0 -87.5972,41.8056,0.0</coordinates>
+                </LineString>
+            </Placemark>
+            <Placemark id="394">
+                <styleUrl>#395</styleUrl>
+                <LineString id="393">
+                    <coordinates>-87.5972,41.8056,0.0 -87.76324840980894,41.821174151816635,0.0</coordinates>
+                </LineString>
+            </Placemark>
+            <Placemark id="398">
+                <styleUrl>#399</styleUrl>
+                <LineString id="397">
+                    <coordinates>-87.76324840980894,41.821174151816635,0.0 -87.8651,41.9742,0.0</coordinates>
+                </LineString>
+            </Placemark>
+            <Placemark id="402">
+                <styleUrl>#403</styleUrl>
+                <LineString id="401">
+                    <coordinates>-87.9437624,41.8485625,0.0 -88.0377624,41.7330625,0.0</coordinates>
+                </LineString>
+            </Placemark>
+            <Placemark id="406">
+                <styleUrl>#407</styleUrl>
+                <LineString id="405">
+                    <coordinates>-87.673827,41.920103,0.0 -87.731145,41.954183,0.0</coordinates>
+                </LineString>
+            </Placemark>
+            <Placemark id="410">
+                <styleUrl>#411</styleUrl>
+                <LineString id="409">
+                    <coordinates>-87.731145,41.954183,0.0 -87.74732,41.951087,0.0</coordinates>
+                </LineString>
+            </Placemark>
+            <Placemark id="414">
+                <styleUrl>#415</styleUrl>
+                <LineString id="413">
+                    <coordinates>-87.74732,41.951087,0.0 -87.7534868,41.9497736,0.0</coordinates>
+                </LineString>
+            </Placemark>
+            <Placemark id="418">
+                <styleUrl>#419</styleUrl>
+                <LineString id="417">
+                    <coordinates>-87.8291374,41.7394375,0.0 -87.8328635429077,41.7431510003286,0.0</coordinates>
+                </LineString>
+            </Placemark>
+            <Placemark id="422">
+                <styleUrl>#423</styleUrl>
+                <LineString id="421">
+                    <coordinates>-87.8328635429077,41.7431510003286,0.0 -87.8369635429077,41.7431510003286,0.0</coordinates>
+                </LineString>
+            </Placemark>
+        </Folder>
+    </Document>
+</kml>
