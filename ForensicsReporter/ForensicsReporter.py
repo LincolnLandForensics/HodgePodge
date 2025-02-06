@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.0.9'
+version = '3.2.3'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1971,7 +1971,7 @@ ________________________________________________________________________________
 
 Note:
 
-Data contained in these findings may be sensitive, confidential, or in some cases offensive. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing is not authorized.
+Data contained in these findings may be sensitive or confidential. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing is not authorized.
 
 Executive Summary 
 
@@ -2022,6 +2022,12 @@ Item {exhibit}
         if phoneIMEI and phoneIMEI not in {'NA', 'na', 'N/A'}:
             report = f"{report} (IMEI: {phoneIMEI})"
 
+        if phone2 and phone2 not in {'NA', 'na', 'N/A'}: # test
+            report = f"{report} (MSISDN2: {phone2})"
+
+        if phoneIMEI2 and phoneIMEI2 not in {'NA', 'na', 'N/A'}: # test
+            report = f"{report} (IMEI2: {phoneIMEI2})"
+            
         if serial:
             report = f"{report} (S/N: {serial})"
 
@@ -2157,9 +2163,9 @@ Item {exhibit}
             # report = ("%s A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. " %(report))  
         # Analysis tool processing
         if analysisTool and analysisTool2:
-            report = f"{report} The image was processed with {analysisTool} and further analyzed with {analysisTool2}. The forensic image hash value was verified prior to processing therby confirming the data remained unaltered prior to processing."
+            report = f"{report} The image was processed with {analysisTool} and further analyzed with {analysisTool2}. The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
         elif analysisTool:
-            report = f"{report} The image was processed with {analysisTool}.  The forensic image hash value was verified prior to processing therby confirming the data remained unaltered prior to processing."
+            report = f"{report} The image was processed with {analysisTool}.  The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
 
         # Username and password to report
         if userName and userPwd and exhibitType:
