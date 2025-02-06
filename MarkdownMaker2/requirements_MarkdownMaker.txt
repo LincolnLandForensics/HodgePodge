@@ -1,0 +1,12 @@
+docx
+PyMuPDF
+ExifRead
+striprtf
+msg_parser
+extract-msg
+markdownify
+email
+shutil
+hashlib
+python-pptx
+nsmap

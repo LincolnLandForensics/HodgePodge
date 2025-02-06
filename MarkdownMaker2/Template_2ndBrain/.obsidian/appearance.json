@@ -1,0 +1,9 @@
+{
+  "theme": "obsidian",
+  "accentColor": "#5cb2f5",
+  "interfaceFontFamily": "Times New Roman",
+  "textFontFamily": "Times New Roman",
+  "monospaceFontFamily": "Times New Roman",
+  "baseFontSize": 10,
+  "baseFontSizeAction": true
+}
