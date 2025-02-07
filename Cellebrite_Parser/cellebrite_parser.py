@@ -58,7 +58,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert Cellebrite contacts, account, web history, chats and call exports to intel format"
-version = '1.0.2'
+version = '1.0.4'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -230,6 +230,7 @@ def clean_phone(phone):
   Returns:
     True if the string is a valid phone number, False otherwise.
     """
+    phone = phone.lstrip('1')   # test
     phone = re.sub(r'[-+ \(\)]', '', phone).strip() 
     # phone = phone.replace('+', '').replace('-', '').replace('(', '').replace(')', '').replace(' ', '')
 
@@ -602,7 +603,8 @@ def read_cellebrite(input_xlsx):
             phone = ''
 
         phone = phone.replace('-', '')
-        
+
+
         if phone == '':
             phone = row_data.get("Phone Number(s)")
             if phone is None:
@@ -1234,10 +1236,14 @@ STATUS:{status}
 
         if phone.startswith('+'):
             phone = phone.replace('+', '')
-
+        if phone.startswith('1'):
+            phone = phone.replace('1', '')  # test
                     
         # phone cleanup
         phone = clean_phone(phone)
+        phone = phone.lstrip('1')
+        if phone.startswith('1'):
+            phone = phone[1:]
 
 
 # cleanup cells # test
@@ -1472,6 +1478,7 @@ if __name__ == '__main__':
 
 """
 
+1.0.4 - left strip 1 off phone numbers for uniformity.
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
