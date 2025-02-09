@@ -1,5 +1,5 @@
 
-# BleRX_parser.py
+# HackRF_parser.py
 
 parse HackRF Mac Address logs
 
@@ -11,11 +11,11 @@ This is where this parser might come in handy, by identifying the company that m
 
 Eventually I might be able to decode the device type (ex. phone)
 
-Eventually I might add the ability to whitelist out known Mac's so you don't track something that you brought to the party.
+whitelist out known Mac's so you don't track something that you brought to the party.
 
 
 ## Example:
-    python BleRX_parser.py -p -I H:\BLERX\Lists -O output_BleRX.xlsx
+    python HackRF_parser.py -p -I H:\BLERX\Lists -O output_BleRX.xlsx
 
 
 ## Installation:
@@ -32,7 +32,7 @@ pip install openpyxl
 
 
 ```
-python BleRX_parser.py
+python HackRF_parser.py
 ```
 
 
@@ -44,6 +44,22 @@ Bluetooth was captured with HackRF Porta pack h4
 Install a Comet antenna (insert correct length here)
 turn on HackRF
 (Receive)(BLE RX)
+
+Logs are saved in: H:\BLERX\Lists\*.csv
+
+and
+
+Logs are saved in: H:\BLERX\Logs\*.txt
+
+additional logs to parse:
+H:\LOGS\ADSB.TXT
+H:\LOGS\AIS.TXT
+H:\LOGS\random.TXT
+H:\LOGS\TPMS.TXT
+H:\LOGS\APRS.TXT
+
+
+
 
 ![sample output](Images/HackRF_BLE_RX.jpg)
 

@@ -7,12 +7,15 @@
 
 # import re
 import os
+import re
 import csv
 import sys
+import glob  # Import the glob module for pattern matching
+import shutil   
 import binascii
 from datetime import datetime
 import argparse
-import openpyxl
+import openpyxl # pip install openpyxl
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import PatternFill
 
@@ -45,13 +48,21 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "parse HackRF Mac Address logs"
-version = '0.1.2'
+version = '0.1.4'
+
+global hackRF_drive
+hackRF_drive= 'H'
+
+global logfolder
+logfolder=r'D:\Forensics\scripts\python\Logs'
+
 
 global companies
 companies = {
-        "74:EC:B2": "Amazon Technologies Inc.222222",
+        "74:EC:B2": "Amazon Technologies Inc.",
         "E4:F0:42": "Google, Inc.",
-        "A0:D7:F3": "Samsung Electronics Co.,Ltd"
+        "A0:D7:F3": "Samsung Electronics Co.,Ltd",
+        "D4:3A:2C": "Google, Inc."
     }
 
 
@@ -61,7 +72,9 @@ def main():
     # row = 0
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-b', '--blank', help='blank sheet', required=False, action='store_true')
-    parser.add_argument('-p', '--parse', help='parse text', required=False, action='store_true')
+    parser.add_argument('-C', '--clear', help='clear logs off the HackRF', required=False, action='store_true')    
+    parser.add_argument('-L', '--logs', help='log grabber', required=False, action='store_true')
+    parser.add_argument('-p', '--parse', help='parse text', required=False, action='store_true')    
     parser.add_argument('-I', '--input', help='', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
 
@@ -69,7 +82,7 @@ def main():
 
     global output_xlsx
     if not args.output: 
-        output_xlsx = f"output_BleRX.xlsx"        
+        output_xlsx = f"output_HackRF.xlsx"        
     else:
         output_xlsx = args.output    
     
@@ -77,7 +90,6 @@ def main():
     if not args.input: 
         # input_folder = "logs"  
         input_folder = "D:\Forensics\scripts\python\Logs" 
-
 
         
     else:
@@ -87,7 +99,10 @@ def main():
         data = []
         data2 = []
         write_xlsx(data,data2)
-
+    elif args.logs:
+        log_grab()
+    elif args.clear:
+        clear_logs()        
     elif args.parse:
         companies_read()
         output_excel_path = 'output_pdfs.xlsx'
@@ -135,6 +150,37 @@ def BLE_Data_Translate(data):
     
     return length, ad_type, company_id, raw_data
 
+def clear_logs():
+    # Prompt user for drive letter, use default if left blank
+    drive = input(f"\nIf you continue, you will delete HackRF logs!\n\nEnter the drive letter where HackRF is plugged in (default is {hackRF_drive}): \n").strip().lower()
+    if not drive:
+        drive = hackRF_drive.lower()
+
+    # Paths for .csv and .txt files
+    source_csv = f"{drive.upper()}:/BLERX/Lists/*.csv"
+    source_txt_1 = f"{drive.upper()}:/BLERX/LOGS/*.TXT"
+    source_txt_2 = f"{drive.upper()}:/LOGS/*.TXT"
+    
+    # Delete .csv files
+    for file in glob.glob(source_csv):
+        os.remove(file)  # Remove the file
+        print(f"Deleted: {file}")
+
+    # Delete .txt files from BLERX/LOGS
+    for file in glob.glob(source_txt_1):
+        os.remove(file)  # Remove the file
+        print(f"Deleted: {file}")
+        
+    # Delete .txt files from LOGS
+    for file in glob.glob(source_txt_2):
+        os.remove(file)  # Remove the file
+        print(f"Deleted: {file}")
+
+    # Optional: Display a message indicating the logs have been deleted
+    msg_blurb = (f'HackRF logs have been deleted from the drive {drive.upper()}')
+    msg_blurb_square(msg_blurb, color_green)
+
+    
 def company_lookup(mac_address):
     company = ''
 
@@ -171,6 +217,40 @@ def iso8601_timestamp(timestamp):
         # print(f"Error processing timestamp {timestamp}: {e}")
         return timestamp
 
+def log_grab():
+    # Prompt user for drive letter, use default if left blank
+    drive = input(f"\nEnter the drive letter where HackRF is plugged in (default is {hackRF_drive}): \n").strip().lower()
+    if not drive:
+        drive = hackRF_drive.lower()
+
+    # Paths for .csv and .txt files
+    source_csv = f"{drive.upper()}:/BLERX/Lists/*.csv"
+    source_txt_1 = f"{drive.upper()}:/BLERX/LOGS/*.TXT"
+    source_txt_2 = f"{drive.upper()}:/LOGS/*.TXT"
+    
+    # Create the log folder if it doesn't exist
+    if not os.path.exists(logfolder):
+        os.makedirs(logfolder)
+
+    # Copy .csv files to log folder
+    for file in glob.glob(source_csv):
+        shutil.copy(file, logfolder)
+        print(f"Copied: {file}")
+
+    # Copy .txt files from BLERX/LOGS to log folder
+    for file in glob.glob(source_txt_1):
+        shutil.copy(file, logfolder)
+        print(f"Copied: {file}")
+        
+    # Copy .txt files from LOGS to log folder
+    for file in glob.glob(source_txt_2):
+        shutil.copy(file, logfolder)
+        print(f"Copied: {file}")
+
+    msg_blurb = (f'HackRF logs copied to {logfolder}')
+    msg_blurb_square(msg_blurb, color_green)        
+
+        
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
     empty_line = f"| {' ' * (len(msg_blurb))} |"
@@ -204,103 +284,222 @@ def packet_lookup(msg_type):
     }
 
     # Check if the msg_type exists in the dictionary, if yes return the description
-    return packet_details.get(msg_type, "Message type not found.")
+    return packet_details.get(msg_type, "")
 
     
 def text_parse(input_folder, output_excel_path):
     data = []
     data2 = []
+    data3 = []
     mac_uniq = []
     
     # Read and process each .txt file in the folder
     for file_name in os.listdir(input_folder):
+        file_path = os.path.join(input_folder, file_name)
         print(f'reading {file_name}')    # temp
 
-        if file_name.lower().endswith('.csv'):  # Check for .txt extension
-            with open(os.path.join(input_folder, file_name), "r") as file:
-                for line in file:
+            # file_name = 'mac-vendors-export.csv'
+      
+        
+        
+        if file_name.lower().endswith('.csv') and os.path.exists(file_path):
+            # with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+            with open(file_path, mode='r', newline='', encoding='ISO-8859-1') as file:
+                reader = csv.reader(file)
+                # next(reader)  # Skip the header row
+                for row in reader:
+                    timestamp, mac_address, name, msg_type, dta, hits = '', '', '', '', '', ''
+                    db, channel, length, company, device_type, p_description = '', '', '', '', '', ''
+                    whitelist = ''
+
                     row_data = {}
                     row_data2 = {}
-                    (timestamp, mac_address, name, msg_type, dta, hits)  = ('', '', '', '', '', '')
-                    (db, channel, length, company, device_type, p_description) = ('', '', '', '', '', '')
-                    (whitelist) = ('')
-                    parts = line.strip().split(",")
-                    if len(parts) >= 5:
-                        try:
-                            timestamp = parts[0] # if len(parts) > 0 else ""
-                            mac_address = parts[1] # if len(parts) > 0 else "" 
-                            name = parts[2] #  if len(parts) > 0 else "" 
-                            msg_type = parts[3] if len(parts) > 1 else ""
-                            dta = parts[4]  # .lstrip('Data:') # .split(":")[1] if len(parts) > 7 and ":" in parts[7] else ""
-                            hits = parts[5] # .lstrip('Data:') # .split(":")[1] if len(parts) > 7 and ":" in parts[7] else ""
-                            db = parts[6]   # .lstrip('Data:') # .split(":")[1] if len(parts) > 7 and ":" in parts[7] else ""
-                            channel = parts[7]
+                    row_data3 = {}
 
-                            timestamp = iso8601_timestamp(timestamp).replace('T', '')
-                        except IndexError:
-                            print(f"Skipping malformed line: {line.strip()}")
-                        if name.startswith('0x1'):
-                            name = ''
-                            
-                        if msg_type != '':
-                            p_description = packet_lookup(msg_type)                            
+                    timestamp = row[0]
+                    mac_address = row[1]
+                    name = row[2]
+                    msg_type = row[3]
+                    dta = row[4]
+                    hits = row[5]                    
+                    db = row[6]                    
+                    channel = row[7]  
+                    mac_address = mac_address[:17]
+                    
+                    try:
+                        blah = 'blah'
+                        # timestamp = row[0]
+                        # mac_address = row[1]
+                        # name = row[2]
+                        # msg_type = row[3]
+                        # dta = row[4]
+                        # hits = row[5]                    
+                        # db = row[6]                    
+                        # channel = row[7]  
+                        # mac_address = mac_address[:17]                        
+                    except Exception as e:
+                        print(f"Error processing line : {e}")
 
-                        mac_address = mac_address[:17]
+                    if name.startswith('0x1'):
+                        name = ''
+                    company = company_lookup(mac_address)
+                    if msg_type != '':
+                        p_description = packet_lookup(msg_type)                        
+                    (whitelist) =  whitelist_check(mac_address, name)
+                    if mac_address not in mac_uniq and "imestamp" not in timestamp:
+                        # (whitelist) =  whitelist_check(mac_address, name)
+                        mac_uniq.append(mac_address)
+
+                        row_data2["Time"] = timestamp
+                        row_data2["MAC Address"] = mac_address
+                        row_data2["Name"] = name
+                        # row_data2["Packet Type"] = msg_type
+                        # row_data2["Data"] = dta
+                        row_data2["Hits"] = hits
+                        row_data2["dB"] = db
+                        row_data2["Channel"] = channel  
+                        # row_data2["length"] = length
+                        row_data2["company"] = company
+                        row_data2["Device Type"] = device_type
+                        row_data2["origin_file"] = file_name
+                        row_data2["whitelist"] = whitelist    
                         
-                        if mac_address not in mac_uniq:
-                            company = company_lookup(mac_address)
+                        row_data2["file_name"] = file_name
+                        row_data2["whitelist"] = whitelist
+                        data2.append(row_data2)
 
-
-                        # Check if the mac_address is not already in the mac_uniq list
-                        if mac_address not in mac_uniq and "imestamp" not in timestamp:
-                            mac_uniq.append(mac_address)
-
-                            row_data2["Timestamp"] = timestamp
-                            row_data2["MAC Address"] = mac_address
-                            row_data2["Name"] = name
-                            # row_data2["Packet Type"] = msg_type
-                            # row_data2["Data"] = dta                        
-                            row_data2["Hits"] = hits                        
-                            row_data2["dB"] = db                        
-                            row_data2["Channel"] = channel  
-                            # row_data2["length"] = length
-                            row_data2["company"] = company
-                            row_data2["Device Type"] = device_type
-                            # row_data2["File Name"] = file_name
-                            # row_data2["Packet Description"] = p_description                            
+                    if "imestamp" not in timestamp:
+                        row_data["Time"] = timestamp
+                        row_data["MAC Address"] = mac_address
+                        row_data["Name"] = name
+                        row_data["Packet Type"] = msg_type
+                        row_data["Data"] = dta
+                        row_data["Hits"] = hits
+                        row_data["dB"] = db
+                        row_data["Channel"] = channel  
+                        row_data["length"] = length
+                        row_data["company"] = company
+                        row_data["Device Type"] = device_type
+                        row_data["origin_file"] = file_name
+                        row_data["Packet Description"] = p_description    
+                        row_data["file_name"] = file_name
+                        row_data["whitelist"] = whitelist
+                        data.append(row_data)                            
                             
-                            row_data2["file_name"] = file_name
-                            row_data2["whitelist"] = whitelist
-                            data2.append(row_data2)
-                        
-                        if "imestamp" not in timestamp:
-                            row_data["Timestamp"] = timestamp
-                            row_data["MAC Address"] = mac_address
-                            row_data["Name"] = name
-                            row_data["Packet Type"] = msg_type
-                            row_data["Data"] = dta                        
-                            row_data["Hits"] = hits                        
-                            row_data["dB"] = db                        
-                            row_data["Channel"] = channel  
-                            row_data["length"] = length
-                            row_data["company"] = company
-                            row_data["Device Type"] = device_type
-                            row_data["File Name"] = file_name
-                            row_data["Packet Description"] = p_description                            
-                            row_data["file_name"] = file_name
-                            row_data["whitelist"] = whitelist
-                            data.append(row_data)
-
+                            
         elif file_name.lower().endswith('.txt'):  # Check for .txt extension
             with open(os.path.join(input_folder, file_name), "r") as file:
                 for line in file:
+                    line = line.strip()
+                    
                     row_data = {}
+                    row_data2 = {}
+                    row_data3 = {}
                     (timestamp, mac_address, name, msg_type, dta, hits)  = ('', '', '', '', '', '')
                     (db, channel, length, company, device_type, p_description) = ('', '', '', '', '', '')
-                    (length2, ad_type, company_id, raw_data) = ('', '', '', '')
+                    (length2, Type, company_id, raw_data) = ('', 'plane', '', '')
                     (whitelist) = ('')
                     parts = line.strip().split(" ")
-                    if len(parts) >= 5:
+                    
+                    if line.strip() == '':
+                        blah = 'blah'
+                    elif file_name == 'ADSB.TXT':
+                        (timestamp, Latitude, Longitude, Coordinate, Type, origin_file) = ('', '', '', '', 'ADS-B', '')
+                        (Plate, Direction, Icon, ICAO, name, note, Altitude) = ('', '', '', '', '', '', '')
+                        (hit, lvl, speed, amp, age, Callsign) = ('', '', '', '', '', '')
+                        (HexID) = ('')
+                        
+                        match1 = re.search(r'Alt:(\d+)', line)
+                        match2 = re.search(r'Lat:([-+]?\d*\.\d+|\d+)', line)
+                        match3 = re.search(r'Lon:([-+]?\d*\.\d+|\d+)', line)
+
+                        if match1:
+                            Altitude = int(match1.group(1)) 
+
+                        if match2:
+                            Latitude = str(match2.group(1))
+
+                        if match3:
+                            Longitude = float(match3.group(1))
+
+                        try:
+                            timestamp = parts[0] if len(parts) > 0 else ""
+                            dta = parts[1] if len(parts) > 1 else ""
+                            name = parts[2] if len(parts) > 2 else ""
+                            if 'Alt:' in name:
+                                name = ''
+                            timestamp = iso8601_timestamp(timestamp).replace('T', ' ')
+                        except IndexError:
+                            print(f"Skipping malformed line: {line.strip()}")
+                        if 'ICAO:' in dta:
+                            HexID = dta.split('ICAO:')[1]
+                            p_description = HexID
+                            dta = dta.split('ICAO:')[0] 
+                            
+                        Callsign = name
+                        
+                        row_data["Time"] = timestamp
+                        row_data["Name"] = name
+                        row_data["Packet Description"] = p_description    
+                        row_data["Data"] = dta  
+                        row_data["origin_file"] = file_name
+                        row_data["Type"] = Type                         
+                        row_data["Latitude"] = Latitude
+                        row_data["Longitude"] = Longitude
+                        row_data["Altitude"] = Altitude                        
+
+                        row_data["Callsign"] = Callsign
+                        row_data["Hits"] = hits                        
+                        row_data["dB"] = db                        
+                        data.append(row_data)
+
+                    elif file_name == 'APRS.TXT':
+                        (timestamp, name, Type, dta) = ('', '', 'APRS', '')
+
+                        try:
+                            timestamp = parts[0] if len(parts) > 0 else ""
+                            dta = parts[1] if len(parts) > 1 else ""
+                            name = parts[2] if len(parts) > 2 else ""
+                        except IndexError:
+                            print(f"Skipping malformed line: {line.strip()}")
+
+                        row_data["Time"] = timestamp
+                        row_data["Name"] = name
+                        row_data["Data"] = dta  
+                        row_data["origin_file"] = file_name
+                        row_data["Type"] = Type                         
+                        data.append(row_data)
+
+                    elif file_name == 'TPMS.TXT':
+                        (timestamp, name, Type, dta, company) = ('', '', 'TPMS', '', '')
+
+                        try:
+                            timestamp = parts[0] if len(parts) > 0 else ""
+                            dta = line.strip()
+                            if '  ' in dta:
+                                dta = dta.split('  ')[1]
+                            name = parts[6] if len(parts) > 6 else ""
+                            company = parts[7] if len(parts) > 7 else ""
+                            if '/' in company:
+                                company = company.split('/')[0]
+                        except IndexError:
+                            print(f"Skipping malformed line: {line.strip()}")
+                        
+                        if ' FSK ' in line:
+                            p_description = "FSK"
+                        timestamp = iso8601_timestamp(timestamp).replace('T', ' ')
+                        
+                        row_data["Time"] = timestamp
+                        row_data["Name"] = name
+                        row_data["Data"] = dta  
+                        row_data["origin_file"] = file_name
+                        row_data["Packet Description"] = p_description 
+                        row_data["company"] = company 
+                        row_data["Type"] = Type                         
+                        data.append(row_data)
+                    
+                    elif len(parts) >= 5:
+
                         try:
                             timestamp = parts[0] if len(parts) > 0 else ""
                             msg_type = parts[1] if len(parts) > 1 else ""
@@ -315,40 +514,34 @@ def text_parse(input_folder, output_excel_path):
 
                         if msg_type != '':
                             p_description = packet_lookup(msg_type)
-                        
-                        # Check if the mac_address is not already in the mac_uniq list
+
                         if mac_address not in mac_uniq:
                             mac_uniq.append(mac_address)
-                            
-                        if mac_address not in mac_uniq:
-                            company = company_lookup(mac_address)
+                        company = company_lookup(mac_address)    
+                        # if mac_address not in mac_uniq:
+                            # company = company_lookup(mac_address)
 
-                        # length2, ad_type, company_id, raw_data = BLE_Data_Translate(dta)
                         length2, ad_type, company_id, raw_data = BLE_Data_Translate(dta)
-
+                        
                         if mac_address not in mac_uniq and "imestamp" not in timestamp:
                             mac_uniq.append(mac_address)
+                            (whitelist) =  whitelist_check(mac_address, name)
 
-                            row_data2["Timestamp"] = timestamp
+                            row_data2["Time"] = timestamp
                             row_data2["MAC Address"] = mac_address
                             row_data2["Name"] = name
-                            # row_data2["Packet Type"] = msg_type
-                            # row_data2["Data"] = dta                        
+                    
                             row_data2["Hits"] = hits                        
                             row_data2["dB"] = db                        
                             row_data2["Channel"] = channel  
-                            # row_data2["length"] = length
                             row_data2["company"] = company
                             row_data2["Device Type"] = device_type
-                            # row_data2["File Name"] = file_name
-                            # row_data2["Packet Description"] = p_description                            
-                            
                             row_data2["file_name"] = file_name
-
+                            row_data2["whitelist"] = whitelist
                             data2.append(row_data2)
                         
                         
-                        row_data["Timestamp"] = timestamp
+                        row_data["Time"] = timestamp
                         row_data["MAC Address"] = mac_address
                         row_data["Name"] = name
                         row_data["Packet Type"] = msg_type
@@ -360,20 +553,54 @@ def text_parse(input_folder, output_excel_path):
                         row_data["company"] = company
                         row_data["file_name"] = file_name
                         row_data["Device Type"] = device_type
-                        row_data["File Name"] = file_name
+                        row_data["origin_file"] = file_name
                         row_data["Packet Description"] = p_description
                         row_data["Length2"] = length2                        
-                        row_data["ad_type"] = ad_type 
+                        row_data["Type"] = ad_type 
                         row_data["company_id"] = company_id 
                         row_data["raw_data"] = raw_data
                         row_data["whitelist"] = whitelist
                         data.append(row_data)
 
+                    else:
+                        (timestamp, name, Type, dta, company) = ('', '', '', '', '')
+
+                        try:
+                            dta = line.strip()
+                            timestamp = parts[0] if len(parts) > 0 else ""
+                        except IndexError:
+                            print(f"Skipping malformed line: {line.strip()}")
+
+                        timestamp = iso8601_timestamp(timestamp).replace('T', ' ')
+                        
+                        row_data["Time"] = timestamp
+                        row_data["Data"] = dta  
+                        row_data["origin_file"] = file_name
+                       
+                        data.append(row_data)                        
                         
       
     print(f'\n{len(mac_uniq)} mac addresses found')    
     write_xlsx(data, data2)
 
+
+def whitelist_check(mac_address, name):
+    # Check if the CSV file exists
+    whitelist, description =  '', ''
+    whitelist_file = 'whitelist.csv'
+    if os.path.exists(whitelist_file):
+        # Read the CSV file and update the companies dictionary
+        with open(whitelist_file, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            next(reader)  # Skip the header row
+            for row in reader:
+                mac = row[0]
+                description = row[1]
+                if mac_address == mac:
+                    whitelist = description
+
+    return whitelist
+    
 def write_xlsx(data, data2):
 
     global workbook
@@ -386,8 +613,8 @@ def write_xlsx(data, data2):
     worksheet.freeze_panes = 'B2'  # Freeze cells
     worksheet.selection = 'B2'
 
-    headers = ["Timestamp", "MAC Address", "Name", "Packet Description", "Data", "Hits", "dB", "Channel", "length", "company", "Device Type", "File Name", "Packet Type", "Length2"
-    ,"ad_type", "company_id", "raw_data", "whitelist"
+    headers = ["Time", "MAC Address", "Name", "Packet Description", "Data", "Hits", "dB", "Channel", "length", "company", "Device Type", "origin_file", "Packet Type", "Length2"
+    ,"Type", "company_id", "raw_data", "whitelist", "Latitude", "Longitude", "Altitude"
     ]
 
 
@@ -422,6 +649,12 @@ def write_xlsx(data, data2):
     worksheet.column_dimensions['L'].width = 12  # 
     worksheet.column_dimensions['M'].width = 24  # 
 
+    worksheet.column_dimensions['S'].width = 14  # 
+    worksheet.column_dimensions['T'].width = 14  # 
+    worksheet.column_dimensions['U'].width = 9  # 
+    
+    
+    
     for row_index, row_data in enumerate(data):
         for col_index, col_name in enumerate(headers):
             cell_data = row_data.get(col_name)
@@ -493,7 +726,9 @@ def usage():
     print(f'{file} Version: {version} by {author}')
     print(f'\n    {color_yellow}insert your .txt files into the {input_folder} folder')
     print(f'\nExample:')
-    print(f'    {file} -b')     
+    print(f'    {file} -b')  
+    print(f'    {file} -C')     
+    print(f'    {file} -L')      
     print(f'    {file} -p') 
     print(f'    {file} -p -I logs -O output_.xlsx ')     
 
@@ -504,31 +739,47 @@ if __name__ == "__main__":
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+0.1.3 - create a list of unique Mac addresses, output to a second sheet
+0.1.2 - whitelist known good mac_address to skip those whitelist.csv
+0.1.1 - -C to clear HackRF logs. -L to copy the logs off of the HackRF
+0.1.0 - working copy
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-whitelist known good mac_address to skip those
+something is wrong with Uniq Mac's. it's not getting them all.
+
+uniq Mac's works if you just run .csv files. If you also do .txt logs it is blank.
+
+swap the uniq sheet to be first
+
 compare mac address to https://maclookup.app/downloads/csv-database  mac-vendors-export.csv
 
 fix '2025-02-0621:41:40' timestamps from .csv files
-create a list of unique Mac addresses, output to a second sheet
-parse the csv file (db, etc)
+
 convert company_id to a company name
-have a whitelist of mac addresses (like officers on a warrant) that are skipped or marked whitelist
-Does hackrf log to csv with DB
 
  https://macaddress.io/
  https://macaddresschanger.com/bluetooth-mac-lookup/E4:F0:42
- 
- 
+
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+https://globe.adsbexchange.com/ 
+
+Logs are saved in: H:\BLERX\Lists\*.csv
+
+and
+
+Logs are saved in: H:\BLERX\Logs\*.txt
+
+other logs are in 
+
+H:\LOGS\*.TXT
+
 
 """
 
