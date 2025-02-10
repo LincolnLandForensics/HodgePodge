@@ -177,7 +177,7 @@ def clear_logs():
         print(f"Deleted: {file}")
 
     # Optional: Display a message indicating the logs have been deleted
-    msg_blurb = (f'HackRF logs have been deleted from the drive {drive.upper()}')
+    msg_blurb = (f'HackRF logs have been deleted from drive {drive.upper()}')
     msg_blurb_square(msg_blurb, color_green)
 
     
@@ -219,7 +219,7 @@ def iso8601_timestamp(timestamp):
 
 def log_grab():
     # Prompt user for drive letter, use default if left blank
-    drive = input(f"\nEnter the drive letter where HackRF is plugged in (default is {hackRF_drive}): \n").strip().lower()
+    drive = input(f"\nEnter the drive letter the HackRF is plugged into (default is {hackRF_drive}): \n").strip().lower()
     if not drive:
         drive = hackRF_drive.lower()
 
@@ -293,16 +293,24 @@ def text_parse(input_folder, output_excel_path):
     data3 = []
     mac_uniq = []
     
+    mac_regex = r'(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}'
+    
     # Read and process each .txt file in the folder
     for file_name in os.listdir(input_folder):
         file_path = os.path.join(input_folder, file_name)
-        print(f'reading {file_name}')    # temp
+        print(f'Reading {file_name}')    # temp
 
             # file_name = 'mac-vendors-export.csv'
       
         
-        
-        if file_name.lower().endswith('.csv') and os.path.exists(file_path):
+        if os.path.getsize(file_path) == 0:  # Check if file is empty
+            row_data = {}
+            print(f'\tEmpty file: {os.path.basename(file_path)}')
+            row_data["origin_file"] = file_name
+            row_data["Type"] = '_empty'
+            data.append(row_data)
+            
+        elif file_name.lower().endswith('.csv') and os.path.exists(file_path):
             # with open(file_path, mode='r', newline='', encoding='utf-8') as file:
             with open(file_path, mode='r', newline='', encoding='ISO-8859-1') as file:
                 reader = csv.reader(file)
@@ -314,29 +322,19 @@ def text_parse(input_folder, output_excel_path):
 
                     row_data = {}
                     row_data2 = {}
-                    row_data3 = {}
+                    row_data3 = {}  # task
 
-                    timestamp = row[0]
-                    mac_address = row[1]
-                    name = row[2]
-                    msg_type = row[3]
-                    dta = row[4]
-                    hits = row[5]                    
-                    db = row[6]                    
-                    channel = row[7]  
-                    mac_address = mac_address[:17]
-                    
                     try:
-                        blah = 'blah'
-                        # timestamp = row[0]
-                        # mac_address = row[1]
-                        # name = row[2]
-                        # msg_type = row[3]
-                        # dta = row[4]
-                        # hits = row[5]                    
-                        # db = row[6]                    
-                        # channel = row[7]  
-                        # mac_address = mac_address[:17]                        
+                        timestamp = row[0] if len(row) > 0 else ''
+                        mac_address = row[1] if len(row) > 1 else ''
+                        name = row[2] if len(row) > 2 else ''
+                        msg_type = row[3] if len(row) > 3 else ''
+                        dta = row[4] if len(row) > 4 else ''
+                        hits = row[5] if len(row) > 5 else ''
+                        db = row[6] if len(row) > 6 else ''
+                        channel = row[7] if len(row) > 7 else ''  # Only assign if there are at least 8 columns
+
+                        mac_address = mac_address[:17]                        
                     except Exception as e:
                         print(f"Error processing line : {e}")
 
@@ -346,8 +344,10 @@ def text_parse(input_folder, output_excel_path):
                     if msg_type != '':
                         p_description = packet_lookup(msg_type)                        
                     (whitelist) =  whitelist_check(mac_address, name)
-                    if mac_address not in mac_uniq and "imestamp" not in timestamp:
-                        # (whitelist) =  whitelist_check(mac_address, name)
+
+                    if mac_address not in mac_uniq:    
+                    # if mac_address not in mac_uniq and "imestamp" not in timestamp:
+                        (whitelist) =  whitelist_check(mac_address, name)
                         mac_uniq.append(mac_address)
 
                         row_data2["Time"] = timestamp
@@ -388,13 +388,14 @@ def text_parse(input_folder, output_excel_path):
                             
                             
         elif file_name.lower().endswith('.txt'):  # Check for .txt extension
+            # print(f' mac_uniq  2 = {data2} filename = {file_name}')   # temp  
             with open(os.path.join(input_folder, file_name), "r") as file:
                 for line in file:
                     line = line.strip()
                     
                     row_data = {}
                     row_data2 = {}
-                    row_data3 = {}
+                    # row_data3 = {}
                     (timestamp, mac_address, name, msg_type, dta, hits)  = ('', '', '', '', '', '')
                     (db, channel, length, company, device_type, p_description) = ('', '', '', '', '', '')
                     (length2, Type, company_id, raw_data) = ('', 'plane', '', '')
@@ -470,6 +471,23 @@ def text_parse(input_folder, output_excel_path):
                         row_data["Type"] = Type                         
                         data.append(row_data)
 
+                    elif file_name == 'AFSK.TXT':
+                        (timestamp, name, Type, dta) = ('', '', 'AFSK', '')
+
+                        try:
+                            timestamp = parts[0] if len(parts) > 0 else ""
+                            dta = " ".join(parts[1:]) if len(parts) > 1 else ""  # Join everything from parts[1] onward
+                            # name = parts[2] if len(parts) > 2 else ""
+                        except IndexError:
+                            print(f"Skipping malformed AFSK line: {line.strip()}")
+
+                        row_data["Time"] = timestamp
+                        # row_data["Name"] = name
+                        row_data["Data"] = dta  
+                        row_data["origin_file"] = file_name
+                        row_data["Type"] = Type                         
+                        data.append(row_data)                        
+                        
                     elif file_name == 'TPMS.TXT':
                         (timestamp, name, Type, dta, company) = ('', '', 'TPMS', '', '')
 
@@ -511,21 +529,30 @@ def text_parse(input_folder, output_excel_path):
                             timestamp = iso8601_timestamp(timestamp).replace('T', ' ')
                         except IndexError:
                             print(f"Skipping malformed line: {line.strip()}")
+                            if dta == "":
+                                dta = line  # test
 
                         if msg_type != '':
                             p_description = packet_lookup(msg_type)
 
+                        if mac_address == '':
+                            print(f'need to find mac_address : {line}') # temp
+                        # else:
+                            # print(f'{mac_address}')  # temp
+                            
                         if mac_address not in mac_uniq:
                             mac_uniq.append(mac_address)
+                            print(f' added {mac_address} to mac_uniq')  # temp
+                        # else:
+                            # print(f'mac_uniq = {mac_uniq}')  # temp
                         company = company_lookup(mac_address)    
-                        # if mac_address not in mac_uniq:
-                            # company = company_lookup(mac_address)
 
                         length2, ad_type, company_id, raw_data = BLE_Data_Translate(dta)
                         
-                        if mac_address not in mac_uniq and "imestamp" not in timestamp:
+                        if mac_address not in mac_uniq:
                             mac_uniq.append(mac_address)
-                            (whitelist) =  whitelist_check(mac_address, name)
+                            # print(f' adding {mac_address} to mac_uniq') # temp
+                            # (whitelist) =  whitelist_check(mac_address, name)
 
                             row_data2["Time"] = timestamp
                             row_data2["MAC Address"] = mac_address
@@ -563,24 +590,40 @@ def text_parse(input_folder, output_excel_path):
                         data.append(row_data)
 
                     else:
-                        (timestamp, name, Type, dta, company) = ('', '', '', '', '')
-
+                        (timestamp, name, Type, dta, company, mac_address) = ('', '', 'misc', '', '', '')
+                            
+                        match4 = re.search(mac_regex, line)    # mac address
+                        if match4:
+                            mac_address = {match4.group()}
+                            print(f"Extracted MAC Address: {match4.group()}")    
+                            
+                            
                         try:
-                            dta = line.strip()
+                            dta = line
                             timestamp = parts[0] if len(parts) > 0 else ""
                         except IndexError:
                             print(f"Skipping malformed line: {line.strip()}")
-
+                            if dta == "":
+                                dta = line  # test
+                                
                         timestamp = iso8601_timestamp(timestamp).replace('T', ' ')
+
+                        if mac_address not in mac_uniq:
+                            mac_uniq.append(mac_address)
+                        
+                        if 'AFSK' in file_name:
+                            print(f'___________{file_name}___________ AFSK found') # temp
+                            Type = 'AFSK'
                         
                         row_data["Time"] = timestamp
+                        row_data["MAC Address"] = mac_address
                         row_data["Data"] = dta  
                         row_data["origin_file"] = file_name
-                       
+                        row_data["Type"] = Type
                         data.append(row_data)                        
                         
-      
-    print(f'\n{len(mac_uniq)} mac addresses found')    
+    print(f' mac_uniq  2 = {data2}')   # temp  
+    print(f'\n{len(mac_uniq)} uniq mac addresses found')    
     write_xlsx(data, data2)
 
 
@@ -602,13 +645,13 @@ def whitelist_check(mac_address, name):
     return whitelist
     
 def write_xlsx(data, data2):
-
+    # print(f' mac_uniq = {data2}')   # temp
     global workbook
     workbook = Workbook()
     global worksheet
     worksheet = workbook.active
 
-    worksheet.title = 'BleRX'
+    worksheet.title = 'HackRF'
     header_format = {'bold': True, 'border': True}
     worksheet.freeze_panes = 'B2'  # Freeze cells
     worksheet.selection = 'B2'
@@ -739,6 +782,7 @@ if __name__ == "__main__":
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+0.1.4 - skip empty logs
 0.1.3 - create a list of unique Mac addresses, output to a second sheet
 0.1.2 - whitelist known good mac_address to skip those whitelist.csv
 0.1.1 - -C to clear HackRF logs. -L to copy the logs off of the HackRF
@@ -748,7 +792,7 @@ if __name__ == "__main__":
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-something is wrong with Uniq Mac's. it's not getting them all.
+something is wrong with Uniq Mac's. it's not getting them all. gets 30 out of 830. .txt aren't doing uniq mac's
 
 uniq Mac's works if you just run .csv files. If you also do .txt logs it is blank.
 
