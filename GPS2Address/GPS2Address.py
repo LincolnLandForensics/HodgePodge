@@ -1,4 +1,4 @@
- #!/usr/bin/env python3
+#!/usr/bin/env python3
 # coding: utf-8
 '''
 read GPS coordinates and convert them to addresses
@@ -75,7 +75,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.3.7'
+version = '1.3.8'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -121,11 +121,17 @@ def main():
         input_xlsx = args.input
 
     global datatype
+    datatype = ''
     if args.input is not None:
-        if ".xlsx" in args.input:
+        if args.input.lower().endswith('.xlsx'):
             datatype = input_xlsx
-        elif ".kml" in args.input:
+        elif args.input.lower().endswith('.kml'):
             datatype = args.input
+        elif args.input.lower().endswith('.xls'):
+            print(f'Convert {args.input} to .xlsx format first')
+            exit(1)  # Exit with a nonzero status to indicate an error
+
+
     else:
         datatype = ''
      
@@ -347,6 +353,7 @@ def convert_timestamp(timestamp, time_orig, timezone):
 
     formats = [
         "%B %d, %Y, %I:%M:%S %p %Z",    # June 13, 2022, 9:41:33 PM CDT (Flock)
+        "%B %d, %Y at %I:%M:%S %p %Z",  # June 17, 2024 at 3:41:53 PM CDT (flock?)
         "%Y:%m:%d %H:%M:%S",
         "%Y-%m-%d %H:%M:%S",    # 2005-10-18 10:58:29
         "%m/%d/%Y %I:%M:%S %p",
@@ -355,7 +362,6 @@ def convert_timestamp(timestamp, time_orig, timezone):
         "%m/%d/%Y %H:%M:%S",  # timestamps in military time without seconds
         "%m-%d-%y at %I:%M:%S %p %Z", # test 09-10-23 at 4:29:12 PM CDT
         "%m-%d-%y %I:%M:%S %p",
-        "%B %d, %Y at %I:%M:%S %p %Z",
         "%B %d, %Y at %I:%M:%S %p",
         "%B %d, %Y %I:%M:%S %p %Z",
         "%B %d, %Y %I:%M:%S %p",
@@ -469,19 +475,20 @@ def get_coordinates(geometry):
         
 def haversine(lat1, lon1, lat2, lon2):
     from math import radians, cos, sin, sqrt, atan2
-
+    distance = ''
     R = 6371.0  # Radius of the Earth in km
+    try:
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
 
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
 
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
+        a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
-    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-    distance = R * c
-
+        distance = R * c
+    except ValueError as e:
+        print(f'{e} error ') # temp
     return distance
 
 def kml_to_excel(data):
@@ -611,7 +618,10 @@ def travel_path_kml(coordinates):
         
         same_day, time_diff = time_compare(time1, time2)
 
-        distance = haversine(lat1, lon1, lat2, lon2)
+        try:
+            distance = haversine(lat1, lon1, lat2, lon2)
+        except:
+            distance = 0
         # print(f'distance = {distance} km/h') # temp
         # Assuming an average speed limit of 100 km/h to determine feasibility
         max_distance_possible = time_diff * 100
@@ -816,9 +826,6 @@ def radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, A
         Azimuth = '.1'
     if Altitude == '':
         Altitude = 0
-    # Ensure radius is a float
-
-    # tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
 
     point = kml.newpoint(
         name=f"{no}",
@@ -1972,19 +1979,13 @@ def read_locations(input_xlsx):
         if type_data is None:
             type_data = ''  
 
-
         if type_data == '':
             type_data = active_sheet_title
         # print(f'active_sheet_title = {active_sheet_title}   type_data = {type_data}') # temp
 
-
-
-
         # Icon = row_data.get("Icon")
         if type_data is None:
             type_data = ''
-
-
 
         if type_data == '':
             if subgroup == '':
@@ -2070,7 +2071,8 @@ def read_locations(input_xlsx):
 
 # carved
         carved = row_data.get("Source file information")
-        if carved is None or 'xlsx' in carved:
+        if carved is None or (isinstance(carved, str) and 'xlsx' in carved):
+        # if carved is None or 'xlsx' in carved:
             carved = ''
 
 # source file
@@ -2362,7 +2364,7 @@ def read_locations(input_xlsx):
         elif subgroup == "Mentioned":
             Icon = "Locations"  # task
         elif subgroup == "HarvestedCellTower":
-            Icon = "Locations"   # task add a phone icon or tower
+            Icon = "Tower"   # task add a phone icon or tower
         elif subgroup == "MediaProbablyCaptured":
             Icon = "Images"  
         elif subgroup == "MobilePayment":
@@ -2531,46 +2533,56 @@ def point_icon_maker(Icon):
     # red_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/red-circle.png'
     # white_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/wht-circle.png'
 
-    # default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
-    default_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'   # yellow pin
-
-
+    ap_locked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon51.png'   # red star
+    ap_unlocked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon59.png'   # white star
+    bluetooth_icon = 'http://maps.google.com/mapfiles/kml/pal5/icon49l.png'   # red b        
+    calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
+    car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car2_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon47.png'  # yellow car
     car3_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon54.png'  # green car with circle
     car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
-
-    truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
-    calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
     chat_icon = 'https://maps.google.com/mapfiles/kml/shapes/post_office.png' # email
-    locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
+    default_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'   # yellow pin
+    green_icon = 'https://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png'
     home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
     images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
     intel_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon44.png'
-    map_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon30.png'
-
+    locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
     office_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon21.png'
-    payment_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon50.png'
-
-    searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon9.png'
-    shared_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon20.png'
-    tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
-    # tower_icon = 'https://earth.google.com/earth/rpc/cc/icon?color=1976d2&amp;id=2051&amp;scale=4' # test
-    yellow_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'
-    red_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
-    green_icon = 'https://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png'
     orange_icon = 'https://maps.google.com/mapfiles/kml/paddle/orange-blank.png'
-
+    payment_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon50.png'
+    red_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
+    searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon0.png'  #  
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
+    tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
+    truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
+    yellow_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'
+ 
     n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
     e_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-4.png'
     s_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-8.png'
     w_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-12.png'
+
+    if Icon == "Wifi":
+        print(f'icon = wifi2')   # temp
+
       
    
     if Icon == "Lpr" or Icon == "Car":
         point_icon = car_icon
+  
+    elif Icon == "Wifi":
+        print(f'icon = wifi')   # temp
+        point_icon = ap_locked_icon
+    elif Icon == "WIFI-open":
+        point_icon = ap_unlocked_icon
+    elif Icon == "Bt":
+        point_icon = bluetooth_icon
+    elif Icon == "Ble":
+        point_icon = bluetooth_icon
+
     elif Icon == "Car2":
         point_icon = car2_icon
     elif Icon == "Car3":
@@ -2607,6 +2619,10 @@ def point_icon_maker(Icon):
         point_icon = toll_icon
     elif Icon == "Tower":
         point_icon = tower_icon
+    elif Icon == "Lte":
+        point_icon = tower_icon
+    elif Icon == "Gsm":
+        point_icon = tower_icon
         # (kml, point) = radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, Altitude, point_icon)
     elif Icon == "Yellow":
         point_icon = yellow_icon
@@ -2625,6 +2641,7 @@ def point_icon_maker(Icon):
         point_icon = s_icon
     elif Icon == "W":
         point_icon = w_icon
+
     else:
         point_icon = default_icon
 
@@ -3014,10 +3031,10 @@ def write_locations(data):
     color_worksheet.row_dimensions[26].height = 50  # chats
 
     color_worksheet.row_dimensions[27].height = 28 # payment
-    color_worksheet.row_dimensions[28].height = 50  # test Tower
-    color_worksheet.row_dimensions[29].height = 15
-    color_worksheet.row_dimensions[30].height = 15
-    color_worksheet.row_dimensions[31].height = 15
+    color_worksheet.row_dimensions[28].height = 50  # Tower
+    color_worksheet.row_dimensions[29].height = 15  # bluetooth
+    color_worksheet.row_dimensions[30].height = 22  # ap-open
+    color_worksheet.row_dimensions[31].height = 22  # ap-closed
     color_worksheet.row_dimensions[33].height = 15
     color_worksheet.row_dimensions[33].height = 15
 
@@ -3057,8 +3074,13 @@ def write_locations(data):
         ('', 'Chats', 'Chats'),   # 
         ('', 'Payment', 'Payment'),        
         ('', 'Tower', 'Bullseye'),
+        ('', 'Bluetooth', 'B'),
+        ('', 'AP-open', 'red star'),
+        ('', 'AP-closed', 'white star'),
+        
         ('', '', ''),
         ('', 'blue lines', 'trips with a start and end'),
+        ('', 'red lines', 'coordinates with timestamps within a short period of time (like same day)'),        
         ('', 'red circles', 'indicate radius of the signal and/or accuracy of the point'),
         ('', 'NOTE', 'visit https://earth.google.com/ <file><Import KML> select gps.kml <open>'),
         ('', '', 'Timestamps are in ISO 8601 military time (Year-Month-Day Hour:Minute:Seconds)')
@@ -3068,35 +3090,33 @@ def write_locations(data):
         color_worksheet.cell(row=row_index + 2, column=1).value = icon
         color_worksheet.cell(row=row_index + 2, column=2).value = tag
         color_worksheet.cell(row=row_index + 2, column=3).value = description
-
+    ap_locked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon51.png'   # red star
+    ap_unlocked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon59.png'   # white star
+    bluetooth_icon = 'http://maps.google.com/mapfiles/kml/pal5/icon49l.png'   # red b        
+    calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
+    car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car2_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon47.png'  # yellow car
     car3_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon54.png'  # green car with circle
     car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
-    truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
-    # default_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'   # yellow flag
-    default_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'   # yellow pin
-        
-    calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
     chat_icon = 'https://maps.google.com/mapfiles/kml/shapes/post_office.png' # email
-    locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
+    default_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'   # yellow pin
+    green_icon = 'https://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png'
     home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
     images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
     intel_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon44.png'
+    locations_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon28.png'    # yellow paddle
     office_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon21.png'
+    orange_icon = 'https://maps.google.com/mapfiles/kml/paddle/orange-blank.png'
     payment_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon50.png'
+    red_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
     searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon0.png'  #  
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
     tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
-    # tower_icon = 'https://earth.google.com/earth/rpc/cc/icon?color=1976d2&amp;id=2051&amp;scale=4' # test
-    yellow_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'
-    red_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
-    green_icon = 'https://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png'
-    orange_icon = 'https://maps.google.com/mapfiles/kml/paddle/orange-blank.png'
-
-
-      
+    truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
     videos_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon30.png'
+    yellow_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'
+ 
     n_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-0.png'
     e_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-4.png'
     s_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-8.png'
@@ -3197,7 +3217,19 @@ def write_locations(data):
         response = requests.get(tower_icon)
         img = Image(io.BytesIO(response.content))
         color_worksheet.add_image(img, 'A28')
-        
+ 
+        response = requests.get(bluetooth_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A29')
+
+        response = requests.get(ap_unlocked_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A30')
+
+        response = requests.get(ap_locked_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A31')
+       
     except:
         pass
 
@@ -3237,7 +3269,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+1.3.7 - added Bluetooth, cell tower and AP points
 1.3.1 - Trip path (default blue line, but can change color manually)
 1.3.0 - Injest Celltower dumps (Azimuth, Radius)
 1.2.1 - can populate # with custom display or if it's blank it will put in the column number
