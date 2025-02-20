@@ -31,7 +31,7 @@ from markdownify import markdownify as md   # pip install markdownify
 
 author = 'LincolnLandForensics'
 description = "Convert the content of various file types to Markdown, for use in Obsidian"
-version = '1.1.1'
+version = '1.1.2'
 
 
 global file_types
@@ -965,7 +965,7 @@ def md2pdf(filename, input_folder, output_folder):
         # Define text properties
         text = full_content
         text_rect = fitz.Rect(50, 50, 550, 800)  # Define text area
-        page.insert_textbox(text_rect, text, fontsize=12, fontname="helv")
+        page.insert_textbox(text_rect, text, fontsize=12, fontname="arial")
 
         # Define output PDF filename (based on Markdown filename)
         pdf_filename = os.path.join(output_folder, f"{filename.replace('.md', '')}_{today_str}.pdf")
@@ -1319,8 +1319,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
-if templates folder exists, copy those files into the templates folder
+can i do -C to a template pdf? Can I add a graphic? Can I add bold formatting?
 export to html -w
 
 pdf convert data and tables.
