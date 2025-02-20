@@ -25,6 +25,8 @@ pick a folder with files and even subfolders with a variety of different filetyp
 
 -b, --blank	create a blank obsidian folder
 
+-P, --checklist	markdown 2 pdf
+
 -t, --template	copy templated obsidian files/folders
 
   

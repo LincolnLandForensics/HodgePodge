@@ -23,6 +23,7 @@ import msg_parser   # pip install msg_parser, extract-msg
 from pptx import Presentation   # pip install python-pptx
 # from pptx.oxml import nsmap # pip install nsmap
 
+# import datetime
 from datetime import datetime
 from markdownify import markdownify as md   # pip install markdownify
 
@@ -30,7 +31,7 @@ from markdownify import markdownify as md   # pip install markdownify
 
 author = 'LincolnLandForensics'
 description = "Convert the content of various file types to Markdown, for use in Obsidian"
-version = '0.2.4'
+version = '1.1.1'
 
 
 global file_types
@@ -110,8 +111,10 @@ def main():
     parser.add_argument('-I', '--input', help='Input folder path', required=False)
     parser.add_argument('-O', '--output', help='Output folder path', required=False)
     parser.add_argument('-T', '--Template', help='template path', required=False)
-    parser.add_argument('-c', '--convert', help='Convert files to markdown', required=False, action='store_true')
+
     parser.add_argument('-b', '--blank', help='create a blank obsidian folder', required=False, action='store_true')
+    parser.add_argument('-c', '--convert', help='Convert files to markdown', required=False, action='store_true')
+    parser.add_argument('-P', '--pdfconvert', help='markdown 2 pdf', required=False, action='store_true')
     parser.add_argument('-t', '--template', help='copy templated obsidian files/folders', required=False, action='store_true')
 
     args = parser.parse_args()
@@ -119,27 +122,33 @@ def main():
     global input_folder
     global output_folder
     global template1_input
-    input_folder = os.getcwd()  # Default to current working directory
+
+    input_folder = os.path.abspath(args.input) if args.input else os.getcwd()
+    output_folder = os.path.abspath(args.output) if args.output else r'ObsidianNotebook'
+    template1_input = os.path.abspath(args.Template) if args.Template else 'Template_Cases'
+
+
+    # input_folder = os.getcwd()  # Default to current working directory
     # output_folder = r'C:\Forensics\scripts\python\ObsidianNotebook'  # Default output path
-    output_folder = r'ObsidianNotebook'  # Default output path
-    template1_input = r'Template_2ndBrain'
+    # output_folder = r'ObsidianNotebook'  # Default output path
+    # template1_input = r'Template_2ndBrain'
     
     file = sys.argv[0].split('\\')[-1]
 
     # Set input and output folders based on arguments, if provided
-    if args.input:
-        input_folder = args.input
-    if args.output:
-        output_folder = args.output
-    if args.Template:
-        template1_input = args.Template
+    # if args.input:
+        # input_folder = args.input
+    # if args.output:
+        # output_folder = args.output
+    # if args.Template:
+        # template1_input = args.Template
 
     # Ensure the input folder exists
     if not os.path.exists(input_folder):
 
         msg_blurb = (f"Input folder {input_folder} doesn't exist.")
         msg_blurb_square(msg_blurb, color_red) 
-
+        exit()  # test
         return 1
    
     if args.template:
@@ -147,8 +156,11 @@ def main():
     if args.convert:
         msg_blurb = (f"reading input folder {input_folder}")
         msg_blurb_square(msg_blurb, color_green)         
-
         process_files(input_folder, output_folder)
+    elif args.pdfconvert:
+        read_markdown_files(input_folder,output_folder)
+        msg_blurb = (f"PDF files saved to {output_folder}")
+        msg_blurb_square(msg_blurb, color_green)        
     elif args.blank:
         copy_template_folder(input_folder, output_folder, template1_input)
         setup_obsidian(input_folder, output_folder)
@@ -925,6 +937,45 @@ def md_for_scripts(file_path):
         print(f"Error making file '{file_path}': {e}")
         return ""    
 
+def md2pdf(filename, input_folder, output_folder):
+    # Get today's date
+    # today_str = datetime.datetime.today().strftime('%Y-%m-%d')
+    today_str = datetime.today().strftime('%Y-%m-%d')
+    if filename.lower().endswith(".md"):  # Process only .md files
+        file_path = os.path.join(input_folder, filename)
+
+        # Read and filter markdown content
+        with open(file_path, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+
+        # Remove lines containing unwanted keywords and blank lines
+        filtered_lines = [
+            line.strip() for line in lines
+            if line.strip() and not any(keyword in line.lower() for keyword in ['kanban', '```', '%%', '---', '**Complete**'])
+        ]
+
+        # Prepare content with metadata
+        header = f"Filename: {filename}\nDate: {today_str}\n\n"
+        full_content = header + '\n'.join(filtered_lines)
+
+        # Create a new PDF document
+        pdf_document = fitz.open()
+        page = pdf_document.new_page()
+
+        # Define text properties
+        text = full_content
+        text_rect = fitz.Rect(50, 50, 550, 800)  # Define text area
+        page.insert_textbox(text_rect, text, fontsize=12, fontname="helv")
+
+        # Define output PDF filename (based on Markdown filename)
+        pdf_filename = os.path.join(output_folder, f"{filename.replace('.md', '')}_{today_str}.pdf")
+
+        # Save PDF
+        pdf_document.save(pdf_filename)
+        pdf_document.close()
+
+        print(f"\t{pdf_filename}")
+        
 
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
@@ -1005,6 +1056,40 @@ def read_exif_data(file_path):
     Description = cleanup_description(exif_data)
     return exif_data, Description
     
+
+def read_markdown_files(input_folder,output_folder):
+    # Ensure input folder exists
+
+    if not os.path.exists(output_folder):
+        msg_blurb = (f"Error: Output folder '{output_folder}' does not exist.")
+        msg_blurb_square(msg_blurb, color_red) 
+        exit()
+        return []
+
+    if not os.path.exists(input_folder):
+        msg_blurb = (f"Error: Input folder '{input_folder}' does not exist.")
+        msg_blurb_square(msg_blurb, color_red) 
+        exit()
+        return []
+    else:
+        msg_blurb = (f"Reading markdown files from {input_folder}")
+        msg_blurb_square(msg_blurb, color_green) 
+
+    # List all markdown files (case-insensitive) containing "todo" in the filename
+    md_files = [
+        f for f in os.listdir(input_folder)
+        if f.lower().endswith(".md")
+    ]
+
+    if not md_files:
+        msg_blurb = (f"No markdown files found in {input_folder}")
+        msg_blurb_square(msg_blurb, color_red) 
+    else:
+        for filename in md_files:
+            md2pdf(filename, input_folder, output_folder)
+
+    return md_files
+
     
 def setup_obsidian(input_folder, output_folder):
     # Ensure the output folder exists, or create it if it doesn’t
@@ -1203,6 +1288,10 @@ def Usage():
     print(f"    {file} -c -I C:\Forensics\scripts\python\Files -O ObsidianNotebook") 
     print(f"    {file} -c -O ObsidianNotebook") 
     print(f"    {file} -c -I test_files -O ObsidianNotebook") 
+    print(f"    python {file} -P -I C:\Forensics\ObsidianVaults\ForensicsBrain\8.Tasks -O C:\Forensics\scripts\python\playfolder")     
+    print(f'    python {file} -P -I \"B:\Agent Folders\Forensic Examiners\B-drive_SecondBrain\8.Tasks" -O \"B:\Administrative\DFE_Folder\"')     
+
+
     print(f"    {file} -b -t -T Template_Cases") 
 
 
@@ -1215,6 +1304,7 @@ if __name__ == '__main__':
 
 """
 
+1.1.1 - markdown files to pdfs -C
 0.2.1 - .DOCX and .PPTX conversions with metadata
 0.1.5 - add exifdata to the bottom of the .md file
 0.1.4 - (creation_time, access_time, modified_time) = get_file_timestamps(file_path)
@@ -1229,7 +1319,6 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-still creating 4.Documents\original documents
 
 if templates folder exists, copy those files into the templates folder
 export to html -w
@@ -1239,7 +1328,7 @@ undo the try except in .eml multi threaded
 
 fix rtf converter - doesn't do all formatting like bold
 
-The script’s Windows-specific checks (e.g., file creation time) could potentially be improved for cross-platform compatibility. You might use pathlib for better handling of file paths across platforms.
+The script is Windows-specific checks (e.g., file creation time) could potentially be improved for cross-platform compatibility. You might use pathlib for better handling of file paths across platforms.
 
 this will overwrite files with the same name, create a way of if file exists, save it with a unique name
 
