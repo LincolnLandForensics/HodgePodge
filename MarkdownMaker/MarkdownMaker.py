@@ -965,7 +965,7 @@ def md2pdf(filename, input_folder, output_folder):
         # Define text properties
         text = full_content
         text_rect = fitz.Rect(50, 50, 550, 800)  # Define text area
-        page.insert_textbox(text_rect, text, fontsize=12, fontname="arial")
+        page.insert_textbox(text_rect, html_content, fontsize=12, fontname="helv")
 
         # Define output PDF filename (based on Markdown filename)
         pdf_filename = os.path.join(output_folder, f"{filename.replace('.md', '')}_{today_str}.pdf")
