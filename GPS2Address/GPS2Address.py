@@ -2535,7 +2535,7 @@ def point_icon_maker(Icon):
 
     ap_locked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon51.png'   # red star
     ap_unlocked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon59.png'   # white star
-    bluetooth_icon = 'http://maps.google.com/mapfiles/kml/pal5/icon49l.png'   # red b        
+    bluetooth_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon49.png'   # little triangle        
     calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
@@ -2565,22 +2565,15 @@ def point_icon_maker(Icon):
     s_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-8.png'
     w_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-12.png'
 
-    if Icon == "Wifi":
-        print(f'icon = wifi2')   # temp
-
-      
    
     if Icon == "Lpr" or Icon == "Car":
         point_icon = car_icon
   
-    elif Icon == "Wifi":
-        print(f'icon = wifi')   # temp
+    elif Icon == "WIFI":
         point_icon = ap_locked_icon
     elif Icon == "WIFI-open":
         point_icon = ap_unlocked_icon
-    elif Icon == "Bt":
-        point_icon = bluetooth_icon
-    elif Icon == "Ble":
+    elif Icon == "BT":
         point_icon = bluetooth_icon
 
     elif Icon == "Car2":
@@ -3033,8 +3026,8 @@ def write_locations(data):
     color_worksheet.row_dimensions[27].height = 28 # payment
     color_worksheet.row_dimensions[28].height = 50  # Tower
     color_worksheet.row_dimensions[29].height = 15  # bluetooth
-    color_worksheet.row_dimensions[30].height = 22  # ap-open
-    color_worksheet.row_dimensions[31].height = 22  # ap-closed
+    color_worksheet.row_dimensions[30].height = 22  # WIFI-open
+    color_worksheet.row_dimensions[31].height = 22  # WIFI
     color_worksheet.row_dimensions[33].height = 15
     color_worksheet.row_dimensions[33].height = 15
 
@@ -3074,9 +3067,9 @@ def write_locations(data):
         ('', 'Chats', 'Chats'),   # 
         ('', 'Payment', 'Payment'),        
         ('', 'Tower', 'Bullseye'),
-        ('', 'Bluetooth', 'B'),
-        ('', 'AP-open', 'red star'),
-        ('', 'AP-closed', 'white star'),
+        ('', 'Bluetooth', 'red dot'),
+        ('', 'WIFI-open', 'red star'),
+        ('', 'WIFI', 'white star'),
         
         ('', '', ''),
         ('', 'blue lines', 'trips with a start and end'),
@@ -3092,7 +3085,7 @@ def write_locations(data):
         color_worksheet.cell(row=row_index + 2, column=3).value = description
     ap_locked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon51.png'   # red star
     ap_unlocked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon59.png'   # white star
-    bluetooth_icon = 'http://maps.google.com/mapfiles/kml/pal5/icon49l.png'   # red b        
+    bluetooth_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon49.png'   # red b        
     calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
@@ -3279,7 +3272,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+fix the bluetooth_icon- it's very big. maybe pick a different one
 https://github.com/UMIT2Lab/iGem
 
 batchgeo.com is an online alternative (similar)
