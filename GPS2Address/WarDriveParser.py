@@ -14,8 +14,8 @@ import struct
 import string
 import binascii
 import argparse  # for menu system
-import openpyxl
-from openpyxl import load_workbook, Workbook    # pip install openpyxl
+import openpyxl # pip install openpyxl
+from openpyxl import load_workbook, Workbook 
 from openpyxl.styles import Font, Alignment, PatternFill
 from datetime import datetime
 
@@ -23,17 +23,17 @@ from datetime import datetime
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "convert wigle .gz or .csv exports to gps2address.py locations format"
-version = '1.0.4'
+description = "Convert wigle .gz or .csv exports to gps2address.py locations format or convert HackRf logs. Convert MAC to company name."
+version = '1.2.0'
 
 global hackRF_drive
 hackRF_drive= 'H'
 
 global logfolder
-# logfolder=r'D:\Forensics\scripts\python\Logs'
-logfolder=r'\Logs'
+logfolder=r'\Logs'  # D:\Forensics\scripts\python\Logs
 
 global headers
+# update the headers if you don't want all of them.
 headers = [
     "#", "Time", "Latitude", "Longitude", "Address", "Group", "Subgroup"
     , "Description", "Type", "Source", "Deleted", "Tag"
@@ -213,7 +213,7 @@ def main():
         companies_read()
         process_wigle_file(input_file, data)
     elif args.blank:
-        write_xlsx(data)
+        write_xlsx(data,output_xlsx)
         return 0 
         sys.exit()
     else:
@@ -334,10 +334,10 @@ def format_function(bg_color='white'):
     })
 
 
-def identify_device_type(company_name, service_uuids):
+def identify_device_type(CompanyName, service_uuids):
     """Determines the most likely device type based on UUIDs and manufacturer"""
-    if company_name in DEVICE_TYPES:
-        for device_type, uuid_list in DEVICE_TYPES[company_name].items():
+    if CompanyName in DEVICE_TYPES:
+        for device_type, uuid_list in DEVICE_TYPES[CompanyName].items():
             if any(uuid in service_uuids for uuid in uuid_list):
                 return device_type
     return "Unknown Device Type"
@@ -510,10 +510,10 @@ def parse_bluetooth_data(data):
         # Manufacturer Data Parsing (0xFF)
         if ad_type == 0xFF and len(value) >= 2:
             company_id = struct.unpack("<H", value[:2])[0]
-            company_name = COMPANY_IDS.get(company_id, f"Unknown Company (0x{company_id:04X})")
+            CompanyName = COMPANY_IDS.get(company_id, f"Unknown Company (0x{company_id:04X})")
             parsed_output["Manufacturer Data"] = {
                 "Company ID": f"0x{company_id:04X}",
-                "Company Name": company_name,
+                "Company Name": CompanyName,
                 "Raw Manufacturer Data": value[2:].hex().upper(),
             }
         elif ad_type in [0x02, 0x03, 0x06, 0x07]:  # Service UUIDs
@@ -525,14 +525,14 @@ def parse_bluetooth_data(data):
         parsed_output[type_description] = value.hex().upper()
         index += length + 1
 
-    company_name = parsed_output.get("Manufacturer Data", {}).get("Company Name", "Unknown")
-    device_type = identify_device_type(company_name, service_uuids)
+    CompanyName = parsed_output.get("Manufacturer Data", {}).get("Company Name", "Unknown")
+    device_type = identify_device_type(CompanyName, service_uuids)
 
     if device_name:
         parsed_output["Device Name"] = device_name
 
     parsed_output["Identified Device Type"] = device_type
-    print(f'Bluetooth device_name = {device_name}')    # temp
+    # print(f'Bluetooth device_name = {device_name}')    # temp
     return parsed_output
 
 
@@ -545,7 +545,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
     # Read and process each .txt file in the folder
     for file_name in os.listdir(input_folder):
         file_path = os.path.join(input_folder, file_name)
-        print(f'Reading {file_name}')    # temp
+        print(f'Reading {file_name}')    
 
         if os.path.getsize(file_path) == 0:  # Check if file is empty
             row_data = {}
@@ -558,11 +558,11 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
             # with open(file_path, mode='r', newline='', encoding='utf-8') as file:
             with open(file_path, mode='r', newline='', encoding='ISO-8859-1') as file:
                 reader = csv.reader(file)
-                print(f'reading {file}')    # temp
+                print(f'reading {file}') 
                 # next(reader)  # Skip the header row
                 for row in reader:
                     timestamp, MAC, Name, msg_type, dta, hits = '', '', '', '', '', ''
-                    dB, channel, length, company, device_type, p_description = '', '', '', '', '', ''
+                    dB, channel, length, CompanyName, device_type, p_description = '', '', '', '', '', ''
                     Tag, Altitude, Latitude, Longitude = '', '', '', ''
 
                     row_data = {}
@@ -582,12 +582,12 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                     except Exception as e:
                         print(f"Error processing line : {e}")
 
-                    if dta.startswith('0x0'):
-                        print(f'data = {dta}')  # temp
+                    # if dta.startswith('0x0'):
+                        # print(f'data = {dta}')  # temp
 
                     if Name.startswith('0x1'):
                         Name = ''
-                    company = company_lookup(MAC)
+                    CompanyName = company_lookup(MAC)
                     if msg_type != '':
                         p_description = packet_lookup(msg_type)
                     if MAC != '':
@@ -595,19 +595,13 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                     if MAC != '':
                         description = (f'{p_description}\nMAC:{MAC}')  
 
-                        
-                    (Tag) =  whitelist_check(MAC, Name)
 
                     if Tag == '':
                         (Tag, Name) =  whitelist_check(MAC, Name)
                     if Tag == '':
                         (Tag, Name) =  blacklist_check(MAC, Name)
 
-
-
                     if MAC not in mac_uniq:    
-                    # if MAC not in mac_uniq and "imestamp" not in timestamp:
-                        (Tag) =  whitelist_check(MAC, Name)
                         mac_uniq.append(MAC)
 
                         # row_data2["Time"] = timestamp
@@ -616,7 +610,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         # row_data2["Hits"] = hits
                         # row_data2["dB"] = dB
                         # row_data2["Channel"] = channel  
-                        # row_data2["company"] = company
+                        # row_data2["CompanyName"] = CompanyName
                         # row_data2["Device Type"] = device_type
                         # row_data2["original_file"] = file_name
                         # row_data2["Tag"] = Tag    
@@ -634,7 +628,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         row_data["dB"] = dB
                         row_data["Channel"] = channel  # 
                         row_data["length"] = length
-                        row_data["CompanyName"] = company   #
+                        row_data["CompanyName"] = CompanyName   #
                         row_data["Type"] = device_type  #
                         row_data["Description"] = p_description #                        
                         row_data["original_file"] = file_name   #
@@ -650,23 +644,28 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
             # print(f' mac_uniq  2 = {data2} filename = {file_name}')   # temp  
             with open(os.path.join(input_folder, file_name), "r") as file:
                 for line in file:
+                    row_count2 = 0
                     line = line.strip()
                     
                     row_data = {}
                     row_data2 = {}
                     (timestamp, MAC, Name, msg_type, dta, hits)  = ('', '', '', '', '', '')
-                    (dB, channel, length, company, device_type, p_description) = ('', '', '', '', '', '')
+                    (dB, channel, length, CompanyName, device_type, p_description) = ('', '', '', '', '', '')
                     (length2, Type, company_id, raw_data) = ('', 'plane', '', '')
-                    (Tag) = ('')
+                    (Tag, parsed_data) = ('', '')
                     parts = line.strip().split(" ")
                     
                     if line.strip() == '':
                         blah = 'blah'
                     elif file_name == 'ADSB.TXT':
+                        
                         (timestamp, Latitude, Longitude, Coordinate, Type, original_file) = ('', '', '', '', 'ADS-B', '')
                         (Plate, Direction, Icon, ICAO, Name, note, AltitudeMeters) = ('', '', '', '', '', '', '')
                         (hit, lvl, speed, amp, age) = ('', '', '', '', '')
                         (HexID) = ('')
+                        print(f'bobs your uncle')   # temp
+                        row_data["original_file"] = file_name  
+                        data.append(row_data)
                         
                         match1 = re.search(r'Alt:(\d+)', line)
                         match2 = re.search(r'Lat:([-+]?\d*\.\d+|\d+)', line)
@@ -677,6 +676,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
 
                         if match2:
                             Latitude = str(match2.group(1))
+                            dB = '-50'
 
                         if match3:
                             Longitude = float(match3.group(1))
@@ -685,17 +685,27 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                             timestamp = parts[0] if len(parts) > 0 else ""
                             dta = parts[1] if len(parts) > 1 else ""
                             Name = parts[2] if len(parts) > 2 else ""
+                            if dB != '':
+                                MAC = dta
+                            
                             if 'Alt:' in Name:
                                 Name = ''
                             timestamp = iso8601_timestamp(timestamp).replace('T', ' ')
                         except IndexError:
-                            print(f"Skipping malformed line: {line.strip()}")
+
+                            blah = 'blah'
+                        if dta != '':
+                            p_description = (f'Data = {dta}')
+                        
+                        
                         if 'ICAO:' in dta:
                             HexID = dta.split('ICAO:')[1]
-                            p_description = HexID
+                            p_description = (f'\nICAO = {HexID}')
                             dta = dta.split('ICAO:')[0] 
-
-
+                            if Name == '':
+                                Name = HexID 
+                        p_description = p_description.strip()
+                        
                         row_data["Time"] = timestamp    # 
                         row_data["MAC"] = MAC   # 
                         row_data["Name"] = Name # 
@@ -705,7 +715,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         row_data["dB"] = dB
                         row_data["Channel"] = channel  # 
                         row_data["length"] = length
-                        row_data["CompanyName"] = company   #
+                        row_data["CompanyName"] = CompanyName   #
                         row_data["Type"] = device_type  #
                         row_data["original_file"] = file_name  
                         row_data["Description"] = p_description #                        
@@ -717,18 +727,19 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         # row_data["Altitude"] = Altitude                        
 
                         data.append(row_data)
-
+                        
                     elif file_name == 'APRS.TXT':
-                        (timestamp, Name, Type, dta) = ('', '', 'APRS', '')
+                        (timestamp, Name, Type, dta, MAC) = ('', '', 'APRS', '', '')
 
                         try:
                             timestamp = parts[0] if len(parts) > 0 else ""
                             dta = parts[1] if len(parts) > 1 else ""
                             Name = parts[2] if len(parts) > 2 else ""
                         except IndexError:
-                            print(f"Skipping malformed line: {line.strip()}")
-
+                            blah = 'blah'
+                        MAC = dta
                         row_data["Time"] = timestamp
+                        row_data["MAC"] = MAC   # 
                         row_data["Name"] = Name
                         row_data["Data"] = dta  
                         row_data["original_file"] = file_name
@@ -736,16 +747,17 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         data.append(row_data)
 
                     elif file_name == 'AFSK.TXT':
-                        (timestamp, Name, Type, dta) = ('', '', 'AFSK', '')
+                        (timestamp, Name, Type, dta, MAC) = ('', '', 'AFSK', '', '')
 
                         try:
                             timestamp = parts[0] if len(parts) > 0 else ""
                             dta = " ".join(parts[3]) if len(parts) > 3 else ""  # Join everything from parts[1] onward
                         except IndexError:
-                            print(f"Skipping malformed AFSK line: {line.strip()}")
+                            blah = 'blah'
 
                         row_data["Time"] = timestamp
                         # row_data["Name"] = Name
+                        row_data["MAC"] = dta   # 
                         row_data["Data"] = dta  
                         row_data["original_file"] = file_name
                         row_data["Type"] = Type                         
@@ -753,6 +765,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
 
                     elif file_name == 'ERT.TXT':
                         timestamp, channel, device_type, Type, dta, p_description = '', '', '', '', 'ERT', ''
+                                                
                         match5 = re.search(r'ID:(\d+)', line)
                         if match5:
                             Name = int(match5.group(1)) 
@@ -763,22 +776,15 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                             channel = parts[2] if len(parts) > 2 else ""
                             dta = parts[4] if len(parts) > 4 else ""
                         except IndexError:
-                            print(f"Skipping malformed line: {line.strip()}")
+                            blah = 'blah'
                         if "/"in dta:
                             dta_temp = dta.split("/")
                             device_type = dta_temp[0]
-                            # convert device_type to hex Eletric meter = 4, 5, 7, 8, 12
-                            print(f'device_type = {device_type}')   # temp
-                            # Check if device_type is a valid hex string
+
                             try:
                                 # Convert from hex to bytes
                                 bytes_value = bytes.fromhex(device_type)
-                                
-                                # Convert bytes to ASCII (ignoring non-printable characters)
-                                # device_type = bytes_value.decode('ascii', errors='ignore')
                                 device_type = ''.join(c if c in string.printable else '.' for c in bytes_value.decode('ascii', errors='replace'))
-                                # device_type = device_type.str()
-                                # print(f'device_type (ASCII) = {ascii_str}')
                             except ValueError:
                                 print(f'device_type is not a valid hex string: {device_type}')
                             
@@ -786,6 +792,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         row_data["Channel"] = channel
                         row_data["Device Type"] = device_type
                         row_data["Name"] = Name
+                        # row_data["MAC"] = timestamp   # requires a unique id or it will delete it
                         row_data["Description"] = p_description 
                         row_data["Data"] = dta  
                         row_data["original_file"] = file_name
@@ -793,7 +800,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         data.append(row_data)
                         
                     elif file_name == 'TPMS.TXT':
-                        (timestamp, Name, Type, dta, company) = ('', '', 'TPMS', '', '')
+                        (timestamp, Name, Type, dta, CompanyName) = ('', '', 'TPMS', '', '')
 
                         try:
                             timestamp = parts[0] if len(parts) > 0 else ""
@@ -801,11 +808,11 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                             if '  ' in dta:
                                 dta = dta.split('  ')[1]
                             Name = parts[6] if len(parts) > 6 else ""
-                            company = parts[7] if len(parts) > 7 else ""
-                            if '/' in company:
-                                company = company.split('/')[0]
+                            CompanyName = parts[7] if len(parts) > 7 else ""
+                            if '/' in CompanyName:
+                                CompanyName = CompanyName.split('/')[0]
                         except IndexError:
-                            print(f"Skipping malformed line: {line.strip()}")
+                            blah = 'blah'
                         
                         if ' FSK ' in line:
                             p_description = "FSK"
@@ -816,7 +823,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         row_data["Data"] = dta  
                         row_data["original_file"] = file_name
                         row_data["Description"] = p_description 
-                        row_data["company"] = company 
+                        row_data["CompanyName"] = CompanyName 
                         row_data["Type"] = Type                         
                         data.append(row_data)
                     
@@ -832,54 +839,60 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
 
                             timestamp = iso8601_timestamp(timestamp).replace('T', ' ')
                         except IndexError:
-                            print(f"Skipping malformed line: {line.strip()}")
+                            blah = 'blah'
                             if dta == "":
                                 dta = line  # test
 
-                        if msg_type != '':
-                            p_description = packet_lookup(msg_type)
 
                         if MAC == '':
                             print(f'need to find MAC : {line}') # temp
-                        # else:
-                            # print(f'{MAC}')  # temp
                             
                         if MAC not in mac_uniq:
                             mac_uniq.append(MAC)
-                            # print(f' added {MAC} to mac_uniq')  # temp
-                        # else:
-                            # print(f'mac_uniq = {mac_uniq}')  # temp
-                        company = company_lookup(MAC)    
+
+                        CompanyName = company_lookup(MAC)    
 
                         if re.fullmatch(r"[0-9a-fA-F]+", dta):    
-                        # if dta.startswith('0x'):
-                            # print(f'dta = {dta}')   # temp
-                        # if 1==1:
-                        # if dta.startswith('0x'):
                             parsed_data = parse_bluetooth_data(dta)
-                            print(f'parsed_data = {parsed_data}')   # temp
-                        
-                        
-                        length2, ad_type, company_id, raw_data = BLE_Data_Translate(dta)
-                        
-                        if MAC not in mac_uniq:
-                            mac_uniq.append(MAC)
-                            # print(f' adding {MAC} to mac_uniq') # temp
-                            # (Tag) =  whitelist_check(MAC, Name)
 
-                            row_data2["Time"] = timestamp
-                            row_data2["MAC"] = MAC
-                            row_data2["Name"] = Name
-                    
-                            row_data2["Hits"] = hits                        
-                            row_data2["dB"] = dB                        
-                            row_data2["Channel"] = channel  
-                            row_data2["company"] = company
-                            row_data2["Device Type"] = device_type
-                            row_data2["file_name"] = file_name
-                            row_data2["Tag"] = Tag
-                            data2.append(row_data2)
+                            MfgrId = parsed_data.get('Manufacturer Data', {}).get('Company ID', '')
+                            CompanyName = parsed_data.get('Manufacturer Data', {}).get('Company Name', '')
+                            Type = parsed_data.get('Identified Device Type', 'Unknown')
                         
+                        if 'unknown company' in CompanyName.lower():
+                            CompanyName == ''
+
+                        length2, ad_type, company_id, raw_data = BLE_Data_Translate(dta)
+                      
+                      
+                        if CompanyName != '':
+                            p_description = (f'{p_description}CompanyName: {CompanyName}')
+                        if msg_type != '':
+                            p_description = (f'{p_description}\nMsg Type: {msg_type}')
+                        if length != '':
+                            p_description = (f'{p_description}\nLength: {length}')
+                                                
+                        p_description = (f'{p_description}\nParsed data: {parsed_data}')
+                        p_description = p_description.strip()
+                        
+  
+                        # if MAC not in mac_uniq:
+                            # mac_uniq.append(MAC)
+
+                            # row_data2["Time"] = timestamp
+                            # row_data2["MAC"] = MAC
+                            # row_data2["Name"] = Name
+                    
+                            # row_data2["Hits"] = hits                        
+                            # row_data2["dB"] = dB                        
+                            # row_data2["Channel"] = channel  
+                            
+                            # row_data2["MfgrId"] = MfgrId
+                            # row_data2["CompanyName"] = CompanyName
+                            # row_data2["Device Type"] = device_type
+                            # row_data2["file_name"] = file_name
+                            # row_data2["Tag"] = Tag
+                            # data2.append(row_data2)
                         
                         row_data["Time"] = timestamp
                         row_data["MAC"] = MAC
@@ -890,7 +903,8 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         row_data["dB"] = dB                        
                         row_data["Channel"] = channel  
                         row_data["length"] = length
-                        row_data["company"] = company
+                        row_data["MfgrId"] = MfgrId
+                        row_data["CompanyName"] = CompanyName
                         row_data["file_name"] = file_name
                         row_data["Device Type"] = device_type
                         row_data["original_file"] = file_name
@@ -903,42 +917,51 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                         data.append(row_data)
 
                     else:
-                        (timestamp, Name, Type, dta, company, MAC) = ('', '', 'misc', '', '', '')
-                            
+                        # for files that start with BLELOG_*.txt
+                        (timestamp, Name, Type, dta, CompanyName, MAC) = ('', '', 'misc', '', '', '')
+                        (description) = ('')    
                         match4 = re.search(mac_regex, line)    # mac address
                         if match4:
                             MAC = {match4.group()}
                             print(f"Extracted MAC Address: {match4.group()}")    
-                            
+                            if MAC != '':
+                                CompanyName = company_lookup(MAC)
+                            if CompanyName != '':
+                                description = (f'{description}\nCompanyName:{CompanyName}')        
                             
                         try:
                             dta = line
                             timestamp = parts[0] if len(parts) > 0 else ""
                         except IndexError:
-                            print(f"Skipping malformed line: {line.strip()}")
+
+                            blah = 'blah'
                             if dta == "":
                                 dta = line  # test
                                 
                         timestamp = iso8601_timestamp(timestamp).replace('T', ' ')
 
-                        if MAC not in mac_uniq:
-                            mac_uniq.append(MAC)
+                        # if MAC not in mac_uniq:
+                            # mac_uniq.append(MAC)
                         
                         if 'AFSK' in file_name:
-                            print(f'___________{file_name}___________ AFSK found') # temp
+                            # print(f'___________{file_name}___________ AFSK found') # temp
                             Type = 'AFSK'
+                        description = description.strip()
                         
                         row_data["Time"] = timestamp
+                        row_data["description"] = description
                         row_data["MAC"] = MAC
                         row_data["Data"] = dta  
                         row_data["original_file"] = file_name
                         row_data["Type"] = Type
+                        row_data["CompanyName"] = CompanyName
+                        
                         data.append(row_data)                        
              
-    print(f' mac_uniq  2 = {data2}')   # temp  
+    # print(f' mac_uniq  2 = {data2}')   # temp  
     print(f'\n{len(mac_uniq)} uniq mac addresses found')    
     # write_xlsx(data, data2)
-    write_xlsx(data)
+    write_xlsx(data,output_xlsx)
         
 
     
@@ -969,6 +992,9 @@ def process_wigle_file(filename, data):
         message_square(message, color_red)        
         return
     else:
+        
+        output_xlsx = (f'{filename}.xlsx')
+
         csv_file = open(filename)
         source_file = filename
         row_count = 0
@@ -1017,7 +1043,7 @@ def process_wigle_file(filename, data):
             # SSID = SSID.replace('\"', '')
 
             if AuthMode == 'LTE;us':
-                Type = 'Tower'
+                Type = 'Tower-LTE'
                 subgroup = 'LTE'            
                 country = 'US'
                 Icon = 'Tower'
@@ -1025,16 +1051,16 @@ def process_wigle_file(filename, data):
             elif ' tv' in SSID.lower() or '(tv)' in SSID.lower():  # todo doesn't match (tv)
                 subgroup = 'Display'
                 Type = 'Display/Speaker'
-                Icon = 'BT'
+                Icon = 'Display'
 
             elif 'LTE;' in AuthMode:
                 subgroup = 'LTE' 
-                Type = 'Tower'
+                Type = 'Tower-LTE'
                 Icon = 'Tower'
             elif AuthMode == 'GSM':
-                Type = 'Tower'
+                Type = 'Tower-GSM'
                 subgroup = 'GSM' 
-                Icon = wer
+                Icon = 'Tower'
   
             elif "Desktop;" in AuthMode:
                 subgroup = 'Desktop'
@@ -1042,18 +1068,21 @@ def process_wigle_file(filename, data):
                 Icon = 'BT'
             elif 'Display/Speaker' in AuthMode:
                 Type = 'Display/Speaker'
-                Icon = 'BT'
+                Icon = 'Display'
                 AuthMode = ''
                 if 'speaker' in SSID.lower():
                     subgroup = 'Speaker'
+                    Icon = 'Display'
                 elif ' tv ' in SSID.lower():
                     subgroup = 'Display'
+                    Icon = 'Display'
                 else:
-                    subgroup = 'Display/Speaker'   
+                    subgroup = 'Display/Speaker'
+                    Icon = 'Display'
             elif 'speaker' in SSID.lower() or 'soundbar' in SSID.lower():
                 Type = 'Display/Speaker'
                 subgroup = 'Speaker'
-                Icon = 'BT'
+                Icon = 'Display'
 
 
 
@@ -1069,17 +1098,19 @@ def process_wigle_file(filename, data):
             elif "BT" in Type or "BLE" in Type:
                 subgroup = Type
                 Type = 'BlueTooth'
-                Icon = 'BT'
+                Icon = "BT"
                 if 'oven' in SSID.lower():
                     subgroup = 'Oven'
                     AuthMode = ''
                 elif 'qled' in SSID.lower():
                     subgroup = 'Display'                
                     Type = 'Display/Speaker'
+                    Icon = 'Display'
                     AuthMode = ''
                 elif 'sound' in SSID.lower():
                     subgroup = 'Speaker'                
                     Type = 'Display/Speaker'
+                    Icon = 'Display'
                 elif 'officejet' in SSID.lower() or 'deskjet' in SSID.lower():
                     subgroup = 'Printer'                
                 elif 'dryer' in SSID.lower():
@@ -1091,7 +1122,8 @@ def process_wigle_file(filename, data):
                     subgroup = 'Light' 
                 elif 'tv' in SSID.lower():
                     Type = 'Display/Speaker'
-                    subgroup = 'Display' 
+                    subgroup = 'Display'
+                    Icon = 'Display'                    
 
             elif "WPA2" in AuthMode:
                 subgroup = 'WPA2'
@@ -1150,11 +1182,13 @@ def process_wigle_file(filename, data):
 
 
             if Coordinate == 'Latitude,Longitude':
-                print(f'skipping {Coordinate}')
+                blah = 'blah'
             elif 'FirstSeen' in Time or 'release' in Time:
-                print(f'skipping {Time}')                
+
+                blah = 'blah'        
             elif any(char.isalpha() for char in Time):
-                print(f'Alpha characters in {Time} Time')
+                # print(f'Alpha characters in {Time} Time') # temp
+                blah = 'blah'
    
             else:
                 row_count += 1
@@ -1212,11 +1246,15 @@ def process_wigle_file(filename, data):
 
                 data.append(row_data)
         print(f'Processed {row_count} rows')
-
+        if row_count > 3000:
+            message = (f'You have too many rows for Google Earth. Manually go delete the # (labels) and maybe the Icon row before running GPS2Address.py')
+            message_square(message, color_red)           
+            print(f'Google Earth only likes up to 2000 labels (#). adjust the xlsx accordingly')
         output_xlsx = filename
-        output_xlsx = output_xlsx.replace('.csv', '.xlsx')  # task
+        output_xlsx = output_xlsx.replace('.csv', '.xlsx')  # task  # it'sonly changing the local output_xlsx
 
-        write_xlsx(data)
+
+        write_xlsx(data,output_xlsx)
 
 
 def remove_duplicate_macs(data):
@@ -1236,7 +1274,7 @@ def remove_duplicate_macs(data):
             unique_macs.add(MAC)
             filtered_data.append(row)
             row_count += 1
-    print(f'found {row_count} unique MACs')
+    print(f'Found {row_count} unique MACs')
     return filtered_data
 
         
@@ -1270,13 +1308,17 @@ def whitelist_check(MAC, Name):
     return Tag, Name
     
 
-def write_xlsx(data):
+def write_xlsx(data,output_xlsx):
     '''
     The write_locations() function receives the processed data as a list of 
     dictionaries and writes it to a new Excel file using openpyxl. 
     It defines the column headers, sets column widths, and then iterates 
     through each row of data, writing it into the Excel worksheet.
     '''
+    
+    # print(f'data = {data}') # temp
+    
+    
     message = (f'Writing {output_xlsx}')
     message_square(message, color_green)
 
@@ -1510,14 +1552,15 @@ def usage():
     print("\nDescription: " + description)
     print(file + " Version: %s by %s" % (version, author))
     print("\nExample:")
-    print("\t" + file + " -w -I WigleWifi_sample.csv")
 
-    print(f'  python {file} -b')  
-    print(f'  python {file} -C')     
-    print(f'  python {file} -L')      
-    print(f'  python {file} -p') 
+    print(f'  python {file} -b      # create a blank sheet')  
+    print(f'  python {file} -C      # clear logs off the HackRF')     
+    print(f'  python {file} -L      # log grabber (HackRF)')      
+    print(f'  python {file} -p      # parse HackRF text') 
     print(f'  python {file} -p -I logs -O WarDrive_.xlsx ')  
-    print(f'  python {file} -w -I WigleWifi_Neighborhood.csv.gz')  
+    print(f'  python {file} -w -I WigleWifi_Neighborhood.csv.gz     # parse wigle log')  
+    print(f'  python {file} -w -I WigleWifi_sample.csv ')    
+
       
     
 
@@ -1527,6 +1570,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+1.0.5 - HackRF log parsing
+1.0.4 - conbined with hackRf logs parser
+1.0.2 - ADSB.TXT, AFSK.txt (useless), APRS.TXT, BLELOG_*.TXT
 1.0.1 - whitelist.csv and blacklist.csv Tagging, keep the .gz filename
 1.0.0 - removes dulicate MAC's and keeps the stongest signal
 0.0.1 - convert MfgrId to a real company
@@ -1537,22 +1583,18 @@ if __name__ == '__main__':
 """
 add whitelist/blacklist check to hackrf parser
 test -L on a real hackrf log set (it's not copying the logs from d to \Logs
-combine HackRF_parser.py with this and use -H to parse the logs folder (rename it wardrive_parser.py)
-
 
 some devices have "quote,quote" in them and it breaks the csv parsing
     sometimes time and latitude are wrong. [ESS]	-93
-
 
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-Hackrf log parsing is a work in progress
 
-If you have 5000 or more items, delete the Icon row before making the KML file 
-or google earth will be unusable.
+If you have 2000 or more items, delete the # (label) row before making the KML file 
+or google earth will be unusable. Leave just the Tagged labels.
 
 """
 

@@ -75,7 +75,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.3.8'
+version = '1.3.9'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -2364,7 +2364,7 @@ def read_locations(input_xlsx):
         elif subgroup == "Mentioned":
             Icon = "Locations"  # task
         elif subgroup == "HarvestedCellTower":
-            Icon = "Tower"   # task add a phone icon or tower
+            Icon = "Tower"
         elif subgroup == "MediaProbablyCaptured":
             Icon = "Images"  
         elif subgroup == "MobilePayment":
@@ -2533,9 +2533,9 @@ def point_icon_maker(Icon):
     # red_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/red-circle.png'
     # white_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/wht-circle.png'
 
-    ap_locked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon51.png'   # red star
-    ap_unlocked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon59.png'   # white star
-    bluetooth_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon49.png'   # little triangle        
+    ap_unlocked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon51.png'   # red star
+    ap_locked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon59.png'   # white star
+    bluetooth_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon57.png'   # white circle        
     calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
@@ -2544,6 +2544,7 @@ def point_icon_maker(Icon):
     car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
     chat_icon = 'https://maps.google.com/mapfiles/kml/shapes/post_office.png' # email
     default_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'   # yellow pin
+    display_icon = 'http://maps.google.com/mapfiles/kml/pal3/icon61.png'   # small black square      
     green_icon = 'https://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png'
     home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
     images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
@@ -2569,13 +2570,16 @@ def point_icon_maker(Icon):
     if Icon == "Lpr" or Icon == "Car":
         point_icon = car_icon
   
-    elif Icon == "WIFI":
+    elif Icon.lower() == "wifi":
         point_icon = ap_locked_icon
-    elif Icon == "WIFI-open":
+    elif Icon.lower() == "wifi-open":
         point_icon = ap_unlocked_icon
-    elif Icon == "BT":
+    elif Icon.lower() == "bt":
+        Icon = 'BT'
         point_icon = bluetooth_icon
-
+    elif Icon.lower() == "display":
+        Icon = 'Display'
+        point_icon = display_icon
     elif Icon == "Car2":
         point_icon = car2_icon
     elif Icon == "Car3":
@@ -2610,12 +2614,15 @@ def point_icon_maker(Icon):
         point_icon = locations_icon
     elif Icon == "Toll":
         point_icon = toll_icon
-    elif Icon == "Tower":
+    elif Icon.lower() == "tower":
         point_icon = tower_icon
+        # print(f'found a tower Icon {Icon}')    # temp
     elif Icon == "Lte":
         point_icon = tower_icon
+        # print(f'found a tower Icon {Icon}')    # temp
     elif Icon == "Gsm":
         point_icon = tower_icon
+        print(f'found a tower Icon {Icon}')    # temp
         # (kml, point) = radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, Altitude, point_icon)
     elif Icon == "Yellow":
         point_icon = yellow_icon
@@ -3067,10 +3074,10 @@ def write_locations(data):
         ('', 'Chats', 'Chats'),   # 
         ('', 'Payment', 'Payment'),        
         ('', 'Tower', 'Bullseye'),
-        ('', 'Bluetooth', 'red dot'),
+        ('', 'Bluetooth', 'white circle'),
         ('', 'WIFI-open', 'red star'),
         ('', 'WIFI', 'white star'),
-        
+        ('', 'Display/Sound', 'white square'),        
         ('', '', ''),
         ('', 'blue lines', 'trips with a start and end'),
         ('', 'red lines', 'coordinates with timestamps within a short period of time (like same day)'),        
@@ -3083,9 +3090,9 @@ def write_locations(data):
         color_worksheet.cell(row=row_index + 2, column=1).value = icon
         color_worksheet.cell(row=row_index + 2, column=2).value = tag
         color_worksheet.cell(row=row_index + 2, column=3).value = description
-    ap_locked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon51.png'   # red star
-    ap_unlocked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon59.png'   # white star
-    bluetooth_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon49.png'   # red b        
+    ap_unlocked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon51.png'   # red star
+    ap_locked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon59.png'   # white star
+    bluetooth_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon57.png'   # white circle        
     calendar_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon23.png' # paper
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
     car_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon15.png'   # red car
@@ -3094,6 +3101,7 @@ def write_locations(data):
     car4_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon7.png'  # red car with circle
     chat_icon = 'https://maps.google.com/mapfiles/kml/shapes/post_office.png' # email
     default_icon = 'https://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'   # yellow pin
+    display_icon = 'http://maps.google.com/mapfiles/kml/pal3/icon61.png'   # small black square    
     green_icon = 'https://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png'
     home_icon = 'https://maps.google.com/mapfiles/kml/pal3/icon56.png'
     images_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon46.png'
@@ -3222,7 +3230,11 @@ def write_locations(data):
         response = requests.get(ap_locked_icon)
         img = Image(io.BytesIO(response.content))
         color_worksheet.add_image(img, 'A31')
-       
+
+        response = requests.get(display_icon)
+        img = Image(io.BytesIO(response.content))
+        color_worksheet.add_image(img, 'A32')
+        
     except:
         pass
 

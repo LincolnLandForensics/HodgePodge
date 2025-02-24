@@ -64,3 +64,51 @@ Icons
 *   red circles -indicate radius of the signal and/or accuracy of the point
 
 ---
+
+
+## WarDriveParser.py
+
+Convert wigle .gz or .csv exports to gps2address.py locations format or convert HackRf logs.
+
+Note: Wigle(dot)net can be used to query MAC address and SSID's. Wigle Wifi is an Android app that captures Bluetooth, Wifi, & Cell Tower info. HackRF can be used to sniff Bluetooth and more.
+
+
+Usage:
+```
+python GPS2Address.py -h
+```
+
+
+```
+options:
+  -h, --help            show this help message and exit
+  -I INPUT, --input INPUT
+  -O OUTPUT, --output OUTPUT
+  -b, --blank           create blank sheet
+  -C, --clear           clear logs off the HackRF
+  -L, --logs            log grabber (HackRF)
+  -p, --parseHackRF     parse HackRF text
+  -w, --wigleparse      parse wigle file csv
+```
+
+
+
+```
+Example:
+  python WarDriveParser.py -b      # create a blank sheet
+  python WarDriveParser.py -C      # clear logs off the HackRF
+  python WarDriveParser.py -L      # log grabber (HackRF)
+  python WarDriveParser.py -p      # parse HackRF text
+  python WarDriveParser.py -p -I logs -O WarDrive_.xlsx
+  python WarDriveParser.py -w -I WigleWifi_Neighborhood.csv.gz     # parse wigle log
+```    
+
+
+![Syntax Example](images/WigleWiFI2.jpg)
+
+*   Visit earth.google.com, File,Import KML 
+
+
+![Example](images/WigleWiFI.jpg)
+
+---
