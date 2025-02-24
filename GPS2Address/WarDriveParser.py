@@ -24,7 +24,7 @@ from datetime import datetime
 
 author = 'LincolnLandForensics'
 description = "Convert wigle .gz or .csv exports to gps2address.py locations format or convert HackRf logs. Convert MAC to company name."
-version = '1.2.0'
+version = '1.2.1'
 
 global hackRF_drive
 hackRF_drive= 'H'
@@ -226,19 +226,19 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-def blacklist_check(MAC, Name):
+def watchList_check(MAC, Name):
     # Check if the CSV file exists
     Tag =  ''
-    blacklist_file = 'blacklist.csv'
-    if os.path.exists(blacklist_file):
+    watchList_file = 'watchList.csv'
+    if os.path.exists(watchList_file):
         # Read the CSV file and update the companies dictionary
-        with open(blacklist_file, mode='r', newline='', encoding='utf-8') as file:
+        with open(watchList_file, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.reader(file)
             next(reader)  # Skip the header row
             for row in reader:
                 mac = row[0]
                 if MAC == mac:
-                    Tag = 'blacklist'
+                    Tag = 'watchList'
                     if Name == '':
                         Name = row[1]
     return Tag, Name
@@ -597,9 +597,9 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
 
 
                     if Tag == '':
-                        (Tag, Name) =  whitelist_check(MAC, Name)
+                        (Tag, Name) =  protectList_check(MAC, Name)
                     if Tag == '':
-                        (Tag, Name) =  blacklist_check(MAC, Name)
+                        (Tag, Name) =  watchList_check(MAC, Name)
 
                     if MAC not in mac_uniq:    
                         mac_uniq.append(MAC)
@@ -1139,9 +1139,9 @@ def process_wigle_file(filename, data):
                     subgroup = 'Thermostat'                    
                     
             if Tag == '':
-                (Tag, Name) =  whitelist_check(MAC, Name)
+                (Tag, Name) =  protectList_check(MAC, Name)
             if Tag == '':
-                (Tag, Name) =  blacklist_check(MAC, Name)
+                (Tag, Name) =  watchList_check(MAC, Name)
                     
             SSID = sanitize_string(SSID)
             type_data = Type
@@ -1290,19 +1290,19 @@ def sanitize_string(text):
 
 
     
-def whitelist_check(MAC, Name):
+def protectList_check(MAC, Name):
     # Check if the CSV file exists
     Tag =  ''
-    whitelist_file = 'whitelist.csv'
-    if os.path.exists(whitelist_file):
+    protectList_file = 'protectList.csv'
+    if os.path.exists(protectList_file):
         # Read the CSV file and update the companies dictionary
-        with open(whitelist_file, mode='r', newline='', encoding='utf-8') as file:
+        with open(protectList_file, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.reader(file)
             next(reader)  # Skip the header row
             for row in reader:
                 mac = row[0]
                 if MAC == mac:
-                    Tag = 'whitelist'
+                    Tag = 'protectList'
                     if Name == '':
                         Name = row[1]
     return Tag, Name
@@ -1549,10 +1549,11 @@ def write_xlsx(data,output_xlsx):
     
 def usage():
     file = sys.argv[0].split('\\')[-1]
-    print("\nDescription: " + description)
-    print(file + " Version: %s by %s" % (version, author))
-    print("\nExample:")
 
+    print(f'\nDescription: {color_green}{description}{color_reset}')
+    print(f'{file} Version: {version} by {author}')
+    print(f'\n    {color_yellow}')
+    print(f'\nExample:')
     print(f'  python {file} -b      # create a blank sheet')  
     print(f'  python {file} -C      # clear logs off the HackRF')     
     print(f'  python {file} -L      # log grabber (HackRF)')      
@@ -1560,9 +1561,8 @@ def usage():
     print(f'  python {file} -p -I logs -O WarDrive_.xlsx ')  
     print(f'  python {file} -w -I WigleWifi_Neighborhood.csv.gz     # parse wigle log')  
     print(f'  python {file} -w -I WigleWifi_sample.csv ')    
+    print(f'\n{color_reset}')    
 
-      
-    
 
 if __name__ == '__main__':
     main()
@@ -1570,10 +1570,10 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-1.0.5 - HackRF log parsing
+
 1.0.4 - conbined with hackRf logs parser
 1.0.2 - ADSB.TXT, AFSK.txt (useless), APRS.TXT, BLELOG_*.TXT
-1.0.1 - whitelist.csv and blacklist.csv Tagging, keep the .gz filename
+1.0.1 - protectList.csv and watchList.csv Tagging, keep the .gz filename
 1.0.0 - removes dulicate MAC's and keeps the stongest signal
 0.0.1 - convert MfgrId to a real company
 """
@@ -1581,7 +1581,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-add whitelist/blacklist check to hackrf parser
+create a module that merges Timestamp:Coordinates logs with timestamp logs missing coordinates. 
+    needs to pick out the closest timestamp. Update the missing coordinate.
+add protectList/watchList check to hackrf parser
 test -L on a real hackrf log set (it's not copying the logs from d to \Logs
 
 some devices have "quote,quote" in them and it breaks the csv parsing
@@ -1589,7 +1591,7 @@ some devices have "quote,quote" in them and it breaks the csv parsing
 
 """
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      Notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
 

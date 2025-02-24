@@ -118,7 +118,11 @@ This script will remove duplicate MAC addresses by signal strength.
 
 ![Syntax Example](images/WigleWiFI2.jpg)
 
-note: If you have more than 2000 lines you should manually reduce the # column (label) to less than 2000. Otherwise Google Earth craps out.
+Note: If you have more than 2000 lines you should manually reduce the # column (label) to less than 2000. Otherwise Google Earth craps out.
+
+Note: protectList.csv and watchList.csv can be used to look for and label specific MAC's
+
+
 
 *   Visit earth.google.com, File,Import KML 
 
