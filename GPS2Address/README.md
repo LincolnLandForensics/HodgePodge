@@ -47,7 +47,7 @@ Icons
 *   Images -Photo
 *   Intel -I
 *   Locations -Reticle
-*   default -Yellow flag
+*   Default -Yellow flag
 *   Office
 *   Searched -Searched Item
 *   Videos -Video clip
@@ -58,18 +58,18 @@ Icons
 *   S -Southbound blue arrow
 *   W -Westbound blue arrow
 	
-*   Chats
+*   Chats - Envelope
 *   Tower -Bullseye
-*   Bluetooth - white circle
-*   WIFI-open - red star
-*   WIFI - white star
-*   Display/Sound - white square
+*   Bluetooth - White circle
+*   WIFI-open - Red star
+*   WIFI - White star
+*   Display/Sound - White square
 
 
 *   Yellow font - Tagged
-*   blue lines -trips with a start and end
-*	red lines -coordinates with timestamps within a short period of time (like same day) (travel_path_*.kml)
-*   red circles -indicate radius of the signal and/or accuracy of the point
+*   Blue lines -trips with a start and end
+*	Red lines -coordinates with timestamps within a short period of time (like same day) (travel_path_*.kml)
+*   Red circles -indicate radius of the signal and/or accuracy of the point
 
 ---
 
