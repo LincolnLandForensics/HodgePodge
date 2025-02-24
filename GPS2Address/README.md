@@ -19,8 +19,10 @@ Usage:
 python GPS2Address.py -r
 ```
 insert your GPS or addresses into locations.xlsx
-```
+
 Example:
+
+```
     GPS2Address.py -c -O input_blank.xlsx
     GPS2Address.py -k -I locations.xlsx  # xlsx 2 kml with no internet processing
     GPS2Address.py -r
@@ -58,9 +60,15 @@ Icons
 	
 *   Chats
 *   Tower -Bullseye
+*   Bluetooth - white circle
+*   WIFI-open - red star
+*   WIFI - white star
+*   Display/Sound - white square
 
-*   Yellow font -Tagged
+
+*   Yellow font - Tagged
 *   blue lines -trips with a start and end
+*	red lines -coordinates with timestamps within a short period of time (like same day) (travel_path_*.kml)
 *   red circles -indicate radius of the signal and/or accuracy of the point
 
 ---
@@ -77,10 +85,11 @@ Usage:
 ```
 python GPS2Address.py -h
 ```
+Options:
 
 
 ```
-options:
+
   -h, --help            show this help message and exit
   -I INPUT, --input INPUT
   -O OUTPUT, --output OUTPUT
@@ -92,9 +101,10 @@ options:
 ```
 
 
+Example:
 
 ```
-Example:
+
   python WarDriveParser.py -b      # create a blank sheet
   python WarDriveParser.py -C      # clear logs off the HackRF
   python WarDriveParser.py -L      # log grabber (HackRF)
@@ -103,11 +113,20 @@ Example:
   python WarDriveParser.py -w -I WigleWifi_Neighborhood.csv.gz     # parse wigle log
 ```    
 
+This script will remove duplicate MAC addresses by signal strength. 
+
 
 ![Syntax Example](images/WigleWiFI2.jpg)
 
+note: If you have more than 2000 lines you should manually reduce the # column (label) to less than 2000. Otherwise Google Earth craps out.
+
 *   Visit earth.google.com, File,Import KML 
 
+```
+python GPS2Address.py -r -I WigleWifi_Neighborhood.xlsx
+```
+
+Google Earth Example: 
 
 ![Example](images/WigleWiFI.jpg)
 
