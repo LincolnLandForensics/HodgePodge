@@ -83,7 +83,7 @@ Note: Wigle(dot)net can be used to query MAC address and SSID's. Wigle Wifi is a
 
 Usage:
 ```
-python GPS2Address.py -h
+python WarDriveParser.py -h
 ```
 Options:
 
