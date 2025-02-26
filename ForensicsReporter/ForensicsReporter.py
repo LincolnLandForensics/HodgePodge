@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.2.3'
+version = '3.2.4'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -387,7 +387,7 @@ def enter_data():
 
 
             # print out sticker format
-            print(f"Case: {caseNumber} Ex:{exhibit}")
+            print(f"Case: {caseNumber} Item:{exhibit}")
             print(f"CaseName: {caseName}")
             print(f"Subject: {subjectBusinessName}")
             print(f"Make: {makeModel}")
@@ -3074,7 +3074,7 @@ def write_sticker():
         status = row['status']
 
         if status == 'Imaged':    
-            header = (f'''Case#: {caseNumber}      Ex: {exhibit}
+            header = (f'''Case#: {caseNumber}      Item: {exhibit}
 CaseName: {caseName}
 Subject: {subjectBusinessName}
 Make: {makeModel} 
@@ -3083,7 +3083,7 @@ Agent: {caseAgent}
 {status}
 ''')
         else:
-            header = (f'''Case#: {caseNumber}      Ex: {exhibit}
+            header = (f'''Case#: {caseNumber}      Item: {exhibit}
 CaseName: {caseName}
 Subject: {subjectBusinessName}
 Make: {makeModel} 
