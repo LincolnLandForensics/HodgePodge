@@ -1,26 +1,30 @@
 
-# HackRF_parser.py
+# WarDriveParser.py
 
-parse HackRF Mac Address logs
+Convert wigle .gz or .csv exports to gps2address.py locations format or convert HackRf logs. 
 
-HackRF can track the signal strength. The closer the dB is to zero, the closer you are.
+Convert MAC to company name.
 
-You can filter by mac address to track a specific device.
-
-This is where this parser might come in handy, by identifying the company that made the device.
-
-Eventually I might be able to decode the device type (ex. phone)
-
-whitelist out known Mac's so you don't track something that you brought to the party.
 
 
 ## Example:
-    python HackRF_parser.py -p -I H:\BLERX\Lists -O output_BleRX.xlsx
+  python WarDriveParser.py -b      # create a blank sheet
 
+  python WarDriveParser.py -C      # clear logs off the HackRF
+
+  python WarDriveParser.py -L      # log grabber (HackRF)
+
+  python WarDriveParser.py -p      # parse HackRF text
+
+  python WarDriveParser.py -p -I logs -O WarDrive_.xlsx
+
+  python WarDriveParser.py -w -I WigleWifi_Neighborhood.csv.gz     # parse wigle log
+
+  python WarDriveParser.py -w -I WigleWifi_sample.csv
 
 ## Installation:
 ```
-python pip install -r requirements_BleRX_parser.txt
+python pip install -r requirements_WarDriveParser.txt
 ```
 or 
 ```
@@ -32,12 +36,14 @@ pip install openpyxl
 
 
 ```
-python HackRF_parser.py
+python WarDriveParser.py
 ```
 
 
 
 ## Note:
+
+Wigle(.)net has an app for Android devices.
 
 Bluetooth was captured with HackRF Porta pack h4
 
