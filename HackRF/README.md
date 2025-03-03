@@ -1,10 +1,19 @@
 
 # WarDriveParser.py
 
+I wrote a python script to parse/visualize Wigle (dot)net and HackRF coordinates. 
+
+Wigle Wifi is an Android app that captures Bluetooth (BT & BLE), Wifi, & Cell Tower info. 
+
+HackRF can be used to sniff all things radio signal. 
+
+It only keeps the hardest signal so you can narrow down the location easier. 
+
+This helps you drink from the firehose.
+
 Convert wigle .gz or .csv exports to gps2address.py locations format or convert HackRf logs. 
 
 Convert MAC to company name.
-
 
 
 ## Example:
@@ -42,6 +51,11 @@ python WarDriveParser.py
 
 
 ## Note:
+
+When the Wigle app is used in conjunction with GPS2Address.py, it can create google earth files (.KML) like this:
+
+![sample KML](Images/Wigle_Wifi1.png)
+
 
 Wigle(.)net has an app for Android devices.
 
