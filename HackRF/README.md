@@ -1,19 +1,11 @@
 
 # WarDriveParser.py
 
-I wrote a python script to parse/visualize Wigle (dot)net and HackRF coordinates. 
+Python script to parse and visualize Wigle(.)net and HackRF data. 
 
-Wigle Wifi is an Android app that captures Bluetooth (BT & BLE), Wifi, & Cell Tower info. 
+Converts Wigle (.gz/.csv) and HackRF logs to gps2address.py format, retaining the strongest signals for precise geolocation. 
 
-HackRF can be used to sniff all things radio signal. 
-
-It only keeps the hardest signal so you can narrow down the location easier. 
-
-This helps you drink from the firehose.
-
-Convert wigle .gz or .csv exports to gps2address.py locations format or convert HackRf logs. 
-
-Convert MAC to company name.
+Maps MAC addresses to company names.
 
 
 ## Example:
