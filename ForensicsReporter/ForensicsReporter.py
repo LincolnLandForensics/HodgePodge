@@ -5,7 +5,7 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" 
+agency = "MWW" # ISP, MWW
 global agencyFull
 agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.2.6'
+version = '3.2.7'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1779,7 +1779,7 @@ def read_xlsx():
         mobileCarrier = str(row['mobileCarrier'])
 
         if caseNumberTodo == '':
-            caseNumberTodo = (f'''    - [ ] {caseNumber} - Add to spreadsheet
+            caseNumberTodo = (f'''- [ ] {caseNumber} - Add to spreadsheet
 - [ ] {caseNumber} - Label all
 - [ ] {caseNumber} - Photograph    
 - [ ] {caseNumber} - Activity Report''')
@@ -1787,17 +1787,17 @@ def read_xlsx():
         if exhibit != '':
             if status.lower() == "imaged" or status.lower() == "not imaged":
                 bodyDone = (f'''{bodyDone}
-    - [x] {caseNumber} Ex: {exhibit} - Image''')
+- [x] {caseNumber} Ex: {exhibit} - Image''')
             else:
                     bodyTodo = (f'''{bodyTodo}
-    - [ ] {caseNumber} Ex: {exhibit} - Image''')
+- [ ] {caseNumber} Ex: {exhibit} - Image''')
             
             if reportStatus.lower() == "finalized":
                 bodyDone = (f'''{bodyDone}
-    - [x] {caseNumber} Ex: {exhibit} - Analyze''')
+- [x] {caseNumber} Ex: {exhibit} - Analyze''')
             else:
                 bodyTodo = (f'''{bodyTodo}
-    - [ ] {caseNumber} Ex: {exhibit} - Analyze''')
+- [ ] {caseNumber} Ex: {exhibit} - Analyze''')
 
 
         biosTime = str(row['biosTime'])
@@ -1905,8 +1905,6 @@ def read_xlsx():
         qrCode = f"{caseNumber}_{exhibit}"
 
 
-        # if caseNumberTodo == '':
-            # caseNumberTodo = caseNumber
 
         pdf_output = f"EvidenceForm_{caseNumber}_Ex_{exhibit}.pdf"
         if not header:
@@ -3088,7 +3086,7 @@ kanban-plugin: board
 
 
 ## To-Do
-
+{caseNumberTodo}
 {bodyTodo}
 
 ## Done
