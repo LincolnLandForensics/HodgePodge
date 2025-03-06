@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "IDOR" # ISP, MWW
+agency = "MWW" # ISP, MWW
 global agencyFull
-agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
+agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.2.4'
+version = '3.2.5'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -57,8 +57,6 @@ todaysDate = d.strftime("%Y-%m-%d")
 
 # todaysDateTime = d.strftime("%m_%d_%Y_%H-%M-%S")
 todaysDateTime = d.strftime("%Y-%m-%d_%H-%M-%S")    # used for uniq file naming
-
-
 
 
 ANNOT_KEY = '/Annots'
@@ -387,7 +385,7 @@ def enter_data():
 
 
             # print out sticker format
-            print(f"Case: {caseNumber} Item:{exhibit}")
+            print(f"Case: {caseNumber} Ex:{exhibit}")
             print(f"CaseName: {caseName}")
             print(f"Subject: {subjectBusinessName}")
             print(f"Make: {makeModel}")
@@ -814,7 +812,9 @@ def parse_log():
 
         # read section
     for logFile in logs_list:
-        print(f"{color_green}Reading {logFile}{color_reset}")         
+        msg_blurb = (f'Reading {logFile}')
+        msg_blurb_square(msg_blurb, color_green)
+      
 
         # style = workbook.add_format()
         # style = Workbook.add_format()        
@@ -1513,6 +1513,19 @@ def parse_log():
             vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2)
     print(f"{color_green}Exporting logs as {spreadsheet}{color_reset}")    
 
+
+def msg_blurb_square(msg_blurb, color):
+    horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
+    empty_line = f"| {' ' * (len(msg_blurb))} |"
+
+    print(color + horizontal_line)
+    print(empty_line)
+    print(f"| {msg_blurb} |")
+    print(empty_line)
+    print(horizontal_line)
+    print(f'{color_reset}')
+
+
 def pdf_extract(filename):
     """
     Extract data from a PDF file and return relevant information as a tuple.
@@ -1634,92 +1647,6 @@ def pdf_extract(filename):
     )
 
 
-        
-def pdf_extract_old(filename):
-    """
-        Extract data from a pdf
-    """
-    import pdfplumber   # pip install pdfplumber
-    (forensicExaminer, exhibitType, makeModel, serial, OS, phoneNumber) = ('', '', '', '', '', '')
-    (phoneIMEI, email, status, imagingType, imageMD5, imageSHA256) = ('', '', '', '', '', '')
-    (imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool) = ('', '', '', '', '', '')
-    (tempNotes, exhibit) = ('', '')
-
-    with pdfplumber.open(filename) as pdf:
-        totalpages = len(pdf.pages)
-        for i in range(0 ,totalpages):
-            page = pdf.pages[i]
-            tempNotes = ('''%s %s''') %(tempNotes, page.extract_text())
-            phoneIMEI = 'Duncan Donuts'
-            forensicExaminer = re.search(r'Examiner Name:(.*?)\n', tempNotes)
-            try:
-                forensicExaminer = str(forensicExaminer[1]).strip()
-            except TypeError as error:
-                print(error)
-            exhibit = re.search(r'Evidence ID:(.*?)\n', tempNotes)
-            try:
-                exhibit = str(exhibit[1]).strip()
-            except TypeError as error:
-                print(error)
-            makeModel = re.search(r'Model(.*?)\n', tempNotes)   # todo
-            try:
-                makeModel = str(makeModel[1]).strip()
-            except TypeError as error:
-                print(error)
-            serial = re.search(r'Serial Number (.*?)\n', tempNotes)
-            
-            try:
-                serial = str(serial[1]).strip()
-            except: 
-                pass
-                
-            imagingTool = re.search(r'GrayKey Software: OS Version:(.*?),', tempNotes)
-            
-            
-            try:
-                imagingTool = str(imagingTool[1]).strip()
-            except: 
-                pass
-            imagingTool = ('GrayKey %s' %(imagingTool))
-
-            imagingStarted = re.search(r'Report generation time:(.*?)\n', tempNotes)
-            try:
-                imagingStarted = str(imagingStarted[1]).strip()
-            except: 
-                pass
-            # OS = re.search(r'Software Version (.*?)\n', tempNotes)  # this gets overwritten
-            # OS = str(OS[1]).strip()
-
-            # phoneNumber = re.search(r'Phone Number \+(.*?)\n', tempNotes)   # todo don't grab +
-            # phoneNumber = str(phoneNumber[1]).strip()
-            
-            try:
-                phoneIMEI = re.search(r'IMEI(.*?)\n', tempNotes)
-                phoneIMEI = str(phoneIMEI[1]).strip()
-            except:
-                pass
-
-            # try:
-                # email = re.search(r'Accounts (.*?)\n', tempNotes)
-                # email = str(email[1]).strip()
-            # except:
-                # pass
-            
-            # try:
-                # evidenceDataSize = re.search(r'Extraction size(.*?)\n', tempNotes)
-                # evidenceDataSize = evidenceDataSize
-            # except:
-                # pass
-            # imageSHA256 = re.search(r'SHA256 (.*?)\n', tempNotes)
-            # imageSHA256 = str(imageSHA256[1]).strip()
-            
-            # imageMD5 = re.search(r'MD5 (.*?)\n', tempNotes)
-            # imageMD5 = str(imageMD5[1]).strip()
-
-    return(forensicExaminer, exhibit, exhibitType, makeModel, serial, OS, phoneNumber, phoneIMEI, email, status, imagingType, imageMD5, imageSHA256, imagingStarted, imagingFinished, imagingTool, storageSize, evidenceDataSize, analysisTool, tempNotes)
-
-
-
 def pdf_filltest(input_pdf_path, output_pdf_path, data_dict):   
     """
     Fill out PDF form fields based on a provided dictionary of values.
@@ -1811,7 +1738,7 @@ def read_xlsx():
         this will read in each line and write a report 
         it then makes a backup of copy xlsx of the lines you tossed in
     """
-    sheet_name = "Forensics"
+    sheet_name, bodyTodo, caseNumberTodo, bodyDone = "Forensics", '', '', ''
 
     if not os.path.exists(input_file):
         print(f"{color_red}{input_file} does not exist{color_reset}")
@@ -1819,13 +1746,14 @@ def read_xlsx():
     else:
         dftemp = pd.read_excel(input_file, sheet_name=sheet_name)
         df = dftemp.fillna('')  # Replace NaN with empty string
- 
-        print(f"{color_green}Reading {input_file}{color_reset}") 
+        msg_blurb = (f'Reading {input_file}')
+        msg_blurb_square(msg_blurb, color_green) 
+
     (header, reportStatus, date) = ('', '', '')
     (body, executiveSummary, evidenceBlurb) = ('', '', '')
     (style) = ('')
     (caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer) = ('', '', '', '', '', '', '', '', '')
-    (subject, vowel) = ('test', 'aeiou')
+    (subject, vowel, status) = ('test', 'aeiou', '')
 
 
     # read in the spreadsheet
@@ -1841,6 +1769,7 @@ def read_xlsx():
         reportStatus = str(row['reportStatus'])
         notes = str(row['notes'])
         summary = str(row['summary'])
+        status = str(row['status'])
         exhibitType = str(row['exhibitType'])
         makeModel = str(row['makeModel'])
         serial = str(row['serial'])
@@ -1848,6 +1777,28 @@ def read_xlsx():
         phoneNumber = str(row['phoneNumber'])
         phoneIMEI = str(row['phoneIMEI'])
         mobileCarrier = str(row['mobileCarrier'])
+
+        if caseNumberTodo == '':
+            caseNumberTodo = (f'''    - [ ] {caseNumber} - Add to spreadsheet
+- [ ] {caseNumber} - Label all
+- [ ] {caseNumber} - Photograph    
+- [ ] {caseNumber} - Activity Report''')
+
+        if exhibit != '':
+            if status.lower() == "imaged" or status.lower() == "not imaged":
+                bodyDone = (f'''{bodyDone}
+    - [x] {caseNumber} Exhibit {exhibit} - Image''')
+            else:
+                    bodyTodo = (f'''{bodyTodo}
+    - [ ] {caseNumber} Exhibit {exhibit} - Image''')
+            
+            if reportStatus.lower() == "finalized":
+                bodyDone = (f'''{bodyDone}
+    - [x] {caseNumber} Exhibit {exhibit} - Analyze''')
+            else:
+                bodyTodo = (f'''{bodyTodo}
+    - [ ] {caseNumber} Exhibit {exhibit} - Analyze''')
+
 
         biosTime = str(row['biosTime'])
         biosTime = biosTime.strip()
@@ -1954,6 +1905,9 @@ def read_xlsx():
         qrCode = f"{caseNumber}_{exhibit}"
 
 
+        # if caseNumberTodo == '':
+            # caseNumberTodo = caseNumber
+
         pdf_output = f"EvidenceForm_{caseNumber}_Ex_{exhibit}.pdf"
         if not header:
             header = f"""
@@ -1987,7 +1941,7 @@ Special Agent {caseAgent} of the {agencyFull}, {divisionFull}, requested an exam
 
 Note:
 
-Data contained in these findings may be sensitive, confidential, or in some cases offensive. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing is not authorized.
+Data contained in these findings may be sensitive or confidential. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing is not authorized.
 
 Executive Summary
 
@@ -2001,7 +1955,7 @@ Forensic Imaging
         report = f"""
 
 
-Item {exhibit}
+Exhibit {exhibit}
 
 """
 
@@ -2201,7 +2155,7 @@ Item {exhibit}
             if exhibitType:
                 report = f"{report} This {exhibitType} was returned to the owner on {removalDate2}."
             else:
-                report = f"{report} This item was returned to the owner on {removalDate2}."
+                report = f"{report} This exhibit was returned to the owner on {removalDate2}."
 
     
         report = report.replace("    , was received. ", "    ")
@@ -2281,16 +2235,19 @@ All forensic equipment and software have been functionally tested/validated with
 
 All forensic acquisition, analysis and write-blocking software used for this case is licensed and/or registered to {forensicExaminer} and/or the {agencyFull}.
 
-This report contains digital examination of the items provided based on the investigative information and tools available to the examiner at the time of the analysis. 
+This report contains digital examination of the exhibits provided based on the investigative information and tools available to the examiner at the time of the analysis. 
 
 A copy of this report will be given to {caseAgent}. Additional analysis may be requested after review of the report or as the investigation continues.
 
-All digital images obtained pursuant to this investigation will be maintained on {agency} servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an item in the case file.
+All digital images obtained pursuant to this investigation will be maintained on {agency} servers for five years past the date of adjudication and/or case discontinuance. Copies of digital images will be made available upon request. All files copied from the images and provided to the case agent for review are identified as the DIGITAL EVIDENCE FILE and will be included as an exhibit in the case file.
 '''
 
 
     # write docx report
     write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer)
+    write_todo(caseNumber, caseNumberTodo, bodyTodo, bodyDone)
+
+
 
 def sanitize_filename(name):
     # Define a pattern for illegal characters
@@ -2436,7 +2393,8 @@ def write_checklist():  # panda edition
         
         exit()    
     else:
-        print(f"{color_green}Reading {input_file}{color_reset}")
+        msg_blurb = (f'Reading {input_file}')
+        msg_blurb_square(msg_blurb, color_green)
         
         dftemp = pd.read_excel(input_file, sheet_name=sheet_name)
         df = dftemp.fillna('')  # Replace NaN with empty string
@@ -3014,7 +2972,9 @@ def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, 
     
     document.save(output_docx)   # print output to the new file
 
-    print(f"{color_green}Activity report written to {output_docx}{color_reset}")        
+    msg_blurb = (f'Activity report written to {output_docx}')
+    msg_blurb_square(msg_blurb, color_green)
+      
 
 def write_sticker():
     """
@@ -3054,7 +3014,9 @@ def write_sticker():
         print(f"{color_red}{input_file} does not exist{color_reset}")    
         exit()
     else:
-        print(f"{color_green}Reading {input_file}{color_reset}")    
+        msg_blurb = (f'Reading {input_file}')
+        msg_blurb_square(msg_blurb, color_green)
+  
 
         dftemp = pd.read_excel(input_file, sheet_name=sheet_name)
         # df = dftemp.fillna('').sort_values(by='exhibit')  # Replace NaN with empty string and sort by exhibit
@@ -3074,7 +3036,7 @@ def write_sticker():
         status = row['status']
 
         if status == 'Imaged':    
-            header = (f'''Case#: {caseNumber}      Item: {exhibit}
+            header = (f'''Case#: {caseNumber}      Ex: {exhibit}
 CaseName: {caseName}
 Subject: {subjectBusinessName}
 Make: {makeModel} 
@@ -3083,7 +3045,7 @@ Agent: {caseAgent}
 {status}
 ''')
         else:
-            header = (f'''Case#: {caseNumber}      Item: {exhibit}
+            header = (f'''Case#: {caseNumber}      Ex: {exhibit}
 CaseName: {caseName}
 Subject: {subjectBusinessName}
 Make: {makeModel} 
@@ -3108,6 +3070,46 @@ Agent: {caseAgent}
             pass
     document.save(output_docx)
     print(f"{color_green}Data written to {output_docx}")
+
+
+def write_todo(caseNumber, caseNumberTodo, bodyTodo, bodyDone):
+    # Define the filename
+    todo_filename = f'Todo_{caseNumber}.md'
+    
+    # Define the content of the file
+
+    bodyList = f'''---
+
+kanban-plugin: board
+
+---
+
+## Doing
+
+
+## To-Do
+
+{bodyTodo}
+
+## Done
+
+{bodyDone}
+
+
+%% kanban:settings
+```
+{{"kanban-plugin":"board","list-collapse":[false,false,false],"show-archive-all":false}}
+```
+%%'''
+
+
+    
+    # Write to the file
+    with open(todo_filename, 'w', encoding='utf-8') as file:
+        file.write(bodyList)
+    
+    msg_blurb = (f'ToDo file "{todo_filename}" has been created.')
+    msg_blurb_square(msg_blurb, color_green)
 
 def usage():
     """
@@ -3137,6 +3139,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+3.0.9 - went back to Exhibit instead of Item
+3.0.7 - export a markdown file as a todo list
 3.0.6 - added lots of new wording and disclaimer based on a report by J.S.
 3.0.5 - converted to print(f" so it's easier to read and update by variables)
 3.0.0 - added color & error checking
@@ -3150,7 +3154,7 @@ if __name__ == '__main__':
 2.6.1 - if you change agency, agencyFull and divisionFull it writes a more customized report
 2.6.0 - added -L option to parse a folder full of logs all at once. -I and -O are optional now
 2.5.6 - Logs: CellebritePremium DeviceInfo.txt, Berla iVE
-2.5.0 - Column Re-order to group like items together (case, description, lab chain of custody, acquisition, notes)
+2.5.0 - Column Re-order to group like exhibits together (case, description, lab chain of custody, acquisition, notes)
 2.1.3 - fixed log parser to populate storageSize, storageMakeModel, storageSerial, storageSize (Tableau)
 2.1.2 - Added about a dozen columns for additional info (the columns need to be re-ordered one of these days.)
 2.1.1 - Added ISP pdf templates for pdf writing (just change agency = to agency = 'ISP'
@@ -3167,6 +3171,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+export a markdown file as a todo list
+
 add a -f option if you want it worded in first person perspective (sounds hard to write)
 Add a glossary of terms?
 
@@ -3207,7 +3213,7 @@ if you have log output (like GrayKey) you want parsed, send it my way. As long a
 If you want your agencies forms filled, you just need to insert these variables into your pdf.
 
 
-“black iPhone 11 currently stored as item number x under case number 22-xxxx which was located on master bedroom nightstand….”
+“black iPhone 11 currently stored as exhibit number x under case number 22-xxxx which was located on master bedroom nightstand….”
 
 """
 
