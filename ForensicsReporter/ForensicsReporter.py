@@ -5,7 +5,7 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "MWW" 
 global agencyFull
 agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.2.5'
+version = '3.2.6'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1787,17 +1787,17 @@ def read_xlsx():
         if exhibit != '':
             if status.lower() == "imaged" or status.lower() == "not imaged":
                 bodyDone = (f'''{bodyDone}
-    - [x] {caseNumber} Exhibit {exhibit} - Image''')
+    - [x] {caseNumber} Ex: {exhibit} - Image''')
             else:
                     bodyTodo = (f'''{bodyTodo}
-    - [ ] {caseNumber} Exhibit {exhibit} - Image''')
+    - [ ] {caseNumber} Ex: {exhibit} - Image''')
             
             if reportStatus.lower() == "finalized":
                 bodyDone = (f'''{bodyDone}
-    - [x] {caseNumber} Exhibit {exhibit} - Analyze''')
+    - [x] {caseNumber} Ex: {exhibit} - Analyze''')
             else:
                 bodyTodo = (f'''{bodyTodo}
-    - [ ] {caseNumber} Exhibit {exhibit} - Analyze''')
+    - [ ] {caseNumber} Ex: {exhibit} - Analyze''')
 
 
         biosTime = str(row['biosTime'])
@@ -2231,7 +2231,7 @@ This document contains findings regarding the analysis of digital evidence that 
 
 It should be noted that not all files were reviewed during this examination. It is incumbent upon the requester to thoroughly review the data and make a determination as to the probative or exculpatory nature of any and all information.
 
-All forensic equipment and software have been functionally tested/validated without errors prior to use. Where possible, before utilizing stand-alone write blockers, firmware was updated to the current version and functionality was verified.
+All forensic equipment and software is functionally tested/validated without errors. Where possible, before utilizing stand-alone write blockers, firmware was updated to the current version and functionality was verified.
 
 All forensic acquisition, analysis and write-blocking software used for this case is licensed and/or registered to {forensicExaminer} and/or the {agencyFull}.
 
