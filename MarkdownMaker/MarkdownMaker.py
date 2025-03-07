@@ -127,22 +127,6 @@ def main():
     output_folder = os.path.abspath(args.output) if args.output else r'ObsidianNotebook'
     template1_input = os.path.abspath(args.Template) if args.Template else 'Template_Cases'
 
-
-    # input_folder = os.getcwd()  # Default to current working directory
-    # output_folder = r'C:\Forensics\scripts\python\ObsidianNotebook'  # Default output path
-    # output_folder = r'ObsidianNotebook'  # Default output path
-    # template1_input = r'Template_2ndBrain'
-    
-    file = sys.argv[0].split('\\')[-1]
-
-    # Set input and output folders based on arguments, if provided
-    # if args.input:
-        # input_folder = args.input
-    # if args.output:
-        # output_folder = args.output
-    # if args.Template:
-        # template1_input = args.Template
-
     # Ensure the input folder exists
     if not os.path.exists(input_folder):
 
@@ -299,8 +283,11 @@ def convert_rtf(file_path):
     
     new_file_path = os.path.join(docs_folder, file_name)
     # Copy the file to the new path
-    shutil.copy(file_path, new_file_path)
-    
+    try:
+        shutil.copy(file_path, new_file_path)
+    except Exception as e:
+        print(f"Error copying file '{file_path}': {e}")    
+        
     new_file_path_link = os.path.join('4.Documents/', file_name) 
     new_file_path_link = new_file_path_link.replace("\\", "/")    
     
@@ -361,8 +348,10 @@ def extract_text_from_docx_with_formatting(file_path, docs_folder='4.Documents/'
         new_file_path = os.path.join(docs_folder, file_name)
 
         # Copy the file to the new path
-        shutil.copy(file_path, new_file_path)
-
+        try:
+            shutil.copy(file_path, new_file_path)
+        except Exception as e:
+            print(f"Error copying file '{file_path}': {e}")
         # Initialize the text output with metadata and the file link
         text = (f"\n## [File]({new_file_path_link}): {file_path}\n"
                 f"## Creation: {creation_time}\n"
@@ -470,8 +459,10 @@ def extract_html(file_path):
         new_file_path = os.path.join(docs_folder, file_name)
 
         # Copy the file to the new path
-        shutil.copy(file_path, new_file_path)
-
+        try:
+            shutil.copy(file_path, new_file_path)
+        except Exception as e:
+            print(f"Error copying file '{file_path}': {e}")
         # Initialize the text output with metadata and the file link
         text = (f"\n## [File]({new_file_path_link}): {file_path}\n"
                 f"## Creation: {creation_time}\n"
@@ -564,8 +555,10 @@ def extract_text_from_pdf(file_path):
         new_file_path = os.path.join(docs_folder, file_name)
 
         # Copy the file to the new path
-        shutil.copy(file_path, new_file_path)
-
+        try:
+            shutil.copy(file_path, new_file_path)
+        except Exception as e:
+            print(f"Error copying file '{file_path}': {e}")
         # Initialize the text output with metadata and the file link
         text = (f"\n## [File]({new_file_path_link}): {file_path}\n"
                 f"## Creation: {creation_time}\n"
@@ -573,10 +566,13 @@ def extract_text_from_pdf(file_path):
 
         # Extract text from each page
         for page_num in range(doc.page_count):
-            page = doc.load_page(page_num)
-            page_text = page.get_text("text")  # Extract plain text
-            text += page_text
-
+            try:
+                page = doc.load_page(page_num)
+                page_text = page.get_text("text")  # Extract plain text
+                text += page_text
+            except Exception as e:
+                print(f"An error occurred while processing the .pdf file: {e}")
+            
         # Extract metadata
         metadata = doc.metadata
 
@@ -655,8 +651,10 @@ def extract_text_from_pptx(file_path):
     
     new_file_path = os.path.join(docs_folder, file_name)
     # Copy the file to the new path
-    shutil.copy(file_path, new_file_path)
-    
+    try:
+        shutil.copy(file_path, new_file_path)
+    except Exception as e:
+        print(f"Error copying file '{file_path}': {e}")    
     new_file_path_link = os.path.join('4.Documents/', file_name) 
     new_file_path_link = new_file_path_link.replace("\\", "/")    
     
@@ -759,8 +757,10 @@ def parse_text_file(file_path):
     new_file_path = os.path.join(docs_folder, file_name)
     
     # Copy the file to the new path
-    shutil.copy(file_path, new_file_path)
-
+    try:
+        shutil.copy(file_path, new_file_path)
+    except Exception as e:
+        print(f"Error copying file '{file_path}': {e}")
     header = f"\n## [File]({new_file_path_link}): {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n"
 
     header = f"\n## File: {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n"
@@ -828,8 +828,10 @@ def md_for_media(file_path):
     new_file_path = os.path.join(media_folder, file_name)
 
     # Copy the file to the new path
-    shutil.copy(file_path, new_file_path)
-
+    try:
+        shutil.copy(file_path, new_file_path)
+    except Exception as e:
+        print(f"Error copying file '{file_path}': {e}")
     try:
         if file_path.lower().endswith(('.heic', '.heif', '.jpg', '.jpeg', '.png', '.tiff', '.tif', '.webp')):
             exif_data, Description = read_exif_data(file_path)
@@ -898,8 +900,11 @@ def md_for_scripts(file_path):
         new_file_path = os.path.join(scripts_folder, file_name)
 
         # Copy the file to the new path
-        shutil.copy(file_path, new_file_path)
-
+        try:
+            shutil.copy(file_path, new_file_path)
+        except Exception as e:
+            print(f"Error copying file '{file_path}': {e}")
+        
         # don't put a link in, it will run the script
         # header = f"\n## [File]({new_file_path_link}): {file_path}\n## Creation: {creation_time}\n## Modified: {modified_time}\n\n"
 
