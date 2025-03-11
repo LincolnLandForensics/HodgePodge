@@ -77,3 +77,38 @@ H:\LOGS\APRS.TXT
 
 
 [Wiki](https://github.com/portapack-mayhem/mayhem-firmware/wiki/Bluetooth-Low-Energy-Receiver)
+
+
+# Wigle_Query.py
+
+Read MAC addresses from xlsx
+
+For all Types that are WIFI, BT or BLE it will check wigle(.)net for matches
+
+Requires a wigle API key (user:password)
+
+
+## Example:
+
+   python Wigle_Query.py -b -O input_blank.xlsx
+   
+   python Wigle_Query.py -Q -I input_.xlsx
+
+## Installation:
+```
+python pip install -r requirements_WarDriveParser.txt
+```
+
+
+## Usage:
+
+
+```
+python WarDriveParser.py
+```
+
+
+## Note:
+
+MAC addresses must accompany the type. (WIFI, BLT, BT - currently supported)
+

@@ -34,7 +34,7 @@ import argparse  # for menu system
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.1.4'
+version = '3.1.5'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -378,14 +378,18 @@ def main():
         familytreephone()    #
         thatsthemphone()   #
         reversephonecheck()    #
-        spydialer()    #
+        # spydialer()    #
         validnumber()    #
         whitepagesphone()    #
         whocalld()    #
         
     if args.test:  
         print(f' using test module')
-        digitalfootprintcheckemail()
+        # whocalld()
+        # familytreephone()    #
+        # thatsthemphone()   #
+        # reversephonecheck()    #
+        spydialer()    #
 
 
     if args.usersmodules and len(users) > 0:  
@@ -433,7 +437,7 @@ def main():
         roblox()
         sherlock()    #
         # signal()    # test
-        slack()
+        # slack() # blows up on some users first.last#
         snapchat()    # must manually verify
         spotify()    #
         ## telegram()# crashes the script
@@ -1131,7 +1135,7 @@ def familytree():
     data.append(row_data)
 
 
-def familytreephone():# testPhone= 708-372-8101 DROP THE LEADING 1
+def familytreephone():# DROP THE LEADING 1
     print(f'{color_yellow}\n\t<<<<< familytree {color_blue}phone numbers{color_yellow} >>>>>{color_reset}')
     for phone in phones:
         row_data = {}
@@ -1153,7 +1157,7 @@ def familytreephone():# testPhone= 708-372-8101 DROP THE LEADING 1
             row_data["state"] = state
             data.append(row_data)
 
-def findwhocallsyou():# testPhone= 708-372-8101  
+def findwhocallsyou():# testPhone= 
     # note: need to add dishes if there are none
     print(f'{color_yellow}\n\t<<<<< findwhocallsyou {color_blue}phone numbers{color_yellow} >>>>>{color_reset}')
     for phone in phones:
@@ -2799,11 +2803,11 @@ def read_text(filename):
 
         elif re.search(regex_phone, query) or re.search(regex_phone11, query) or re.search(regex_phone2, query):  # regex_phone
             (phone) = (query)
-
-            phone = phone.replace("-", '')
-            phone = phone.replace('(','').replace(')','').replace(' ','')
-            phone = phone.replace("+", "")            
-            phone = phone.lstrip('1')
+            phone = re.sub(r'[\+\- \(\)]', '', phone).strip()    # E165 standard
+            # phone = phone.replace("-", '')  # E165 standard 
+            # phone = phone.replace('(','').replace(')','').replace(' ','')   # E165 standard 
+            # phone = phone.replace("+", "")          # E165 standard doesn't have a + (E.164 has a +)      
+            # phone = phone.lstrip('1') # E.165 standard 16365551212
 
             if phone not in phones:            # don't add duplicates
                 phones.append(phone)
@@ -3346,7 +3350,7 @@ def request(url):
     
     return (content, referer, osurl, titleurl, pagestatus)   
 
-def reversephonecheck():# testPhone= 708-372-8101   https://www.reversephonecheck.com/1-708/372/81/#01
+def reversephonecheck():# testPhone= 
     print(f'{color_yellow}\n\t<<<<< reversephonecheck {color_blue}phone numbers{color_yellow} >>>>>{color_reset}')
     
     for phone in phones:
@@ -3551,8 +3555,8 @@ Their1sn0freakingwaythisisreal12344321@fakedomain.com
 
 385-347-1531
 312-999-9999
-7083703020
-17088675309
+5596833344
+15596833344
 {color_reset}
 '''
 )    
@@ -3742,7 +3746,7 @@ def spotify(): # testuser = kevinrose
             data.append(row_data)
 
 
-def spydialer():# testPhone= 708-372-8101
+def spydialer():# testPhone= 
     print(f'{color_yellow}\n\t<<<<< spydialer {color_blue}users{color_yellow} >>>>>{color_reset}')
 
     for phone in phones:
@@ -3841,7 +3845,7 @@ def thatsthemip():# testIP= 8.8.8.8
                         
             data.append(row_data)
 
-def thatsthemphone():# testPhone= 708-372-8101  
+def thatsthemphone():# testPhone=   
     # note: need to add dishes if there are none
     print(f'{color_yellow}\n\t<<<<< thatsthem {color_blue}phone numbers{color_yellow} >>>>>{color_reset}')
     for phone in phones:
@@ -4383,7 +4387,7 @@ def whitepagesphone():# testuser=    210-316-9435
         row_data["state"] = state
         data.append(row_data)    
 
-def whocalld():# testPhone= 708-372-8101 DROP THE LEADING 1
+def whocalld():# testPhone=  DROP THE LEADING 1
     print(f'{color_yellow}\n\t<<<<< whocalld {color_blue}phone numbers{color_yellow} >>>>>{color_reset}')
 
     # https://whocalld.com/+17083728101
@@ -4428,23 +4432,32 @@ def whocalld():# testPhone= 708-372-8101 DROP THE LEADING 1
         pagestatus = ''        
                 
         if url != '':
-            print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
+            print(f'{color_green}{url}{color_yellow}	{fullname}  {city}  {state}{color_reset}') 
             
-            ranking = '4 - whocalld'
+            ranking = '3 - spydialer'
             row_data["query"] = query
             row_data["ranking"] = ranking
-            row_data["url"] = url
+            row_data["url"] = 'https://www.spydialer.com'
+            # row_data["url"] = url            
             row_data["note"] = note
             row_data["fullname"] = fullname
-            row_data["url"] = url
             row_data["phone"] = phone
             row_data["note"] = note
             row_data["city"] = city
             row_data["country"] = country
             row_data["state"] = state
             row_data["zipcode"] = zipcode            
-           
             data.append(row_data)
+
+        else:
+            ranking = '4 - spydialer'
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["url"] = 'https://www.spydialer.com'
+            row_data["phone"] = phone
+            row_data["state"] = state
+            data.append(row_data)
+
         time.sleep(2) 
 
 def whoisip():    # testuser=    77.15.67.232   only gets 403 Forbidden
@@ -4548,8 +4561,8 @@ def whoisip():    # testuser=    77.15.67.232   only gets 403 Forbidden
             row_data["zipcode"] = zipcode            
             row_data["Latitude"] = Latitude
             row_data["Longitude"] = Longitude
-            row_data["content"] = content # temp
-            row_data["pagestatus"] = pagestatus # temp
+            # row_data["content"] = content # temp
+            # row_data["pagestatus"] = pagestatus # temp
            
            
             data.append(row_data)
@@ -5417,7 +5430,7 @@ def titles():    # testsite= google.com
 
             data.append(row_data) 
 
-def validnumber():# testPhone= 7083703020
+def validnumber():# testPhone= 
     print(f'{color_yellow}\n\t<<<<< validnumber {color_blue}phone numbers{color_yellow} >>>>>{color_reset}')
 
     # https://validnumber.com/phone-number/3124377966/
@@ -5561,21 +5574,11 @@ def whoiswebsite():    # testsite= google.com
             row_data["query"] = query
             row_data["ranking"] = '9 - whois.domaintools.com'
             row_data["fullname"] = fullname
-            # row_data["firstname"] = firstname
-            # row_data["lastname"] = lastname
             row_data["url"] = url
-         
-            row_data["titleurl"] = titleurl            
             row_data["city"] = city            
             row_data["country"] = country            
-            # row_data["note"] = note            
             row_data["state"] = state            
-            # row_data["SEX"] = SEX            
-            # row_data["zipcode"] = zipcode            
             row_data["dnsdomain"] = dnsdomain            
-            row_data["titleurl"] = titleurl            
-            row_data["pagestatus"] = pagestatus            
-
 
             data.append(row_data) 
 
