@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.2.7'
+version = '3.3.0'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -788,7 +788,7 @@ def parse_log():
         if input_details == "yes":
             caseNumber = str(input("caseNumber : ")).strip()
             caseName = str(input("caseName : ")).strip()
-            exhibit = str(input("exhibit : ")).strip()
+            exhibit = str(input("exhibit : "))  # .strip()
         logs_list = [filename]
     elif log_type == 'folder':
         print('')
@@ -886,10 +886,10 @@ def parse_log():
             # exhibit      
             elif "Evidence Number: " in each_line:      #FTK_parse, magnet
                 exhibit = re.split("Evidence Number: ", each_line, 0)
-                exhibit = str(exhibit[1]).strip()
+                exhibit = str(exhibit[1])   # .strip()
             elif "Exhibit#" in each_line:      #cellebrite
                 exhibit = re.split("Exhibit#", each_line, 0)
-                exhibit = str(exhibit[1]).strip()
+                exhibit = str(exhibit[1])   # .strip()
             elif "Exhibit Number=" in each_line: # CellebriteUFED4PC.txt
                 makeModel = each_line.replace("Exhibit Number=", "").strip()
 
@@ -897,7 +897,7 @@ def parse_log():
                 exhibit = re.split("Evidence Number", each_line, 0)
 
                 # exhibit = re.split("Evidence Number     :", each_line, 0)
-                exhibit = str(exhibit[1]).replace(":", "").strip()
+                exhibit = str(exhibit[1]).replace(":", "")  # .strip()
 
             # makeModel
             elif "Unique description: " in each_line:
@@ -1738,7 +1738,7 @@ def read_xlsx():
         this will read in each line and write a report 
         it then makes a backup of copy xlsx of the lines you tossed in
     """
-    sheet_name, bodyTodo, caseNumberTodo, bodyDone = "Forensics", '', '', ''
+    sheet_name, bodyDoing, bodyTodo, caseNumberTodo, bodyDone = 'Cases', '', '', '', ''
 
     if not os.path.exists(input_file):
         print(f"{color_red}{input_file} does not exist{color_reset}")
@@ -1780,9 +1780,15 @@ def read_xlsx():
 
         if caseNumberTodo == '':
             caseNumberTodo = (f'''- [ ] {caseNumber} - Add to spreadsheet
-- [ ] {caseNumber} - Label all
-- [ ] {caseNumber} - Photograph    
-- [ ] {caseNumber} - Activity Report''')
+- [ ] {caseNumber} - Label all pieces
+- [ ] {caseNumber} - Photos
+- [ ] {caseNumber} - Inventory label on shelf
+- [ ] {caseNumber} - Verify PC images with Arsenal
+- [ ] {caseNumber} - Return exhibits once imaged/verified
+- [ ] {caseNumber} - Case notes/reports saved/printed/filing cabinet w/ checklist
+- [ ] {caseNumber} - Digital evidence to Agent
+- [ ] {caseNumber} - Activity report(s)
+- [ ] {caseNumber} - Move Exhibits to Legacy sheet once all done''')
 
         if exhibit != '':
             if status.lower() == "imaged" or status.lower() == "not imaged":
@@ -1792,9 +1798,12 @@ def read_xlsx():
                     bodyTodo = (f'''{bodyTodo}
 - [ ] {caseNumber} Ex: {exhibit} - Image''')
             
-            if reportStatus.lower() == "finalized":
+            if reportStatus.lower() == "finalized" or reportStatus.lower() == "draft":
                 bodyDone = (f'''{bodyDone}
 - [x] {caseNumber} Ex: {exhibit} - Analyze''')
+            # elif reportStatus.lower() == "draft":
+                # bodyDoing = (f'''{bodyDoing}
+# - [ ] {caseNumber} Ex: {exhibit} - Analyze''')
             else:
                 bodyTodo = (f'''{bodyTodo}
 - [ ] {caseNumber} Ex: {exhibit} - Analyze''')
@@ -2243,8 +2252,7 @@ All digital images obtained pursuant to this investigation will be maintained on
 
     # write docx report
     write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer)
-    write_todo(caseNumber, caseNumberTodo, bodyTodo, bodyDone)
-
+    write_todo(caseNumber, caseNumberTodo, bodyDoing, bodyTodo, bodyDone)
 
 
 def sanitize_filename(name):
@@ -2333,7 +2341,7 @@ def write_checklist():  # panda edition
     additional_headers = [
         "exhibit#", "type", "evidence sheet (in)", "evidence sheet (out)", "label (all separate pieces)",
         "imaged", "image backup", "analyzed", "report (sign, print, forward)", "case notes printed",
-        "digital evidence", "digital evidence backup", "digital evidence to agent", "", "", "", "MemDump", "triage",
+        "digital evidence", "digital evidence backup", "digital evidence to agent", "", "", "Verify hash", "MemDump", "triage",
         "Magnet Encrypted Disk Detection", "password", "KAPE", "photograph", "OS", "IP or IMEI",
         "hostname", "Arsenal VM (verify)"
     ]
@@ -2381,7 +2389,7 @@ def write_checklist():  # panda edition
     checklist_sheet.page_setup.orientation = checklist_sheet.ORIENTATION_LANDSCAPE
 
     # Specify the name of the sheet you want to read
-    sheet_name = "Forensics"
+    sheet_name = 'Cases'    # was 'Forensics'
 
     # Read the Excel file and load the specified sheet into a DataFrame
     # df = pd.read_excel(input_file)
@@ -2565,9 +2573,9 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         # Create a new workbook if the output file doesn't exist
         book = Workbook()
         sheet = book.active
-        sheet.title = "Forensics"
+        sheet.title = 'Cases'   # was "Forensics"
 
-        # Set headers for the "Forensics" sheet
+        # Set headers for the 'Cases' sheet
         headers = ["caseNumber", "exhibit", "caseName", "subjectBusinessName", "caseType", "caseAgent"
         , "forensicExaminer", "reportStatus", "notes", "summary", "exhibitType", "makeModel", "serial", "OS", "phoneNumber"
         , "phoneIMEI", "mobileCarrier", "biosTime", "currentTime", "timezone", "shutdownMethod", "shutdownTime"
@@ -2615,7 +2623,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         # Freeze cells at B2
         sheet.freeze_panes = 'B2'
 
-        # Set column width for the "Forensics" sheet
+        # Set column width for the 'Cases' sheet
         sheet.column_dimensions['A'].width = 15 #  caseNumber
         sheet.column_dimensions['B'].width = 7 #  exhibit
         sheet.column_dimensions['C'].width = 16 #  caseName
@@ -2686,7 +2694,7 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         sheet.column_dimensions['BP'].width = 16 #  phoneIMEI2
         sheet.column_dimensions['BQ'].width = 16 #  phone2        
 
-    # Write data to the "Forensics" sheet
+    # Write data to the 'Cases' sheet
     row_data = [caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
         forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
         phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
@@ -2796,12 +2804,12 @@ def create_and_write_xlsx():
     workbook = writer.book
 
     # Get or create the worksheet
-    if 'forensics' in workbook.sheetnames:
-        worksheet = workbook['forensics']
+    if 'Cases' in workbook.sheetnames:
+        worksheet = workbook['Cases']    # was 'forensics'
     else:
-        worksheet = workbook.create_sheet('forensics')
+        worksheet = workbook.create_sheet('Cases')  # was 'forensics'
 
-    worksheet = writer.sheets['forensics'] # Replace 'Sheet1' with the name of your sheet
+    worksheet = writer.sheets['Cases'] # Replace 'Cases' with the name of your sheet
 
 
 
@@ -3004,7 +3012,7 @@ def write_sticker():
         style.font.size = docx.shared.Pt(14)
  
     # Specify the name of the sheet you want to read
-    sheet_name = "Forensics"
+    sheet_name = 'Cases'    # was 'Forensics'
 
     # Read the Excel file and load the specified sheet into a DataFrame
 
@@ -3070,7 +3078,7 @@ Agent: {caseAgent}
     print(f"{color_green}Data written to {output_docx}")
 
 
-def write_todo(caseNumber, caseNumberTodo, bodyTodo, bodyDone):
+def write_todo(caseNumber, caseNumberTodo, bodyDoing, bodyTodo, bodyDone):
     # Define the filename
     todo_filename = f'Todo_{caseNumber}.md'
     
@@ -3083,7 +3091,7 @@ kanban-plugin: board
 ---
 
 ## Doing
-
+{bodyDoing}
 
 ## To-Do
 {caseNumberTodo}
@@ -3137,6 +3145,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+3.1.0 - export a markdown file as a todo list
 3.0.9 - went back to Exhibit instead of Item
 3.0.7 - export a markdown file as a todo list
 3.0.6 - added lots of new wording and disclaimer based on a report by J.S.
@@ -3169,7 +3178,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-export a markdown file as a todo list
+Change the sheet name from 'forensics' to 'Cases'
+
 
 add a -f option if you want it worded in first person perspective (sounds hard to write)
 Add a glossary of terms?
