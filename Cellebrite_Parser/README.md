@@ -46,3 +46,21 @@ Example:
 	
 ![sample output](images/Intel_Contacts_Sample.png)	
 	
+
+
+## CellebriteEmailxlsx2xlsx.py
+
+Read a Cellebrite email export parse it and export it out.
+
+This example reads SmilePOS emails and parses out the details.
+
+You can re-arrange the headers to meet your needs.
+
+
+Example:
+
+'''
+   python  CellebriteEmailxlsx2xlsx.py -r
+   
+   python CellebriteEmailxlsx2xlsx.py -r -I Cellebrite_Emails.xlsx -O Cellebrite_Emails_Parsed.xlsx
+'''
