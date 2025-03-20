@@ -9,15 +9,23 @@ import sys
 import csv
 import glob  # Import the glob module for pattern matching
 import gzip
+import time
 import shutil
 import struct
 import string
 import binascii
 import argparse  # for menu system
 import openpyxl # pip install openpyxl
+import unicodedata
 from openpyxl import load_workbook, Workbook 
 from openpyxl.styles import Font, Alignment, PatternFill
 from datetime import datetime
+
+
+import json
+import requests
+from requests.auth import HTTPBasicAuth
+
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -25,6 +33,12 @@ from datetime import datetime
 author = 'LincolnLandForensics'
 description = "Convert wigle .gz or .csv exports to gps2address.py locations format or convert HackRf logs. Convert MAC to company name."
 version = '1.2.2'
+
+
+global USERNAME
+USERNAME = "AID3eb88c99ae363e3385bb9058dd262e5a"
+global PASSWORD
+PASSWORD = "b77efe08e11e816fb77270c9c2938d97"
 
 global hackRF_drive
 hackRF_drive= 'H'
@@ -139,9 +153,6 @@ DEVICE_TYPES = {
     },
 }
 
-
-
-
     
 # Colorize section
 global color_red
@@ -183,6 +194,7 @@ def main():
     parser.add_argument('-L', '--logs', help='log grabber (HackRF)', required=False, action='store_true')
     parser.add_argument('-p', '--parseHackRF', help='parse HackRF text', required=False, action='store_true')    
     parser.add_argument('-w', '--wigleparse', help='parse wigle file csv', required=False, action='store_true')
+    parser.add_argument('-x', '--xlsxparse', help='parse xlsx sheet', required=False, action='store_true')
 
     args = parser.parse_args()
 
@@ -212,6 +224,39 @@ def main():
     elif args.wigleparse:
         companies_read()
         process_wigle_file(input_file, data)
+
+        
+    elif args.xlsxparse:
+        companies_read()    
+        input_xlsx = input_file
+        # process_xlsx_file(input_file, data)
+
+        file_exists = os.path.exists(input_file)
+
+        datatype = input_file
+        datatype = datatype.replace('.xlsx', '')
+
+        if not args.output: 
+            output_xlsx = (f'intel_{datatype}.xlsx') 
+  
+        else:
+            output_xlsx = args.output
+
+
+        if file_exists == True:
+            msg_blurb = (f'Reading {input_xlsx}')
+            message_square(msg_blurb, color_green)
+
+            data = read_xlsx(input_xlsx)
+            # write_xlsx(data
+            write_xlsx(data,output_xlsx)
+
+            workbook.close()
+            msg_blurb = (f'Writing to {output_xlsx}')
+            message_square(msg_blurb, color_green)            
+            # print(f'{color_green}Writing to {output_xlsx} {color_reset}')
+
+
     elif args.blank:
         write_xlsx(data,output_xlsx)
         return 0 
@@ -962,9 +1007,8 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
     print(f'\n{len(mac_uniq)} uniq mac addresses found')    
     # write_xlsx(data, data2)
     write_xlsx(data,output_xlsx)
-        
 
-    
+ 
 def process_wigle_file(filename, data):
     if filename.endswith('.gz'):
         unzipped_filename = filename[:-3]  # Remove .gz extension
@@ -995,7 +1039,11 @@ def process_wigle_file(filename, data):
         
         output_xlsx = (f'{filename}.xlsx')
 
-        csv_file = open(filename)
+        # csv_file = open(filename)
+        csv_file = open(filename, "r", encoding="utf-8")
+
+        
+        
         source_file = filename
         row_count = 0
         for row in csv_file:
@@ -1257,6 +1305,256 @@ def process_wigle_file(filename, data):
         write_xlsx(data,output_xlsx)
 
 
+def read_xlsx(input_xlsx):
+
+    """Read data from an xlsx file and return as a list of dictionaries.
+    Read XLSX Function: The read_xlsx() function reads data from the input 
+    Excel file using the openpyxl library. It extracts headers from the 
+    first row and then iterates through the data rows.    
+    """
+
+    if USERNAME == '':
+        msg_blurb = (f"you need to enter your Wigle API USERNAME key, or this won't work")
+        message_square(msg_blurb, color_red)        
+        exit()
+    if len(PASSWORD) < 15:
+        msg_blurb = (f'you need to enter your Wigle API PASSWORD key')
+        message_square(msg_blurb, color_red)
+        exit()
+    
+    wb = openpyxl.load_workbook(input_xlsx)
+    ws = wb.active
+    data = []
+    datatype = input_xlsx
+    datatype = datatype.replace('.xlsx', '')
+    
+    # get header values from first row
+    global headers
+    headers = []
+    for cell in ws[1]:
+        headers.append(cell.value)
+
+    # get data rows
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        row_data = {}
+        for header, value in zip(headers, row):
+            row_data[header] = value
+        data.append(row_data)
+
+    if not data:
+        msg_blurb = (f'No data found in the Excel file: {input_xlsx}')
+        message_square(msg_blurb, color_red)
+    
+        exit()
+        return None
+
+# active sheet (current sheet)
+    active_sheet = wb.active
+    global active_sheet_title
+    active_sheet_title = active_sheet.title    
+
+
+    for row_index, row_data in enumerate(data):
+        (Time, time_orig, timezone, response, tag, Description) = ('', '', '', '', '', '')
+        (Latitude, Longitude, Coordinate, raw_data, Time) = ('', '', '', '', '')
+        (city, state, country, Altitude, note, MAC) = ('', '', '', '', '', '')
+        (source, source_file, original_file, Icon, zipcode, Channel) = ('', '', '', '', '', '')
+        (number, street, Subgroup, fulladdress, SSID, CompanyName) = ('', '', '', '', '', '')
+# type_data
+        Description = row_data.get("Description")
+        if Description is None:
+            Description = ''          
+        
+# type_data
+        type_data = row_data.get("Type")
+        if type_data is None:
+            type_data = ''        
+
+# Data
+        raw_data = row_data.get("Data")
+        if raw_data is None:
+            raw_data = ''               
+       
+# MAC
+        MAC = row_data.get("MAC")
+        if MAC is None:
+            MAC = ''         
+        if MAC != '':
+            print(f'{color_blue}MAC={MAC}{color_reset}' )
+            if type_data == 'WIFI' or type_data == 'BT' or type_data == 'BLE':
+                print(f'{color_yellow}sleeping for 40 seconds{color_reset}' )
+                time.sleep(40)            
+                result = query_wigle_wifi_api(USERNAME, PASSWORD, type_data, MAC)
+   
+                response = json.dumps(result)  # Convert dictionary to JSON string
+                parsed_response = response_parse_wifi(response)
+
+                Description = (f'{Description}{parsed_response}')
+                Data = response
+
+                
+                print(parsed_response)
+
+                if parsed_response:
+                    Latitude = parsed_response["Latitude"]
+                    Longitude = parsed_response["Longitude"]
+                    SSID = parsed_response["SSID"]
+                    Time = parsed_response["Time"]
+                    number = parsed_response["number"]
+                    street = parsed_response["street"]
+                    city = parsed_response["city"]
+                    state = parsed_response["state"]
+                    country = parsed_response["country"]
+                    zipcode = parsed_response["zipcode"]
+                    MAC = parsed_response["MAC"]
+                    Subgroup = parsed_response["Subgroup"]
+                    Channel = parsed_response["Channel"]
+                    SSID = parsed_response["SSID"]
+                    Description = (f'Latitude: {Latitude}\nLongitude: {Longitude}\nTime: {Time}\nNumber: {number}\nstreet: {street}\ncity: {city}\nState: {state}\ncountry: {country}\nZipcode: {zipcode}\nMAC: {MAC}\nSubgroup: {Subgroup}\nChannel: {Channel})')
+                
+        if Latitude is None or Latitude == '':
+            Latitude = row_data.get("Latitude")
+            Longitude = row_data.get("Longitude")
+            if Latitude is None:
+                Latitude == ''
+                Longitude == ''
+
+# state
+        if state == '':
+            state = row_data.get("state")
+        if state is None:
+            state = ''
+
+# city
+        if city == '':
+            city = row_data.get("city")
+        if city is None:
+            city = ''
+
+# country
+        if country == '':
+            country = row_data.get("country")
+        if country is None:
+            country = ''
+
+
+# fulladdress
+        if fulladdress == '':
+        # if number == '' and street == '' and city == '' and state == '' and zipcode == '':
+            fulladdress = (f'{number} {street}, {city}, {state} {zipcode}')
+        if fulladdress == ' , ,  ':
+            fulladdress = ''
+            
+            
+# source
+        if source == '':
+            source = row_data.get("Source")
+        if source is None:
+            source = ''
+
+
+# source file
+        if source_file == '':
+            source_file = row_data.get("Source file information")
+        if source_file is None:
+            source_file = ''
+
+# original_file
+        if original_file == '':
+            original_file = row_data.get("original_file")
+        if original_file is None or original_file == "":
+            original_file = input_xlsx
+          
+# Icon    
+        if Icon == '':
+            Icon = row_data.get("Icon")
+        # Icon = row_data.get("Icon")
+        if Icon is None:
+            Icon = ''
+        if Icon == "":
+            if "Searched" in original_file:
+               Icon = "Searched"            
+            elif "Chats" in original_file:
+               Icon = "Chats"  
+
+
+# Time
+        if Time == '':        
+            Time = row_data.get("Time")
+        if Time is None:
+            Time = ''
+        Time = Time.replace('T', ' ').replace('.000Z', '')
+
+        if (Coordinate == '' or Coordinate is None) and Altitude == '':
+            if Latitude is None:
+                Latitude == ''
+            if Longitude is None:
+                Longitude == ''                
+            else:    
+                Coordinate = (f'{Latitude},{Longitude}')
+            if 'None' in Coordinate:
+                Coordinate == ''
+
+# convert time
+        output_format = "%Y-%m-%d %H:%M:%S "    # ISO 8601
+        # output_format = "%Y-%m-%dT%H:%M:%SZ"    # Google Earth format
+        # pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
+        pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'  # ISO military time
+
+        if time_orig == '' and Time != '': # copy the original time
+            time_orig = Time
+        # try:
+            # (Time, time_orig, timezone) = convert_timestamp(Time, time_orig, timezone)
+            # Time = Time.strftime(output_format)
+            # if Time is None:
+                # Time = ''              
+            
+        # except ValueError as e:
+            # if Time != "":
+                # print(f"Error time2: {e} - {Time}")
+                # Time = ''    # temp rem of this
+
+        if Coordinate == 'None,None':
+            Coordinate == ''
+
+# CompanyName
+        CompanyName = company_lookup(MAC) 
+        if CompanyName != '':
+            print(f'CompanyName = {CompanyName}')   # temp
+    
+                
+# write rows to data
+
+        row_data["country"] = country        
+        row_data["Description"] = Description  
+        row_data["note"] = note
+        row_data["MAC"] = MAC    
+        row_data["number"] = number   
+        row_data["street"] = street  
+        row_data["Subgroup"] = Subgroup          
+        row_data["city"] = city 
+        row_data["zipcode"] = zipcode
+        row_data["state"] = state 
+        row_data["fulladdress"] = fulladdress 
+        row_data["Time"] = Time
+        row_data["Latitude"] = Latitude  
+        row_data["Longitude"] = Longitude  
+        row_data["Coordinate"] = Coordinate  
+        row_data["Source file information"] = source_file     
+        row_data["original_file"] = original_file     
+        # row_data["Tag"] = tag     
+        row_data["Type"] = type_data     
+        row_data["Channel"] = Channel 
+        row_data["Icon"] = Icon 
+        row_data["Data"] = raw_data 
+        row_data["SSID"] = SSID         
+        row_data["#"] = SSID
+        row_data["Manually decoded"] = str(parsed_response)
+        row_data["CompanyName"] = CompanyName        
+
+    return data
+    
+
 def remove_duplicate_macs(data):
     """
     Removes rows with duplicate MAC addresses and returns unique data.
@@ -1277,9 +1575,36 @@ def remove_duplicate_macs(data):
     print(f'Found {row_count} unique MACs')
     return filtered_data
 
+
+def query_wigle_wifi_api(username: str, password: str, type_data, MAC):
+    if ":" in MAC:
+        MAC = MAC.replace(":","%3A")
+    if type_data.lower() == "wifi":
+        url = (f"https://api.wigle.net/api/v3/detail/wifi/{MAC}")
+    elif type_data.lower() == "bt" or type_data.lower() == "ble":
+        url = (f"https://api.wigle.net/api/v3/detail/bt/{MAC}")
+    # else:
+        # url = "https://api.wigle.net/api/v2/profile/user"
+        # print(f'fialed')
+    # print(f'url =  {url}')
+
+    headers = {"Accept": "application/json"}
+    
+    response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error_wigle: {response.status_code} - {response.text}")
+        # return None
+        return response.text
+        
         
 
 def sanitize_string(text):
+    # Normalize Unicode to decompose special characters
+    text = unicodedata.normalize("NFKC", text)
+
     # Remove control characters (non-printable ASCII)
     text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', text)
     
@@ -1288,6 +1613,49 @@ def sanitize_string(text):
     
     return text.strip()
 
+
+        
+def response_parse_wifi(response):
+    parsed_data = {}
+    try:
+        data_wigle = json.loads(response)
+        if "too many DETAIL queries today." in data_wigle:
+            # print(f'too many DETAIL queries today.')
+            msg_blurb = (f'too many DETAIL queries today. Sleeping for 2 minutes.')
+            msg_blurb_square(msg_blurb, color_red)
+            # exit()
+            time.sleep(120)
+        elif not isinstance(data_wigle, dict):  # Ensure data is a dictionary
+            print("Error: Parsed data is not a dictionary.")
+            return ''        
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+        return ''
+
+    try:
+        parsed_data = {
+            "Latitude": data_wigle.get("trilateratedLatitude") if data_wigle.get("trilateratedLatitude") else '',
+            "Longitude": data_wigle.get("trilateratedLongitude") if data_wigle.get("trilateratedLongitude") else '',
+            "SSID": data_wigle.get("name") if data_wigle.get("name") else '',        
+            "Time": data_wigle.get("lastUpdate") if data_wigle.get("lastUpdate") else '',
+            "number": data_wigle.get("streetAddress", {}).get("housenumber") if data_wigle.get("streetAddress") else '',
+            "street": data_wigle.get("streetAddress", {}).get("road") if data_wigle.get("streetAddress") else '',
+            "city": data_wigle.get("streetAddress", {}).get("city") if data_wigle.get("streetAddress") else '',
+            "state": data_wigle.get("streetAddress", {}).get("region") if data_wigle.get("streetAddress") else '',
+            "country": data_wigle.get("streetAddress", {}).get("country") if data_wigle.get("streetAddress") else '',
+            "zipcode": data_wigle.get("streetAddress", {}).get("postalcode") if data_wigle.get("streetAddress") else '',
+            "MAC": data_wigle.get("networkId")  if data_wigle.get("networkId") else '',        
+            "Subgroup": data_wigle.get("encryption")  if data_wigle.get("encryption") else '',
+            "Channel": data_wigle.get("channel")  if data_wigle.get("channel") else '',
+            "SSID": data_wigle.get("locationClusters", [{}])[0].get("clusterSsid", "") if data_wigle.get("locationClusters") else 'test',       
+        }
+
+    except Exception as e:
+        print(f"{color_red}Error: {str(e)}{color_reset}")
+
+    
+    return parsed_data 
+    
 
     
 def protectList_check(MAC, Name):
@@ -1560,7 +1928,8 @@ def usage():
     print(f'  python {file} -p      # parse HackRF text') 
     print(f'  python {file} -p -I logs -O WarDrive_.xlsx ')  
     print(f'  python {file} -w -I WigleWifi_Neighborhood.csv.gz     # parse wigle log')  
-    print(f'  python {file} -w -I WigleWifi_sample.csv ')    
+    print(f'  python {file} -w -I WigleWifi_sample.csv ')   
+    print(f'  python {file} -x -I input_.xlsx ')       
     print(f'\n{color_reset}')    
 
 
@@ -1572,7 +1941,7 @@ if __name__ == '__main__':
 """
 
 1.0.4 - conbined with hackRf logs parser
-1.0.2 - ADSB.TXT, AFSK.txt (useless), APRS.TXT, BLELOG_*.TXT
+1.0.2 - ADSB.TXT, AFSK.txt (useless), APRS.TXT, & BLELOG_*.TXT parsing
 1.0.1 - protectList.csv and watchList.csv Tagging, keep the .gz filename
 1.0.0 - removes dulicate MAC's and keeps the stongest signal
 0.0.1 - convert MfgrId to a real company
@@ -1581,6 +1950,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+replace any non utf8 characters like an icon
 create a module that merges Timestamp:Coordinates logs with timestamp logs missing coordinates. 
     needs to pick out the closest timestamp. Update the missing coordinate.
 add protectList/watchList check to hackrf parser
