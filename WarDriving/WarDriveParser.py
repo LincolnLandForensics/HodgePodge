@@ -287,12 +287,27 @@ def watchList_check(MAC, Name, SSID):
                         Name = row[1]
 
     # Fix missing colon in if statement
-    if (MAC.lower().startswith('hc:03') or 
-        MAC.lower().startswith('hc:05') or 
-        MAC.lower().startswith('hc:06')):
+    if (MAC.startswith('98:D3:31') or 
+        MAC.startswith('84:CC:A8') or
+        MAC.startswith('20:16:01') or         
+        MAC.lower().startswith('24:6F:28')):
         Tag = 'CC_Skimmer'
+    elif (MAC.startswith('00:1F:EF') or 
+        MAC.startswith('00:02:72') or
+        MAC.lower().startswith('3C:A3:08')):
+        Tag = 'CC_Skimmer'
+    elif (MAC.startswith('B8:27:EB') or 
+        MAC.lower().startswith('DC:A6:32')):
+        Tag = 'Raspberry Pi ?CC_Skimmer?'
     elif SSID.lower() == 'p4wnp1' or 'Ⓟ➃ⓌⓃ' in SSID:
         Tag = 'p4wnp1'
+    elif (SSID.lower().startswith('hc-03') or 
+        SSID.lower().startswith('hc-05') or 
+        SSID.lower().startswith('bt-02') or         
+        SSID.lower().startswith('rfid_reader') or         
+        SSID.lower().startswith('hc-06')):
+        Tag = 'CC_Skimmer'
+    
     return Tag, Name
 
 
