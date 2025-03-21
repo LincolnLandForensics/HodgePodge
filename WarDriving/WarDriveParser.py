@@ -21,7 +21,6 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 from datetime import datetime
 
-
 import json
 import requests
 from requests.auth import HTTPBasicAuth
@@ -32,7 +31,7 @@ from requests.auth import HTTPBasicAuth
 
 author = 'LincolnLandForensics'
 description = "Convert wigle .gz or .csv exports to gps2address.py locations format or convert HackRf logs. Convert MAC to company name."
-version = '1.2.2'
+version = '1.2.3'
 
 
 global USERNAME
@@ -271,21 +270,29 @@ def main():
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-def watchList_check(MAC, Name):
+def watchList_check(MAC, Name, SSID):
     # Check if the CSV file exists
-    Tag =  ''
     watchList_file = 'watchList.csv'
+    Tag = ''    
     if os.path.exists(watchList_file):
         # Read the CSV file and update the companies dictionary
         with open(watchList_file, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.reader(file)
-            next(reader)  # Skip the header row
+            next(reader, None)  # Skip the header row if it exists
             for row in reader:
                 mac = row[0]
                 if MAC == mac:
                     Tag = 'watchList'
                     if Name == '':
                         Name = row[1]
+
+    # Fix missing colon in if statement
+    if (MAC.lower().startswith('hc:03') or 
+        MAC.lower().startswith('hc:05') or 
+        MAC.lower().startswith('hc:06')):
+        Tag = 'CC_Skimmer'
+    elif SSID.lower() == 'p4wnp1' or 'Ⓟ➃ⓌⓃ' in SSID:
+        Tag = 'p4wnp1'
     return Tag, Name
 
 
@@ -644,7 +651,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
                     if Tag == '':
                         (Tag, Name) =  protectList_check(MAC, Name)
                     if Tag == '':
-                        (Tag, Name) =  watchList_check(MAC, Name)
+                        (Tag, Name) =  watchList_check(MAC, Name, SSID)
 
                     if MAC not in mac_uniq:    
                         mac_uniq.append(MAC)
@@ -1189,7 +1196,7 @@ def process_wigle_file(filename, data):
             if Tag == '':
                 (Tag, Name) =  protectList_check(MAC, Name)
             if Tag == '':
-                (Tag, Name) =  watchList_check(MAC, Name)
+                (Tag, Name) =  watchList_check(MAC, Name, SSID)
                     
             SSID = sanitize_string(SSID)
             type_data = Type
@@ -1939,7 +1946,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+1.2.2 - look for CC skimmers and p4wnp1's
 1.0.4 - conbined with hackRf logs parser
 1.0.2 - ADSB.TXT, AFSK.txt (useless), APRS.TXT, & BLELOG_*.TXT parsing
 1.0.1 - protectList.csv and watchList.csv Tagging, keep the .gz filename
