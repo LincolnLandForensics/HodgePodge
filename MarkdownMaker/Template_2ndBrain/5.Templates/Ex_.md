@@ -3,18 +3,8 @@
 
 
 
-# Passwords:
-
-| ==**URL**== | ==**Username**== | ==**Password**== | ==**Notes**== |
-| ----------- | ---------------- | ---------------- | ------------- |
-|             |                  |                  |               |
-
 
 # TimeStamp Logs:
-
-| ==Date Time (UTC)== | ==Artifact== | ==What Happened?== | ==Source== |
-| --------------- | -------- | -------------- | ------ |
-|                 |          |                |        |
 
 | ==TimeStamp== | ==Action== |
 | --------- | ------ |
@@ -23,15 +13,6 @@
 |           |        |
 |           |        |
 
-# **Files of Interest:
-
-
-
-# Intel:
-
-| ==query== | ==ranking== | ==fullname== | ==url== | ==email== | ==user== | ==phone== | ==ip==  | ==business/entity== |
-| ----- | ------- | -------- | --- | ----- | ---- | ----- | --- | --------------- |
-|       |         |          |     |       |      |       |     |                 |
 
 # Keywords:
 
@@ -44,12 +25,30 @@
 |      |         |       |
 |      |         |       |
 
-# Syntax used:
 
+# Passwords:
+
+| ==**URL**== | ==**Username**== | ==**Password**== | ==**Notes**== |
+| ----------- | ---------------- | ---------------- | ------------- |
+|             |                  |                  |               |
+
+
+# **Files of Interest:
 
 
 # Notes:
 
 
-
 # Misc:
+
+
+
+
+# Intel:
+
+| ==query== | ==ranking== | ==fullname== | ==url== | ==email== | ==user== | ==phone== | ==ip==  | ==business/entity== |
+| ----- | ------- | -------- | --- | ----- | ---- | ----- | --- | --------------- |
+|       |         |          |     |       |      |       |     |                 |
+
+# Syntax used:
+
