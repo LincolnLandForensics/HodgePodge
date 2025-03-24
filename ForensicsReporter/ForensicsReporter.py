@@ -5,7 +5,7 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "MWW" # MWW
 global agencyFull
 agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.3.0'
+version = '3.3.1'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -802,9 +802,11 @@ def parse_log():
             print(f"{color_yellow}create a {logs_folder} folder and fill it with logs to parse{color_reset}")            
             exit() 
         else:
-                logs_list = os.listdir(logs_folder)
-
+            logs_list = os.listdir(logs_folder)
+    
         logs_list2 = []
+        # remove folder names from logs_list2
+        
         for logFile in logs_list:
             logFile = ("%s%s" %(logs_folder, logFile))
             logs_list2.append(logFile)
@@ -859,7 +861,17 @@ def parse_log():
                 imagingType = re.split("Image type :", each_line, 0)
                 imagingType = str(imagingType[1]).strip().lower()
 
-            elif "ExtractionType=" in each_line: #cellebrite *.ufd log file
+
+            elif "ExtractionMethod=" in each_line : #cellebrite *.ufd log file
+                imagingType = each_line.replace("ExtractionMethod=", "").strip()
+                if imagingType == "AdvancedLogical":
+                    imagingType = "advanced logical"
+                elif imagingType == "Logical":
+                    imagingType = "logical"  
+                elif imagingType == "iOS_Full_Filesystem":
+                    imagingType = "full file system" 
+
+            elif "ExtractionType=" in each_line and imagingType == '': #cellebrite *.ufd log file
                 imagingType = each_line.replace("ExtractionType=", "").strip()
                 if imagingType == "AdvancedLogical":
                     imagingType = "advanced logical"
@@ -886,18 +898,31 @@ def parse_log():
             # exhibit      
             elif "Evidence Number: " in each_line:      #FTK_parse, magnet
                 exhibit = re.split("Evidence Number: ", each_line, 0)
-                exhibit = str(exhibit[1])   # .strip()
+                exhibit = str(exhibit[1]).replace('=','')   # .strip()
+            elif "Evidence Number=" in each_line:      #UFD test
+                exhibit = re.split("Evidence Number=", each_line, 0)
+                exhibit = str(exhibit[1])
+                print(f' exhibit is {exhibit}') # 5est
             elif "Exhibit#" in each_line:      #cellebrite
                 exhibit = re.split("Exhibit#", each_line, 0)
                 exhibit = str(exhibit[1])   # .strip()
             elif "Exhibit Number=" in each_line: # CellebriteUFED4PC.txt
-                makeModel = each_line.replace("Exhibit Number=", "").strip()
+                exhibit = each_line.replace("Exhibit Number=", "").replace("=","").strip()
 
             elif "Evidence Number" in each_line:      #recon imager
                 exhibit = re.split("Evidence Number", each_line, 0)
 
                 # exhibit = re.split("Evidence Number     :", each_line, 0)
                 exhibit = str(exhibit[1]).replace(":", "")  # .strip()
+
+            # exhibitType
+            elif "Device=" in each_line:
+                exhibitType = re.split("Device=", each_line, 0)
+                exhibitType = str(exhibitType[1]).strip()
+                if exhibitType == 'IPHONE':
+                   exhibitType = 'phone'
+                
+
 
             # makeModel
             elif "Unique description: " in each_line:
@@ -916,10 +941,21 @@ def parse_log():
                 makeModel = str(makeModel[1]).strip()
 
             elif "Case Name: " in each_line: # BerlaIVe AcquisitionLog_001.txt      # broken
-                makeModel = each_line.replace("Case Name: ", "").strip()
+                caseName = each_line.replace("Case Name: ", "").strip()
 
-            elif "Model=" in each_line: #cellebrite *.ufd log file
+            elif "Case Identifier=" in each_line and caseNumber == '': # ufed
+                caseNumber = each_line.replace("Case Identifier=", "").strip()
+
+            elif "Crime Type=" in each_line and caseType == '': # ufed
+                caseType = each_line.replace("Crime Type=", "").strip()
+
+
+
+            elif "Model=" in each_line and "DeviceModel=" not in each_line and model == '': #cellebrite *.ufd log file
                 model = each_line.replace("Model=", "").strip()
+                print(f'model = {model} blah')   # temp
+            # elif "Model=" in each_line and model == '': #cellebrite *.ufd log file
+                # model = each_line.replace("Model=", "").strip()
 
             elif "Vendor=" in each_line: #cellebrite *.ufd log file
                 make = each_line.replace("Vendor=", "").strip()
@@ -969,6 +1005,16 @@ def parse_log():
                 OS = ('Android %s' %(OS))
             elif "Apple" in makeModel and OS != '': # Cellebrite .ufd    # test
                 OS = ('iOS %s' %(OS))
+
+            # userPwd
+            elif "Passcode_0=" in each_line: #cellebrite ufed
+
+                userPwd = re.split("Passcode_0=", each_line, 0)
+                userPwd = str(userPwd[1]).strip()    
+                print(f'userPwd = {userPwd}')   # temp
+
+            # elif "Apple" in makeModel and OS != '': # Cellebrite .ufd    # test
+                # userPwd = ('iOS %s' %(OS))
 
 
                 
@@ -3178,6 +3224,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+when doing -L with a folder name in there, it craps out. (skip folders)
+exhibit.lstrip('=')
+
 Change the sheet name from 'forensics' to 'Cases'
 
 
