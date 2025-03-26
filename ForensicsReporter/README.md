@@ -4,11 +4,11 @@ Convert forensic imaging logs to xlsx, print stickers and write activity reports
 
 ### -l # parse any of the following imaging logs:
 * Cellebrite
+* GrayKey
 * Tablaue
 * Berla
-* Cellebrite
 * FTK
-* Tableau
+
 
 Installation:
 ```
