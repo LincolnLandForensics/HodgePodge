@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # MWW
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.3.2'
+version = '3.3.1'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -2368,7 +2368,7 @@ def write_checklist():  # panda edition
     checklist_sheet.column_dimensions['L'].width = 3
     checklist_sheet.column_dimensions['M'].width = 3
     checklist_sheet.column_dimensions['N'].width = 9
-    checklist_sheet.column_dimensions['O'].width = 16
+    checklist_sheet.column_dimensions['O'].width = 10
     checklist_sheet.column_dimensions['P'].width = 3 
     checklist_sheet.column_dimensions['Q'].width = 3 
     checklist_sheet.column_dimensions['R'].width = 3
@@ -2387,7 +2387,7 @@ def write_checklist():  # panda edition
     additional_headers = [
         "exhibit#", "type", "evidence sheet (in)", "evidence sheet (out)", "label (all separate pieces)",
         "imaged", "image backup", "analyzed", "report (sign, print, forward)", "case notes printed",
-        "digital evidence", "digital evidence backup", "digital evidence to agent", "", "", "Verify hash", "MemDump", "triage",
+        "digital evidence", "digital evidence backup", "digital evidence to agent", "return evidence", "", "Verify hash", "MemDump", "triage",
         "Magnet Encrypted Disk Detection", "password", "KAPE", "photograph", "OS", "IP or IMEI",
         "hostname", "Arsenal VM (verify)"
     ]
@@ -2460,9 +2460,14 @@ def write_checklist():  # panda edition
         (memory, triage, edd, password, kape, photo) = ('', '', '', '', '', '')
         (OS, ipIMEI, hostname, arsenal, ip, phoneIMEI) = ('', '', '', '', '', '')
         (dateReceived, exportedEvidence, analysisTool, analysisTool2) = ('', '', '', '')
+        (verifyHash, returnEvidence) = ('', '')
         caseNumber = row['caseNumber'] 
         caseName = row['caseName']
         subjectBusinessName = row['subjectBusinessName']
+        removalDate = row['removalDate']
+        
+        reasonForRemoval = row['reasonForRemoval']
+               
         caseAgent = row['caseAgent']
         forensicExaminer = row['forensicExaminer'] 
         exhibit = str(row['exhibit']).rstrip('.0')
@@ -2483,10 +2488,11 @@ def write_checklist():  # panda edition
             sheetOut = ".."
        
         imaged = row['status']
-        if imaged == 'Imaged':
+        if imaged.lower == 'imaged' or imaged == 'Imaged':
             imaged = 'Y'
-        elif imaged == 'Not Imaged':
-            imaged = 'N'            
+        elif imaged.lower == 'not imaged' or 'not ' in imaged.lower():
+            imaged = 'N'
+            verify = 'N'
         imageBackup = imaged    
         analyzed = str(row['analysisTool'])
         analysisTool2 = str(row['analysisTool2'])        
@@ -2497,10 +2503,13 @@ def write_checklist():  # panda edition
         if 'nan' in exportedEvidence:
             exportedEvidence = ''            
             
+
         if analyzed != "" and exportedEvidence != "":
-            analyzed = 'Y'    
-        else:
-            analyzed = ''    
+            analyzed = 'Y'   
+        # elif analyzed != "" and exportedEvidence != "":
+            # analyzed = 'Y'    
+        # else:
+            # analyzed = ''    
 
         report = str(row['reportStatus'])
         if isinstance(report, str) and "inal" in report:
@@ -2508,8 +2517,11 @@ def write_checklist():  # panda edition
         else:
             report = '' 
 
-        if "storage" in exhibitType or "dvr" in exhibitType.lower() or "UPS" in exhibitType  or "switch" in exhibitType:
-            (memory, triage, edd, password, kape) = ('N', 'N', 'N', 'N', 'N')
+        if "storage" in exhibitType or "dvr" in exhibitType.lower() or "UPS" in exhibitType  or "switch" in exhibitType or "vehicle" in exhibitType.lower() :
+            (memory, triage, edd, password, kape, arsenal) = ('N', 'N', 'N', 'N', 'N', 'N')
+        elif "phone" in exhibitType:
+            (memory, triage, edd, kape, arsenal) = ('N', 'N', 'N', 'N', 'N')
+
         else:
             (memory, triage, edd, password, kape) = ('', '', '', '', '')
 
@@ -2553,6 +2565,10 @@ def write_checklist():  # panda edition
         if ip != "" or phoneIMEI != "": # task always prints y
             ipIMEI = 'Y' 
 
+        if removalDate != '' and 'returned' in reasonForRemoval.lower():
+            returnEvidence = 'Y'
+
+
         try:
             hostname = str(row['hostname'])
             if hostname == 'nan':
@@ -2578,7 +2594,7 @@ def write_checklist():  # panda edition
         cell = checklist_sheet.cell(row=5, column=15, value=forensicExaminer)
 
         # Define your data values
-        data_values = [exhibit, exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup, analyzed, report, caseNotes, de, deBackup, deAgent, "", caseNumber, "", memory, triage, edd, password, kape, photo, OS, ipIMEI, hostname, arsenal]
+        data_values = [exhibit, exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup, analyzed, report, caseNotes, de, deBackup, deAgent, returnEvidence, caseNumber, verifyHash, memory, triage, edd, password, kape, photo, OS, ipIMEI, hostname, arsenal]
 
         # Find the next available row index
         next_row = checklist_sheet.max_row + 1
