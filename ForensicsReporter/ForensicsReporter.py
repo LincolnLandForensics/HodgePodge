@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "IDOR" # ISP, MWW
+agency = "MWW" 
 global agencyFull
-agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
+agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.3.1'
+version = '3.4.1'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -120,7 +120,7 @@ def main():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='default is input_case.xlsx or input.txt', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
-    # parser.add_argument('-b', '--blank', help='create a blank sheet', required=False, action='store_true')
+    parser.add_argument('-b', '--blank', help='create a blank sheet', required=False, action='store_true')
     parser.add_argument('-c','--caseNotes', help='casenotes module (optional) used with -r', required=False, action='store_true')
     parser.add_argument('-C','--checklist', help='checklist module', required=False, action='store_true')
 
@@ -174,10 +174,10 @@ def main():
         filename = args.input  
         input_file = args.input  
 
-    # if args.blank:  # test
-        # data = []  
-        # print(f'insert blank write_here')   # temp
-        # read_xlsx()
+    if args.blank:  # test
+        data = []  
+        print(f'insert blank write_here')   # temp
+        write_xlsx()
         
     if args.report:
         global case_notes_status
@@ -399,20 +399,36 @@ def enter_data():
                 workbook = openpyxl.Workbook()
                 sheet = workbook.active
 
-                heading = ["caseNumber", "exhibit", "caseName", "subjectBusinessName",
-                    "caseType", "caseAgent", "forensicExaminer", "reportStatus", "notes",
-                    "summary", "exhibitType", "makeModel", "serial", "OS", "phoneNumber",
-                    "phoneIMEI", "mobileCarrier", "biosTime", "currentTime", "timezone",
-                    "shutdownMethod", "shutdownTime", "userName", "userPwd", "email",
-                    "emailPwd", "ip", "seizureAddress", "seizureRoom", "dateSeized",
-                    "seizedBy", "dateReceived", "receivedBy", "removalDate", "removalStaff",
-                    "reasonForRemoval", "inventoryDate", "seizureStatus", "status", "imagingTool",
-                    "imagingType", "imageMD5", "imageSHA1", "imageSHA256", "writeBlocker",
-                    "imagingStarted", "imagingFinished", "storageType", "storageMakeModel",
-                    "storageSerial", "storageSize", "evidenceDataSize", "analysisTool",
-                    "analysisTool2", "exportLocation", "exportedEvidence", "storageLocation",
-                    "caseNumberOrig", "priority", "operation", "Action", "vaultCaseNumber",
-                    "qrCode", "vaultTotal", "tempNotes"]
+                heading = ["caseNumber", "exhibit", "caseName", "subjectBusinessName", "caseType"
+                , "caseAgent", "forensicExaminer", "reportStatus", "notes", "summary", "tempNotes"
+                , "exhibitType", "makeModel", "serial", "OS", "hostname", "userName", "userPwd"
+                , "email", "emailPwd", "ip", "phoneNumber", "phoneIMEI", "phone2", "phoneIMEI2"
+                , "mobileCarrier", "biosTime", "currentTime", "timezone", "shutdownMethod"
+                , "shutdownTime", "seizureAddress", "seizureRoom", "dateSeized", "seizedBy"
+                , "seizureStatus", "dateReceived", "receivedBy", "removalDate", "removalStaff"
+                , "reasonForRemoval", "inventoryDate", "storageLocation", "status", "imagingTool"
+                , "imagingType", "imageMD5", "imageSHA256", "imageSHA1", "verifyHash", "writeBlocker"
+                , "imagingStarted", "imagingFinished", "storageType", "storageMakeModel"
+                , "storageSerial", "storageSize", "evidenceDataSize", "analysisTool"
+                , "analysisTool2", "exportLocation", "exportedEvidence", "qrCode", "operation"
+                , "vaultCaseNumber", "vaultTotal", "caseNumberOrig", "Action", "priority", "temp"]
+
+
+
+                # heading = ["caseNumber", "exhibit", "caseName", "subjectBusinessName",
+                    # "caseType", "caseAgent", "forensicExaminer", "reportStatus", "notes",
+                    # "summary", "exhibitType", "makeModel", "serial", "OS", "phoneNumber",
+                    # "phoneIMEI", "mobileCarrier", "biosTime", "currentTime", "timezone",
+                    # "shutdownMethod", "shutdownTime", "userName", "userPwd", "email",
+                    # "emailPwd", "ip", "seizureAddress", "seizureRoom", "dateSeized",
+                    # "seizedBy", "dateReceived", "receivedBy", "removalDate", "removalStaff",
+                    # "reasonForRemoval", "inventoryDate", "seizureStatus", "status", "imagingTool",
+                    # "imagingType", "imageMD5", "imageSHA1", "imageSHA256", "writeBlocker",
+                    # "imagingStarted", "imagingFinished", "storageType", "storageMakeModel",
+                    # "storageSerial", "storageSize", "evidenceDataSize", "analysisTool",
+                    # "analysisTool2", "exportLocation", "exportedEvidence", "storageLocation",
+                    # "caseNumberOrig", "priority", "operation", "Action", "vaultCaseNumber",
+                    # "qrCode", "vaultTotal", "tempNotes"]
 
                 sheet.append(heading)
                 workbook.save(filepath)
@@ -453,7 +469,7 @@ def dictionary_build(caseNumber, exhibit, caseName, subjectBusinessName, caseTyp
     writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
     storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
     storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-    vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2):    
+    vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2, verifyHash):    
     '''
         build a dictionary file of important columns for writing to a pdf
     '''
@@ -834,7 +850,7 @@ def parse_log():
         (storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2) = ('', '', '', '', '', '')
         (exportLocation, exportedEvidence, storageLocation, caseNumberOrig, priority, operation) = ('', '', '', '', '', '')
         (Action, vaultCaseNumber, qrCode, vaultTotal, tempNotes) = ('', '', '', '', '')
-        (temp, hostname, phoneIMEI2, phone2) = ('', '', '', '')
+        (temp, hostname, phoneIMEI2, phone2, verifyHash) = ('', '', '', '', '')
         
         # bonus variables
         (vehicleYear, vehicleManufacturer, vehicleModel) = ('', '', '') # BerlaIVe Acquisition
@@ -1534,9 +1550,10 @@ def parse_log():
             # notes = ("%s The operating system was %s." %(notes, OS)) 
 
 
-        if status == 'Not imaged':
+        if status.lower() == 'not imaged':
             notes = ("%s This drive could not be imaged." %(notes))
-
+            verifyHash = 'N'
+            
         print(f'''
         caseNumber = {caseNumber}
         subjectBusinessName = {subjectBusinessName}
@@ -1547,16 +1564,7 @@ def parse_log():
         OS = {OS}
         phoneNumber = {phoneNumber}\n
         ''')
-        write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-            forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
-            phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
-            userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
-            dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
-            seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
-            writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
-            storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-            vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2)
+        write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, reportStatus, notes, summary, tempNotes, exhibitType, makeModel, serial, OS, hostname, userName, userPwd, email, emailPwd, ip, phoneNumber, phoneIMEI, phone2, phoneIMEI2, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, seizureAddress, seizureRoom, dateSeized, seizedBy, seizureStatus, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, storageLocation, status, imagingTool, imagingType, imageMD5, imageSHA256, imageSHA1, verifyHash, writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, qrCode, operation, vaultCaseNumber, vaultTotal, caseNumberOrig, Action, priority, temp)
     print(f"{color_green}Exporting logs as {spreadsheet}{color_reset}")    
 
 
@@ -1799,7 +1807,7 @@ def read_xlsx():
     (body, executiveSummary, evidenceBlurb) = ('', '', '')
     (style) = ('')
     (caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer) = ('', '', '', '', '', '', '', '', '')
-    (subject, vowel, status) = ('test', 'aeiou', '')
+    (subject, vowel, status, verifyHash) = ('test', 'aeiou', '', '')
 
 
     # read in the spreadsheet
@@ -1823,7 +1831,9 @@ def read_xlsx():
         phoneNumber = str(row['phoneNumber'])
         phoneIMEI = str(row['phoneIMEI'])
         mobileCarrier = str(row['mobileCarrier'])
-
+        verifyHash = str(row.get('verifyHash', ''))  # Defaults to an empty string if key is missing
+ 
+        
         if caseNumberTodo == '':
             caseNumberTodo = (f'''- [ ] {caseNumber} - Add to spreadsheet
 - [ ] {caseNumber} - Label all pieces
@@ -1926,6 +1936,11 @@ def read_xlsx():
         qrCode = str(row['qrCode'])
         vaultTotal = str(row['vaultTotal'])
         tempNotes = str(row['tempNotes'])
+        # try:
+            # verifyHash = str(row["verifyHash"])
+        # except TypeError as error:
+            # print(f"{color_red}error = {error}{color_reset}")
+
         try:
             temp = str(row['temp'])
         except:
@@ -2228,16 +2243,7 @@ Exhibit {exhibit}
 
     
         # Write excel
-        write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-            forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
-            phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
-            userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
-            dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
-            seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
-            writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
-            storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-            storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-            vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2)
+        write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, reportStatus, notes, summary, tempNotes, exhibitType, makeModel, serial, OS, hostname, userName, userPwd, email, emailPwd, ip, phoneNumber, phoneIMEI, phone2, phoneIMEI2, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, seizureAddress, seizureRoom, dateSeized, seizedBy, seizureStatus, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, storageLocation, status, imagingTool, imagingType, imageMD5, imageSHA256, imageSHA1, verifyHash, writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, qrCode, operation, vaultCaseNumber, vaultTotal, caseNumberOrig, Action, priority, temp)
 
         if case_notes_status == 'True':
             my_dict = dictionary_build(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
@@ -2249,7 +2255,7 @@ Exhibit {exhibit}
             writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
             storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
             storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-            vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2)
+            vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2, verifyHash)
         else:
             my_dict = []
         
@@ -2488,11 +2494,20 @@ def write_checklist():  # panda edition
             sheetOut = ".."
        
         imaged = row['status']
+        
+        try:
+            verifyHash = str(row['verifyHash'])
+        except:
+            verifyHash = ''
+        
+        
         if imaged.lower == 'imaged' or imaged == 'Imaged':
             imaged = 'Y'
         elif imaged.lower == 'not imaged' or 'not ' in imaged.lower():
             imaged = 'N'
             verify = 'N'
+            verifyHash = 'N'
+            # print(f' hello world {verifyHash}')  # test
         imageBackup = imaged    
         analyzed = str(row['analysisTool'])
         analysisTool2 = str(row['analysisTool2'])        
@@ -2519,11 +2534,14 @@ def write_checklist():  # panda edition
 
         if "storage" in exhibitType or "dvr" in exhibitType.lower() or "UPS" in exhibitType  or "switch" in exhibitType or "vehicle" in exhibitType.lower() :
             (memory, triage, edd, password, kape, arsenal) = ('N', 'N', 'N', 'N', 'N', 'N')
-        elif "phone" in exhibitType:
+        elif "phone" in exhibitType or "tablet" in exhibitType:
             (memory, triage, edd, kape, arsenal) = ('N', 'N', 'N', 'N', 'N')
 
         else:
             (memory, triage, edd, password, kape) = ('', '', '', '', '')
+
+        if verifyHash != '' and "note imaged" in imaged.lower():
+            verifyHash = 'N'
 
         if "memdump" in analysisTool2.lower():
             memory = "Y"
@@ -2534,7 +2552,13 @@ def write_checklist():  # panda edition
             kape = 'Y'
             
         de = row['exportedEvidence']
-        deBackup = row['exportedEvidence']        
+        deBackup = row['exportedEvidence']
+        # if de.lower() == 'n':
+            # deAgent = 'N'
+        deAgent = 'N' if str(de).lower() == 'n' else deAgent
+
+
+        
         password = str(row['userPwd'])
         
         if password == 'nan':
@@ -2555,6 +2579,8 @@ def write_checklist():  # panda edition
 
         if ip == 'nan':
             ip = ''
+        
+  
         phoneIMEI = str(row['phoneIMEI'])
         # if 'nan' in phoneIMEI:        
             # phoneIMEI == ''
@@ -2610,16 +2636,7 @@ def write_checklist():  # panda edition
     # Save the workbook to the output file
     book.save(output_file)
 
-def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-    forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
-    phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
-    userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
-    dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
-    seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
-    writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
-    storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-    storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-    vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2):
+def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, reportStatus, notes, summary, tempNotes, exhibitType, makeModel, serial, OS, hostname, userName, userPwd, email, emailPwd, ip, phoneNumber, phoneIMEI, phone2, phoneIMEI2, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, seizureAddress, seizureRoom, dateSeized, seizedBy, seizureStatus, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, storageLocation, status, imagingTool, imagingType, imageMD5, imageSHA256, imageSHA1, verifyHash, writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, qrCode, operation, vaultCaseNumber, vaultTotal, caseNumberOrig, Action, priority, temp):
     """
         Write the output file (xlsx)
     """
@@ -2637,17 +2654,20 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         sheet = book.active
         sheet.title = 'Cases'   # was "Forensics"
 
-        # Set headers for the 'Cases' sheet
-        headers = ["caseNumber", "exhibit", "caseName", "subjectBusinessName", "caseType", "caseAgent"
-        , "forensicExaminer", "reportStatus", "notes", "summary", "exhibitType", "makeModel", "serial", "OS", "phoneNumber"
-        , "phoneIMEI", "mobileCarrier", "biosTime", "currentTime", "timezone", "shutdownMethod", "shutdownTime"
-        , "userName", "userPwd", "email", "emailPwd", "ip", "seizureAddress", "seizureRoom", "dateSeized", "seizedBy"
-        , "dateReceived", "receivedBy", "removalDate", "removalStaff", "reasonForRemoval", "inventoryDate"
-        , "seizureStatus", "status", "imagingTool", "imagingType", "imageMD5", "imageSHA1", "imageSHA256"
-        , "writeBlocker", "imagingStarted", "imagingFinished", "storageType", "storageMakeModel", "storageSerial"
-        , "storageSize", "evidenceDataSize", "analysisTool", "analysisTool2", "exportLocation", "exportedEvidence"
-        , "storageLocation", "caseNumberOrig", "priority", "operation", "Action", "vaultCaseNumber", "qrCode"
-        , "vaultTotal", "tempNotes", "temp", "hostname", "phoneIMEI2", "phone2"]
+        headers = ["caseNumber", "exhibit", "caseName", "subjectBusinessName", "caseType"
+        , "caseAgent", "forensicExaminer", "reportStatus", "notes", "summary", "tempNotes"
+        , "exhibitType", "makeModel", "serial", "OS", "hostname", "userName", "userPwd"
+        , "email", "emailPwd", "ip", "phoneNumber", "phoneIMEI", "phone2", "phoneIMEI2"
+        , "mobileCarrier", "biosTime", "currentTime", "timezone", "shutdownMethod"
+        , "shutdownTime", "seizureAddress", "seizureRoom", "dateSeized", "seizedBy"
+        , "seizureStatus", "dateReceived", "receivedBy", "removalDate", "removalStaff"
+        , "reasonForRemoval", "inventoryDate", "storageLocation", "status", "imagingTool"
+        , "imagingType", "imageMD5", "imageSHA256", "imageSHA1", "verifyHash", "writeBlocker"
+        , "imagingStarted", "imagingFinished", "storageType", "storageMakeModel"
+        , "storageSerial", "storageSize", "evidenceDataSize", "analysisTool"
+        , "analysisTool2", "exportLocation", "exportedEvidence", "qrCode", "operation"
+        , "vaultCaseNumber", "vaultTotal", "caseNumberOrig", "Action", "priority", "temp"]
+
         sheet.append(headers)
 
         # Set the header row cell colors
@@ -2657,27 +2677,27 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='FFc000', end_color='FFc000', fill_type='solid')    #orange
 
-        yellow_columns = ['B', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BO', 'BP', 'BQ']
+        yellow_columns = ['B', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE']
         for col in yellow_columns:
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
 
-        violet_columns = ['I', 'J', 'BM']
+        violet_columns = ['I', 'J', 'K']
         for col in violet_columns:
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='CCCCFF', end_color='CCCCFF', fill_type='solid')    # purple
 
-        green_columns = ['AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL']
+        green_columns = ['AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO', 'AP' ]
         for col in green_columns:
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='92D050', end_color='92D050', fill_type='solid')    # green
 
-        blue_columns = ['AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE']
+        blue_columns = ['AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ']
         for col in blue_columns:
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='66CCFF', end_color='66CCFF', fill_type='solid')    # blue
 
-        pink_columns = ['BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL']
+        pink_columns = ['BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ' ]
         for col in pink_columns:
             cell = sheet[f"{col}1"]
             cell.fill = PatternFill(start_color='FF99FF', end_color='FF99FF', fill_type='solid')    # pink
@@ -2689,84 +2709,76 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         sheet.column_dimensions['A'].width = 15 #  caseNumber
         sheet.column_dimensions['B'].width = 7 #  exhibit
         sheet.column_dimensions['C'].width = 16 #  caseName
-        sheet.column_dimensions['D'].width = 20 #  subjectBusinessName
+        sheet.column_dimensions['D'].width = 25 #  subjectBusinessName
         sheet.column_dimensions['E'].width = 16 #  caseType
         sheet.column_dimensions['F'].width = 25 #  caseAgent
         sheet.column_dimensions['G'].width = 15 #  forensicExaminer
         sheet.column_dimensions['H'].width = 13 #  reportStatus
         sheet.column_dimensions['I'].width = 25 #  notes
         sheet.column_dimensions['J'].width = 15 #  summary
-        sheet.column_dimensions['K'].width = 12 #  exhibitType
-        sheet.column_dimensions['L'].width = 30 #  makeModel
-        sheet.column_dimensions['M'].width = 17 #  serial
-        sheet.column_dimensions['N'].width = 15 #  OS
-        sheet.column_dimensions['O'].width = 14 #  phoneNumber
-        sheet.column_dimensions['P'].width = 16 #  phoneIMEI
-        sheet.column_dimensions['Q'].width = 15 #  mobileCarrier
-        sheet.column_dimensions['R'].width = 16 #  biosTime
-        sheet.column_dimensions['S'].width = 16 #  currentTime
-        sheet.column_dimensions['T'].width = 12 #  timezone
-        sheet.column_dimensions['U'].width = 15 #  shutdownMethod
-        sheet.column_dimensions['V'].width = 16 #  shutdownTime
-        sheet.column_dimensions['W'].width = 12 #  userName
-        sheet.column_dimensions['X'].width = 12 #  userPwd
-        sheet.column_dimensions['Y'].width = 20 #  email
-        sheet.column_dimensions['Z'].width = 12 #  emailPwd
-        sheet.column_dimensions['AA'].width = 14 #  ip
-        sheet.column_dimensions['AB'].width = 15 #  seizureAddress
-        sheet.column_dimensions['AC'].width = 12 #  seizureRoom
-        sheet.column_dimensions['AD'].width = 16 #  dateSeized
-        sheet.column_dimensions['AE'].width = 12 #  seizedBy
-        sheet.column_dimensions['AF'].width = 16 #  dateReceived
-        sheet.column_dimensions['AG'].width = 15 #  receivedBy
-        sheet.column_dimensions['AH'].width = 16 #  removalDate
-        sheet.column_dimensions['AI'].width = 25 #  removalStaff
-        sheet.column_dimensions['AJ'].width = 18 #  reasonForRemoval
-        sheet.column_dimensions['AK'].width = 15 #  inventoryDate
-        sheet.column_dimensions['AL'].width = 18 #  seizureStatus
-        sheet.column_dimensions['AM'].width = 12 #  status
-        sheet.column_dimensions['AN'].width = 24 #  imagingTool
-        sheet.column_dimensions['AO'].width = 15 #  imagingType
-        sheet.column_dimensions['AP'].width = 16 #  imageMD5
-        sheet.column_dimensions['AQ'].width = 15 #  imageSHA1
-        sheet.column_dimensions['AR'].width = 15 #  imageSHA256  #25
-        sheet.column_dimensions['AS'].width = 15 #  writeBlocker
-        sheet.column_dimensions['AT'].width = 22 #  imagingStarted
-        sheet.column_dimensions['AU'].width = 16 #  imagingFinished
-        sheet.column_dimensions['AV'].width = 13 #  storageType
-        sheet.column_dimensions['AW'].width = 23 #  storageMakeModel
-        sheet.column_dimensions['AX'].width = 19 #  storageSerial
-        sheet.column_dimensions['AY'].width = 14 #  storageSize
-        sheet.column_dimensions['AZ'].width = 15 #  evidenceDataSize
-        sheet.column_dimensions['BA'].width = 23 #  analysisTool
-        sheet.column_dimensions['BB'].width = 15 #  analysisTool2
-        sheet.column_dimensions['BC'].width = 25 #  exportLocation
-        sheet.column_dimensions['BD'].width = 15 #  exportedEvidence
-        sheet.column_dimensions['BE'].width = 20 #  storageLocation
-        sheet.column_dimensions['BF'].width = 19 #  caseNumberOrig
-        sheet.column_dimensions['BG'].width = 9 #  priority
-        sheet.column_dimensions['BH'].width = 15 #  operation
-        sheet.column_dimensions['BI'].width = 10 #  Action
-        sheet.column_dimensions['BJ'].width = 19 #  vaultCaseNumber
-        sheet.column_dimensions['BK'].width = 15 #  qrCode
-        sheet.column_dimensions['BL'].width = 15 #  vaultTotal
-        sheet.column_dimensions['BM'].width = 40 #  tempNotes
-        sheet.column_dimensions['BN'].width = 5 #  temp
-        sheet.column_dimensions['BO'].width = 18 #  hostname        
-        sheet.column_dimensions['BP'].width = 16 #  phoneIMEI2
-        sheet.column_dimensions['BQ'].width = 16 #  phone2        
+        sheet.column_dimensions['K'].width = 40 #  tempNotes
+        sheet.column_dimensions['L'].width = 12 #  exhibitType
+        sheet.column_dimensions['M'].width = 30 #  
+        sheet.column_dimensions['N'].width = 17 #  
+        sheet.column_dimensions['O'].width = 15 #  
+        sheet.column_dimensions['P'].width = 18 #  
+        sheet.column_dimensions['Q'].width = 12 # 
+        sheet.column_dimensions['R'].width = 12 #  
+        sheet.column_dimensions['S'].width = 20 #  
+        sheet.column_dimensions['T'].width = 12 #  
+        sheet.column_dimensions['U'].width = 14 #  
+        sheet.column_dimensions['V'].width = 14 #  
+        sheet.column_dimensions['W'].width = 16 #  
+        sheet.column_dimensions['X'].width = 16 #  
+        sheet.column_dimensions['Y'].width = 16 #  
+        sheet.column_dimensions['Z'].width = 15 #  
+        sheet.column_dimensions['AA'].width = 16 #  
+        sheet.column_dimensions['AB'].width = 16 #  
+        sheet.column_dimensions['AC'].width = 12 #  
+        sheet.column_dimensions['AD'].width = 15 #  
+        sheet.column_dimensions['AE'].width = 16 #  
+        sheet.column_dimensions['AF'].width = 15 #  
+        sheet.column_dimensions['AG'].width = 12 #  
+        sheet.column_dimensions['AH'].width = 16 #  
+        sheet.column_dimensions['AI'].width = 12 #  
+        sheet.column_dimensions['AJ'].width = 18 #  
+        sheet.column_dimensions['AK'].width = 16 #  
+        sheet.column_dimensions['AL'].width = 15 #  
+        sheet.column_dimensions['AM'].width = 16 #  
+        sheet.column_dimensions['AN'].width = 25 #  
+        sheet.column_dimensions['AO'].width = 18 #  
+        sheet.column_dimensions['AP'].width = 15 #  
+        sheet.column_dimensions['AQ'].width = 25 #  
+        sheet.column_dimensions['AR'].width = 12 #  
+        sheet.column_dimensions['AS'].width = 24 #  
+        sheet.column_dimensions['AT'].width = 15 #  
+        sheet.column_dimensions['AU'].width = 16 #  
+        sheet.column_dimensions['AV'].width = 15 #  
+        sheet.column_dimensions['AW'].width = 15 #  
+        sheet.column_dimensions['AX'].width = 11 #  
+        sheet.column_dimensions['AY'].width = 15 #  
+        sheet.column_dimensions['AZ'].width = 22 #  
+        sheet.column_dimensions['BA'].width = 16 #  
+        sheet.column_dimensions['BB'].width = 13 #  
+        sheet.column_dimensions['BC'].width = 23 #  
+        sheet.column_dimensions['BD'].width = 19 #  
+        sheet.column_dimensions['BE'].width = 14 #  
+        sheet.column_dimensions['BF'].width = 15 #  
+        sheet.column_dimensions['BG'].width = 23 #  
+        sheet.column_dimensions['BH'].width = 15 #  
+        sheet.column_dimensions['BI'].width = 25 #  
+        sheet.column_dimensions['BJ'].width = 15 #  
+        sheet.column_dimensions['BK'].width = 15 #  
+        sheet.column_dimensions['BL'].width = 15 #  
+        sheet.column_dimensions['BM'].width = 19 #  
+        sheet.column_dimensions['BN'].width = 15 #  
+        sheet.column_dimensions['BO'].width = 19 #      
+        sheet.column_dimensions['BP'].width = 10 #  
+        sheet.column_dimensions['BQ'].width = 9 #  
+        sheet.column_dimensions['BR'].width = 5 #       
 
     # Write data to the 'Cases' sheet
-    row_data = [caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-        forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
-        phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
-        userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
-        dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
-        seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
-        writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
-        storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-        storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-        vaultTotal, tempNotes, temp, hostname, phoneIMEI2, phone2]    
+    row_data = [caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, reportStatus, notes, summary, tempNotes, exhibitType, makeModel, serial, OS, hostname, userName, userPwd, email, emailPwd, ip, phoneNumber, phoneIMEI, phone2, phoneIMEI2, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, seizureAddress, seizureRoom, dateSeized, seizedBy, seizureStatus, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, storageLocation, status, imagingTool, imagingType, imageMD5, imageSHA256, imageSHA1, verifyHash, writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, qrCode, operation, vaultCaseNumber, vaultTotal, caseNumberOrig, Action, priority, temp]    
     
     sheet.append(row_data)
 
@@ -2794,40 +2806,46 @@ def create_and_write_xlsx():
         'reportStatus': [],
         'notes': [],
         'summary': [],
+        'tempNotes': [],       
         'exhibitType': [],
         'makeModel': [],
         'serial': [],
         'OS': [],
+        'hostname': [],        
+        'userName': [],
+        'userPwd': [],
+        'email': [],
+        'emailPwd': [],
+        'ip': [],
         'phoneNumber': [],
         'phoneIMEI': [],
+        'phone2': [],          
+        'phoneIMEI2': [],
         'mobileCarrier': [],
         'biosTime': [],
         'currentTime': [],
         'timezone': [],
         'shutdownMethod': [],
         'shutdownTime': [],
-        'userName': [],
-        'userPwd': [],
-        'email': [],
-        'emailPwd': [],
-        'ip': [],
         'seizureAddress': [],
         'seizureRoom': [],
         'dateSeized': [],
         'seizedBy': [],
+        'seizureStatus': [],        
         'dateReceived': [],
         'receivedBy': [],
         'removalDate': [],
         'removalStaff': [],
         'reasonForRemoval': [],
         'inventoryDate': [],
-        'seizureStatus': [],
+        'storageLocation': [],
         'status': [],
         'imagingTool': [],
         'imagingType': [],
         'imageMD5': [],
+        'imageSHA256': [],        
         'imageSHA1': [],
-        'imageSHA256': [],
+        'verifyHash': [],           
         'writeBlocker': [],
         'imagingStarted': [],
         'imagingFinished': [],
@@ -2840,18 +2858,14 @@ def create_and_write_xlsx():
         'analysisTool2': [],
         'exportLocation': [],
         'exportedEvidence': [],
-        'storageLocation': [],
-        'caseNumberOrig': [],
-        'priority': [],
-        'operation': [],
-        'Action': [],
-        'vaultCaseNumber': [],
         'qrCode': [],
+        'operation': [],        
+        'vaultCaseNumber': [],   
         'vaultTotal': [],
-        'tempNotes': [],
-        'hostname': [],
-        'phoneIMEI2': [],
-        'phone2': []        
+        'caseNumberOrig': [],
+        'Action': [],        
+        'priority': [],
+        'temp': []
     }
 
     # Create the DataFrame
@@ -2902,7 +2916,7 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
         storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
         storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-        vaultTotal, tempNotes, hostname, phoneIMEI2, phone2):
+        vaultTotal, tempNotes, hostname, phoneIMEI2, phone2, verifyHash):
     """
         write the report to a word document        
     """
@@ -2910,19 +2924,39 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
     try:
         df = pd.read_excel(spreadsheet)
     except FileNotFoundError:
+
         df = pd.DataFrame(columns=[
-            'CaseNumber', 'Exhibit', 'CaseName', 'SubjectBusinessName', 'CaseType', 'CaseAgent',
-            'ForensicExaminer', 'ReportStatus', 'Notes', 'Summary', 'ExhibitType', 'MakeModel',
-            'Serial', 'OS', 'PhoneNumber', 'PhoneIMEI', 'MobileCarrier', 'BiosTime', 'CurrentTime',
-            'Timezone', 'ShutdownMethod', 'ShutdownTime', 'UserName', 'UserPwd', 'Email', 'EmailPwd',
-            'IP', 'SeizureAddress', 'SeizureRoom', 'DateSeized', 'SeizedBy', 'DateReceived', 'ReceivedBy',
-            'RemovalDate', 'RemovalStaff', 'ReasonForRemoval', 'InventoryDate', 'SeizureStatus', 'Status',
-            'ImagingTool', 'ImagingType', 'ImageMD5', 'ImageSHA1', 'ImageSHA256', 'WriteBlocker',
-            'ImagingStarted', 'ImagingFinished', 'StorageType', 'StorageMakeModel', 'StorageSerial',
-            'StorageSize', 'EvidenceDataSize', 'AnalysisTool', 'AnalysisTool2', 'ExportLocation',
-            'ExportedEvidence', 'StorageLocation', 'CaseNumberOrig', 'Priority', 'Operation', 'Action',
-            'VaultCaseNumber', 'QRCode', 'VaultTotal', 'TempNotes', 'Hostname', 'phoneIMEI2', 'phone2'
+            "caseNumber", "exhibit", "caseName", "subjectBusinessName", "caseType"
+            , "caseAgent", "forensicExaminer", "reportStatus", "notes", "summary"
+            , "tempNotes", "exhibitType", "makeModel", "serial", "OS", "hostname"
+            , "userName", "userPwd", "email", "emailPwd", "ip", "phoneNumber"
+            , "phoneIMEI", "phone2", "phoneIMEI2", "mobileCarrier", "biosTime"
+            , "currentTime", "timezone", "shutdownMethod", "shutdownTime"
+            , "seizureAddress", "seizureRoom", "dateSeized", "seizedBy"
+            , "seizureStatus", "dateReceived", "receivedBy", "removalDate"
+            , "removalStaff", "reasonForRemoval", "inventoryDate", "storageLocation"
+            , "status", "imagingTool", "imagingType", "imageMD5", "imageSHA256"
+            , "imageSHA1", "verifyHash", "writeBlocker", "imagingStarted"
+            , "imagingFinished", "storageType", "storageMakeModel", "storageSerial"
+            , "storageSize", "evidenceDataSize", "analysisTool", "analysisTool2"
+            , "exportLocation", "exportedEvidence", "qrCode", "operation"
+            , "vaultCaseNumber", "vaultTotal", "caseNumberOrig", "Action"
+            , "priority", "temp"
         ])
+        
+        # df = pd.DataFrame(columns=[
+            # 'CaseNumber', 'Exhibit', 'CaseName', 'SubjectBusinessName', 'CaseType', 'CaseAgent',
+            # 'ForensicExaminer', 'ReportStatus', 'Notes', 'Summary', 'ExhibitType', 'MakeModel',
+            # 'Serial', 'OS', 'PhoneNumber', 'PhoneIMEI', 'MobileCarrier', 'BiosTime', 'CurrentTime',
+            # 'Timezone', 'ShutdownMethod', 'ShutdownTime', 'UserName', 'UserPwd', 'Email', 'EmailPwd',
+            # 'IP', 'SeizureAddress', 'SeizureRoom', 'DateSeized', 'SeizedBy', 'DateReceived', 'ReceivedBy',
+            # 'RemovalDate', 'RemovalStaff', 'ReasonForRemoval', 'InventoryDate', 'SeizureStatus', 'Status',
+            # 'ImagingTool', 'ImagingType', 'ImageMD5', 'ImageSHA1', 'ImageSHA256', 'WriteBlocker',
+            # 'ImagingStarted', 'ImagingFinished', 'StorageType', 'StorageMakeModel', 'StorageSerial',
+            # 'StorageSize', 'EvidenceDataSize', 'AnalysisTool', 'AnalysisTool2', 'ExportLocation',
+            # 'ExportedEvidence', 'StorageLocation', 'CaseNumberOrig', 'Priority', 'Operation', 'Action',
+            # 'VaultCaseNumber', 'QRCode', 'VaultTotal', 'TempNotes', 'Hostname', 'phoneIMEI2', 'phone2', 'verifyHash'
+        # ])
 
     # Create a dictionary of the case data
     case_data = {
@@ -2993,7 +3027,8 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
         'TempNotes': tempNotes,
         'Hostname': hostname,
         'phoneIMEI2': phoneIMEI2,
-        'phone2': phone2        
+        'phone2': phone2,
+        'verifyHash': verifyHash        
     }
 
     # Append the case data to the DataFrame
@@ -3103,7 +3138,7 @@ def write_sticker():
         serial = str(row['serial'])       
         status = row['status']
 
-        if status == 'Imaged':    
+        if status.lower() == 'imaged':    
             header = (f'''Case#: {caseNumber}      Ex: {exhibit}
 CaseName: {caseName}
 Subject: {subjectBusinessName}
@@ -3207,6 +3242,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+3.4.0 - ReOrganized column order (run old sheets through -r) to re-organize old data)
+3.1.1 - Add verifyHash column
 3.1.0 - export a markdown file as a todo list
 3.0.9 - went back to Exhibit instead of Item
 3.0.7 - export a markdown file as a todo list

@@ -57,3 +57,6 @@ python ForensicsReporter.py -r -c
 ```
 ![Case Notes Example](images/CaseNotesExample.png)
 
+## Spreadsheet_reorder.py
+
+in case you want to re-order the columns in your case xlsx.
