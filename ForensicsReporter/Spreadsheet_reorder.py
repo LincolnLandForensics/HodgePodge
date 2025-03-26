@@ -2,7 +2,8 @@
 # coding: utf-8
 """
 Read a case sheet and re-organize the order of the headers
-just change the order of headers on line 119
+It will read the first sheet
+just change the order of headers on line 127
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -26,7 +27,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description = "Read a case sheet and re-organize the order of the headers"
-version = '0.1.2'
+version = '1.0.0'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -39,20 +40,25 @@ def main():
     # Row = 1  # defines arguments   # if you want to add headers 
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='', required=False)
-    parser.add_argument('-O', '--output', help='', required=False)
+    parser.add_argument('-O', '--output', help='', required=False)    
+    parser.add_argument('-b', '--blank', help='read xlsx', required=False, action='store_true')    
     parser.add_argument('-r', '--read', help='read xlsx', required=False, action='store_true')
 
     args = parser.parse_args()
 
 
     global input_file
-    input_file = args.input if args.input else "input_case.xlsx"
+    input_file = args.input if args.input else "ForensicCases.xlsx"
 
     global outuput_xlsx
-    outuput_xlsx = args.output if args.output else "output_test.xlsx"
+    outuput_xlsx = args.output if args.output else "ForensicCases_new.xlsx"
+    if args.blank:
+        data = []
+        write_xlsx(data, outuput_xlsx)
 
-
-    if args.read:
+        msg_blurb = (f'Creating blank file: {outuput_xlsx}')
+        msg_blurb_square(msg_blurb, color_green) 
+    elif args.read:
         # create_xlsx()
 
         file_exists = os.path.exists(input_file)
@@ -133,19 +139,116 @@ def write_xlsx(data, file_path):
     , "analysisTool2", "exportLocation", "exportedEvidence", "qrCode", "operation"
     , "vaultCaseNumber", "vaultTotal", "caseNumberOrig", "Action", "priority", "temp"]
 
+
+
+
     # Write headers to the first row
     for col_index, header in enumerate(headers):
         cell = worksheet.cell(row=1, column=col_index + 1)
         cell.value = header
-        if col_index in [0, 2, 3, 4, 5, 6, 7]:  # Indices of columns A, C, D, E, F, G, H
-            fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
-            cell.fill = fill
+
+    # set colors of headers
+    orange_columns = ['A', 'C', 'd', 'e', 'f', 'g', 'h']
+    for col in orange_columns: 
+        cell = worksheet[f"{col}1"]
+        cell.fill = PatternFill(start_color='FFc000', end_color='FFc000', fill_type='solid')    #orange
+
+    yellow_columns = ['B', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE']
+    for col in yellow_columns:
+        cell = worksheet[f"{col}1"]
+        cell.fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
+
+    violet_columns = ['I', 'J', 'K']
+    for col in violet_columns:
+        cell = worksheet[f"{col}1"]
+        cell.fill = PatternFill(start_color='CCCCFF', end_color='CCCCFF', fill_type='solid')    # purple
+
+    green_columns = ['AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO', 'AP' ]
+    for col in green_columns:
+        cell = worksheet[f"{col}1"]
+        cell.fill = PatternFill(start_color='92D050', end_color='92D050', fill_type='solid')    # green
+
+    blue_columns = ['AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ']
+    for col in blue_columns:
+        cell = worksheet[f"{col}1"]
+        cell.fill = PatternFill(start_color='66CCFF', end_color='66CCFF', fill_type='solid')    # blue
+
+    pink_columns = ['BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ' ]
+    for col in pink_columns:
+        cell = worksheet[f"{col}1"]
+        cell.fill = PatternFill(start_color='FF99FF', end_color='FF99FF', fill_type='solid')    # pink
 
     # Excel column width
-    worksheet.column_dimensions['A'].width = 15# zero
-    worksheet.column_dimensions['B'].width = 7# one
-    worksheet.column_dimensions['C'].width = 16# two
-    worksheet.column_dimensions['D'].width = 20# three
+    worksheet.column_dimensions['A'].width = 15 #  caseNumber
+    worksheet.column_dimensions['B'].width = 7 #  exhibit
+    worksheet.column_dimensions['C'].width = 16 #  caseName
+    worksheet.column_dimensions['D'].width = 25 #  subjectBusinessName
+    worksheet.column_dimensions['E'].width = 16 #  caseType
+    worksheet.column_dimensions['F'].width = 25 #  caseAgent
+    worksheet.column_dimensions['G'].width = 15 #  forensicExaminer
+    worksheet.column_dimensions['H'].width = 13 #  reportStatus
+    worksheet.column_dimensions['I'].width = 25 #  notes
+    worksheet.column_dimensions['J'].width = 15 #  summary
+    worksheet.column_dimensions['K'].width = 40 #  tempNotes
+    worksheet.column_dimensions['L'].width = 12 #  exhibitType
+    worksheet.column_dimensions['M'].width = 30 #  
+    worksheet.column_dimensions['N'].width = 17 #  
+    worksheet.column_dimensions['O'].width = 15 #  
+    worksheet.column_dimensions['P'].width = 18 #  
+    worksheet.column_dimensions['Q'].width = 12 # 
+    worksheet.column_dimensions['R'].width = 12 #  
+    worksheet.column_dimensions['S'].width = 20 #  
+    worksheet.column_dimensions['T'].width = 12 #  
+    worksheet.column_dimensions['U'].width = 14 #  
+    worksheet.column_dimensions['V'].width = 14 #  
+    worksheet.column_dimensions['W'].width = 16 #  
+    worksheet.column_dimensions['X'].width = 16 #  
+    worksheet.column_dimensions['Y'].width = 16 #  
+    worksheet.column_dimensions['Z'].width = 15 #  
+    worksheet.column_dimensions['AA'].width = 16 #  
+    worksheet.column_dimensions['AB'].width = 16 #  
+    worksheet.column_dimensions['AC'].width = 12 #  
+    worksheet.column_dimensions['AD'].width = 15 #  
+    worksheet.column_dimensions['AE'].width = 16 #  
+    worksheet.column_dimensions['AF'].width = 15 #  
+    worksheet.column_dimensions['AG'].width = 12 #  
+    worksheet.column_dimensions['AH'].width = 16 #  
+    worksheet.column_dimensions['AI'].width = 12 #  
+    worksheet.column_dimensions['AJ'].width = 18 #  
+    worksheet.column_dimensions['AK'].width = 16 #  
+    worksheet.column_dimensions['AL'].width = 15 #  
+    worksheet.column_dimensions['AM'].width = 16 #  
+    worksheet.column_dimensions['AN'].width = 25 #  
+    worksheet.column_dimensions['AO'].width = 18 #  
+    worksheet.column_dimensions['AP'].width = 15 #  
+    worksheet.column_dimensions['AQ'].width = 25 #  
+    worksheet.column_dimensions['AR'].width = 12 #  
+    worksheet.column_dimensions['AS'].width = 24 #  
+    worksheet.column_dimensions['AT'].width = 15 #  
+    worksheet.column_dimensions['AU'].width = 16 #  
+    worksheet.column_dimensions['AV'].width = 15 #  
+    worksheet.column_dimensions['AW'].width = 15 #  
+    worksheet.column_dimensions['AX'].width = 11 #  
+    worksheet.column_dimensions['AY'].width = 15 #  
+    worksheet.column_dimensions['AZ'].width = 22 #  
+    worksheet.column_dimensions['BA'].width = 16 #  
+    worksheet.column_dimensions['BB'].width = 13 #  
+    worksheet.column_dimensions['BC'].width = 23 #  
+    worksheet.column_dimensions['BD'].width = 19 #  
+    worksheet.column_dimensions['BE'].width = 14 #  
+    worksheet.column_dimensions['BF'].width = 15 #  
+    worksheet.column_dimensions['BG'].width = 23 #  
+    worksheet.column_dimensions['BH'].width = 15 #  
+    worksheet.column_dimensions['BI'].width = 25 #  
+    worksheet.column_dimensions['BJ'].width = 15 #  
+    worksheet.column_dimensions['BK'].width = 15 #  
+    worksheet.column_dimensions['BL'].width = 15 #  
+    worksheet.column_dimensions['BM'].width = 19 #  
+    worksheet.column_dimensions['BN'].width = 15 #  
+    worksheet.column_dimensions['BO'].width = 19 #      
+    worksheet.column_dimensions['BP'].width = 10 #  
+    worksheet.column_dimensions['BQ'].width = 9 #  
+    worksheet.column_dimensions['BR'].width = 5 #
 
     for row_index, row_data in enumerate(data):
         # print(f'{color_purple}Processing row: {row_data}{color_reset}')  # Debugging output
@@ -164,8 +267,9 @@ def write_xlsx(data, file_path):
 def usage():
     print(f"Usage: {sys.argv[0]} -r [-I input_case.xlsx] [-O output.xlsx]")
     print("Example:")
-    print(f"   python {sys.argv[0]} -r")
-    print(f"   python {sys.argv[0]} -r -I input_case.xlsx -O custom_output.xlsx")
+    print(f"   python {sys.argv[0]} -b")
+    print(f"   python {sys.argv[0]} -r")    
+    print(f"   python {sys.argv[0]} -r -I ForensicCases.xlsx -O ForensicCases_new.xlsx")
 
 if __name__ == '__main__':
     main()
