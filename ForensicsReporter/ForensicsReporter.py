@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" 
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -1847,13 +1847,20 @@ def read_xlsx():
 - [ ] {caseNumber} - Move Exhibits to Legacy sheet once all done''')
 
         if exhibit != '':
-            if status.lower() == "imaged" or status.lower() == "not imaged":
+            if status.lower() == "imaged" or status.lower() == "not imaged" or status.lower() == "copied":
                 bodyDone = (f'''{bodyDone}
 - [x] {caseNumber} Ex: {exhibit} - Image''')
             else:
                     bodyTodo = (f'''{bodyTodo}
 - [ ] {caseNumber} Ex: {exhibit} - Image''')
-            
+
+            if verifyHash.lower() == "y":
+                bodyDone = (f'''{bodyDone}
+- [x] {caseNumber} Ex: {exhibit} - Verify Hash''')
+            elif verifyHash.lower() == "":
+                    bodyTodo = (f'''{bodyTodo}
+- [ ] {caseNumber} Ex: {exhibit} - Verify Hash''')
+  
             if reportStatus.lower() == "finalized" or reportStatus.lower() == "draft":
                 bodyDone = (f'''{bodyDone}
 - [x] {caseNumber} Ex: {exhibit} - Analyze''')
@@ -2670,6 +2677,9 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
 
         sheet.append(headers)
 
+
+
+
         # Set the header row cell colors
 
         orange_columns = ['A', 'C', 'd', 'e', 'f', 'g', 'h']
@@ -2944,19 +2954,6 @@ def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
             , "priority", "temp"
         ])
         
-        # df = pd.DataFrame(columns=[
-            # 'CaseNumber', 'Exhibit', 'CaseName', 'SubjectBusinessName', 'CaseType', 'CaseAgent',
-            # 'ForensicExaminer', 'ReportStatus', 'Notes', 'Summary', 'ExhibitType', 'MakeModel',
-            # 'Serial', 'OS', 'PhoneNumber', 'PhoneIMEI', 'MobileCarrier', 'BiosTime', 'CurrentTime',
-            # 'Timezone', 'ShutdownMethod', 'ShutdownTime', 'UserName', 'UserPwd', 'Email', 'EmailPwd',
-            # 'IP', 'SeizureAddress', 'SeizureRoom', 'DateSeized', 'SeizedBy', 'DateReceived', 'ReceivedBy',
-            # 'RemovalDate', 'RemovalStaff', 'ReasonForRemoval', 'InventoryDate', 'SeizureStatus', 'Status',
-            # 'ImagingTool', 'ImagingType', 'ImageMD5', 'ImageSHA1', 'ImageSHA256', 'WriteBlocker',
-            # 'ImagingStarted', 'ImagingFinished', 'StorageType', 'StorageMakeModel', 'StorageSerial',
-            # 'StorageSize', 'EvidenceDataSize', 'AnalysisTool', 'AnalysisTool2', 'ExportLocation',
-            # 'ExportedEvidence', 'StorageLocation', 'CaseNumberOrig', 'Priority', 'Operation', 'Action',
-            # 'VaultCaseNumber', 'QRCode', 'VaultTotal', 'TempNotes', 'Hostname', 'phoneIMEI2', 'phone2', 'verifyHash'
-        # ])
 
     # Create a dictionary of the case data
     case_data = {
