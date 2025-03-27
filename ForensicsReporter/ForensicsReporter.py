@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "IDOR" # ISP, MWW
+agency = "MWW" 
 global agencyFull
-agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
+agencyFull = "Ministry of Wacky Walks"   # 
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.4.1'
+version = '3.4.3'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1861,7 +1861,7 @@ def read_xlsx():
                     bodyTodo = (f'''{bodyTodo}
 - [ ] {caseNumber} Ex: {exhibit} - Verify Hash''')
   
-            if reportStatus.lower() == "finalized" or reportStatus.lower() == "draft":
+            if reportStatus.lower() == "finalized" or reportStatus.lower() == "draft": # draft is only for semi-finalized reports
                 bodyDone = (f'''{bodyDone}
 - [x] {caseNumber} Ex: {exhibit} - Analyze''')
             # elif reportStatus.lower() == "draft":
@@ -2433,11 +2433,27 @@ def write_checklist():  # panda edition
     cell_d7 = checklist_sheet['D7']
     cell_d7.fill = orange_fill
 
+    cell_e7 = checklist_sheet['E7']
+    cell_e7.fill = orange_fill
+    
     cell_i7 = checklist_sheet['I7']
     cell_i7.fill = orange_fill
 
     cell_j7 = checklist_sheet['J7']
     cell_j7.fill = orange_fill
+
+    cell_m7 = checklist_sheet['M7']
+    cell_m7.fill = orange_fill
+
+    cell_r7 = checklist_sheet['R7']
+    cell_r7.fill = orange_fill
+
+
+    cell_v7 = checklist_sheet['V7']
+    cell_v7.fill = orange_fill
+
+
+
 
     # Set rotation to 45 degrees for row 7
     for row in checklist_sheet.iter_rows(min_row=7, max_row=7):
@@ -2536,6 +2552,8 @@ def write_checklist():  # panda edition
         report = str(row['reportStatus'])
         if isinstance(report, str) and "inal" in report:
             report = 'Y'    
+        elif isinstance(report, str) and "raft" in report:
+            report = 'd' 
         else:
             report = '' 
 
