@@ -186,7 +186,8 @@ def main():
         else:
             (case_notes_status) = ('False')            
         read_xlsx()
-
+        write_checklist()   # test
+        
     if args.checklist:
         write_checklist() 
     
