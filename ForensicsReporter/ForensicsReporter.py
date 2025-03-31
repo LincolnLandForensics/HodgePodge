@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" 
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # 
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -1551,7 +1551,7 @@ def parse_log():
             # notes = ("%s The operating system was %s." %(notes, OS)) 
 
 
-        if status.lower() == 'not imaged':
+        if status.lower() == 'not imaged' and verifyHash == '':
             notes = ("%s This drive could not be imaged." %(notes))
             verifyHash = 'N'
             
@@ -1830,7 +1830,7 @@ def read_xlsx():
         serial = str(row['serial'])
         OS = str(row['OS'])
         phoneNumber = str(row['phoneNumber'])
-        phoneIMEI = str(row['phoneIMEI'])
+        phoneIMEI = str(row['phoneIMEI']).rstrip(',0')
         mobileCarrier = str(row['mobileCarrier'])
         verifyHash = str(row.get('verifyHash', ''))  # Defaults to an empty string if key is missing
  
@@ -1958,7 +1958,7 @@ def read_xlsx():
         except:
             hostname = ''
         try:
-            phoneIMEI2 = str(row['phoneIMEI2'])
+            phoneIMEI2 = str(row['phoneIMEI2']).rstrip('.0')
         except:
             phoneIMEI2 = ''
         try:
@@ -1969,6 +1969,10 @@ def read_xlsx():
 
         if ' 00:00:00' in dateReceived: 
             dateReceived = dateReceived.replace(" 00:00:00", "")
+        if '.0' in phoneIMEI: 
+            phoneIMEI = phoneIMEI.rstrip('.0')          
+        if '.0' in phoneIMEI2: 
+            phoneIMEI2 = phoneIMEI2.rstrip('.0')             
         # Summary writer, put a blank space or write your own summary if you don't want one auto generated
         if not summary and dateSeized and forensicExaminer and seizureAddress and agency != "ISP":
             summary = (
@@ -1999,7 +2003,7 @@ Subject of Activity:                         Case Agent:             Typed by:
 {caseType}
 ____________________________________________________________________________________
 
-Note:
+Note
 
 Data contained in these findings may be sensitive or confidential. It is intended for viewing only by those involved in the investigation, prosecution, defense, and adjudication of this case. Any other viewing is not authorized.
 
@@ -2113,7 +2117,7 @@ Exhibit {exhibit}
 
             
         if phoneNumber not in {'', 'NA', 'na', 'N/A'}:
-            report = f"{report} phone extraction."
+            report = f"{report} phone extraction"
         elif imagingStarted:
             report = f"{report} forensic extraction"
         else:
@@ -2193,9 +2197,13 @@ Exhibit {exhibit}
             # report = ("%s A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. " %(report))  
         # Analysis tool processing
         if analysisTool and analysisTool2:
-            report = f"{report} The image was processed with {analysisTool} and further analyzed with {analysisTool2}. The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
+            report = f"{report}The image was processed with {analysisTool} and further analyzed with {analysisTool2}."
         elif analysisTool:
-            report = f"{report} The image was processed with {analysisTool}.  The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
+            report = f"{report} The image was processed with {analysisTool}."
+
+        if verifyHash.lower() == 'y':
+            report = f"{report} The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
+
 
         # Username and password to report
         if userName and userPwd and exhibitType:
@@ -2522,7 +2530,8 @@ def write_checklist():  # panda edition
         try:
             verifyHash = str(row['verifyHash'])
         except:
-            verifyHash = ''
+            print(f'error with verifyHash: {verifyHash}')
+            # verifyHash = ''
         
         
         if imaged.lower == 'imaged' or imaged == 'Imaged':
@@ -2566,7 +2575,7 @@ def write_checklist():  # panda edition
         else:
             (memory, triage, edd, password, kape) = ('', '', '', '', '')
 
-        if verifyHash != '' and "note imaged" in imaged.lower():
+        if verifyHash == '' and "not imaged" in imaged.lower():
             verifyHash = 'N'
 
         if "memdump" in analysisTool2.lower():
@@ -2611,8 +2620,8 @@ def write_checklist():  # panda edition
         # if 'nan' in phoneIMEI:        
             # phoneIMEI == ''
 
-        if phoneIMEI == 'nan':
-            phoneIMEI = ''
+        # if phoneIMEI == 'nan':
+            # phoneIMEI = ''
 
         if ip != "" or phoneIMEI != "": # task always prints y
             ipIMEI = 'Y' 
@@ -3293,6 +3302,18 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+
+
+should I change elif len(imageMD5) != 0 and exportLocation != '':
+to
+elif len(imageMD5) != 0 and exportLocation != '' and verifyHash.lower() == 'y':
+
+fix date formats. 
+IMEI's are getting displayed as '12345678912234.0
+
+
+Don't write the hash verification blurb if verifyHash = 'N'
+
 when doing -L with a folder name in there, it craps out. (skip folders)
 exhibit.lstrip('=')
 
