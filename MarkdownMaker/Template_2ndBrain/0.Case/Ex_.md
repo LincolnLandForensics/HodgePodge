@@ -33,14 +33,7 @@
 |             |                  |                  |               |
 
 
-# **Files of Interest:
-
-
 # Notes:
-
-
-# Misc:
-
 
 
 
@@ -52,3 +45,6 @@
 
 # Syntax used:
 
+
+
+# **Files of Interest:
