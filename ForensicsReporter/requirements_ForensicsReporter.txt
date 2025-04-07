@@ -4,4 +4,3 @@ openpyxl
 pandas
 python-docx
 pdfplumber
-tkinter

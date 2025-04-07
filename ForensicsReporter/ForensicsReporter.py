@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "IDOR" # ISP, MWW
+agency = "MWW" # ISP, MWW
 global agencyFull
-agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
+agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.4.3'
+version = '3.4.4'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1837,6 +1837,7 @@ def read_xlsx():
         
         if caseNumberTodo == '':
             caseNumberTodo = (f'''- [ ] {caseNumber} - Add to spreadsheet
+- [ ] {caseNumber} - Review warrant
 - [ ] {caseNumber} - Label all pieces
 - [ ] {caseNumber} - Photos
 - [ ] {caseNumber} - Inventory label on shelf

@@ -30,6 +30,10 @@ open up a terminal window:
 sudo triage_linux_mac.sh
 
 
+<======== triage_Chrome_stateful.sh ========>
 
-<Future wishlist>
-Let me know if you think I've missed something important.
+Purpose: Script to triage a ChromeOS or Chromium OS drive and identify possible evidence of interest for an examiner.
+
+Command: triage_Chrome_stateful.sh | tee output.txt
+
+
