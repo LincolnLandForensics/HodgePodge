@@ -31,7 +31,7 @@ from markdownify import markdownify as md   # pip install markdownify
 
 author = 'LincolnLandForensics'
 description = "Convert the content of various file types to Markdown, for use in Obsidian"
-version = '1.1.2'
+version = '1.1.3'
 
 
 global file_types
@@ -943,44 +943,68 @@ def md_for_scripts(file_path):
         return ""    
 
 def md2pdf(filename, input_folder, output_folder):
-    # Get today's date
-    # today_str = datetime.datetime.today().strftime('%Y-%m-%d')
     today_str = datetime.today().strftime('%Y-%m-%d')
-    if filename.lower().endswith(".md"):  # Process only .md files
-        file_path = os.path.join(input_folder, filename)
+    file_path = os.path.join(input_folder, filename)
 
-        # Read and filter markdown content
+    try:
         with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
+    except Exception as e:
+        print(f"Failed to read {file_path}: {e}")
+        return
 
-        # Remove lines containing unwanted keywords and blank lines
-        filtered_lines = [
-            line.strip() for line in lines
-            if line.strip() and not any(keyword in line.lower() for keyword in ['kanban', '```', '%%', '---', '**Complete**'])
-        ]
+    # Filter lines
+    filtered_lines = [
+        line.strip() for line in lines
+        if line.strip() and not any(
+            keyword in line.lower()
+            for keyword in ['kanban', '```', '%%', '---', '**complete**']
+        )
+    ]
 
-        # Prepare content with metadata
-        header = f"Filename: {filename}\nDate: {today_str}\n\n"
-        full_content = header + '\n'.join(filtered_lines)
+    # Add header
+    header = [f"Filename: {filename}", f"Date: {today_str}", ""]
+    all_lines = header + filtered_lines
 
-        # Create a new PDF document
-        pdf_document = fitz.open()
+    # Save to .txt if more than 50 lines
+    if len(all_lines) > 50:
+        txt_filename = os.path.join(output_folder, f"{filename.replace('.md', '')}_{today_str}.txt")
+        try:
+            with open(txt_filename, 'w', encoding='utf-8') as txt_file:
+                txt_file.write('\n'.join(all_lines))
+            print(f"\t{txt_filename}")
+        except Exception as e:
+            print(f"Failed to write TXT {txt_filename}: {e}")
+
+    # Split into 50-line chunks
+    chunk_size = 50
+    chunks = [all_lines[i:i + chunk_size] for i in range(0, len(all_lines), chunk_size)]
+
+    # Create PDF
+    pdf_document = fitz.open()
+
+    for index, chunk in enumerate(chunks):
+        text = '\n'.join(chunk).strip()
+        if not text:
+            continue  # Skip empty pages
+
         page = pdf_document.new_page()
+        text_rect = fitz.Rect(50, 50, 550, 800)
+        inserted_chars = page.insert_textbox(text_rect, text, fontsize=12, fontname="helv")
 
-        # Define text properties
-        text = full_content
-        text_rect = fitz.Rect(50, 50, 550, 800)  # Define text area
-        page.insert_textbox(text_rect, html_content, fontsize=12, fontname="helv")
+        if inserted_chars == 0:
+            print(f"Warning: No text inserted on page {index + 1} for {filename}")
 
-        # Define output PDF filename (based on Markdown filename)
-        pdf_filename = os.path.join(output_folder, f"{filename.replace('.md', '')}_{today_str}.pdf")
+    pdf_filename = os.path.join(output_folder, f"{filename.replace('.md', '')}_{today_str}.pdf")
 
-        # Save PDF
+    try:
         pdf_document.save(pdf_filename)
+        print(f"\t{pdf_filename}")
+    except Exception as e:
+        print(f"Failed to save PDF {pdf_filename}: {e}")
+    finally:
         pdf_document.close()
 
-        print(f"\t{pdf_filename}")
-        
 
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
@@ -1066,16 +1090,17 @@ def read_markdown_files(input_folder,output_folder):
     # Ensure input folder exists
 
     if not os.path.exists(output_folder):
-        msg_blurb = (f"Error: Output folder '{output_folder}' does not exist.")
-        msg_blurb_square(msg_blurb, color_red) 
+        msg_blurb_square(f"Error: Output folder '{output_folder}' does not exist.", color_red)
+        # msg_blurb = (f"Error: Output folder '{output_folder}' does not exist.")
+        # msg_blurb_square(msg_blurb, color_red) 
         exit()
-        return []
 
     if not os.path.exists(input_folder):
-        msg_blurb = (f"Error: Input folder '{input_folder}' does not exist.")
-        msg_blurb_square(msg_blurb, color_red) 
+        msg_blurb_square(f"Error: Input folder '{input_folder}' does not exist.", color_red)
+        # msg_blurb = (f"Error: Input folder '{input_folder}' does not exist.")
+        # msg_blurb_square(msg_blurb, color_red) 
         exit()
-        return []
+
     else:
         msg_blurb = (f"Reading markdown files from {input_folder}")
         msg_blurb_square(msg_blurb, color_green) 
@@ -1308,7 +1333,7 @@ if __name__ == '__main__':
 
 
 """
-
+1.1.2 -P option spits a backup .txt file if the todo is longer than 50 lines
 1.1.1 - markdown files to pdfs -C
 0.2.1 - .DOCX and .PPTX conversions with metadata
 0.1.5 - add exifdata to the bottom of the .md file
@@ -1324,6 +1349,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+
 can i do -C to a template pdf? Can I add a graphic? Can I add bold formatting?
 export to html -w
 
