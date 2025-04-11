@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "MWW" # 
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Ministry of Wacky Walks"   # 
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.4.4'
+version = '3.4.5'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1878,7 +1878,7 @@ def read_xlsx():
         biosTime = biosTime.strip()
         if biosTime == 'NaT':
             biosTime = ''  
-            
+
         currentTime = str(row['currentTime'])
         currentTime = currentTime.strip()
         if currentTime == 'NaT':
@@ -2412,7 +2412,7 @@ def write_checklist():  # panda edition
         "imaged", "image backup", "analyzed", "report (sign, print, forward)", "case notes printed",
         "digital evidence", "digital evidence backup", "digital evidence to agent", "return evidence", "", "Verify hash", "MemDump", "triage",
         "Magnet Encrypted Disk Detection", "password", "KAPE", "photograph", "OS", "IP or IMEI",
-        "hostname", "Arsenal VM (verify)"
+        "hostname", "Arsenal VM (verify)", "DFE"
     ]
     for idx, header in enumerate(additional_headers, start=1):
         cell = checklist_sheet.cell(row=7, column=idx, value=header)
@@ -2508,7 +2508,15 @@ def write_checklist():  # panda edition
         reasonForRemoval = row['reasonForRemoval']
                
         caseAgent = row['caseAgent']
-        forensicExaminer = row['forensicExaminer'] 
+        forensicExaminer = row['forensicExaminer']
+        DFE = forensicExaminer
+        if 'dfe th' in DFE.lower() and 'dfe kar' in DFE.lower():
+            DFE = 'JT/CK'
+        elif 'dfe th' in DFE.lower():
+            DFE = 'JT'
+        elif 'dfe kar' in DFE.lower():
+            DFE = 'CK'
+            
         exhibit = str(row['exhibit']).rstrip('.0')
         exhibitType = str(row['exhibitType'])
         if "nan" in exhibitType.lower():
@@ -2582,7 +2590,7 @@ def write_checklist():  # panda edition
         if "memdump" in analysisTool2.lower():
             memory = "Y"
 
-        if "magnet encrypted disk detection" in analysisTool2.lower():
+        if "magnet encrypted disk detect" in analysisTool2.lower():
             edd = 'Y'
         if "kape" in analysisTool2.lower():
             kape = 'Y'
@@ -2656,7 +2664,7 @@ def write_checklist():  # panda edition
         cell = checklist_sheet.cell(row=5, column=15, value=forensicExaminer)
 
         # Define your data values
-        data_values = [exhibit, exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup, analyzed, report, caseNotes, de, deBackup, deAgent, returnEvidence, caseNumber, verifyHash, memory, triage, edd, password, kape, photo, OS, ipIMEI, hostname, arsenal]
+        data_values = [exhibit, exhibitType, sheetIn, sheetOut, labeled, imaged, imageBackup, analyzed, report, caseNotes, de, deBackup, deAgent, returnEvidence, caseNumber, verifyHash, memory, triage, edd, password, kape, photo, OS, ipIMEI, hostname, arsenal, DFE]
 
         # Find the next available row index
         next_row = checklist_sheet.max_row + 1
