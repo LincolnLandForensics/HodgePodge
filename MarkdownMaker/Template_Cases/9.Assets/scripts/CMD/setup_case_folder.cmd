@@ -35,8 +35,11 @@ REM Check and create the "<caseNumber>_<caseName>" directory under "CaseWF"
 if not exist "CaseWF\%caseNumber%_%caseName%" mkdir "CaseWF\%caseNumber%_%caseName%"
 
 
-REM Check and create the "Ex" directory under "CaseWF\<caseNumber>_<caseName>"
+REM Check and create the "Ex_" directory under "CaseWF\<caseNumber>_<caseName>"
 if not exist "CaseWF\%caseNumber%_%caseName%\Ex_" mkdir "CaseWF\%caseNumber%_%caseName%\Ex_"
+
+REM Check and create the "Warrant" directory under "CaseWF\<caseNumber>_<caseName>"
+if not exist "CaseWF\%caseNumber%_%caseName%\Warrant" mkdir "CaseWF\%caseNumber%_%caseName%\Warrant"
 
 
 REM Check and create the "Case" directory under "CaseWF\<caseNumber>_<caseName>\Ex_"
