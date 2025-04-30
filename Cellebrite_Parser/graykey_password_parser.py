@@ -13,11 +13,11 @@ from openpyxl.styles import Font, Alignment, PatternFill
 
 author = 'LincolnLandForensics'
 description = "convert graykey password file to xlsx"
-version = '1.2.3'
+version = '1.4.0'
 
 headers = [
     "URL", "Username", "Password", "Notes", "Case", "Exhibit", "protocol",
-    "fileType", "Encyption", "Complexity", "Hash", "Pwd", "PWDUMPFormat", "Length"
+    "fileType", "Encryption", "Complexity", "Hash", "Pwd", "PWDUMPFormat", "Length"
 ]
 
 color_green = ''
@@ -33,17 +33,12 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
         from colorama import Fore, Back, Style
         print(f'{Back.BLACK}')
         color_red = Fore.RED
-        color_yellow = Fore.YELLOW
         color_green = Fore.GREEN
-        color_blue = Fore.BLUE
-        color_purple = Fore.MAGENTA
         color_reset = Style.RESET_ALL
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 def main():
-    global Row
-    Row = 1
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
@@ -53,199 +48,135 @@ def main():
 
     args = parser.parse_args()
 
-    global input_file
+    global input_file, output_xlsx, Case, Exhibit
     input_file = args.input if args.input else "sample_passwords.txt"
 
-    global output_xlsx
-    global Case
-    global Exhibit
-
     if args.convert:
-        data = []
-    
         Case = input("Enter Case: ").strip()
-        Exhibit = input("Enter Exhibit: ").strip()        
+        Exhibit = input("Enter Exhibit: ").strip()
         output_xlsx = args.output if args.output else (f"passwords_{Case}_Ex_{Exhibit}.xlsx")
-        
-        
-        
         read_pwords()
     elif args.blank:
         output_xlsx = 'blank_password_sheet.xlsx'
-        data = []
-        write_xlsx(data)
+        write_xlsx([], [])
         sys.exit(0)
     else:
         usage()
 
-    return 0
-
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-def complexinator(Password):
-    '''
-    create a function that evaluates the complexity of a password:
-
-    must be at least 8 characters 
-    and 
-    have 3 or more of the following 4 character types:
-    - Uppercase
-    - Lowercase
-    - Numeric
-    - Special character
-
-    if it meets the complexity requirement, return "complex"
-    if blank, return "blank"
-    else return "weak"
-    '''
-    if not Password:
+def complexinator(password):
+    if not password:
         return "blank"
 
-    length_ok = len(Password) >= 8
-
-    has_upper = any(c.isupper() for c in Password)
-    has_lower = any(c.islower() for c in Password)
-    has_digit = any(c.isdigit() for c in Password)
-    has_special = any(not c.isalnum() for c in Password)
-
+    length_ok = len(password) >= 8
+    has_upper = any(c.isupper() for c in password)
+    has_lower = any(c.islower() for c in password)
+    has_digit = any(c.isdigit() for c in password)
+    has_special = any(not c.isalnum() for c in password)
     complexity_criteria = sum([has_upper, has_lower, has_digit, has_special])
 
-    if length_ok and complexity_criteria >= 3:
-        return "complex"
-    else:
-        return "weak"
+    return "complex" if length_ok and complexity_criteria >= 3 else "weak"
 
 def message_square(message, color):
     horizontal_line = f"+{'-' * (len(message) + 2)}+"
-    empty_line = f"| {' ' * (len(message))} |"
     print(color + horizontal_line)
-    print(empty_line)
     print(f"| {message} |")
-    print(empty_line)
-    print(horizontal_line)
-    print(f'{color_reset}')
+    print(horizontal_line + f'{color_reset}')
 
 def read_pwords():
     if not os.path.isfile(input_file):
         print(f"Error: Input file '{input_file}' does not exist.")
         sys.exit(1)
     else:
-        message_square(f'reading {input_file}', color_green)
+        message_square(f'Reading {input_file}', color_green)
 
-    data = []
+    data, uniq = [], set()
+    fileType = input_file
+    pattern = re.compile(r'^\d{9}\.\d{6}$')
+    known_bad_passwords = {
+        'false', 'true', 'US', 'Secret', '0', '1', 'treeup', 'mobile', '""',
+        'ATM,CHK', 'myPSKkey', 'PERSONAL', 'Registered', 'stayPaired', 'POH',
+        'PER', 'PR', '10', '09EA', 'ATM+CHK', 'kcKeepDeviceTrusted', 'dummy_value',
+        '2', '4', '[]', '{}', 'YES', 'prod', 'reinstall_value', 'IS_LATEST_KEY_V2',
+        'comcast-business', 'VAL_KeychainCanaryPassword', 'TwitterKeychainCanaryPassword'
+    }
+
     with open(input_file, 'r', encoding='utf-8') as f:
-        fileType = input_file
         content = f.read()
         entries = content.split("----------")
-        uniq = set()
-        output = []
-        pattern = re.compile(r'^\d{9}\.\d{6}$')
-
 
         for block in entries:
-            
-            (URL, Username, Password, Notes, Encyption, Complexity) = ('', '', '', block ,'', '')
-            (Length, protocol, Hash) = ('', '', '')
+            entry = {
+                "URL": '', "Username": '', "Password": '', "Notes": block.strip(),
+                "Case": Case, "Exhibit": Exhibit, "protocol": '', "fileType": fileType,
+                "Encryption": '', "Complexity": '', "Hash": '', "Pwd": '',
+                "PWDUMPFormat": '', "Length": ''
+            }
 
-            lines = block.strip().splitlines()
-            entry = {}
-            for line in lines:
+            for line in block.strip().splitlines():
                 line = line.strip()
                 if line.startswith("Account:"):
-                    Username = line.split("Account:", 1)[1].strip()
+                    entry["Username"] = line.split("Account:", 1)[1].strip()
                 elif line.startswith("srvr: "):
-                    URL = line.split("srvr: ", 1)[1].strip()
+                    entry["URL"] = line.split("srvr: ", 1)[1].strip()
                 elif line.startswith("ptcl: "):
-                    protocol = line.split("ptcl: ", 1)[1].strip() 
-                    if protocol == "0":
-                       protocol = ''
+                    protocol = line.split("ptcl: ", 1)[1].strip()
+                    if protocol != "0":
+                        entry["protocol"] = protocol
                 elif line.startswith("Service: "):
-                    URL = line.split("Service: ", 1)[1].strip()                    
-                elif line.strip().startswith("Item value: {"):
-                    line = line.replace('Item value: ','')
-                    '''
-                    extract email, password etc, out of data
-                    
-                    '''
+                    entry["URL"] = line.split("Service: ", 1)[1].strip()
+                elif line.startswith("Item value:"):
+                    pwd = line.replace("Item value:", '').strip()
+                    if pwd in known_bad_passwords or \
+                       pwd.endswith('.com') or \
+                       pwd.startswith('[{') or \
+                       pwd.startswith('{"') or \
+                       pwd.startswith('|DYN') or \
+                       pwd.startswith('us-east') or \
+                       pwd.startswith('http') or \
+                       pwd.endswith("=") or \
+                       pwd.endswith("~~") or \
+                       "whatsapp.net" in pwd or \
+                       len(pwd) > 33 or pattern.match(pwd):
+                        entry["Hash"] = pwd
+                    else:
+                        entry["Password"] = pwd
 
-                elif line.strip().startswith("Item value:"):
-                    line = line.replace('Item value: ','')
-                    Password = line.strip('')
-                    if Password == 'false' or Password == 'true' or Password == 'US' or Password == 'Secret':
-                       Password = ''
-                    elif Password == '0' or Password == '1' or Password == 'treeup' or Password == 'mobile' or Password == '\"\"':
-                       Password = ''                       
-                    elif Password == 'ATM,CHK' or Password == 'myPSKkey' or Password == 'PERSONAL' or Password == 'Registered' or Password == 'stayPaired':
-                       Password = ''                       
-                    elif Password == 'POH' or Password == 'PER' or Password == 'PR' or Password == '10' or Password == '09EA':
-                       Password = '' 
-                    elif Password == 'ATM+CHK' or Password == 'kcKeepDeviceTrusted' or Password.endswith('.com'):
-                       Password = ''                       
-                    elif Password == 'dummy_value' or Password == 'myPSKkey' or Password == 'PERSONAL' or Password == 'Registered' or Password == 'stayPaired':
-                       Password = ''                       
-                    elif Password.startswith('[{') or Password.startswith('|DYN') or Password.startswith('us-east')  or Password.startswith('http'):
-                       Password = ''
-                    elif "whatsapp.net" in Password:
-                        Password = ''
-                    elif len(Password) > 33 or pattern.match(Password):
-                        Hash = Password
-                        Password = ""                    
-                    if Password.endswith("=") or Password.endswith("~~"):
-                        Hash = Password
-                        Password = ""
-                        
-                    elif Username.startswith('__') or Username == "UUID" or Username == "secretKey" or Username == "acquiredPackages" or Username.startswith('au.'):
-                        Username = ''
-                        Hash = Password
-                        Password = ''
 
-            if URL == "AirPort":
-                protocol = "AirPort"
-            elif "com.apple.airplay" in URL:
-                protocol = "AirPlay"
-            
-            if "apikey" in Username or "token" in Username.lower() or Username == "_pfo":
-                Username = ''
-                Hash = Password
-                Password = ''
-            elif Username.startswith('com.') or "sessionkey" in Username.lower() or Username.lower() == "username":
-                Username = ''
+            # if Password.endswith("=") or Password.endswith("~~"):
+                # Hash = Password
+                # Password = ""
+
+
+            if entry["URL"] == "AirPort":
+                entry["protocol"] = "AirPort"
+            elif "com.apple.airplay" in entry["URL"]:
+                entry["protocol"] = "AirPlay"
+            elif entry["URL"] == "GuidedAccess":
+                entry["URL"] = "_phone pin code ***"                
+                entry["Username"] = "" 
                 
-            Length = len(Password)
-            if Length == 0:
-               Length = ''
-            else:
-                Complexity = complexinator(Password)
+            if any(k in entry["Username"].lower() for k in ["apikey", "token", "sessionkey"]) or \
+               entry["Username"].startswith('com.') or entry["Username"] in ["UUID", "secretKey", "acquiredPackages"]:
+                entry["Hash"] = entry["Password"]
+                entry["Password"] = ''
+                entry["Username"] = ''
 
+            if entry["Password"]:
+                entry["Length"] = len(entry["Password"])
+                entry["Complexity"] = complexinator(entry["Password"])
+                if entry["Password"] not in uniq:
+                    uniq.add(entry["Password"])
 
-            if Password not in uniq and len(Password) < 34 and not pattern.match(Password):
-                uniq.add(Password)
-                output.append(Password)
+            data.append(entry)
 
-            if 1==1:
-                entry.setdefault("URL", URL)
-                entry.setdefault("Username", Username)
-                entry.setdefault("Password", Password)
-                entry.setdefault("Notes", block.strip())
-                entry.setdefault("Case", Case)
-                entry.setdefault("Exhibit", Exhibit)
-                entry.setdefault("protocol", protocol)
-                entry.setdefault("fileType", fileType)
-                entry.setdefault("Encyption", Encyption)
-                entry.setdefault("Complexity", Complexity)
-                entry.setdefault("Hash", Hash)
-                entry.setdefault("Length", Length)
-                data.append(entry)
-    for pwd in sorted(output, key=len):
-        print(pwd)
+    data = sorted(data, key=lambda x: (x["Length"] if isinstance(x["Length"], int) else 100))
+    write_xlsx(data, sorted(uniq, key=len))
 
-    write_xlsx(data)
-
-
-def write_xlsx(data):
+def write_xlsx(data, uniq_list):
     message_square(f'Writing {output_xlsx}', color_green)
 
-    global workbook
     workbook = Workbook()
     worksheet = workbook.active
     worksheet.title = 'Passwords'
@@ -256,23 +187,28 @@ def write_xlsx(data):
         cell = worksheet.cell(row=1, column=col_index + 1)
         cell.value = header
         if header in ["Username", "Password", "Exhibit", "Case", "Notes"]:
-            fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
-            cell.fill = fill
+            cell.fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
         elif header in ["URL", "Length", "Complexity"]:
-            fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-            cell.fill = fill
+            cell.fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 
-    col_widths = [15, 20, 20, 25, 25, 15, 14, 16, 24, 12, 10, 8, 20]
+    col_widths = [20, 20, 20, 35, 7, 6, 10, 9, 8, 12, 4, 17, 5]
     for i, width in enumerate(col_widths):
         worksheet.column_dimensions[chr(65+i)].width = width
 
+
     for row_index, row_data in enumerate(data):
         for col_index, col_name in enumerate(headers):
-            try:
-                cell_data = row_data.get(col_name, '')
-                worksheet.cell(row=row_index + 2, column=col_index + 1).value = cell_data
-            except Exception as e:
-                print(f"{color_red}Error printing line: {str(e)}{color_reset}")
+            worksheet.cell(row=row_index + 2, column=col_index + 1).value = row_data.get(col_name, '')
+
+    # Create second sheet with unique passwords
+    # Uniq Sheet
+    uniq_sheet = workbook.create_sheet(title="uniq")
+    uniq_sheet.freeze_panes = 'B2' 
+    uniq_sheet['A1'] = 'Unique Passwords (Sorted by Length)'
+    uniq_sheet.column_dimensions['A'].width = 40        
+    # uniq_sheet.append(["Password"])
+    for password in uniq_list:
+        uniq_sheet.append([password])
 
     workbook.save(output_xlsx)
 
@@ -281,7 +217,7 @@ def usage():
     print("\nDescription: " + description)
     print(f"{file} Version: {version} by {author}")
     print("\nExample:")
-    print(f"\t{file} -c -I sample_passwords.txt")    
+    print(f"\t{file} -c -I sample_passwords.txt")
     print(f"\t{file} -c -I sample_passwords.txt -O passwords_sample_.xlsx")
     print(f"\t{file} -b -O blank_sheet.xlsx")
 
