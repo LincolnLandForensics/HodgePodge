@@ -78,7 +78,6 @@ def main():
     else:
         usage()
 
-    workbook.close()
     return 0
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -282,6 +281,7 @@ def usage():
     print("\nDescription: " + description)
     print(f"{file} Version: {version} by {author}")
     print("\nExample:")
+    print(f"\t{file} -c -I sample_passwords.txt")    
     print(f"\t{file} -c -I sample_passwords.txt -O passwords_sample_.xlsx")
     print(f"\t{file} -b -O blank_sheet.xlsx")
 
