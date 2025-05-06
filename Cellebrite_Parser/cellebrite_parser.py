@@ -58,7 +58,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert Cellebrite contacts, account, web history, chats and call exports to intel format"
-version = '1.0.4'
+version = '1.0.5'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -123,6 +123,14 @@ def main():
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+def case_number_prompt():
+    # Prompt the user to enter the case number
+    case_number = input("Please enter the Case Number: ")
+    # Assign the entered value to Case
+    case_prompt = case_number
+    return case_prompt
+    
 
 def clean_data(item):
     """
@@ -230,10 +238,9 @@ def clean_phone(phone):
   Returns:
     True if the string is a valid phone number, False otherwise.
     """
-    phone = phone.lstrip('1')   # test
-    phone = re.sub(r'[-+ \(\)]', '', phone).strip() 
-    # phone = phone.replace('+', '').replace('-', '').replace('(', '').replace(')', '').replace(' ', '')
-
+    # phone = phone.lstrip('1')   # test
+    phone = re.sub(r'[- \(\)]', '', phone).strip() 
+    phone = phone.replace("+", "")          # E165 standard doesn't have a + (E.164 has a +)
     regex_phone = r"^\d{7,15}$" 
     return phone if re.match(regex_phone, phone) else ""
 
@@ -268,6 +275,9 @@ def read_cellebrite(input_xlsx):
     headers = []
     for cell in ws[1]:
         headers.append(cell.value)
+
+    case_prompt = case_number_prompt()
+
 
 
 # regex patterns
@@ -333,7 +343,7 @@ def read_cellebrite(input_xlsx):
         (Latitude, Longitude, Coordinate, fulladdress2, state, Time) = ('', '', '', '', '', '')
         (From, to, cc, bcc, subject, body) = ('', '', '', '', '', '')
         (status, priority, attachment, Altitude, receiver, Sender) = ('', '', '', '', '', '')
-        (city, state, country) = ('', '', '')
+        (city, state, country, case) = ('', '', '', '')
         
 # fullname        
         ## replace all None values with '' 
@@ -372,7 +382,15 @@ def read_cellebrite(input_xlsx):
         middlename = row_data.get("Middle Name")
         if middlename is None:
             middlename = ''
-            
+
+# case    
+        if case == '':
+            case = row_data.get("case")
+        if case is None:
+            case = ''
+        if case == '':
+            case = case_prompt         
+
 
 # url   
         url = row_data.get("URL")
@@ -1274,6 +1292,7 @@ STATUS:{status}
         row_data["lastname"] = lastname          
         row_data["firstname"] = firstname   
         row_data["middlename"] = middlename 
+        row_data["case"] = case 
         row_data["otheremails"] = otheremails     
         row_data["city"] = city 
         row_data["state"] = state 
@@ -1356,18 +1375,6 @@ def write_xlsx(data):
         "VYR", "VMA", "LIC", "LIY", "DLN", "DLS", "content", "referer", "osurl",
         "titleurl", "pagestatus", "ip", "dnsdomain", "Tag", "Icon", "Type"
         ]
-
-
-    # headers = [
-        # "query", "ranking", "fullname", "url", "email", "user", "phone", "ip"
-        # , "business", "fulladdress", "city", "state", "zip", "country"
-        # , "note", "aka", "DOB", "SEX", "info", "misc", "lastname", "firstname"
-        # , "middlename", "friend", "otherurls", "otherphones", "otheremails"
-        # , "case", "sosfilenumber", "president", "sosagent", "managers", "dnsdomain"
-        # , "dstip", "srcip", "content", "referer", "osurl", "titleurl", "pagestatus"
-        # , "Time", "Latitude", "Longitude", "Coordinate", "Source", "Source file information"
-        # , "original_file", "Tag", "Type", "Icon"
-    # ]
 
     # Write headers to the first row
     for col_index, header in enumerate(headers):
@@ -1477,7 +1484,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+1.0.5 - asks for case number
 1.0.4 - left strip 1 off phone numbers for uniformity.
 """
 
