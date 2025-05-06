@@ -75,7 +75,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.3.9'
+version = '1.4.0'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -2555,6 +2555,7 @@ def point_icon_maker(Icon):
     payment_icon = 'https://maps.google.com/mapfiles/kml/pal2/icon50.png'
     red_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
     searched_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon0.png'  #  
+    shared_icon = 'https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'    # need new pin
     toll_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-none.png'
     tower_icon = 'http://maps.google.com/mapfiles/kml/shapes/target.png' # Bullseye
     truck_icon = 'https://maps.google.com/mapfiles/kml/shapes/truck.png'    # blue truck
@@ -2900,7 +2901,7 @@ def write_locations(data):
         , "Manually decoded", "Account", "PlusCode", "Time Original", "Timezone"
         , "Icon", "original_file", "case", "Origin Latitude", "Origin Longitude"
         , "Start Time", "Azimuth", "Radius", "Altitude", "Location"
-        , "time_orig_start", "timezone_start", "Index", "speed", "parked"
+        , "time_orig_start", "timezone_start", "Index", "speed", "parked", "MAC"
     ]
 
     # Write headers to the first row
@@ -3284,6 +3285,14 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+line 2610 errors sometimes point_icon = shared_icon
+
+
+test https://github.com/AXYS-Cyber/iCatch.git
+add a 10,000 line splitter to create seperate kml's when it's over 10,000
+
+
+
 fix the bluetooth_icon- it's very big. maybe pick a different one
 https://github.com/UMIT2Lab/iGem
 
