@@ -343,7 +343,7 @@ def read_cellebrite(input_xlsx):
         (Latitude, Longitude, Coordinate, fulladdress2, state, Time) = ('', '', '', '', '', '')
         (From, to, cc, bcc, subject, body) = ('', '', '', '', '', '')
         (status, priority, attachment, Altitude, receiver, Sender) = ('', '', '', '', '', '')
-        (city, state, country, case) = ('', '', '', '')
+        (city, state, country, case, Direction) = ('', '', '', '', '')
         
 # fullname        
         ## replace all None values with '' 
@@ -693,6 +693,17 @@ def read_cellebrite(input_xlsx):
                     phone = Parties[0]
                 if fullname == '':
                     fullname = Parties[1]
+
+
+# Direction 
+        if Direction == '':
+            Direction = row_data.get("Direction")
+            if Direction is None:
+                Direction = ''
+        elif Direction == '':
+            Direction = row_data.get("ns2:course")
+            if Direction is None:
+                Direction = ''
                 
 # Position        
         Position = row_data.get("Position")
@@ -741,6 +752,14 @@ def read_cellebrite(input_xlsx):
             if Latitude is None:
                 Latitude == ''
                 Longitude == ''  
+
+        if Latitude is None or Latitude == '':  # GPX export from xml
+            Latitude = row_data.get("lat")
+            Longitude = row_data.get("lon")
+            if Latitude is None:
+                Latitude == ''
+                Longitude == ''  
+
                 
             
 # user
@@ -1123,7 +1142,15 @@ STATUS:{status}
         if original_file is None or original_file == "":
             original_file = input_xlsx
 
-
+# Altitude
+        if Altitude == '':
+            Altitude = row_data.get("Altitude")
+        if Altitude is None:
+            Altitude = ''
+        if Altitude == '':
+            Altitude = row_data.get("ns0:ele")
+        if Altitude is None:
+            Altitude = ''
 
 # type_data
         type_data = row_data.get("Type")
@@ -1152,6 +1179,11 @@ STATUS:{status}
                 type_data = ''            
         if type_data == '':
             type_data = row_data.get("Call Type")
+            if type_data is None:
+                type_data = ''
+
+        if type_data == '':
+            type_data = row_data.get("ns4:vehicleType")
             if type_data is None:
                 type_data = ''
                 
@@ -1203,6 +1235,12 @@ STATUS:{status}
             Time = row_data.get("Call Date/Time - UTC+00:00 (M/d/yyyy)")
             if Time is None:
                 Time = ''        
+
+        if Time == '':
+            Time = row_data.get("ns0:time") # GPX to xml
+            Time = Time.replace('T',' ')    # 2024-11-26T12:49:53-06:00
+            if Time is None:
+                Time = ''   
 
         if (Coordinate == '' or Coordinate is None) and Altitude == '':
             if Latitude is None:
@@ -1302,6 +1340,8 @@ STATUS:{status}
         row_data["Latitude"] = Latitude  
         row_data["Longitude"] = Longitude  
         row_data["Coordinate"] = Coordinate  
+        row_data["Direction"] = Direction         
+        row_data["Altitude"] = Altitude         
         row_data["Source file information"] = source_file     
         row_data["original_file"] = original_file     
         row_data["Tag"] = tag     
