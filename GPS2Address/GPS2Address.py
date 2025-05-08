@@ -1543,7 +1543,12 @@ def read_locations(input_xlsx):
             Time = row_data.get("Created Date/Time - UTC-06:00 (M/d/yyyy)[DST]")   # Axiom Significant locations
             if Time is None:
                 Time = ''
-                
+
+        if Time == '':
+            Time = row_data.get("ns0:time")   # GPX to xml conversion
+            Time = Time.replace('T', ' ')
+            if Time is None:
+                Time = ''                
 
 # Start Time
         start_time = row_data.get("Start Date/Time - UTC-06:00 (M/d/yyyy)[DST]")
@@ -1723,10 +1728,10 @@ def read_locations(input_xlsx):
             Altitude = row_data.get("Altitude (meters)")    # test Axiom Live Photos
             if Altitude is None:
                 Altitude = ''  
-        # if Altitude == '':
-            # Altitude = row_data.get("altitude")    # GPS tracker
-            # if Altitude is None:
-                # Altitude = ''  
+        if Altitude == '':
+            Altitude = row_data.get("ns0:ele")    # GPS tracker
+            if Altitude is None:
+                Altitude = ''  
 
 
 # gps
@@ -1773,7 +1778,11 @@ def read_locations(input_xlsx):
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = ''  
-                
+        if latitude == '': 
+            latitude = row_data.get("lat")
+            latitude = str(latitude)
+            if latitude is None or latitude == 'None':
+                latitude = ''                  
       
 
         if latitude == '': 
@@ -1791,6 +1800,8 @@ def read_locations(input_xlsx):
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = '' 
+
+
 
 
 
@@ -1812,7 +1823,11 @@ def read_locations(input_xlsx):
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = '' 
-
+        if longitude == '': 
+            longitude = row_data.get("lon")
+            longitude = str(longitude)
+            if longitude is None or longitude == 'None':
+                longitude = '' 
         if longitude == '': 
             longitude = row_data.get("GPS Longitude")
             longitude = str(longitude)
@@ -1978,12 +1993,15 @@ def read_locations(input_xlsx):
             type_data = row_data.get("type")
         if type_data is None:
             type_data = ''  
-
+        if type_data == '':
+            type_data = row_data.get("ns4:vehicleType")
+        if type_data is None:
+            type_data = ''  
         if type_data == '':
             type_data = active_sheet_title
         # print(f'active_sheet_title = {active_sheet_title}   type_data = {type_data}') # temp
 
-        # Icon = row_data.get("Icon")
+        Icon = row_data.get("Icon")
         if type_data is None:
             type_data = ''
 
@@ -2018,6 +2036,9 @@ def read_locations(input_xlsx):
             if type_data == 'gps' or type_data == 'cell':
 
                 Icon = 'Car4'
+        elif type_data == 'Car' and Icon == '':
+            Icon = 'Car'
+
 
 
         # Apple Maps Trips = "Map"
@@ -2262,6 +2283,11 @@ def read_locations(input_xlsx):
                 direction = ''  
 
         if direction == '':
+            direction  = row_data.get("ns2:course")
+            if direction is None:
+                direction = ''  
+                
+        if direction == '':
             match = re.search(r'\((\w+)\)',hwy)
             if ' NB' in hwy:
                 direction = 'N'
@@ -2445,6 +2471,10 @@ def read_locations(input_xlsx):
                 speed = '' 
         if speed == '':
             speed  = row_data.get("Speed (mph)")
+            if speed is None:
+                speed = '' 
+        if speed == '':
+            speed  = row_data.get("ns2:speed")
             if speed is None:
                 speed = '' 
 
