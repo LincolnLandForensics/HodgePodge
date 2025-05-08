@@ -75,7 +75,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.4.0'
+version = '1.4.1'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -2649,27 +2649,23 @@ def point_icon_maker(Icon):
     return point_icon
 
 def time_compare(time1, time2):
-
-    # Parse the input strings into datetime objects
     time_format = "%Y-%m-%d %H:%M:%S"
-    time1 = datetime.strptime(time1, time_format)
-    time2 = datetime.strptime(time2, time_format)
-    
+
+    # Convert to datetime only if needed
+    if isinstance(time1, str):
+        time1 = datetime.strptime(time1, time_format)
+    if isinstance(time2, str):
+        time2 = datetime.strptime(time2, time_format)
+
     # Compare the dates
-    if time1.date() == time2.date():
-        same_day = True
-        # print(f"{time1} & {time2} Same day")
-    else:
-        same_day = False
-        # print(f"{time1} & {time2} Not same day")
-    
+    same_day = time1.date() == time2.date()
+
     # Calculate the difference in minutes
     try:
         time_diff = abs((time2 - time1).total_seconds() / 60.0)
-        # print(f'time_diff = {time_diff} minutes')
-    except:
+    except Exception:
         time_diff = ''
-    # print(f"Number of minutes between the two timestamps: {time_diff:.2f}")
+
     return (same_day, time_diff)
     
 def write_kml(data):
