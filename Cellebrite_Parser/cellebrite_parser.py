@@ -6,7 +6,7 @@ Pandas is too big
 send data all at once so it can be sorted if needed
 '''
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>> 
- 
+
 import os
 import re
 import sys
@@ -58,7 +58,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert Cellebrite contacts, account, web history, chats and call exports to intel format"
-version = '1.0.5'
+version = '1.0.7'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -239,6 +239,9 @@ def clean_phone(phone):
     True if the string is a valid phone number, False otherwise.
     """
     # phone = phone.lstrip('1')   # test
+    if phone.startswith('1'):
+        phone = phone[1:]
+    
     phone = re.sub(r'[- \(\)]', '', phone).strip() 
     phone = phone.replace("+", "")          # E165 standard doesn't have a + (E.164 has a +)
     regex_phone = r"^\d{7,15}$" 
@@ -1107,6 +1110,15 @@ STATUS:{status}
             tag = row_data.get("Tags")
             if tag is None:
                 tag = ''   
+
+        if tag == '':
+            tag = row_data.get("Tag Note - Instant Message")    # cellebrite chats
+            if tag is None:
+                tag = ''  
+            if "Important" in tag:
+                tag = "Important"
+            elif "Review" in tag:
+                tag = "Review"  
                 
 # ranking
         ranking2 = row_data.get("Service Type")
@@ -1238,9 +1250,14 @@ STATUS:{status}
 
         if Time == '':
             Time = row_data.get("ns0:time") # GPX to xml
-            Time = Time.replace('T',' ')    # 2024-11-26T12:49:53-06:00
-            if Time is None:
-                Time = ''   
+            if Time is None or Time == 'NoneType':
+                Time = ''             
+            try:
+                Time = Time.replace('T',' ')    # 2024-11-26T12:49:53-06:00
+                Time = Time.strip()
+            except:
+                print(f'Time type = {type(Time)}')    # temp
+            
 
         if (Coordinate == '' or Coordinate is None) and Altitude == '':
             if Latitude is None:
@@ -1293,14 +1310,10 @@ STATUS:{status}
         if phone.startswith('+'):
             phone = phone.replace('+', '')
         if phone.startswith('1'):
-            phone = phone.replace('1', '')  # test
+            phone = phone[1:]
                     
         # phone cleanup
         phone = clean_phone(phone)
-        phone = phone.lstrip('1')
-        if phone.startswith('1'):
-            phone = phone[1:]
-
 
 # cleanup cells # test
         fullname = clean_data(fullname)
