@@ -1537,6 +1537,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+1.0.7 - Fixed phone numbers (was removing any 1's from phone numbers. (oops)
 1.0.5 - asks for case number
 1.0.4 - left strip 1 off phone numbers for uniformity.
 """

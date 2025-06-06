@@ -34,7 +34,7 @@ import argparse  # for menu system
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.1.5'
+version = '3.1.6'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -359,6 +359,7 @@ def main():
         thatsthememail()    #
         truepeople_email()
         ## twitteremail()    # auth required    
+        veraxity()
         wordpresssearchemail()  # requires auth
         
     if args.ips and len(ips) > 0:  
@@ -389,7 +390,7 @@ def main():
         # familytreephone()    #
         # thatsthemphone()   #
         # reversephonecheck()    #
-        spydialer()    #
+        veraxity()    #
 
 
     if args.usersmodules and len(users) > 0:  
@@ -464,7 +465,7 @@ def main():
         print(f'websites = {websites}')    
         centralops()
         main_website()
-        redirect_detect()
+        # redirect_detect() # timed out and crashed
         robtex()
         # titles()    # alpha
         viewdnsdomain()
@@ -591,7 +592,7 @@ def arinip():    # testuser=    77.15.67.232
         print(f'{color_green}{ip}{color_yellow}	{country}	{city}	{zipcode}{color_reset}')
 
         if '.' in ip:
-            ranking = '9 - whois'
+            ranking = '9 - ARIN'
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["url"] = url
@@ -1126,12 +1127,13 @@ def facebook(): # testuser = kevinrose
 def familytree(): 
     print(f'\n\t{color_yellow}<<<<< Manually check familytreenow.com >>>>>{color_reset}')
     row_data = {}
-    (query, ranking) = ('', '9 - manual')
+    (query, ranking, note) = ('', '9 - manual', 'See FamilyTree link for Possible Relatives and Possible Associates')
     url = ('https://www.familytreenow.com/search/')
 
     # row_data["query"] = query
     row_data["ranking"] = ranking
     row_data["url"] = url
+    row_data["note"] = note
     data.append(row_data)
 
 
@@ -1141,7 +1143,7 @@ def familytreephone():# DROP THE LEADING 1
         row_data = {}
         (query, ranking) = (phone, '8 - familytree')
 
-        (country, city, state, zipcode, case, note) = ('', '', '', '', '', '')
+        (country, city, state, zipcode, case, note) = ('', '', '', '', '', 'See FamilyTree link for Possible Relatives and Possible Associates')
         (fullname, content, referer, osurl, titleurl, pagestatus)  = ('', '', '', '', '', '')
 
         url = (f'https://www.familytreenow.com/search/genealogy/results?phoneno=%s' %(phone.lstrip('1')))
@@ -1155,6 +1157,7 @@ def familytreephone():# DROP THE LEADING 1
             row_data["url"] = url
             row_data["phone"] = phone
             row_data["state"] = state
+            row_data["note"] = note
             data.append(row_data)
 
 def findwhocallsyou():# testPhone= 
@@ -3124,7 +3127,7 @@ def redirect_detect():  # https://goo.gle
         url = website
         url = url.replace("http://", "https://")
         if "http" not in url.lower():
-            url = (f'https://{user}')
+            url = (f'https://{website}')
             
         referer = url.lower().strip()
         try:
@@ -4276,6 +4279,18 @@ def twitter():    # testuser=    kevinrose     # add info
         data.append(row_data)
 
         # time.sleep(10) #will sleep for 10 seconds
+
+
+def veraxity(): 
+    if len(emails) > 0:
+        row_data = {}
+        ranking = '8 - manual'
+        url = ('https://intel.veraxity.org')
+        note = ('https://breachbase.com/')
+        row_data["ranking"] = ranking
+        row_data["url"] = url
+        row_data["note"] = note
+        data.append(row_data)
             
 
 def vimeo():    # testuser=    kevinrose
@@ -5708,6 +5723,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+https://www.ipaddress.com/ipv6/{ip} IF IP IS A IPV6
+
+
 
 https://www.arrl.org/advanced-call-sign-search
 
@@ -5726,16 +5744,15 @@ https://start.me/p/1kJKR9/commandergirl-s-suggestions
 
 
 # phone : whatsapp, haveibeenpwned, group me, true call, weibo, chime, qq, crickwick,
-discord, foursquare, facebook, walkie talkie, apple, marco polo, skype, okru, 
-
-
+discord, foursquare, facebook, walkie talkie, apple, marco polo, okru, 
 
 
 https://www.textnow.com/
 https://www.talkatone.com/
 https://www.pinger.com/
 https://www.tumblr.com/login
-https://www.skype.com/en/
+https://www.tumblr.com/kevinrose
+
 
 
 

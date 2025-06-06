@@ -75,7 +75,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.4.1'
+version = '1.4.5'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -95,6 +95,8 @@ def main():
 
     parser.add_argument('-R', '--read', help='read xlsx', required=False, action='store_true')
     parser.add_argument('-r', '--read_basic', help='read basic xlsx', required=False, action='store_true')
+    parser.add_argument('-s', '--split', help='split xlsx', required=False, action='store_true')
+
 
     args = parser.parse_args()
 
@@ -239,7 +241,11 @@ def main():
             data = read_gps(data)
             write_locations(data)
             write_kml(data)
-            
+            row_count = len(data)
+            print(f'{row_count} rows detected')
+            if row_count > 10000:
+                write_csv(data)
+
             travel_path_kml(coordinates)
             workbook.close()
             msg_blurb = (f'Writing to {output_xlsx}')
@@ -253,6 +259,31 @@ def main():
             print(f'{color_red}{input_xlsx} does not exist{color_reset}')
             exit()
 
+    elif args.split:
+        data = []
+        file_exists = os.path.exists(input_xlsx)
+        if file_exists == True:
+            base_output_name = input_xlsx.replace('.xlsx', '')
+            
+            msg_blurb = (f'Reading {input_xlsx}')
+            msg_blurb_square(msg_blurb, color_green)
+            
+            # data = read_xlsx(input_xlsx)
+            (data, coordinates) = read_locations(input_xlsx)
+            row_count = len(data)
+            print(f'{row_count} rows detected')            
+            
+            split_xlsx(data, base_output_name, chunk_size=10000)
+
+            msg_blurb = (f'Writing to {output_xlsx}')
+            msg_blurb_square(msg_blurb, color_green)
+
+
+        else:
+            print(f'{color_red}{input_xlsx} does not exist{color_reset}')
+            exit()
+
+        
     elif args.read_basic:
         
         data = []
@@ -270,6 +301,11 @@ def main():
                 # data = read_gps(data)
                 write_locations(data)
                 write_kml(data)
+                row_count = len(data)
+                print(f'{row_count} rows detected')
+                if row_count > 10000:
+                    write_csv(data)                
+                
                 travel_path_kml(coordinates)
                 workbook.close()
                 msg_blurb = (f'Writing to {output_xlsx}')
@@ -300,13 +336,19 @@ def case_number_prompt():
     return case_prompt
 
 def convert_timestamp(timestamp, time_orig, timezone):
+    if timestamp is None:
+        timestamp = ''    
+    try:
+        timestamp = timestamp.strip()
+    except:pass
+    
     if timezone is None:
         timezone = ''
     if time_orig is None:
         time_orig = ''
 
     timestamp = str(timestamp)
-
+    timestamp
     if re.match(r'\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2}:\d{2}\.\d{3} (AM|PM)', timestamp):
         # Define the expected format
         expected_format = "%m/%d/%Y %I:%M:%S.%f %p"
@@ -1462,7 +1504,7 @@ def read_locations(input_xlsx):
 
     case_prompt = case_number_prompt()
 
-
+    cnt = 0
     for row_index, row_data in enumerate(data):
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
         (state, fulladdress, Latitude, Longitude, query, Coordinate) = ('', '', '', '', '', '')
@@ -1546,9 +1588,10 @@ def read_locations(input_xlsx):
 
         if Time == '':
             Time = row_data.get("ns0:time")   # GPX to xml conversion
-            Time = Time.replace('T', ' ')
             if Time is None:
-                Time = ''                
+                Time = '' 
+            Time = Time.replace('T', ' ').strip()
+               
 
 # Start Time
         start_time = row_data.get("Start Date/Time - UTC-06:00 (M/d/yyyy)[DST]")
@@ -1728,10 +1771,10 @@ def read_locations(input_xlsx):
             Altitude = row_data.get("Altitude (meters)")    # test Axiom Live Photos
             if Altitude is None:
                 Altitude = ''  
-        if Altitude == '':
-            Altitude = row_data.get("ns0:ele")    # GPS tracker
-            if Altitude is None:
-                Altitude = ''  
+        # if Altitude == '':
+            # Altitude = row_data.get("ns0:ele")    # GPS tracker
+            # if Altitude is None:
+                # Altitude = ''  
 
 
 # gps
@@ -2487,7 +2530,10 @@ def read_locations(input_xlsx):
             parked  = row_data.get("Park Time")
             if parked is None:
                 parked = '' 
-                
+        
+        if Coordinate != '':
+            cnt += 1
+        
 # write rows to data
         row_data["#"] = no
         row_data["Time"] = Time
@@ -2549,7 +2595,8 @@ def read_locations(input_xlsx):
         row_data["parked"] = parked
 
 
-
+    if cnt > 10000:
+        print(f"{cnt} Coordinates. Consider using iCatch.py to split kml's into 10,000 chunks")
     return (data, coordinates)
 
 def point_icon_maker(Icon):        
@@ -2677,6 +2724,40 @@ def point_icon_maker(Icon):
         point_icon = default_icon
 
     return point_icon
+
+def split_xlsx(data, base_output_name="output_split", chunk_size=7000):
+    total_rows = len(data)
+    chunk_count = (total_rows + chunk_size - 1) // chunk_size  # ceiling division
+
+    for chunk_index in range(chunk_count):
+        start = chunk_index * chunk_size
+        end = min(start + chunk_size, total_rows)
+        chunk_data = data[start:end]
+
+        # Create a new workbook for each chunk
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+
+        # Write headers
+        for col_index, header in enumerate(headers):
+            cell = ws.cell(row=1, column=col_index + 1)
+            cell.value = header
+            if col_index in [0, 2, 3, 4, 5, 6, 7]:
+                fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
+                cell.fill = fill
+
+        # Write data rows
+        for row_index, row_data in enumerate(chunk_data):
+            for col_index, col_name in enumerate(headers):
+                ws.cell(row=row_index + 2, column=col_index + 1).value = row_data.get(col_name)
+
+        # Save file
+        filename = f"{base_output_name}_{chunk_index+1:03d}.xlsx"
+        wb.save(filename)
+        print(f"{color_green}Saved: {filename}{color_reset}")
+
+
 
 def time_compare(time1, time2):
     time_format = "%Y-%m-%d %H:%M:%S"
@@ -2886,6 +2967,29 @@ def write_kml(data):
 
     msg_blurb = (f'KML file {output_kml} created successfully!')
     msg_blurb_square(msg_blurb, color_blue)
+
+
+def write_csv(data):
+
+    import csv
+    output_csv = output_xlsx
+    output_csv = (f"{output_xlsx}").replace('.xlsx', '.csv')
+    print(f'outputing a csv version : {output_csv}')
+    
+    try:
+        with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=headers)
+
+            writer.writeheader()
+            for row in data:
+                writer.writerow(row)
+        print(f"{color_green}CSV output written to {output_csv}{color_reset}")
+    except Exception as e:
+        print(f"{color_red}Error writing CSV: {str(e)}{color_reset}")
+
+
+
+
 
 def write_locations(data):
     '''
@@ -3289,7 +3393,9 @@ def usage():
     print(f'    {file} -R -I Journeys.xlsx -O Locations_Journeys.xlsx   # beta')  
     print(f'    {file} -R -I MediaLocations_.xlsx')  
     print(f'    {file} -R -I PointsOfInterest.xlsx -O Locations_PointsOfInterest.xlsx') 
-    print(f'    {file} -R -I Tolls.xlsx -O Locations_Tolls.xlsx')     
+    print(f'    {file} -R -I Tolls.xlsx -O Locations_Tolls.xlsx')    
+    print(f'    {file} -s -I locations.xlsx.xlsx')  
+    
     print(f'    {file} -i -I intel_.xlsx -O Locations_Intel_.xlsx')  
     print(f'    {file} -i -I intel_SearchedItems_.xlsx')  
     print(f'    {file} -i -I intel_Chats_.xlsx')  
@@ -3350,6 +3456,7 @@ if it's less than 3000 skip the sleep timer
 avoid processing Google Maps Tiles, Apple Maps - Biome App Intents.xlsx, iOS maps
 connection timeout after about 4000 attempts
 with the sleep timer set to 10 (sec) it doesn't crap out.
+Artex Artifiact Examiner: https://www.doubleblak.com/app.php?id=ArtEx2
 
 """
 

@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # 
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # 
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -2203,7 +2203,7 @@ Exhibit {exhibit}
             report = f"{report} The image was processed with {analysisTool}."
 
         if verifyHash.lower() == 'y':
-            report = f"{report} The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
+            report = f"{report}The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
 
 
         # Username and password to report
