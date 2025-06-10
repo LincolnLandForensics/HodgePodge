@@ -2412,6 +2412,8 @@ def read_locations(input_xlsx):
         elif type_data == "Find My Locations":    # axiom
             # type_data == "Images"   # task
             Icon = "Yellow"
+        elif direction != "":    # test
+            Icon = direction        
         # elif type_data            
             # if subgroup == "SearchedPlaces":
                 # Icon = "Searched"
