@@ -1678,10 +1678,18 @@ def read_locations(input_xlsx):
         if Time == '':
             Time  = row_data.get("report_time (GMT)") 
             if Time is None:
-                Time = ''    
+                Time = 'GMT'    
             else:
-                timezone = 'GMT'
+                timezone = ''
 
+# GPS tracker
+        if Time == '':
+            Time  = row_data.get("report_time (CT)") 
+            if Time is None:
+                Time = 'CT'    
+            else:
+                timezone = ''
+                
 # GPS tracker 2
         if Time == '':
             Time  = row_data.get("Date Time (CT)") 
@@ -1795,6 +1803,11 @@ def read_locations(input_xlsx):
             longitude = ''        
         if longitude == '':
             longitude = row_data.get("longitude")
+            longitude = str(longitude)
+            if longitude is None or longitude == 'None':
+                longitude = ''   
+        if longitude == '':
+            longitude = row_data.get("longitute")   # GPS tracker
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = ''   
