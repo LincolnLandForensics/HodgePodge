@@ -382,7 +382,7 @@ def main():
         # spydialer()    #
         validnumber()    #
         whitepagesphone()    #
-        whocalld()    #
+        # whocalld()    # works
         
     if args.test:  
         print(f' using test module')
@@ -1618,7 +1618,7 @@ def ham_radio(): # testuser = K9CYC
 def have_i_been_pwned(): 
     if len(emails) > 0:
         row_data = {}
-        ranking = '9 - manual'
+        ranking = '8 - manual'
         url = ('https://haveibeenpwned.com')
 
         row_data["ranking"] = ranking
@@ -2641,11 +2641,12 @@ def public():    # testuser=    kevinrose
     print(f'{color_yellow}\n\t<<<<< public {color_blue}users{color_yellow} >>>>>{color_reset}')
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '4 - public')
+        (query, ranking) = (user, '8 - public')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         url = (f'https://public.com/@{user}')
         try:
-            (content, referer, osurl, titleurl, pagestatus) = request(url)
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '')  # too many false positives
         except:
             pass
 
@@ -3790,7 +3791,7 @@ def thatsthememail():   # testEmail= smooth8101@yahoo.com
         pagestatus = ''                
         if url != '':
             # print(f'{color_green}{url}{color_yellow}	{email}{color_reset}') 
-            ranking = '9 - thatsthem'
+            ranking = '8 - thatsthem'
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["url"] = url
@@ -3999,8 +4000,7 @@ def tiktok(): # testuser = kevinrose
                 ranking = '4 - tiktok'
             else:
                 fullname = ''            
-
-            
+         
             print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
 
             row_data["query"] = query
@@ -4353,12 +4353,16 @@ def whatnot(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< whatnot {color_blue}users{color_yellow} >>>>>{color_reset}')
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '7 - whatnot')
+        (query, ranking) = (user, '9 - whatnot')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
         user = user.rstrip()
         url = (f'https://www.whatnot.com/user/{user}')
-        (content, referer, osurl, titleurl, pagestatus) = request(url)
+        
+        # (content, referer, osurl, titleurl, pagestatus) = request(url)
+        (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '')
+        
+        
         if '404' not in pagestatus:
             titleurl = titleurl.replace("Just a moment...","").strip()
 
@@ -4586,7 +4590,7 @@ def wordpress(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< wordpress {color_blue}users{color_yellow} >>>>>{color_reset}')
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '4 - wordpress')
+        (query, ranking) = (user, '9 - wordpress')
 
 
         (Success, fullname, lastname, firstname, case, SEX) = ('','','','','','')
@@ -4600,7 +4604,8 @@ def wordpress(): # testuser = kevinrose
         (content, referer, osurl, titleurl, pagestatus) = request(url)
         
         try:
-            (content, referer, osurl, titleurl, pagestatus) = request(url)
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = ('','','','','') # too many false positives
         except socket.error as ex:
             print(f'{color_red}{ex}{color_reset}')
 
@@ -4632,10 +4637,10 @@ def wordpress_profiles(): # testuser = kevinrose
         (city) = ('')
         user = user.rstrip()
         url = (f'https://profiles.wordpress.org/{user}/')
-        (content, referer, osurl, titleurl, pagestatus) = request(url)
         
         try:
-            (content, referer, osurl, titleurl, pagestatus) = request(url)
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = ('','','','','')
         except:
             pass
         if '404' not in pagestatus:
