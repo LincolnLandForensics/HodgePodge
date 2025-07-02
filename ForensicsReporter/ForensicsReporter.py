@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.4.5'
+version = '3.4.6'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -413,23 +413,6 @@ def enter_data():
                 , "storageSerial", "storageSize", "evidenceDataSize", "analysisTool"
                 , "analysisTool2", "exportLocation", "exportedEvidence", "qrCode", "operation"
                 , "vaultCaseNumber", "vaultTotal", "caseNumberOrig", "Action", "priority", "temp"]
-
-
-
-                # heading = ["caseNumber", "exhibit", "caseName", "subjectBusinessName",
-                    # "caseType", "caseAgent", "forensicExaminer", "reportStatus", "notes",
-                    # "summary", "exhibitType", "makeModel", "serial", "OS", "phoneNumber",
-                    # "phoneIMEI", "mobileCarrier", "biosTime", "currentTime", "timezone",
-                    # "shutdownMethod", "shutdownTime", "userName", "userPwd", "email",
-                    # "emailPwd", "ip", "seizureAddress", "seizureRoom", "dateSeized",
-                    # "seizedBy", "dateReceived", "receivedBy", "removalDate", "removalStaff",
-                    # "reasonForRemoval", "inventoryDate", "seizureStatus", "status", "imagingTool",
-                    # "imagingType", "imageMD5", "imageSHA1", "imageSHA256", "writeBlocker",
-                    # "imagingStarted", "imagingFinished", "storageType", "storageMakeModel",
-                    # "storageSerial", "storageSize", "evidenceDataSize", "analysisTool",
-                    # "analysisTool2", "exportLocation", "exportedEvidence", "storageLocation",
-                    # "caseNumberOrig", "priority", "operation", "Action", "vaultCaseNumber",
-                    # "qrCode", "vaultTotal", "tempNotes"]
 
                 sheet.append(heading)
                 workbook.save(filepath)
@@ -833,13 +816,9 @@ def parse_log():
     for logFile in logs_list:
         msg_blurb = (f'Reading {logFile}')
         msg_blurb_square(msg_blurb, color_green)
-      
-
-        # style = workbook.add_format()
-        # style = Workbook.add_format()        
+       
         (header, reportStatus, date) = ('', '', '<insert date here>')
 
-        # (caseNumber, exhibit, caseName) = ('', '', '')
         (subjectBusinessName, caseType, caseAgent) = ('', '', '')
         (forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel) = ('', '', '', '', '', '')
         (serial, OS, phoneNumber, phoneIMEI, mobileCarrier, biosTime) = ('', '', '', '', '', '')
@@ -859,7 +838,11 @@ def parse_log():
 
         if logFile.lower().endswith('.pdf'):
             csv_file = ''
-            (caseNumber, exhibit, caseType, forensicExaminer, makeModel, OS, status, exhibitType, serial, phoneNumber, phoneIMEI, email, imagingType, imageMD5, imageSHA256, imagingStarted, exportLocation, imagingFinished, imagingTool, imagingType, storageSize, evidenceDataSize, analysisTool, tempNotes, imagingTool) = pdf_extract(logFile)
+            (caseNumber, exhibit, caseType, forensicExaminer, makeModel, OS, hostname, status, exhibitType, serial, phoneNumber, phoneIMEI, phoneIMEI2, email, imagingType, imageMD5, imageSHA256, imagingStarted, exportLocation, imagingFinished, imagingTool, imagingType, storageSize, evidenceDataSize, analysisTool, tempNotes, imagingTool) = pdf_extract(logFile)
+            csv_file = tempNotes.split('\\n')
+        elif logFile.lower().endswith('.ufdx'):
+            csv_file = ''
+            (caseNumber, exhibit, subjectBusinessName, caseType, forensicExaminer, makeModel, seizureAddress, seizedBy, imagingType, exportLocation) = ufdx_parser(logFile)
             csv_file = tempNotes.split('\\n')
         else:
             csv_file = open(logFile) 
@@ -1013,8 +996,8 @@ def parse_log():
             elif "Operating System Version:" in each_line: #cellebrite *.ufd log file
                 OS = each_line.replace("Operating System Version:", "").strip()
 
-            elif "Operating System:" in each_line: # MagnetAXIOM Case Information.txt
-                OS = each_line.replace("Operating System:", "").strip()
+            # elif "Operating System:" in each_line: # MagnetAXIOM Case Information.txt
+                # OS = each_line.replace("Operating System:", "").strip()
 
             elif "Vehicle ECU:" in each_line: # BerlaIVe AcquisitionLog.txt
                 OS = each_line.replace("Vehicle ECU:", "").strip()
@@ -1107,18 +1090,17 @@ def parse_log():
                 # userName = phoneNumber
 
             # forensicExaminer
-            elif "User: " in each_line:
-                forensicExaminer = re.split("User: ", each_line, 0)
-                forensicExaminer = str(forensicExaminer[1]).strip()
             elif "Examiner:" in each_line:
                 forensicExaminer = re.split("Examiner:", each_line, 0)
                 forensicExaminer = str(forensicExaminer[1]).strip()
                 forensicExaminer =forensicExaminer.replace("CIA - ", "")
+            elif "User: " in each_line:
+                forensicExaminer = re.split("User: ", each_line, 0)
+                forensicExaminer = str(forensicExaminer[1]).strip()
             elif "Examiner Name:" in each_line: # MagnetAcquire image_info_001.txt
                 forensicExaminer = each_line.replace("Examiner Name:", "").strip()
             elif "Examiner Name=" in each_line: # CellebriteUFED4PC.txt
                 forensicExaminer = each_line.replace("Examiner Name=", "").strip()
-
             elif "Examiner         :" in each_line: # recon imager
                 forensicExaminer = re.split("Examiner         :", each_line, 0)
                 forensicExaminer = str(forensicExaminer[1]).strip()
@@ -1338,9 +1320,16 @@ def parse_log():
             elif "MD5 hash calculated over data:" in each_line: # SumuriReconImager.txt
                 imageMD5 = each_line.replace("MD5 hash calculated over data:", "").strip()
 
-            elif "MD5 " in each_line:    # GrayKey_R5CR8147V0A.pdf
-                imageMD5 = each_line.lstrip("MD5 ")
-                print(f"{color_yellow}<<<<<<<<<<<   testing  >>>>>>>>>>>>>{color_reset}")    # task
+            elif "MD5 Image Hash: " in each_line:    # Magnet Axiom
+                imageMD5 = each_line.replace("MD5 Image Hash: ", "")
+
+            elif "MD5 Verification Hash: " in each_line:    # Magnet Axiom
+                verifyHash = each_line.replace("MD5 Verification Hash: ", "")
+
+
+            # elif "MD5 " in each_line:    # GrayKey_R5CR8147V0A.pdf
+                # imageMD5 = each_line.lstrip("MD5 ")
+                # print(f"{color_yellow}<<<<<<<<<<<   testing  >>>>>>>>>>>>>{color_reset}")    # task
 
             # imageSHA1
             elif "Disk SHA1: " in each_line:    # Tableau
@@ -1376,7 +1365,10 @@ def parse_log():
             elif "Host Name: " in each_line:
                 hostname = re.split("Host Name: ", each_line, 0)
                 hostname = str(hostname[1]).strip()
-                notes = ("%s The hostname is %s." %(notes, hostname))
+                if "MagnetAXIOM" in logFile:
+                    hostname = ''
+                else:
+                    notes = ("%s The hostname is %s." %(notes, hostname))
             elif "Timezone: " in each_line:
                 timezone = re.split("Timezone: ", each_line, 0)
                 timezone = str(timezone[1]).strip()
@@ -1448,6 +1440,13 @@ def parse_log():
                         imagingStarted = fix_date(imagingStarted)
                     except:pass    
 
+            elif "Start Date/Time:" in each_line: # Magnet Axiom
+                imagingStarted = each_line.replace("Start Date/Time:", "").strip()
+                biosTime = imagingStarted
+
+
+
+
                
             # imagingFinished
                 
@@ -1494,6 +1493,11 @@ def parse_log():
                 # try:
                     # imagingFinished = fix_date(imagingFinished)
                 # except:pass    
+            elif "End Date/Time: " in each_line: # magnet axiom
+                imagingFinished = each_line.replace("End Date/Time: ", "").strip()
+                status = ('Imaged')
+                # imagingFinished = fix_date3(imagingFinished)
+
 
             # tempnotes
             elif "Description:" in each_line: # MagnetAcquire image_info.txt
@@ -1524,7 +1528,8 @@ def parse_log():
             
         # if makeModel == '':
             # makeModel = ('%s %s' %(make, model))    # test
-        makeModel = ('%s %s' %(make, model))    # test
+        if not makeModel:
+            makeModel = ('%s %s' %(make, model))    # test
 
         if vehicleYear != '' : # BerlaIVe AcquisitionLog.txt
         # if vehicleYear != '' and vehicleManufacturer != '' and vehicleModel != '': # BerlaIVe AcquisitionLog.txt
@@ -1594,8 +1599,10 @@ def pdf_extract(filename):
     exhibit = ''
     serial = ''
     OS = ''
+    hostname = ''
     phoneNumber = ''
     phoneIMEI = ''
+    phoneIMEI2 = ''
     email = ''
     status = ''
     imagingTool = ''
@@ -1624,7 +1631,8 @@ def pdf_extract(filename):
         forensicExaminer_match = re.search(r'Examiner Name(.*?)\n', tempNotes)  # cellebrite
         if forensicExaminer_match:
             forensicExaminer = forensicExaminer_match.group(1).strip()
-    
+        if forensicExaminer.startswith(': '):
+            forensicExaminer = forensicExaminer.replace(': ', '')
         makeModel_match = re.search(r"Device Name / Evidence Number (.*?)\n", tempNotes)    # cellebrite
         if makeModel_match:
             makeModel = makeModel_match.group(1).strip()
@@ -1632,6 +1640,14 @@ def pdf_extract(filename):
         os_match = re.search(r'OS Name (.*?)\n', tempNotes)    # cellebrite
         if os_match:
             OS = os_match.group(1).strip()
+
+        os_match2 = re.search(r'Software Version (.*?)\n', tempNotes)    # GrayKey
+        if os_match2:
+            OS = os_match2.group(1).strip()
+
+        os_match3 = re.search(r'General OS Version (.*?)\n', tempNotes)    # cellebrite preliminary report
+        if os_match3:
+            OS = os_match3.group(1).strip()
 
         caseType_match = re.search(r'Crime Type (.*?)\n', tempNotes)
         if caseType_match:
@@ -1647,14 +1663,38 @@ def pdf_extract(filename):
         if makeModel_match:
             makeModel = makeModel_match.group(1).strip()
 
+        makeModel_match2 = re.search(r'General Detected Phone Model (.*?)\n', tempNotes)    # graykey
+        if makeModel_match2:
+            makeModel = makeModel_match2.group(1).strip()
+
+        makeModel_match3 = re.search(r'Model (.*?)\n', tempNotes)    # graykey
+        if makeModel_match3 and makeModel:
+            makeModel = makeModel_match3.group(1).strip()
+
         serial_match = re.search(r'Serial Number:(.*?)\n', tempNotes)    # graykey
         if serial_match:
             serial = serial_match.group(1).strip()
+
+        serial_match2 = re.search(r'General Serial (.*?)\n', tempNotes)    # Cellebrite preliminary report
+        if serial_match2:
+            serial = serial_match2.group(1).strip()
+
 
         status_match = re.search(r'Extraction Status Success\n', tempNotes)
         if status_match:
             status = "imaged"
 
+        hostname_match = re.search(r'Device Name(.*?)\n', tempNotes)  # GrayKey
+        if hostname_match:
+            hostname = hostname_match.group(1).strip()        
+
+        imei_match = re.search(r'General IMEI (.*?)\n', tempNotes)  # Cellebrite preliminary report
+        if imei_match:
+            phoneIMEI = imei_match.group(1).strip() 
+
+        imei2_match = re.search(r'General IMEI (.*?)\n', tempNotes)  # Cellebrite preliminary report
+        if imei2_match:
+            phoneIMEI2 = imei2_match.group(1).strip() 
 
         imagingTool_match = re.search(r'GrayKey Software: OS Version:(.*?),', tempNotes)    # graykey
         if imagingTool_match:
@@ -1667,8 +1707,6 @@ def pdf_extract(filename):
         imagingType_match = re.search(r'Extraction Method (.*?)\n', tempNotes)
         if imagingType_match:
             imagingType = imagingType_match.group(1).strip()
-
-
 
         imagingStarted_match = re.search(r'Report generation time:(.*?)\n', tempNotes)    # graykey
         if imagingStarted_match:
@@ -1692,12 +1730,23 @@ def pdf_extract(filename):
         if phoneIMEI_match:
             phoneIMEI = phoneIMEI_match.group(1).strip()
 
+        phoneIMEI_match2 = re.search(r'General IMEI (.*?)\n', tempNotes)    # graykey
+        if phoneIMEI_match2:
+            phoneIMEI = phoneIMEI_match2.group(1).strip()
+
+
+
         # Add additional extraction logic here as needed for other fields
+
+    if 'GrayKey Progress Report' in OS:
+        OS = '' # test
+        print(f'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')  # temp
+
 
     # Return all extracted information as a tuple
     return (
-        caseNumber, exhibit, caseType, forensicExaminer, makeModel, OS, status, exhibitType, serial, phoneNumber,
-        phoneIMEI, email, imagingType, imageMD5, imageSHA256, imagingStarted, exportLocation,
+        caseNumber, exhibit, caseType, forensicExaminer, makeModel, OS, hostname, status, exhibitType, serial, phoneNumber,
+        phoneIMEI, phoneIMEI2, email, imagingType, imageMD5, imageSHA256, imagingStarted, exportLocation,
         imagingFinished, imagingTool, imagingType, storageSize, evidenceDataSize, analysisTool, tempNotes, imagingTool
     )
 
@@ -1815,7 +1864,9 @@ def read_xlsx():
     for index, row in df.iterrows():
         caseNumber = str(row['caseNumber'])
         exhibit = str(row['exhibit'])
-        exhibit = exhibit.rstrip('.0')
+        exhibit = exhibit
+        if exhibit.endswith('.0'):
+            exhibit = exhibit[:-2]
         caseName = str(row['caseName'])
         subjectBusinessName = str(row['subjectBusinessName'])
         caseType = str(row['caseType'])
@@ -1830,7 +1881,11 @@ def read_xlsx():
         serial = str(row['serial'])
         OS = str(row['OS'])
         phoneNumber = str(row['phoneNumber'])
-        phoneIMEI = str(row['phoneIMEI']).rstrip(',0')
+        phone2 = str(row['phone2'])
+        
+        if phone2.endswith('.0'):
+            phone2 = phone2[:-2]
+        phoneIMEI = str(row['phoneIMEI'])       # .rstrip(',0')
         mobileCarrier = str(row['mobileCarrier'])
         verifyHash = str(row.get('verifyHash', ''))  # Defaults to an empty string if key is missing
  
@@ -1959,21 +2014,18 @@ def read_xlsx():
         except:
             hostname = ''
         try:
-            phoneIMEI2 = str(row['phoneIMEI2']).rstrip('.0')
+            phoneIMEI2 = str(row['phoneIMEI2'])
         except:
             phoneIMEI2 = ''
-        try:
-            phone2 = str(row['phone2'])
-        except:
-            phone2 = ''
-
 
         if ' 00:00:00' in dateReceived: 
             dateReceived = dateReceived.replace(" 00:00:00", "")
-        if '.0' in phoneIMEI: 
-            phoneIMEI = phoneIMEI.rstrip('.0')          
-        if '.0' in phoneIMEI2: 
-            phoneIMEI2 = phoneIMEI2.rstrip('.0')             
+
+        if phoneIMEI.endswith('.0'):
+            phoneIMEI = phoneIMEI[:-2]
+        if phoneIMEI2.endswith('.0'):
+            phoneIMEI2 = phoneIMEI2[:-2]
+           
         # Summary writer, put a blank space or write your own summary if you don't want one auto generated
         if not summary and dateSeized and forensicExaminer and seizureAddress and agency != "ISP":
             summary = (
@@ -1983,7 +2035,6 @@ def read_xlsx():
             )
         elif summary:
             summary = summary
-
 
         qrCode = f"{caseNumber}_{exhibit}"
 
@@ -2517,7 +2568,10 @@ def write_checklist():  # panda edition
         elif 'dfe kar' in DFE.lower():
             DFE = 'CK'
             
-        exhibit = str(row['exhibit']).rstrip('.0')
+        exhibit = str(row['exhibit'])
+        if exhibit.endswith('.0'):
+            exhibit = exhibit[:-2]
+
         exhibitType = str(row['exhibitType'])
         if "nan" in exhibitType.lower():
             exhibitType = ''
@@ -2951,8 +3005,43 @@ def create_and_write_xlsx():
     # Close the Excel writer
     writer.save()
 
-# Example usage of the function
-# create_and_write_xlsx()
+
+def ufdx_parser(xml_path):
+    import xml.etree.ElementTree as ET
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+    TempNotes = ''
+    # Extract model
+    makeModel = root.find('DeviceInfo').attrib.get('Model', '')
+    
+    # Build dictionary of caption/value pairs
+    fields = {}
+    for field in root.findall('.//CrimeCase/Fields/Fields'):
+        caption = field.attrib.get('Caption', '').strip()
+        value = field.attrib.get('Value', '').strip()
+        fields[caption] = value
+
+    # Extract specific fields
+    caseNumber = fields.get('Case Identifier', '')
+    exhibit = fields.get('Device Name / Evidence Number', '')
+    if not exhibit:
+        exhibit = fields.get('Case ID', '')
+    subjectBusinessName = fields.get('Device owner', '')
+    # subjectBusinessName = fields[caption]
+    
+    caseType = fields.get('Crime type', '')
+    if not caseType:
+        caseType = fields.get('Crime Type', '')
+        
+    forensicExaminer = fields.get('Examiner Name', '')    
+    seizedBy = fields.get('Seized by', '')
+    seizureAddress = fields.get('Location', '')
+
+    # Extract extraction info
+    extraction = root.find('.//Extractions/Extraction')
+    imagingType = extraction.attrib.get('TransferType', '') if extraction is not None else ''
+    exportLocation = extraction.attrib.get('Path', '') if extraction is not None else ''
+    return (caseNumber, exhibit, subjectBusinessName, caseType, forensicExaminer, makeModel, seizureAddress, seizedBy, imagingType, exportLocation)
 
 def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
         forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
@@ -3167,7 +3256,10 @@ def write_sticker():
         caseName = row['caseName']
         subjectBusinessName = row['subjectBusinessName']
         caseAgent = row['caseAgent']
-        exhibit = str(row['exhibit']).rstrip('.0')
+        exhibit = str(row['exhibit'])
+        if exhibit.endswith('.0'):
+            exhibit = exhibit[:-2]
+            
         makeModel = row['makeModel']
         serial = str(row['serial'])       
         status = row['status']
@@ -3276,6 +3368,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+3.4.2 - parse .ufdx logs 
+3.4.1 - if exhibit ends in 0 , like 10 , it strips off the 0 and now it's a 1, same with phone2
 3.4.0 - ReOrganized column order (run old sheets through -r) to re-organize old data)
 3.1.1 - Add verifyHash column
 3.1.0 - export a markdown file as a todo list
@@ -3311,23 +3405,16 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
-
 should I change elif len(imageMD5) != 0 and exportLocation != '':
 to
 elif len(imageMD5) != 0 and exportLocation != '' and verifyHash.lower() == 'y':
 
 fix date formats. 
-IMEI's are getting displayed as '12345678912234.0
-
 
 Don't write the hash verification blurb if verifyHash = 'N'
 
 when doing -L with a folder name in there, it craps out. (skip folders)
 exhibit.lstrip('=')
-
-Change the sheet name from 'forensics' to 'Cases'
-
 
 add a -f option if you want it worded in first person perspective (sounds hard to write)
 Add a glossary of terms?
@@ -3335,28 +3422,18 @@ Add a glossary of terms?
 fix pdf output (often blank but sometimes it works)
 if date doesn't have time, don't put 0:0:0
 
-fix serial and storageSerial for TableauImager_21-41803200001_Ex1_Seagate3TBHDD.txt 
-
 Label GUI - Tkinter screen (Case#, Agent, Case Name, Location, Date, Exhibit, Room) # of stickers <print>
 
 standaradize date format in reporting (Wednesday, July 7, 2021)
-
-parse .ufdx logs 
 
 figure out DocX tags or variables to insert data into the header fields
 
 add a brother (or Dymo) label printer output to xlsx with qrCode
 qrCode could be caseNumber_exhibit_serial (it depends on what the evidence staff want displayed on their inventory scanner)
 
-parse: GrayKey, MagentAcuire, MagnetAxiom, SumuriReconImager, TableauTX1 (MS shared samples)
+parse: MagentAcuire, MagnetAxiom, SumuriReconImager
 
 if qrCode = '_': qrCode = ''
-
-can't parse:
-CellebriteUFED4PC_log.txt   # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
-MagnetAXIOM_Case Information_001.txt
-MagnetAXIOM_Case Information_002.txt
-
 
 """
 
