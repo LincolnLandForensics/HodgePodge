@@ -135,3 +135,18 @@ Google Earth Example:
 ![Example](images/WigleWiFI.jpg)
 
 ---
+
+
+
+## GPX2XLSX.py
+
+Parse (Garmin) GPX files and write results to Excel. 
+
+Usage: GPX2XLSX.py -G|-I file.gpx [-O gpx__output.xlsx]
+
+Examples:
+
+```
+    GPX2XLSX.py -g single.gpx -O gpx__output.xlsx
+    GPX2XLSX.py -G -O gpx_merged.xlsx
+```
