@@ -58,7 +58,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert Cellebrite contacts, account, web history, chats and call exports to intel format"
-version = '1.0.7'
+version = '1.1.1'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -228,25 +228,30 @@ def convert_timestamp(timestamp, time_orig, timezone):
 
     raise ValueError(f"{time_orig} Timestamp format not recognized")
 
+
 def clean_phone(phone):
     """
-  Checks if the given string 'phone' contains only digits and its length is between 7 and 15 (inclusive).
-
-  Args:
-    phone: The string to be validated as a phone number.
-
-  Returns:
-    True if the string is a valid phone number, False otherwise.
+    Sanitizes and validates phone numbers (7–15 digits, digits only).
     """
-    # phone = phone.lstrip('1')   # test
+    regex_phone = r'^\d{7,15}$'  # Matches a digit-only number between 7 and 15 digits
+    phone = re.sub(r'[^\d]', '', phone)  # Remove everything that's not a digit #optional?
+    phone = phone.replace('-', '') #optional?
+    phone = re.sub(r'[- \(\)]', '', phone).strip()  #optional?
+    phone = phone.replace("+", "")          # E165 standard doesn't have a + (E.164 has a +)  #optional?
+    phone = phone.replace("phone", "")  # task  #optional?
+    phone = phone.replace(' ','').replace('+','').replace('.','') #optional?
+
     if phone.startswith('1'):
         phone = phone[1:]
-    
-    phone = re.sub(r'[- \(\)]', '', phone).strip() 
-    phone = phone.replace("+", "")          # E165 standard doesn't have a + (E.164 has a +)
-    regex_phone = r"^\d{7,15}$" 
-    return phone if re.match(regex_phone, phone) else ""
 
+    phone = ''.join(char for char in phone if char.isalnum())
+
+    phone = phone.strip()  # Remove leading/trailing spaces
+    phone = str(phone)        
+    phone = str(phone)        
+
+    return phone if re.match(regex_phone, phone) else ""
+    
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
     empty_line = f"| {' ' * (len(msg_blurb))} |"
@@ -281,43 +286,81 @@ def read_cellebrite(input_xlsx):
 
     case_prompt = case_number_prompt()
 
-
-
 # regex patterns
-    phone1_pattern = r'Phone-Mobile: (\S+)'
-    phone2_pattern = r'Phone-: (\S+)'
-    phone3_pattern = r'Phone-Phone Number: (\S+)'
-    phone4_pattern = r'Phone-Phone: (\S+)'
-    phone5_pattern = r'Phone-General: (\S+)'
-    phone6_pattern = r'Phone-Home: (\S+)'
-    # phone7_pattern = r'User ID-User ID: (\S+)'
-    phone8_pattern = r'User ID-SMS: (\S+)'
-    phone9_pattern = r'User ID-iMessage: (\S+)'
-    phone10_pattern = r'User ID-SMS: (\S+)' # duplicate for future use
-    phone11_pattern = r'Phone 1 - Value(\S+)' # 
+    regex_phone = r'^\d{7,15}$'  # Matches a digit-only number between 7 and 15 digits
 
+    AKA_patterns = [
+        r'User ID-Additional Name: (\S+)',
+        r'User ID-Push Name: (\S+)',
+        r'User ID-User Name: (\S+)'
+    ]
 
-    email1_pattern = r'Email-: (\S+)'
-    email2_pattern = r'Email-Email Address: (\S+)'
-    email3_pattern = r'Email-General: (\S+)'
+    email_patterns = [
+        r'Email-:\s*(\S+)',
+        r'Email-email:\s*(\S+)',  
+        r'Email-Email:\s*(\S+)', 
+        r'Email-General:\s*(\S+)', 
+        r'Email-Home:\s*(\S+)', 
+        r'Email-iCloud:\s*(\S+)',
+        r'Email-Email Address:\s*(\S+)',        
+        r'Email-Professional:\s*(\S+)',
+        r'Email-Work:\s*(\S+)', 
+        r'Email-General:\s*(\S+)'
+    ]
 
-    dob1_pattern = r'User ID-Birthday: (\S+)'
-    alias1_pattern = r'User ID-Additional Name: (\S+)'
-    alias2_pattern = r'User ID-Push Name: (\S+)'
-    alias3_pattern = r'User ID-User Name: (\S+)'
+    dob_patterns = [
+        r'-Birthday:\s*(\S+)',
+        r'User ID-Birthday:s*(\S+)'
+    ]
 
-    user1_pattern = r'User ID-WhatsApp User Id: (\S+)'
-    user2_pattern = r'User ID-Id: (\S+)'
-    user3_pattern = r'User ID-Username: (\S+)'    
-    user4_pattern = r'User ID-WeChat ID: (\S+)'    
-    user5_pattern = r'User ID-Facebook Id: (\S+)'    # test
+    misc_patterns = [
+        r'User ID-Identifier: (\S+)',
+        r'User ID-Instagram Id: (\S+)'
+    ]
+  
+    user5_pattern = r'User ID-Facebook Id:\s*([^\s]+)'    # test
 
-    url1_pattern = r'Profile Picture-: (\S+)'
-    url2_pattern = r'User ID-Tango ID: (\S+)'
+    user_patterns = [
+        r'User ID-iMessage:\s*(.+)',
+        r'User ID-WhatsApp User Id:\s*(\S+)',
+        r'User ID-Id:\s*(\S+)', 
+        r'User ID-Username:\s*(\S+)',  
+        r'User ID-WeChat ID:\s*(\S+)',   
+        r'User ID-Facebook Id:\s*([^\s]+)',
+        r'User ID-cash tag:\s*([^\s]+)',        
+    ]
 
-    misc1_pattern = r'User ID-Identifier: (\S+)'
-    misc2_pattern = r'User ID-Instagram Id: (\S+)'
+    url_patterns = [
+        r'Profile Picture-:\s*(\S+)',
+        r'User ID-Tango ID:\s*(\S+)',
+        r'Web address-Professional:\s*(\S+)'
+    ]
 
+    phone_patterns = [
+        r'Phone 1 - Value\s*(.+)',
+        r'Phone-\_\$\!<Mobile>\!\$_:\s*(.+)',  # Escaped properly
+        r'Phone-\_\$\!<Home>\!\$_:\s*(.+)',    # Escaped properly
+        r'Phone-\_\$\!<Work>\!\$_:\s*(.+)',
+        r'Phone-:\s*(.+)',
+        # r'phone-:\s*(.+)',        
+        r'Phone-:\s*phone number is\s*(.+)',
+        r'Phone-:\s*Phone:\s*(.+)',
+        r'Phone-CELL:\s*(.+)',        
+        r'Phone-General:\s*(.+)',
+        r'Phone-Home:\s*(.+)',
+        r'Phone-iPhone:\s*(.+)',
+        r'Phone-Mobile:\s*(.+)',
+        r'Phone-mobile:\s*(.+)',        
+        r'Phone-Phone Number:\s*(.+)',
+        r'Phone-Phone:\s*(.+)',
+        r'Phone-Secondary number:\s*(.+)',
+        r'Phone-unknown:\s*(.+)',
+        r'Phone-Viber:\s*(.+)',
+        r'Phone-Work:\s*(.+)',
+        r'User ID-iMessage:\s*(.+)',
+        r'User ID-SMS:\s*(.+)',
+        r'User ID-WhatsApp User Id:\s*(\d+)@s\.whatsapp\.net'
+        ]
 
     # get data rows
     for row in ws.iter_rows(min_row=2, values_only=True):
@@ -335,14 +378,13 @@ def read_cellebrite(input_xlsx):
     global active_sheet_title
     active_sheet_title = active_sheet.title    
 
-
     for row_index, row_data in enumerate(data):
         (fullname, url, phone, email, business, misc) = ('', '', '', '', '', '')
         (lastname, firstname, snippet) = ('', '', '')
         (Time, time_orig, timezone) = ('', '', '')
         (ranking, source_file, original_file) = (f'4 - {datatype}', '', '')
         (fulladdress , note, info, source, user, query) = ('', '', '', '', '', '')
-        (aka, DOB, otheremails, titleurl, dnsdomain, country) = ('', '', '', '', '', '')
+        (AKA, DOB, otheremails, titleurl, dnsdomain, country) = ('', '', '', '', '', '')
         (Latitude, Longitude, Coordinate, fulladdress2, state, Time) = ('', '', '', '', '', '')
         (From, to, cc, bcc, subject, body) = ('', '', '', '', '', '')
         (status, priority, attachment, Altitude, receiver, Sender) = ('', '', '', '', '', '')
@@ -351,7 +393,6 @@ def read_cellebrite(input_xlsx):
 # fullname        
         ## replace all None values with '' 
         fullname = row_data.get("Name")
-        
 
         if fullname is None or fullname == 'None':
             fullname = ''
@@ -364,7 +405,6 @@ def read_cellebrite(input_xlsx):
             fullname = ''
         else:
             fullname = str(fullname)
-
 
         if fullname == '':
             fullname = row_data.get("Partner Name")
@@ -439,6 +479,9 @@ def read_cellebrite(input_xlsx):
         ## replace all None values with '' 
         
         info = row_data.get("Entries")
+
+        
+        
         info2 = row_data.get("Body")
         if info is None:
             info = ''
@@ -448,6 +491,12 @@ def read_cellebrite(input_xlsx):
             info2 = row_data.get("Message")
             if info2 is None:
                 info2 = ''
+        
+        # info = info.replace('\n', ' ')   # test This breaks any entry with a space in it
+        # cleaned_info = info.replace('\n', ' ')  # test
+        cleaned_info = info.replace('\n', ' ')  # .replace('\r', '')
+
+
 
         if "marlboro" in info2.lower() or "menthol" in info2.lower():
             note = "Cigarette"
@@ -456,76 +505,21 @@ def read_cellebrite(input_xlsx):
         elif "parliament" in info2.lower() or "newport" in info2.lower():
             note = "Cigarette"
 
-
-        # Use regular expressions to find matches
-        phone1_match = re.search(phone1_pattern, info)
-        phone2_match = re.search(phone2_pattern, info)
-        phone3_match = re.search(phone3_pattern, info)
-        phone4_match = re.search(phone4_pattern, info)
-        phone5_match = re.search(phone5_pattern, info)
-        phone6_match = re.search(phone6_pattern, info)
-        # phone7_match = re.search(phone7_pattern, info)
-        phone8_match = re.search(phone8_pattern, info)
-        phone9_match = re.search(phone9_pattern, info)
-        phone10_match = re.search(phone10_pattern, info)
-
-
-        email1_match = re.search(email1_pattern, info)
-        email2_match = re.search(email2_pattern, info)
-        email3_match = re.search(email3_pattern, info)        
-        
-        dob1_match = re.search(dob1_pattern, info)
-        alias1_match = re.search(alias1_pattern, info)
-        alias2_match = re.search(alias2_pattern, info)
-        alias3_match = re.search(alias3_pattern, info)
-        misc1_match = re.search(misc1_pattern, info)
-        misc2_match = re.search(misc2_pattern, info)
-
-        user1_match = re.search(user1_pattern, info)
-        user2_match = re.search(user2_pattern, info)
-        user3_match = re.search(user3_pattern, info)
-        user4_match = re.search(user4_pattern, info)
         user5_match = re.search(user5_pattern, info)
+        user5_match = re.search(user5_pattern, info.replace('\n', ' '))
+        user5_match = re.search(user5_pattern, cleaned_info)
+        
+        # url1_match = re.search(url1_pattern, info)
+        # url2_match = re.search(url2_pattern, info)
 
-        url1_match = re.search(url1_pattern, info)
-        url2_match = re.search(url2_pattern, info)
-
-
-        # Extract the values if matches are found
-        phone1 = phone1_match.group(1) if phone1_match else None
-        phone2 = phone2_match.group(1) if phone2_match else None
-        phone3 = phone3_match.group(1) if phone3_match else None
-        phone4 = phone4_match.group(1) if phone4_match else None
-        phone5 = phone5_match.group(1) if phone5_match else None
-        phone6 = phone6_match.group(1) if phone6_match else None
-        # phone7 = phone7_match.group(1) if phone7_match else None
-        phone8 = phone8_match.group(1) if phone8_match else None
-        phone9 = phone9_match.group(1) if phone9_match else None
-        phone10 = phone10_match.group(1) if phone10_match else None
-
-        email1 = email1_match.group(1) if email1_match else None
-        email2 = email2_match.group(1) if email2_match else None
-        email3 = email3_match.group(1) if email3_match else None
-
-        dob1 = dob1_match.group(1) if dob1_match else None
-
-        alias1 = alias1_match.group(1) if alias1_match else None
-        alias2 = alias2_match.group(1) if alias2_match else None
-        alias3 = alias3_match.group(1) if alias3_match else None
-
-        misc1 = misc1_match.group(1) if misc1_match else None
-        misc2 = misc2_match.group(1) if misc2_match else None
-
-        user1 = user1_match.group(1) if user1_match else None
-        user2 = user2_match.group(1) if user2_match else None
-        user3 = user3_match.group(1) if user3_match else None
-        user4 = user4_match.group(1) if user4_match else None
         user5 = user5_match.group(1) if user5_match else None
-
-        url1 = url1_match.group(1) if url1_match else None
-        url2 = url2_match.group(1) if url2_match else None
+        # url1 = url1_match.group(1) if url1_match else None
+        # url2 = url2_match.group(1) if url2_match else None
 
 # body  
+        infotemp = info #test
+
+        
         if info == "" and info2 != "":
             info = info2
             ranking == "3 - Chats"
@@ -587,45 +581,6 @@ def read_cellebrite(input_xlsx):
                             Longitude == ''  
         
 # phone
-        if phone1 is not None:
-            phone = (f'{phone}\n{phone1}')
-        elif phone2 is not None:
-            phone = (f'{phone}\n{phone2}')
-        elif phone3 is not None:
-            phone = (f'{phone}\n{phone3}')
-        elif phone4 is not None:
-            phone = (f'{phone}\n{phone4}')
-        elif phone5 is not None:
-            phone = (f'{phone}\n{phone5}')
-        elif phone6 is not None:
-            phone = (f'{phone}\n{phone6}')
-        # elif phone7 is not None:
-            # phone = (f'{phone}\n{phone7}')            
-        elif phone8 is not None:
-            phone = (f'{phone}\n{phone8}')            
-        elif phone9 is not None:
-            phone = (f'{phone}\n{phone9}')            
-        elif phone10 is not None:
-            phone = (f'{phone}\n{phone10}')            
-        # elif phone11 is not None:
-            # phone = (f'{phone}\n{phone11}')   
-
-                          
-        if phone is None:  
-            phone = ''
-        
-            
-
-        phone = phone.replace(' ','').replace('+','')
-        phone = ''.join(char for char in phone if char.isalnum())
-        if len(phone) >= 7:
-            phone = phone   
-        else:
-            phone = ''
-
-        phone = phone.replace('-', '')
-
-
         if phone == '':
             phone = row_data.get("Phone Number(s)")
             if phone is None:
@@ -654,24 +609,36 @@ def read_cellebrite(input_xlsx):
                 phone = row_data.get("Mobile Phone")
                 if phone is None:
                     phone = ''
-                
-                phone = str(phone)
+
+            found_phones = set()  # Using a set ensures uniqueness
+            for pat in phone_patterns:
+                matches = re.findall(pat, info, re.MULTILINE)
+                for phone in matches:
+                    if phone not in found_phones:
+                        found_phones.add(phone)
+
+            # Convert back to string with one phone number per line
+            phone = '\n'.join(found_phones)
+          
+            if phone is None:  
+                phone = '' 
+ 
+            phone = str(phone)
 
 
 
 # email
-        if email1 is not None:
-            email = (f'{email}\n{email1}')
-        elif email2 is not None:
-            email = (f'{email}\n{email2}')
-        elif email3 is not None:
-            email = (f'{email}\n{email3}')            
-        email = email.strip()
+        email_matches = []
+        for pat in email_patterns:
+            email_match = re.search(pat, info)
+            if email_match:
+                email_matches.append(email_match.group(1))
 
-        if email == '':
-            email = row_data.get("Email(s)")
-            if email is None:
-                email = ''
+        email = '\n'.join(email_matches)
+        email = email.strip()        
+        
+        if email is None:  
+            email = ''
 
 
 # Parties        
@@ -763,27 +730,89 @@ def read_cellebrite(input_xlsx):
                 Latitude == ''
                 Longitude == ''  
 
+
                 
+# ranking
+        ranking2 = row_data.get("Service Type")
+        
+        if ranking2 is None:
+            ranking = (f'{ranking} - {ranking2}')
+            ranking = ranking.replace("4 -", "3 -")
+
+        if ranking is None:
+            ranking = ''
+        ranking = ranking.replace(" - None ", "")
+
+
+# source
+        source = row_data.get("Source")
+        if source is None:
+            source = ''
+        elif ranking2 is not None:
+            ranking = (f'{ranking} - {ranking2}')
+            ranking = ranking.replace("4 -", "3 -")
+        else:
+            ranking = (f'{ranking} - {source}')
+   
+        if " - None" in ranking:
+            ranking = ranking.replace(' - None', '')  
+ 
             
 # user
-        if user1 is not None:
-            if "@s.whatsapp.net" in user1 and phone == '':
-                otheremails = user1
-                phone = user1.replace("@s.whatsapp.net","")
-            else:
-                user = (f'{user}\n{user1}')
-        elif user2 is not None:
-            user = (f'{user}\n{user2}')
-        elif user3 is not None:
-            user = (f'{user}\n{user3}')
-        elif user4 is not None:
-            user = (f'{user}\n{user4}')            
-        elif user5 is not None:
-            user = (f'{user}\n{user5}')  
+
+        found_users = set()  # Using a set ensures uniqueness
+        for pat in user_patterns:
+            matches = re.findall(pat, info, re.MULTILINE)
+            for user in matches:
+                # if user not in found_users and user != '_' and user != '.':
+                if len(user) > 2 and user not in {'_', '.'} and user not in found_users:
+
+                    found_users.add(user)
+
+        # Convert back to string with one user number per line
+        user = '\n'.join(found_users)
+          
+        if user is None:  
+            user = '' 
+ 
+        user = str(user)
+           
+        if user5 is not None:
             url = (f'https://facebook.com/{user5}')
-        user = user.strip()
-        if user is None or user == "None":
-            user = ''
+        elif 'Cash App' in source and user != '':
+            url = (f'https://cash.app/{user}')
+        elif 'Instagram' in ranking:
+            url = (f'https://www.Instagram.com/{user}/')
+            
+        # elif 'Signal' in source and user != '':
+            # url = (f'https://www.signal.com/people/{user} ')
+            # print(f'url = {url}')   # temp                           
+
+        elif 'Snapchat' in source and user != '':
+            url = (f'https://www.snapchat.com/add/{user}?')
+        elif 'Telegram' in source and user != '':
+            url = (f'https://t.me/{user}/')
+
+        elif 'Threads' in source and user != '':
+            url = (f'https://www.threads.net/@{user}')
+
+        elif 'TikTok' in ranking:
+            url = (f'https://www.tiktok.com/@{user}')
+            
+        elif 'Twitter' in source and user != '':
+            url = (f'https://x.com/{user}')
+        elif 'Venmo' in source and user != '':
+            url = (f'https://account.venmo.com/u/{user}')
+        # elif 'WhatsApp' in source and any(char.isdigit() for char in phone):
+            # phone = clean_phone(phone)
+            # url = (f'https://wa.me/{phone}')
+            # print(f'url = {url}')   # temp              
+
+
+
+
+
+
 
 # username
         username = row_data.get("Username")
@@ -795,11 +824,25 @@ def read_cellebrite(input_xlsx):
             user = username.strip('')
 
 # url
-        if url1 is not None:
-            url = (f'{url}\n{url1}')
-        if url2 is not None:
-            url = (f'https://www.tango.me/stream/{url2}')
-        if url is None or url == "None":
+        url_matches = []
+        for pat in url_patterns:
+            url_match = re.search(pat, info)
+            if url_match:
+                print(f'url_match') # temp
+                url_matches.append(url_match.group(1))
+
+        url2 = '\n'.join(url_matches)
+        if url2:
+            url = f"{url}\n{url2}"
+            print(f'url = {url}')   # temp
+
+        # if url2 != '':
+            # print(f'url = {url2}')  # temp
+        # if url1 is not None:
+            # url = (f'{url}\n{url1}')
+        # if url2 is not None:
+            # url = (f'https://www.tango.me/stream/{url2}')
+        if not url or url.strip().lower() == "none":
             url = ''
 
         url = url.strip()
@@ -816,27 +859,32 @@ def read_cellebrite(input_xlsx):
                 url = (f'https://www.facebook.com/{misc}/')
                 
 # DOB
-        if dob1 is not None:
-            DOB = (f'{email}\n{dob1}')
+        dob_matches = []
+        for pat in dob_patterns:
+            dob_match = re.search(pat, info)
+            if dob_match:
+                dob_matches.append(dob_match.group(1))
+        DOB = '\n'.join(dob_matches)
         DOB = DOB.strip('')
 
-# aka
-        if alias1 is not None:
-            aka = (f'{aka}\n{alias1}')
-        elif alias2 is not None:
-            aka = (f'{aka}\n{alias2}')
-        elif alias3 is not None:
-            aka = (f'{aka}\n{alias3}')
-        aka = aka.strip('')
+# AKA
+        AKA_matches = []
+        for pat in AKA_patterns:
+            AKA_match = re.search(pat, info)
+            if AKA_match:
+                AKA_matches.append(AKA_match.group(1))
+        AKA = '\n'.join(AKA_matches)
+        AKA = AKA.strip('')
 
 # misc
+        misc_matches = []
+        for pat in misc_patterns:
+            misc_match = re.search(pat, info)
+            if misc_match:
+                misc_matches.append(misc_match.group(1))
 
-        if misc1 is not None:
-            misc = (f'{misc}\n{misc1}')
-        # elif misc2 is not None:
-            # misc = (f'{misc}\n{misc2}')
-        # misc = misc.strip()
-        # if email == '' and "@" in misc:
+        misc = '\n'.join(misc_matches)
+
         if misc is not None and "@" in misc:
             email = misc   
             misc = ''
@@ -857,6 +905,7 @@ def read_cellebrite(input_xlsx):
         if misc == '' and misc3 != "":
             misc = misc3
         misc = misc.replace(' _x000D_', '').strip() #test
+
 
         if Sender == '':
             Sender = row_data.get("From")
@@ -1119,30 +1168,8 @@ STATUS:{status}
                 tag = "Important"
             elif "Review" in tag:
                 tag = "Review"  
-                
-# ranking
-        ranking2 = row_data.get("Service Type")
 
-        if ranking2 is None:
-            ranking = (f'{ranking} - {ranking2}')
-            ranking = ranking.replace("4 -", "3 -")
-
-        if ranking is None:
-            ranking = ''
-        ranking = ranking.replace(" - None ", "")
-
-# source
-        source = row_data.get("Source")
-        if source is None:
-            source = ''
-        elif ranking2 is not None:
-            ranking = (f'{ranking} - {ranking2}')
-            ranking = ranking.replace("4 -", "3 -")
-        else:
-            ranking = (f'{ranking} - {source}')
-   
-        if " - None" in ranking:
-            ranking = ranking.replace(' - None', '')    
+  
 
 # source file
         source_file = row_data.get("Source file information")
@@ -1307,21 +1334,23 @@ STATUS:{status}
         if Coordinate == 'None,None':
             Coordinate == ''
 
-        if phone.startswith('+'):
-            phone = phone.replace('+', '')
-        if phone.startswith('1'):
-            phone = phone[1:]
-                    
-        # phone cleanup
-        phone = clean_phone(phone)
+        cleaned_phones = ""
+
+        for line in phone.splitlines():
+            cleaned = clean_phone(line)
+            if cleaned:
+                cleaned_phones += cleaned + "\n"
+
+        # Optionally strip the trailing newline
+        phone = cleaned_phones.strip()
 
 # cleanup cells # test
         fullname = clean_data(fullname)
-        phone = clean_data(phone)
+        # phone = clean_data(phone)
         email = clean_data(email)
         business = clean_data(business)
         fulladdress = clean_data(fulladdress)
-        aka = clean_data(aka)
+        AKA = clean_data(AKA)
         tag = clean_data(tag)
 
 # write rows to data
@@ -1338,7 +1367,7 @@ STATUS:{status}
         row_data["note"] = note
         row_data["info"] = info # interaction status
         row_data["DOB"] = DOB
-        row_data["aka"] = aka        
+        row_data["AKA"] = AKA        
         row_data["misc"] = misc  
         row_data["lastname"] = lastname          
         row_data["firstname"] = firstname   
@@ -1537,6 +1566,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+1.1.1 - fixed regex for aka, misc, phone, user, email, dob, url
 1.0.7 - Fixed phone numbers (was removing any 1's from phone numbers. (oops)
 1.0.5 - asks for case number
 1.0.4 - left strip 1 off phone numbers for uniformity.
@@ -1545,8 +1575,17 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+if tik tok and user, create a url
+info needs to have new lines so things like phone regex need to be done in a for loop by line
+if phone = '' and misc is a phone number: phone = misc
+AKA needs work
+skip case sensative regex, for phone at least
+if user = 'facebookuser': user = ''
+
+
 if instagram id found create a url
 Icon, type_data and origin update
+
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
