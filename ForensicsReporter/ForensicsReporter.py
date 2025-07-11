@@ -232,11 +232,8 @@ def banner_print():
     print(f"{color_blue}{art}{color_reset}")
 
 def convert_timestamp(timestamp, time_orig=None, timezone=None):
-    if timezone is None:
-        timezone = ''
-    if time_orig is None:
-        time_orig = timestamp
-
+    timezone = timezone or ''
+    time_orig = time_orig or timestamp
     timestamp = str(timestamp)
 
     # Regular expression to find the timezone
