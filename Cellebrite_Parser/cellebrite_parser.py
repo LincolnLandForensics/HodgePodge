@@ -58,7 +58,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert Cellebrite contacts, account, web history, chats and call exports to intel format"
-version = '1.1.1'
+version = '1.1.3'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -148,12 +148,9 @@ def clean_data(item):
 
 
 def convert_timestamp(timestamp, time_orig, timezone):
-    if timezone is None:
-        timezone = ''
-    if time_orig is None:
-        time_orig = ''
-
-    timestamp = str(timestamp)
+    timezone = timezone or ''
+    time_orig = time_orig or ''
+    timestamp = str(timestamp).strip()
 
     # Regular expression to find all timezones
     timezone_pattern = r"([A-Za-z ]+)$"
@@ -248,10 +245,19 @@ def clean_phone(phone):
 
     phone = phone.strip()  # Remove leading/trailing spaces
     phone = str(phone)        
-    phone = str(phone)        
 
     return phone if re.match(regex_phone, phone) else ""
-    
+
+
+def dedupe(value):
+    '''
+    Read each line in the value, remove duplicate lines, and return a cleaned string.
+    '''
+    lines = value.strip().splitlines()
+    unique_lines = list(dict.fromkeys(line.strip() for line in lines if line.strip()))
+    return '\n'.join(unique_lines)
+
+
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
     empty_line = f"| {' ' * (len(msg_blurb))} |"
@@ -290,9 +296,9 @@ def read_cellebrite(input_xlsx):
     regex_phone = r'^\d{7,15}$'  # Matches a digit-only number between 7 and 15 digits
 
     AKA_patterns = [
-        r'User ID-Additional Name: (\S+)',
-        r'User ID-Push Name: (\S+)',
-        r'User ID-User Name: (\S+)'
+        r'User ID-Additional Name:\s*(\S+)',
+        r'User ID-Push Name:\s*(\S+)',
+        r'User ID-User Name:\s*(\S+)'
     ]
 
     email_patterns = [
@@ -301,6 +307,7 @@ def read_cellebrite(input_xlsx):
         r'Email-Email:\s*(\S+)', 
         r'Email-General:\s*(\S+)', 
         r'Email-Home:\s*(\S+)', 
+        r'Email-HOME:\s*(\S+)',    
         r'Email-iCloud:\s*(\S+)',
         r'Email-Email Address:\s*(\S+)',        
         r'Email-Professional:\s*(\S+)',
@@ -348,6 +355,7 @@ def read_cellebrite(input_xlsx):
         r'Phone-CELL:\s*(.+)',        
         r'Phone-General:\s*(.+)',
         r'Phone-Home:\s*(.+)',
+        r'Phone-HOME:\s*(.+)',        
         r'Phone-iPhone:\s*(.+)',
         r'Phone-Mobile:\s*(.+)',
         r'Phone-mobile:\s*(.+)',        
@@ -355,10 +363,12 @@ def read_cellebrite(input_xlsx):
         r'Phone-Phone:\s*(.+)',
         r'Phone-Secondary number:\s*(.+)',
         r'Phone-unknown:\s*(.+)',
+        r'User ID-Additional Name:\s*(.+)',  # test      # duplicates
         r'Phone-Viber:\s*(.+)',
         r'Phone-Work:\s*(.+)',
         r'User ID-iMessage:\s*(.+)',
         r'User ID-SMS:\s*(.+)',
+        r'User ID-User ID:\s*(.+)',         # test 
         r'User ID-WhatsApp User Id:\s*(\d+)@s\.whatsapp\.net'
         ]
 
@@ -391,78 +401,53 @@ def read_cellebrite(input_xlsx):
         (city, state, country, case, Direction) = ('', '', '', '', '')
         
 # fullname        
-        ## replace all None values with '' 
-        fullname = row_data.get("Name")
+        fullname = row_data.get("Name") or ''
 
-        if fullname is None or fullname == 'None':
+        if fullname == 'None':
             fullname = ''
-
-            
         elif isinstance(fullname, str) and fullname.startswith('+'):
-        # elif fullname.startswith('+'): 
             fullname = fullname.replace('+', '')
-            phone = (f'{phone}\n{fullname}')    # task
+            phone = f'{phone}\n{fullname}'  # task
             fullname = ''
         else:
             fullname = str(fullname)
 
-        if fullname == '':
-            fullname = row_data.get("Partner Name")
-            if fullname is None:
-                fullname = ''
+        # Sequential fallback logic
+        if not fullname:
+            fullname = row_data.get("Partner Name") or ''
 
+        if not fullname:
+            fullname = row_data.get("fullname") or ''
+            
 # lastname
-        lastname = row_data.get("Last Name")
-        if lastname is None:
-            lastname = ''
-
+        lastname = row_data.get("Last Name") or ''
+        
 # firstname
-        firstname = row_data.get("First Name")
-        if firstname is None:
-            firstname = ''
+        firstname = row_data.get("First Name") or ''
 
 # middlename
-        middlename = row_data.get("Middle Name")
-        if middlename is None:
-            middlename = ''
+        middlename = row_data.get("Middle Name") or ''
 
-# case    
-        if case == '':
-            case = row_data.get("case")
-        if case is None:
-            case = ''
-        if case == '':
-            case = case_prompt         
-
+# case  
+        case = case or row_data.get("case") or case_prompt or ''  
 
 # url   
-        url = row_data.get("URL")
-        if url is None:
-            url = ''        
-    
-        if url == '':
-            url = row_data.get("Website")   # axiom
-            if url is None:
-                url = ''            
-
+        url = row_data.get("URL") or row_data.get("Website") or ''
 
 
 # title
-        title = row_data.get("Title")
-        if title is None:
-            title = ''
-        else:
-            # (ranking) = ('4 - Chats')
+        title = row_data.get("Title") or ''
+
+        if title:
             titleurl = title
-            Time = row_data.get("Last Visited-Time")
-            
-            if Time is None:
-                Time = ''
+            Time = row_data.get("Last Visited-Time") or ''
+    
+
             
         if url is None:
             url = ''
         else:
-        
+            
             dnsdomain = re.compile(r":\/\/(.*?)\/")
 
             pattern = re.compile(r":\/\/(.*?)\/")
@@ -470,51 +455,42 @@ def read_cellebrite(input_xlsx):
 
             if dnsdomain:
                 dnsdomain = dnsdomain.group(1)
-                # ranking = ("4 - WebHistory")    
+ 
 
 
 
 
 # info        
-        ## replace all None values with '' 
+     
+        info = row_data.get("Entries") or row_data.get("Entry") or ''
+        info2 = row_data.get("Body") or row_data.get("Message") or ''
+        entry2 = row_data.get("Entry (2)") or ''
+        entry3 = row_data.get("Entry (3)") or ''        
         
-        info = row_data.get("Entries")
 
-        
-        
-        info2 = row_data.get("Body")
-        if info is None:
-            info = ''
-        if info2 is None:
-            info2 = ''
-        if info2 == '':
-            info2 = row_data.get("Message")
-            if info2 is None:
-                info2 = ''
-        
-        # info = info.replace('\n', ' ')   # test This breaks any entry with a space in it
-        # cleaned_info = info.replace('\n', ' ')  # test
+
+        if entry2:
+            info += '\n' + entry2
+        if entry3:
+            info += '\n' + entry3
+
+        info = (info or '').strip()
+       
+
         cleaned_info = info.replace('\n', ' ')  # .replace('\r', '')
-
-
 
         if "marlboro" in info2.lower() or "menthol" in info2.lower():
             note = "Cigarette"
-        # elif "menthol" in info2.lower():
-            # note = "Cigarette"
+
         elif "parliament" in info2.lower() or "newport" in info2.lower():
             note = "Cigarette"
 
         user5_match = re.search(user5_pattern, info)
         user5_match = re.search(user5_pattern, info.replace('\n', ' '))
         user5_match = re.search(user5_pattern, cleaned_info)
-        
-        # url1_match = re.search(url1_pattern, info)
-        # url2_match = re.search(url2_pattern, info)
 
         user5 = user5_match.group(1) if user5_match else None
-        # url1 = url1_match.group(1) if url1_match else None
-        # url2 = url2_match.group(1) if url2_match else None
+
 
 # body  
         infotemp = info #test
@@ -523,9 +499,8 @@ def read_cellebrite(input_xlsx):
         if info == "" and info2 != "":
             info = info2
             ranking == "3 - Chats"
-            Time = row_data.get("Timestamp: Time")
-            if Time is None:
-                Time = ''
+            Time = (row_data.get("Timestamp: Time") or '').strip()
+
             if info.startswith("http"):
                 url = info
 
@@ -547,7 +522,6 @@ def read_cellebrite(input_xlsx):
                 
                 # Extract GPS coordinates
                 if "google.com/maps" in url:
-                    print(f'map = {url}')   # temp
                     # Define a regular expression pattern to extract coordinates
                     patternMaps2 = re.compile(r'@([-+]?\d{1,2}\.\d+),([-+]?\d{1,3}\.\d+)')
                     # Search for the pattern in the URL
@@ -557,16 +531,11 @@ def read_cellebrite(input_xlsx):
                         note = (f'map,{note}')
                         Latitude = float(matchMaps2.group(1))
                         Longitude = float(matchMaps2.group(2))
-                        if Latitude is None:
-                            Latitude == ''
-                        if Longitude is None:
-                            Longitude == ''    
-                            
+                        Latitude = Latitude or ''
+                        Longitude = Longitude or ''
+ 
                         Coordinate = (f'{Latitude},{Longitude}')
-                        # print(f"Latitude: {Latitude}")  # temp
-                        # print(f"Longitude: {Longitude}")    # temp
-    
-    
+
                 elif "maps.apple.com" in url:
                     note = (f'map,{note}')
                     Coordinate = parse_qs(parsed_url.query).get('ll', [''])[0]
@@ -575,111 +544,85 @@ def read_cellebrite(input_xlsx):
                         Coordinate == ''
                     if "," in Coordinate:
                         Latitude, Longitude = map(str, Coordinate.split(','))
-                        if Latitude is None:
-                            Latitude == ''
-                        if Longitude is None:
-                            Longitude == ''  
+                        Latitude = Latitude or ''
+                        Longitude = Longitude or ''
         
 # phone
-        if phone == '':
-            phone = row_data.get("Phone Number(s)")
-            if phone is None:
-                phone = ''
-            if phone == '':
-                phone = row_data.get("_ChatId")
-                if phone is None:
-                    phone = ''
-                else:
-                    type_data = 'Chat'
-            if phone is None:
-                phone = ''
-            if phone == '':
-                phone = row_data.get("Partners")
-                if phone is None:
-                    phone = ''
-                else:
-                    type_data = 'Calls'
-            if phone == '':
-                phone = row_data.get("Phone 1 - Value")
-                if phone is None:
-                    phone = ''
-                
-                phone = str(phone)
-            if phone == '':
-                phone = row_data.get("Mobile Phone")
-                if phone is None:
-                    phone = ''
+        # Define fallback keys in order of priority
+        fallback_keys = [
+            "Phone Number(s)",
+            "_ChatId",
+            "Partners",
+            "Phone 1 - Value",
+            "Mobile Phone",
+            "Phone"
+        ]
 
-            found_phones = set()  # Using a set ensures uniqueness
-            for pat in phone_patterns:
-                matches = re.findall(pat, info, re.MULTILINE)
-                for phone in matches:
-                    if phone not in found_phones:
-                        found_phones.add(phone)
+        phone = row_data.get("phone") or ''
 
-            # Convert back to string with one phone number per line
-            phone = '\n'.join(found_phones)
-          
-            if phone is None:  
-                phone = '' 
- 
-            phone = str(phone)
+        # Go through fallback keys only if phone is still empty
+        for key in fallback_keys:
+            if not phone:
+                candidate = row_data.get(key)
+                if candidate:
+                    phone = str(candidate)
+                    if key == "_ChatId":
+                        type_data = 'Chat'
+                    elif key == "Partners":
+                        type_data = 'Calls'
+                            
+                    found_phones = set()  # Using a set ensures uniqueness
+                    for pat in phone_patterns:
+                        matches = re.findall(pat, info, re.MULTILINE)
+                        for phone in matches:
+                            if phone not in found_phones:
+                                found_phones.add(phone)
 
-
+                    # Convert back to string with one phone number per line
+                    phone = '\n'.join(found_phones)
+                  
+                    phone = (row_data.get("phone") or '').strip()
 
 # email
+        email = row_data.get("email") or ''
         email_matches = []
-        for pat in email_patterns:
-            email_match = re.search(pat, info)
-            if email_match:
-                email_matches.append(email_match.group(1))
+        if email == '':
+            for pat in email_patterns:
+                email_match = re.search(pat, info)
+                if email_match:
+                    email_matches.append(email_match.group(1))
 
-        email = '\n'.join(email_matches)
-        email = email.strip()        
-        
-        if email is None:  
-            email = ''
+            # Combine all matched emails into a single string
+            email = '\n'.join(email_matches).strip()
 
 
 # Parties        
-        Parties = row_data.get("Parties")
-        if Parties is None:
-            Parties = ''
-        else:
-            misc = row_data.get("Time")
-            if misc is None:
-                misc = ''            
+        Parties = row_data.get("Parties") or ''
+        misc = row_data.get("Time") or '' if Parties else ''
             
-            info = (f'{row_data.get("Direction")} {row_data.get("Status")} {row_data.get("Duration")}')
-            Parties = Parties.replace('From:  ', '').replace('To:  ', '').lstrip('+')
-            if " " in Parties:
-                Parties = Parties.split(' ', 1)
+        info = (f'{row_data.get("Direction")} {row_data.get("Status")} {row_data.get("Duration")}')
+        if info == 'None None None':
+            info = ''
+        Parties = Parties.replace('From:  ', '').replace('To:  ', '').lstrip('+')
+        if " " in Parties:
+            Parties = Parties.split(' ', 1)
                 
-                if "@" in Parties[0]:
-                    email = Parties[0]
-                elif ":" in Parties[0]:
-                    user = Parties[0]
-                else:
-                    phone = Parties[0]
-                if fullname == '':
-                    fullname = Parties[1]
+            if "@" in Parties[0]:
+                email = Parties[0]
+            elif ":" in Parties[0]:
+                user = Parties[0]
+            else:
+                phone = Parties[0]
+            if fullname == '':
+                fullname = Parties[1]
 
 
 # Direction 
-        if Direction == '':
-            Direction = row_data.get("Direction")
-            if Direction is None:
-                Direction = ''
-        elif Direction == '':
-            Direction = row_data.get("ns2:course")
-            if Direction is None:
-                Direction = ''
+        Direction = Direction or row_data.get("Direction") or row_data.get("ns2:course") or ''
                 
 # Position        
-        Position = row_data.get("Position")
-        if Position is None:
-            Position = ''         
-        
+        Position = (row_data.get("Position") or '').strip()
+
         try:
             Position = Position.replace(' ', '')
         except Exception as e:
@@ -692,7 +635,6 @@ def read_cellebrite(input_xlsx):
             Position = str(Position)
             Coordinate = Position
             if 'None' in Coordinate:
-                # print(f'bobs your uncle')   # temp
                 Coordinate == ''
             
             
@@ -702,19 +644,13 @@ def read_cellebrite(input_xlsx):
             Longitude= Position[1]
             # print(f'Latitude {Latitude}') # temp
 
-        if Latitude is None or Latitude == '':
-            Latitude = row_data.get("Latitude")
-            Longitude = row_data.get("Longitude")
-            if Latitude is None:
-                Latitude == ''
-                Longitude == ''
+        if not Latitude:
+            Latitude = row_data.get("Latitude") or ''
+            Longitude = row_data.get("Longitude") or ''
 
-        if Latitude is None or Latitude == '':
-            Latitude = row_data.get("Destination Latitude")
-            Longitude = row_data.get("Destination Longitude")
-            if Latitude is None:
-                Latitude == ''
-                Longitude == ''            
+        if not Latitude:
+            Latitude = (row_data.get("Destination Latitude") or '').strip()
+            Longitude = (row_data.get("Destination Longitude") or '').strip()
 
         if Latitude is None or Latitude == '':
             Latitude = row_data.get("Destination Latitude")
@@ -734,15 +670,12 @@ def read_cellebrite(input_xlsx):
                 
 # ranking
         ranking2 = row_data.get("Service Type")
-        
-        if ranking2 is None:
-            ranking = (f'{ranking} - {ranking2}')
+        if ranking2:
+            ranking = f"{ranking} - {ranking2}"
             ranking = ranking.replace("4 -", "3 -")
 
-        if ranking is None:
-            ranking = ''
-        ranking = ranking.replace(" - None ", "")
-
+        ranking = ranking or ''
+        ranking = ranking.replace(" - None", "").strip()
 
 # source
         source = row_data.get("Source")
@@ -759,6 +692,7 @@ def read_cellebrite(input_xlsx):
  
             
 # user
+        user = row_data.get("user") or ''
 
         found_users = set()  # Using a set ensures uniqueness
         for pat in user_patterns:
@@ -770,23 +704,17 @@ def read_cellebrite(input_xlsx):
                     found_users.add(user)
 
         # Convert back to string with one user number per line
-        user = '\n'.join(found_users)
-          
-        if user is None:  
-            user = '' 
- 
-        user = str(user)
-           
+        if found_users:
+            user = '\n'.join(found_users)
+        user = str(user or '')  
+
+# url           
         if user5 is not None:
             url = (f'https://facebook.com/{user5}')
         elif 'Cash App' in source and user != '':
             url = (f'https://cash.app/{user}')
         elif 'Instagram' in ranking:
             url = (f'https://www.Instagram.com/{user}/')
-            
-        # elif 'Signal' in source and user != '':
-            # url = (f'https://www.signal.com/people/{user} ')
-            # print(f'url = {url}')   # temp                           
 
         elif 'Snapchat' in source and user != '':
             url = (f'https://www.snapchat.com/add/{user}?')
@@ -803,38 +731,29 @@ def read_cellebrite(input_xlsx):
             url = (f'https://x.com/{user}')
         elif 'Venmo' in source and user != '':
             url = (f'https://account.venmo.com/u/{user}')
-        # elif 'WhatsApp' in source and any(char.isdigit() for char in phone):
-            # phone = clean_phone(phone)
-            # url = (f'https://wa.me/{phone}')
-            # print(f'url = {url}')   # temp              
-
-
-
-
-
 
 
 # username
-        username = row_data.get("Username")
-        if username is None  or username == 'local' or username == '.':
+        username = row_data.get("Username") or ''
+
+        if username in ['local', '.']:
             username = ''
-        elif '@' in username:  # and email != "":
-            email = username.strip('')
-        elif user == '':
-            user = username.strip('')
+        elif '@' in username:
+            email = username.strip()
+        elif not user:
+            user = username.strip()
+    
 
 # url
         url_matches = []
         for pat in url_patterns:
             url_match = re.search(pat, info)
             if url_match:
-                print(f'url_match') # temp
                 url_matches.append(url_match.group(1))
 
         url2 = '\n'.join(url_matches)
         if url2:
             url = f"{url}\n{url2}"
-            print(f'url = {url}')   # temp
 
         # if url2 != '':
             # print(f'url = {url2}')  # temp
@@ -848,9 +767,7 @@ def read_cellebrite(input_xlsx):
         url = url.strip()
 
         if active_sheet_title == 'Facebook Messenger Users Contac':
-            misc = row_data.get("User Key")
-            if misc is None:
-                misc = ''
+            misc = (row_data.get("User Key") or '').strip()
             
             Type = 'Intel'
             if username is not None and len(username) >3:
@@ -889,46 +806,32 @@ def read_cellebrite(input_xlsx):
             email = misc   
             misc = ''
         # if phone == '' and misc.startswith("+"):
-        if phone is None:
-            phone = ''
+        phone = phone or ''
         if phone is not None and phone == '' and misc is not None and "+" in misc:
         # if phone == '' and "+" in misc:
             phone = misc   
             phone = phone.replace("+", '')
             misc = ''
 
-        misc3 = row_data.get("Participants")
-        if misc3 is None:
-            misc3 = ''
-        misc3 = misc3.strip('')
+        misc3 = (row_data.get("Participants") or '').strip()
         
         if misc == '' and misc3 != "":
             misc = misc3
         misc = misc.replace(' _x000D_', '').strip() #test
 
+        # Sender
+        Sender = (
+            row_data.get("From") or
+            row_data.get("Sender") or
+            row_data.get("Sender Name") or
+            ''
+        ).strip()
 
-        if Sender == '':
-            Sender = row_data.get("From")
-        if Sender is None:
+        # Normalize Local User or phone-in-Sender formats
+        if Sender.startswith('+') and phone:
+            phone = Sender.replace('+', '').strip()
+        elif Sender.startswith('Local User'):
             Sender = ''
-            
-        if Sender == '':
-            Sender = row_data.get("Sender")
-            if Sender is None:
-                Sender = ''  
-            if Sender.startswith('+') and phone != '':            
-                phone = Sender.replace('+', '')
-                
-            elif Sender.startswith('Local User'):
-                Sender = ''
-                
-                
-        if Sender == '':
-            Sender = row_data.get("Sender Name")
-            if Sender is None:
-                Sender = ''  
-
-        # print(f'Sender2 = {Sender}') # Task
 
         if Sender != '':
             # Split the string by the first space
@@ -945,85 +848,54 @@ def read_cellebrite(input_xlsx):
                     fullname = Sender
 
         if active_sheet_title == 'Facebook Messenger Messages':
-            if fullname == '':
-                fullname = row_data.get("Sender Name")
-                if fullname is None:
-                    fullname = ''  
+            fullname = fullname or row_data.get("Sender Name") or ''
 
 # From, to, cc, bcc, subject, body
 
-            sender_id = row_data.get("Sender ID")
-            if sender_id is None:
-                sender_id == ''
-            if receiver == '':
-                receiver = row_data.get("Receiver Name")
-                if receiver is None:
-                    receiver == ''                
-            if receiver == '':
-                receiver = row_data.get("To")
-                if receiver is None:
-                    receiver == ''
-            if receiver == '':
-                receiver = row_data.get("Recipient(s)")
-                if receiver is None:
-                    receiver == ''
+            sender_id = (row_data.get("Sender ID") or '').strip()
+
+            receiver = receiver or row_data.get("Receiver Name") or ''
+            if not receiver:
+                receiver = row_data.get("To") or ''
+            if not receiver:
+                receiver = row_data.get("Recipient(s)") or ''
                 if receiver.startswith('Local User <'):
                     receiver = ''
-
-            if cc == '':
-                cc = row_data.get("CC")
-                if cc is None:
-                    cc == ''            
-            if bcc == '':
-                
-                bcc = row_data.get("BCC")
-                if bcc is None or bcc == 'None':
-                    bcc == ''   
-                bcc = str(bcc)
-                print(f'bcc = {bcc} bcc type = {type(bcc)}')   # temp
-                
-            if subject == '':
-                subject = row_data.get("Subject")
-                if subject is None:
-                    subject == '' 
-
-            if snippet == '':
-                snippet = row_data.get("Snippet")
-                if snippet is None:
-                    snippet = '' 
-                if snippet == '':
-                    snippet = row_data.get("Text")
-                    if snippet is None:
-                        snippet = ''     
-                if snippet == '':
-                    snippet = row_data.get("Summary")
-                    if snippet is None:
-                        snippet = ''                    
-
-
             
-            if url == '' and sender_id != '':
-                url = (f'https://www.facebook.com/{sender_id}')
-        # print(f'trying to write an email from {Sender} to {receiver}')    # temp
-        if receiver != '' and Sender != '':
-            print(f'trying to write an email from {Sender}')    # temp
-        # if email != '' and Sender != '':
+            cc = (cc or row_data.get("CC") or '').strip()
 
-            attachment1 = row_data.get("Attachment #1")
-            if attachment1 is None:
-                attachment1 = row_data.get("Attachment Name(s)")
-                if attachment1 is None:
-                    attachment1 = ''            
+            bcc = str(bcc or row_data.get("BCC") or '').strip()
+            if bcc.lower() == 'none':
+                bcc = ''
             
-            status = row_data.get("Status")
-            if status is None:
-                status = row_data.get("Read")
-                if snippet is None:
-                    snippet = ''            
-                if status == 'Yes':
-                    status = 'Read'
-                elif status == 'No':
-                    status = 'Not Read'                        
+            subject = (subject or row_data.get("Subject") or '').strip()            
+            
+            snippet = (
+                row_data.get("Snippet") or
+                row_data.get("Text") or
+                row_data.get("Summary") or
+                ''
+            ).strip()
+
+            if not url and sender_id:
+                url = f'https://www.facebook.com/{sender_id}'
+
+        if receiver and Sender:
+            # Attachments
+            attachment1 = row_data.get("Attachment #1") or row_data.get("Attachment Name(s)") or ''
+            attachment1 = attachment1.strip()
+
+            # Status
+            status = row_data.get("Status") or row_data.get("Read") or ''
+            status = status.strip()
+            if status.lower() == 'yes':
+                status = 'Read'
+            elif status.lower() == 'no':
+                status = 'Not Read'
+
+            # Snippet fallback (if not already handled elsewhere)
+            snippet = snippet or ''
+                    
                         
             note = (f'''
 FROM:{email}
@@ -1040,68 +912,32 @@ STATUS:{status}
 
 
 # business        
-        ## replace all None values with '' 
-        if business == '':
-            business = row_data.get("business")
-            if business is None:
-                business = ''        
-        if business == '':
-            business = row_data.get("Organizations")
-        if business is None:
-            business = ''
-        business = business.strip('')
+        business = business or row_data.get("business") or row_data.get("Organizations") or ''
+        business = business.strip()
         
 # fulladdress        
-        ## replace all None values with '' 
-        if fulladdress == '':
-            fulladdress = row_data.get("fulladdress")
-            if fulladdress is None:
-                fulladdress = ''
-        if fulladdress == '':
-            fulladdress = row_data.get("Addresses")
-            if fulladdress is None:
-                fulladdress = ''
-        fulladdress = fulladdress.replace('Home: ','').strip()
-        # fulladdress = fulladdress.strip()
+        fulladdress = (
+            fulladdress or
+            row_data.get("fulladdress") or
+            row_data.get("Addresses") or
+            ''
+        ).replace('Home: ', '').strip()
 
-        if fulladdress == '' and fulladdress2 != '':
-            fulladdress = fulladdress2
-        if fulladdress == '':
-            fulladdress = row_data.get("Location Address")
-            if fulladdress is None:
-                fulladdress = ''
+        if not fulladdress and fulladdress2:
+            fulladdress = fulladdress2.strip()
+
+        if not fulladdress:
+            fulladdress = row_data.get("Location Address") or ''
+            fulladdress = fulladdress.strip()
 
 # state
-        if state == '':
-            state = row_data.get("state")
-        if state is None:
-            state = ''
-        if state == '':
-            state = row_data.get("State/Province")
-        if state is None:
-            state = ''
+        state = state or row_data.get("state") or row_data.get("State/Province") or ''
 
 # city
-        if city == '':
-            city = row_data.get("city")
-        if city is None:
-            city = ''
-        if city == '':
-            city = row_data.get("City")
-        if city is None:
-            city = ''
+        city = city or row_data.get("city") or row_data.get("City") or ''
 
 # country
-        if country == '':
-            country = row_data.get("country")
-        if country is None:
-            country = ''
-
-        if country == '':
-            country = row_data.get("Country")
-        if country is None:
-            country = ''
-
+        country = country or row_data.get("country") or row_data.get("Country") or ''
             
 # Map Address
         fulladdress3 = row_data.get("Map Address")
@@ -1110,92 +946,55 @@ STATUS:{status}
             query = row_data.get("Value")
             if query is None:
                 query = ''
-            
-            
-            # query = query.strip()
-            
         else:
             fulladdress3 = fulladdress3.strip()
-
-
-
 
         if len(fulladdress) < 2:
             fulladdress = fulladdress3
 
 # Axiom address
-        if fulladdress == '':
-            fulladdress = row_data.get("Address")
-            if fulladdress is None:
-                fulladdress = ''
+        fulladdress = fulladdress or row_data.get("Address") or ''
                 
 # country        
-        ## replace all None values with '' 
-        country = row_data.get("Country code")
-        if country is None:
-            country = ''
+        country = row_data.get("Country code") or ''
         country = country.strip()
         
 # tag
-        tag = row_data.get("Tag")
-        if tag is None:
-            tag = ''       
+        tag = (row_data.get("Tag") or '').strip()
+        tag2 = (row_data.get("Tag Note - Chat") or '').strip()
 
-        tag2 = row_data.get("Tag Note - Chat")
-        if tag2 is None:
-            tag2 = ''
-        # else:
             
         if tag == "" and tag2 != "":
             tag2 = tag2.replace('Tags: ', '').strip()
-            # print(f'tag2 = {tag2}') # temp
+
             tag = tag2
             if "Important" in tag:
                 tag = "Important"
             elif "Review" in tag:
                 tag = "Review"        
 
-        if tag == '':
-            tag = row_data.get("Tags")
-            if tag is None:
-                tag = ''   
+        tag = (tag or row_data.get("Tags") or '').strip()
 
-        if tag == '':
-            tag = row_data.get("Tag Note - Instant Message")    # cellebrite chats
-            if tag is None:
-                tag = ''  
-            if "Important" in tag:
-                tag = "Important"
-            elif "Review" in tag:
-                tag = "Review"  
+        tag = (tag or row_data.get("Tag Note - Instant Message") or '').strip()
 
-  
+        if "Important" in tag:
+            tag = "Important"
+        elif "Review" in tag:
+            tag = "Review"
 
 # source file
-        source_file = row_data.get("Source file information")
-        if source_file is None:
-            source_file = ''
+        source_file = row_data.get("Source file information") or ''
 
 # original_file
-        original_file = row_data.get("original_file")
-        if original_file is None or original_file == "":
-            original_file = input_xlsx
+        original_file = row_data.get("original_file") or input_xlsx
 
 # Altitude
-        if Altitude == '':
-            Altitude = row_data.get("Altitude")
-        if Altitude is None:
-            Altitude = ''
-        if Altitude == '':
-            Altitude = row_data.get("ns0:ele")
-        if Altitude is None:
-            Altitude = ''
+        Altitude = Altitude or row_data.get("Altitude") or row_data.get("ns0:ele") or ''
 
 # type_data
-        type_data = row_data.get("Type")
-        Icon = row_data.get("Icon")
-        if type_data is None:
-            type_data = ''
+        type_data = row_data.get("Type") or ''
+        Icon = row_data.get("Icon") or ''
+
         if type_data == "":
             if "Searched" in original_file:
                type_data = "Searched"
@@ -1203,99 +1002,67 @@ STATUS:{status}
                type_data = "Chats"
             elif active_sheet_title == 'Facebook Messenger Messages':
                 type_data = "Chats"
-                # Icon = "Searched" 
 
             elif active_sheet_title == 'Apple Maps Searches':
                 type_data = "Searched"
                 Icon = "Searched" 
             elif active_sheet_title == 'Apple Maps Trips':
                 type_data = "Trip"
-                # Icon = "Searched" 
+            
+            type_data = (type_data or row_data.get("Application Name") or '').strip()
 
-            if type_data == '':
-                type_data = row_data.get("Application Name")
-            if type_data is None:
-                type_data = ''            
-        if type_data == '':
-            type_data = row_data.get("Call Type")
-            if type_data is None:
-                type_data = ''
-
-        if type_data == '':
-            type_data = row_data.get("ns4:vehicleType")
-            if type_data is None:
-                type_data = ''
-                
+        type_data = (
+            type_data or
+            row_data.get("Call Type") or
+            row_data.get("ns4:vehicleType") or
+            ''
+        ).strip()
+        
 # Icon    
-        # Icon = row_data.get("Icon")
-        if Icon is None:
-            Icon = ''
-        if Icon == "":
-            if "Searched" in original_file:
-               Icon = "Searched"            
-            elif "Chats" in original_file:
-               Icon = "Chats"  
-               
-# misc time cleanup
+        Icon = row_data.get("Icon") or ''
+        if not Icon:
+            for keyword in ("Searched", "Chats"):
+                if keyword in original_file:
+                    Icon = keyword
+                    break
 
 # Time
-        Time = row_data.get("Time")
-        if Time is None:
+        # List of potential time fields in priority order
+        time_fields = [
+            "Time",
+            "Timestamp: Time",
+            "Timestamp-Time",
+            "End Date/Time - UTC+00:00 (M/d/yyyy)",
+            "Sent Date/Time - UTC+00:00 (M/d/yyyy)",
+            "Timestamp Date/Time - UTC+00:00 (M/d/yyyy)",
+            "Message Sent Date/Time - UTC+00:00 (M/d/yyyy)",
+            "Call Date/Time - UTC+00:00 (M/d/yyyy)",
+            "ns0:time"
+        ]
+
+        for field in time_fields:
+            Time = row_data.get(field)
+            if Time and Time != 'NoneType':
+                Time = Time.strip()
+                break
+        else:
             Time = ''
 
-        if Time == '':
-            Time = row_data.get("Timestamp: Time")
-            if Time is None:
-                Time = ''
-
-        if Time == '':
-            Time = row_data.get("Timestamp-Time")
-            if Time is None:
-                Time = ''
-        if Time == '':
-            Time = row_data.get("End Date/Time - UTC+00:00 (M/d/yyyy)")
-            if Time is None:
-                Time = ''
-
-        if Time == '':
-            Time = row_data.get("Sent Date/Time - UTC+00:00 (M/d/yyyy)")
-            if Time is None:
-                Time = ''
-
-        if Time == '':
-            Time = row_data.get("Timestamp Date/Time - UTC+00:00 (M/d/yyyy)")
-            if Time is None:
-                Time = ''            
-        if Time == '':
-            Time = row_data.get("Message Sent Date/Time - UTC+00:00 (M/d/yyyy)")
-            if Time is None:
-                Time = ''    
-        if Time == '':
-            Time = row_data.get("Call Date/Time - UTC+00:00 (M/d/yyyy)")
-            if Time is None:
-                Time = ''        
-
-        if Time == '':
-            Time = row_data.get("ns0:time") # GPX to xml
-            if Time is None or Time == 'NoneType':
-                Time = ''             
-            try:
-                Time = Time.replace('T',' ')    # 2024-11-26T12:49:53-06:00
-                Time = Time.strip()
-            except:
-                print(f'Time type = {type(Time)}')    # temp
+        try:
+            Time = Time.replace('T', ' ').strip()
+        except AttributeError:
+            print(f'Time type = {type(Time)}')  # temp
             
+# coordinate
+        if not Coordinate and not Altitude:
+            Latitude = Latitude or ''
+            Longitude = Longitude or ''
+            
+            if Latitude and Longitude:
+                Coordinate = f'{Latitude},{Longitude}'
 
-        if (Coordinate == '' or Coordinate is None) and Altitude == '':
-            if Latitude is None:
-                Latitude == ''
-            if Longitude is None:
-                Longitude == ''                
-            else:    
-                Coordinate = (f'{Latitude},{Longitude}')
             if 'None' in Coordinate:
-                print(f'bobs your uncle')   # temp
-                Coordinate == ''
+                Coordinate = ''
 
 # convert time
         output_format = "%Y-%m-%d %H:%M:%S "    # ISO 8601
@@ -1317,8 +1084,8 @@ STATUS:{status}
                 # Time = ''    # temp rem of this
             
 # fullname cleanup
-        if fullname is None:
-            fullname = ''
+        fullname = fullname or ''
+
         if fullname == '':
            fullname, firstname, middlename, lastname = fullname_build(firstname, middlename, lastname) 
         elif ' ' in fullname:
@@ -1334,6 +1101,7 @@ STATUS:{status}
         if Coordinate == 'None,None':
             Coordinate == ''
 
+# clean phone
         cleaned_phones = ""
 
         for line in phone.splitlines():
@@ -1343,6 +1111,10 @@ STATUS:{status}
 
         # Optionally strip the trailing newline
         phone = cleaned_phones.strip()
+
+        phone = dedupe(phone)  # test
+
+
 
 # cleanup cells # test
         fullname = clean_data(fullname)

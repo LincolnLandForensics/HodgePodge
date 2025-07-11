@@ -92,10 +92,9 @@ def main():
     parser.add_argument('-i', '--intel', help='convert intel sheet to locations', required=False, action='store_true')
     parser.add_argument('-k', '--kml', help='xlsx to kml with nothing else', required=False, action='store_true')
     parser.add_argument('-K', '--kml2xlsx', help='kml to xlsx', required=False, action='store_true')
-
     parser.add_argument('-R', '--read', help='read xlsx', required=False, action='store_true')
     parser.add_argument('-r', '--read_basic', help='read basic xlsx', required=False, action='store_true')
-    parser.add_argument('-s', '--split', help='split xlsx', required=False, action='store_true')
+    parser.add_argument('-s', '--split', help='split xlsx to 10000 lines per sheet for Google Earth', required=False, action='store_true')
 
 
     args = parser.parse_args()
@@ -278,7 +277,6 @@ def main():
             msg_blurb = (f'Writing to {output_xlsx}')
             msg_blurb_square(msg_blurb, color_green)
 
-
         else:
             print(f'{color_red}{input_xlsx} does not exist{color_reset}')
             exit()
@@ -336,19 +334,16 @@ def case_number_prompt():
     return case_prompt
 
 def convert_timestamp(timestamp, time_orig, timezone):
-    if timestamp is None:
-        timestamp = ''    
+    timestamp = str(timestamp or '')
     try:
         timestamp = timestamp.strip()
     except:pass
-    
-    if timezone is None:
-        timezone = ''
-    if time_orig is None:
-        time_orig = ''
 
-    timestamp = str(timestamp)
-    timestamp
+    timezone = timezone or ''
+    time_orig = time_orig or ''
+    timestamp = str(timestamp or '')
+
+
     if re.match(r'\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2}:\d{2}\.\d{3} (AM|PM)', timestamp):
         # Define the expected format
         expected_format = "%m/%d/%Y %I:%M:%S.%f %p"
@@ -466,8 +461,7 @@ def direction_convert(direction):
     for dir_label, min_deg, max_deg in directions:
         if min_deg <= direction < max_deg:
             return dir_label
-            
-            
+                        
 def gps_cleanup(latitude, longitude):
     latitude = latitude.replace("'", '').replace("\"", '').replace("°", '.')   # don't replace .
     longitude = longitude.replace("'", '').replace("\"", '').replace("°", '.')    
@@ -513,7 +507,6 @@ def get_coordinates(geometry):
         # coordinate = (f'{latitude},{longitude}')
         coordinate = f'{longitude},{latitude}'
     return latitude, longitude, coordinate
-
         
 def haversine(lat1, lon1, lat2, lon2):
     from math import radians, cos, sin, sqrt, atan2
@@ -621,7 +614,6 @@ def kml_to_excel(data):
     # wb.save(output_xlsx)
 
     return data, coordinates
-
     
 def random_color():
     return simplekml.Color.rgb(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -658,7 +650,7 @@ def travel_path_kml(coordinates):
             # print(f"Latitude: {lat}, Longitude: {long}, Timestamp: {timestamp}")
 
         
-        same_day, time_diff = time_compare(time1, time2)
+        same_day, time_diff = time_compare(time1, time2) 
 
         try:
             distance = haversine(lat1, lon1, lat2, lon2)
@@ -962,21 +954,13 @@ def read_gps(data):
         (type_data, plate, country_code, state_ftk, city_ftk, hwy) = ('', '', '', '', '', '')
         (direction, name_data, no, account, container, time_local) = ('', '', '', '', '', '') 
         (deleted, service_id, carved, sighting_state, sighting_location, manually_decoded) = ('', '', '', '', '', '')
-
-        fulladdress = row_data.get("fulladdress")
-        if fulladdress is None:
-            fulladdress = ''  
+        
+        fulladdress = row_data.get("fulladdress", "")
 
         name_data = row_data.get("Name")
-        latitude = row_data.get("Latitude") # works
-        if latitude is None:
-            latitude = ''
-        latitude = str(latitude)
-        
-        longitude = row_data.get("Longitude") # works
-        if longitude is None:
-            longitude = ''  
-        longitude = str(longitude)
+
+        latitude = str(row_data.get("Latitude", ""))
+        longitude = str(row_data.get("Longitude", ""))
       
         address = row_data.get("Address") # works
         type_data = row_data.get("Type") # works  
@@ -1210,41 +1194,26 @@ def read_gps(data):
             except Exception as e:
                 print(f"{color_red}Error : {str(e)}{color_reset} Business = <{business}> Full address =<{address_parts}>")  
 
-        if type_data == '':
+
+        if type_data == "":
             type_data = active_sheet_title
-        print(f'active_sheet_title = {active_sheet_title}   type_data = {type_data}') # temp
 
-# Icon    
-        Icon = row_data.get("Icon")
-        if Icon is None:
-            Icon = ''
+        print(f'active_sheet_title = {active_sheet_title}   type_data = {type_data}')  # temp
 
-        if Icon != "":
-            Icon = Icon        
-        elif type_data == "Calendar":
-            Icon = "Calendar"
-        elif type_data == "LPR":
-            Icon = "LPR"
-        elif type_data == "Images":
-            Icon = "Images"
-        elif type_data == "Intel":
-            Icon = "Intel"
-        elif type_data == "Locations":
-            Icon = "Locations"
-            if Subgroup == "SearchedPlaces":
+        Icon = row_data.get("Icon", "")
+
+        if Icon == "":
+            if type_data in ["Calendar", "LPR", "Images", "Intel", "Locations", "Searched Items", "Toll", "Videos"]:
+                Icon = type_data
+                if type_data == "Locations":
+                    if Subgroup == "SearchedPlaces":
+                        Icon = "Searched"
+                    elif Subgroup == "Shared":
+                        Icon = "Shared"
+                    elif Subgroup == "Mentioned":
+                        Icon = "Locations"  # task
+            elif type_data == "Searched Items":
                 Icon = "Searched"
-            elif Subgroup == "Shared":
-                Icon = "Shared"   
-            elif Subgroup == "Mentioned":
-                Icon = "Locations"  # task
-        elif type_data == "Searched Items":
-            Icon = "Searched"
-        elif type_data == "Toll":
-            Icon = "Toll"
-        elif type_data == "Videos":
-            Icon = "Videos"
-
-
 
 
 # write rows to data
@@ -2772,8 +2741,6 @@ def split_xlsx(data, base_output_name="output_split", chunk_size=7000):
         wb.save(filename)
         print(f"{color_green}Saved: {filename}{color_reset}")
 
-
-
 def time_compare(time1, time2):
     time_format = "%Y-%m-%d %H:%M:%S"
 
@@ -2983,7 +2950,6 @@ def write_kml(data):
     msg_blurb = (f'KML file {output_kml} created successfully!')
     msg_blurb_square(msg_blurb, color_blue)
 
-
 def write_csv(data):
 
     import csv
@@ -3001,10 +2967,6 @@ def write_csv(data):
         print(f"{color_green}CSV output written to {output_csv}{color_reset}")
     except Exception as e:
         print(f"{color_red}Error writing CSV: {str(e)}{color_reset}")
-
-
-
-
 
 def write_locations(data):
     '''
@@ -3409,8 +3371,7 @@ def usage():
     print(f'    {file} -R -I MediaLocations_.xlsx')  
     print(f'    {file} -R -I PointsOfInterest.xlsx -O Locations_PointsOfInterest.xlsx') 
     print(f'    {file} -R -I Tolls.xlsx -O Locations_Tolls.xlsx')    
-    print(f'    {file} -s -I locations.xlsx.xlsx')  
-    
+    print(f'    {file} -s -I locations.xlsx')  
     print(f'    {file} -i -I intel_.xlsx -O Locations_Intel_.xlsx')  
     print(f'    {file} -i -I intel_SearchedItems_.xlsx')  
     print(f'    {file} -i -I intel_Chats_.xlsx')  

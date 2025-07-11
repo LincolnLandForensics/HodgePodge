@@ -825,10 +825,8 @@ def cls():
     os.system([linux, windows][os.name == 'nt'])
 
 def convert_timestamp(timestamp, time_orig, timezone):
-    if timezone is None:
-        timezone = ''
-    if time_orig is None:
-        time_orig = ''
+    timezone = timezone or ''
+    time_orig = time_orig or ''
 
     timestamp = str(timestamp)
 
@@ -2643,12 +2641,12 @@ def public():    # testuser=    kevinrose
         row_data = {}
         (query, ranking) = (user, '8 - public')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
+        (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '','')
         url = (f'https://public.com/@{user}')
-        try:
+        # try:
             # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '')  # too many false positives
-        except:
-            pass
+        # except:
+            # pass
 
         if 'Success' in pagestatus:
             for eachline in content.split("\n"):
@@ -2858,152 +2856,115 @@ def read_xlsx(input_xlsx):
     # dnsdomains = []
 
         # url
-        url = row_data.get("url", "")
-        if url is None: 
-            url = ''
-        elif url.lower() not in websites:   # don't add duplicates
+        url = (row_data.get("url") or '').strip()
+
+        if url.lower() not in [u.lower() for u in websites]:
             websites.append(url)
 
         # dnsdomain
-        dnsdomain = row_data.get("dnsdomain", "")
-        if dnsdomain is None: 
-            dnsdomain = ''
-        elif dnsdomain.lower() not in dnsdomains:  # don't add duplicates
+        dnsdomain = (row_data.get("dnsdomain") or '').strip()
+
+        # Only append non-empty and non-duplicate values
+        if dnsdomain and dnsdomain.lower() not in [d.lower() for d in dnsdomains]:
             dnsdomains.append(dnsdomain)
             
         # user
-        user = row_data.get("user", "")
-        if user is None: 
-            user = ''
-        elif user.lower() not in users:  # don't add duplicates
+        user = (row_data.get("user") or '').strip()
+
+        if user and user.lower() not in [u.lower() for u in users]:
             users.append(user)
             
         # ip
-        ip = row_data.get("ip", "")
-        if ip is not None:
-            ip = ip.replace('\n', '').strip()   # test
-        
-        if ip is None: 
-            ip = ''
-        elif ip.lower() not in ips:  # don't add duplicates
+        ip = (row_data.get("ip") or '').replace('\n', '').strip()
+
+        if ip and ip.lower() not in [i.lower() for i in ips]:
             ips.append(ip)
  
         # email
-        email = row_data.get("email", "")
-        if email is None: 
-            email = ''
-        elif email.lower() not in emails and "@" in email:  # don't add duplicates
+        email = (row_data.get("email") or '').strip()
+
+        if '@' in email and email.lower() not in [e.lower() for e in emails]:
             emails.append(email)
             
         # phone
-        phone = row_data.get("phone", "")
-        if phone is None:
-            phone = ''
-        if phone != "":
-            phone = str(phone).replace('-', '').replace(' ', '').replace('(', '').replace(')', '')
-            if phone not in phones:   # don't add duplicates
+        phone = (row_data.get("phone") or '').strip()
+
+        if phone:
+            # Remove unwanted characters
+            phone = re.sub(r'[^\d+]', '', phone)
+
+            # Optional: validate E.164 format
+            if re.match(r'^\+?[1-9]\d{1,14}$', phone) and phone not in phones:
                 phones.append(phone)
 
+
         # business
-        business = row_data.get("business", "")
-        if not business:
-            business = row_data.get("business/entity", "")
-            if not business:
-                business = row_data.get("Business", "")
-        if business is None:
-            business = ''
+        business = (
+            row_data.get("business")
+            or row_data.get("business/entity")
+            or row_data.get("Business")
+            or ''
+        ).strip()
 
         # owner
-        owner = row_data.get("owner", "")
-        if owner is None:
-            owner = ''        
+        owner = (row_data.get("owner") or '').strip()
 
         # AKA
-        AKA = row_data.get("AKA", "")
-        if AKA is None: AKA = ''
-        
-        if AKA == "":
-            AKA = row_data.get("aka", "")
-        if AKA is None: AKA = ''
+        AKA = (
+            row_data.get("AKA") or
+            row_data.get("aka") or
+            row_data.get("alias") or
+            ''
+        ).strip()
 
-        if AKA == "":
-            AKA = row_data.get("alias", "")
-        if AKA is None: AKA = ''
 
         # city
-        city = row_data.get("city", "")
-        if not city:
-            city = row_data.get("city", "")
-        if city is None: city = ''
-        city = city.title()    
+        city = (row_data.get("city") or '').strip().title()
     
-        state = row_data.get("state", "")
-        if state is None: state = ''
+        # state
+        state = (row_data.get("state") or '').strip()
 
         # DOB
-        DOB = row_data.get("DOB", "")
-        if DOB is None: DOB = ''   
-        if DOB == '':
-            DOB = row_data.get("dob", "")
-        if DOB is None: DOB = ''    
+        DOB = (
+            row_data.get("DOB") or
+            row_data.get("dob") or
+            ''
+        ).strip()
 
         # associates
-        associates = row_data.get("associates", "")
-        if associates is None:
-            associates = ''
-        if associates == "":    
-            associates = row_data.get("friend", "")
-        
-        if associates is None: associates = ''
+        associates = (
+            row_data.get("associates") or
+            row_data.get("friend") or
+            ''
+        ).strip()
 
         # SEX
-        SEX = row_data.get("SEX", "")
-        if not SEX:
-            SEX = row_data.get("gender", "")
-        if SEX is None: SEX = ''
+        SEX = (row_data.get("SEX") or row_data.get("gender") or '').strip()
         
         # firstname
-        firstname = row_data.get("firstname", "")
-        if firstname is None:
-            firstname = ''
-        else:
-            firstname = firstname.title()
+        firstname = (row_data.get("firstname") or '').strip().title()
 
         # lastname
-        lastname = row_data.get("lastname", "")
-        if lastname is None:
-            lastname = ''        
-        if lastname != "":
-            lastname = lastname.upper()
+        lastname = (row_data.get("lastname") or '').strip().upper()
+
 
         # middlename
         middlename = row_data.get("middlename", "")
-        if middlename is None:
-            middlename = ''
-        else:
-            middlename = middlename.title()
 
         # fullname
-        fullname = row_data.get("fullname", "")
-        if fullname is None:
-            fullname = ''
-        if fullname == '':
-            if firstname != '' and lastname != '' and middlename != '':
-                fullname = (f'{firstname} {middlename} {lastname}')        
-            elif firstname != '' and lastname != '':
-                fullname = (f'{firstname} {lastname}')
+        fullname = (row_data.get("fullname") or '').strip()
+
+        if not fullname:
+            if firstname and lastname and middlename:
+                fullname = f'{firstname} {middlename} {lastname}'
+            elif firstname and lastname:
+                fullname = f'{firstname} {lastname}'
+
 
         # timestamp
-        (time_orig, timezone) = ('', '')    # test
-        
-        timestamp = row_data.get("Time", "")
-        if timestamp is None:
-            timestamp = ''
-        else:
-            timestamp, time_orig, timezone = convert_timestamp(timestamp, time_orig, timezone)
+        timestamp = (row_data.get("Time") or '').strip()
+        timestamp, time_orig, timezone = convert_timestamp(timestamp, '', '')
 
-        if state == '' and phone != '':
-            state = phone_state_check(phone, state) 
 
 
 
@@ -3033,8 +2994,6 @@ def read_xlsx(input_xlsx):
         except Exception as e:
             print(f"{color_red}Error appending data: {str(e)}{color_reset}")
 
-    # Close the workbook
-    # wb.close()
     return data
 
 def read_xlsx_basic_old(input_xlsx):
@@ -3070,9 +3029,6 @@ def read_xlsx_basic(input_xlsx):
     return data
 
 
-
-
-
 def read_xlsx_basic_location(input_xlsx):
     message = (f'Reading basic intel: {input_xlsx}')
     message_square(message, color_green)
@@ -3086,6 +3042,7 @@ def read_xlsx_basic_location(input_xlsx):
         data.append(entry)
 
     return data
+    
     
 def reddit(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< reddit {color_blue}users{color_yellow} >>>>>{color_reset}')
@@ -4360,7 +4317,7 @@ def whatnot(): # testuser = kevinrose
         url = (f'https://www.whatnot.com/user/{user}')
         
         # (content, referer, osurl, titleurl, pagestatus) = request(url)
-        (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '')
+        (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
         
         
         if '404' not in pagestatus:
@@ -4870,7 +4827,6 @@ def write_intel(data):
     for i in range(len(data)):
         if data[i] is None:
             data[i] = ''
-
 
     for row_index, row_data in enumerate(data):
 

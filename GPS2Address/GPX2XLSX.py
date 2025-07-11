@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf-8
 """
-Parse GPX files and write results to Excel. Garmin saves there coordinates as .gpx.
+Parse (Garmin) GPX files and write results to Excel. 
 Author: LincolnLandForensics
 Version: 1.0.0
 """
@@ -12,11 +12,15 @@ Version: 1.0.0
 import os
 import re
 import sys
+import zipfile
 import argparse
 import gpxpy  # pip install gpxpy
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill
+
+import pandas as pd
+import xml.etree.ElementTree as ET
 
 # Optional: Color support for Windows terminal
 color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
@@ -33,31 +37,52 @@ data = []
 input_details = 'no'
 row = 0
 
-
 def main():
     banner_print()
 
-    parser = argparse.ArgumentParser(description="Parse GPX and export to Excel")
-    parser.add_argument('-g', '--input', help='Input .gpx file')
+    parser = argparse.ArgumentParser(description="Parse GPX/KML and export to Excel")
+    parser.add_argument('-g', '--gpx', help='Input .gpx file')
     parser.add_argument('-O', '--output', help='Output .xlsx file')
     parser.add_argument('-G', '--gpx_folder', help='Parse all .gpx files in Logs/ folder', action='store_true')
+    parser.add_argument('-k', '--kml', help='Input .kml or .kmz file')
 
     args = parser.parse_args()
 
     global input_file, outuput_xlsx, log_type
-    input_file = args.input if args.input else "current.gpx"
+
     outuput_xlsx = args.output if args.output else "output.xlsx"
 
     if args.gpx_folder:
         log_type = 'folder'
         parse_gpx()
-    elif args.input:
+
+    elif args.gpx:
+        input_file = args.gpx
         log_type = 'file'
         parse_gpx()
+
+    elif args.kml:
+        input_file = args.kml
+        log_type = 'file'
+
+        if input_file.lower().endswith('.kmz'):
+            print("[*] Extracting KML from KMZ...")
+            try:
+                kml_file = extract_kml_from_kmz(input_file)
+                data = parse_kml(kml_file)
+            except Exception as e:
+                print(f"{color_red}Error extracting KML: {e}{color_reset}")
+                return
+        else:
+            data = parse_kml(input_file)
+
+        write_xlsx(data, outuput_xlsx)
+        print(f"{color_green}Exported {len(data)} KML records to {outuput_xlsx}{color_reset}")
+
     else:
         usage()
-        
-        
+
+    
 def banner_print():
     art = """  
   ______________________  ___ ________          .__                  
@@ -71,6 +96,14 @@ def banner_print():
 
 def case_number_prompt():
     return input("Please enter the case: ").strip()
+
+def extract_kml_from_kmz(kmz_path):
+    with zipfile.ZipFile(kmz_path, 'r') as zf:
+        for file in zf.namelist():
+            if file.endswith('.kml'):
+                zf.extract(file, path='.')
+                return file
+    raise Exception("No KML file found in KMZ.")
 
 def gpx_extract(filename, caseNumber):
     """
@@ -240,6 +273,88 @@ def parse_gpx():
     else:
         print(f"{color_red}No data parsed. Check GPX files.{color_reset}")
 
+def parse_kml(file_path):
+    import xml.etree.ElementTree as ET
+
+    ns = {
+        'kml': 'http://www.opengis.net/kml/2.2',
+        'gx': 'http://www.google.com/kml/ext/2.2'
+    }
+
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+    placemarks = root.findall('.//kml:Placemark', ns)
+
+    data = []
+
+    for pm in placemarks:
+        name = pm.findtext('kml:name', default='', namespaces=ns)
+        description = pm.findtext('kml:description', default='', namespaces=ns)
+
+        # Extract gx:Track if present
+        track_elem = pm.find('.//gx:Track', ns)
+        if track_elem is not None:
+            whens = [w.text for w in track_elem.findall('gx:when', ns)]
+            coords = [c.text.strip() for c in track_elem.findall('gx:coord', ns)]
+
+            for i in range(min(len(whens), len(coords))):
+                try:
+                    lon, lat, *alt = map(float, coords[i].split())
+                except:
+                    continue
+
+                row = {
+                    '#': name,
+                    'Time': whens[i],
+                    'Latitude': lat,
+                    'Longitude': lon,
+                    'Altitude': alt[0] if alt else '',
+                    'Direction': '',              # can be added if found in ExtendedData
+                    'speed': '',
+                    'AccuracyMeters': '',
+                    'Name': '',
+                    'Description': description,
+                    'Source file information': os.path.basename(file_path)
+                }
+                data.append(row)
+            continue  # done with this Placemark
+
+        # Fallback for Point-based Placemarks
+        coord_elem = pm.find('.//kml:Point/kml:coordinates', ns)
+        if coord_elem is not None:
+            try:
+                lon, lat, *alt = map(float, coord_elem.text.strip().split(','))
+            except:
+                continue
+
+            time = pm.findtext('.//kml:TimeStamp/kml:when', default='', namespaces=ns)
+
+            ext_data = {}
+            for data_tag in pm.findall('.//kml:ExtendedData//kml:Data', ns):
+                key = data_tag.attrib.get('name', '').lower()
+                value_elem = data_tag.find('kml:value', ns)
+                value = value_elem.text if value_elem is not None else ''
+                ext_data[key] = value
+
+            row = {
+                '#': name,
+                'Time': time,
+                'Latitude': lat,
+                'Longitude': lon,
+                'Altitude': alt[0] if alt else '',
+                'speed': ext_data.get('speed', ''),
+                'Direction': ext_data.get('heading') or ext_data.get('direction', ''),
+                'AccuracyMeters': ext_data.get('accuracy', ''),
+                'Name': ext_data.get('sensor') or ext_data.get('name', ''),
+                'Description': description,
+                'Source file information': os.path.basename(file_path),
+            }
+
+            data.append(row)
+
+    return data
+
+
 def write_xlsx(data, file_path):
     workbook = Workbook()
     worksheet = workbook.active
@@ -286,7 +401,7 @@ def usage():
     print("Examples:")
     print(f"    {sys.argv[0]} -g single.gpx -O gpx__output.xlsx")
     print(f"    {sys.argv[0]} -G -O gpx_merged.xlsx")
-
+    print(f"    {sys.argv[0]} -k single.kmz -O kmz__output.xlsx")
 
 if __name__ == '__main__':
     main()

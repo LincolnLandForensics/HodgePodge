@@ -11,7 +11,7 @@ from openpyxl import load_workbook
 author = 'LincolnLandForensics'
 description2 = "turn intel.xlsx into actionable markdown files"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '0.2.1'
+version = '0.2.2'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -101,28 +101,46 @@ def main():
 
 def clean_data(item):
     """
-    Cleans the item by removing any unwanted newlines and other characters 
-    that may interfere with Markdown tables.
+    Cleans the item by removing characters that interfere with Markdown formatting,
+    including newlines, pipes, tabs, and excessive whitespace.
 
     Returns:
-        str: The cleaned cell without newlines or extra spaces.
+        str: Markdown-safe cleaned text.
     """
-    item_cleaned = re.sub(r'[\n\r]+', ' ', str(item))  # Replaces newlines with space
-    item_cleaned = item_cleaned.strip()  # Remove leading/trailing spaces
-    return item_cleaned
-
-def clean_phone(item):
-    """
-    Cleans the item by removing any unwanted newlines and other characters 
-    that may interfere with Markdown tables.
-
-    Returns:
-        str: The cleaned cell without newlines or extra spaces.
-    """
-    item_cleaned = re.sub(r'[\n\r]+-\(\)', ' ', str(item))  # Replaces newlines with space
-    item_cleaned = item_cleaned.strip()  # Remove leading/trailing spaces
-    return item_cleaned
+    if item is None:
+        return ''
     
+    # Convert to string and replace Markdown-breaking characters
+    item_cleaned = str(item)
+
+    # Replace newlines, carriage returns, tabs, and pipes with a single space
+    item_cleaned = re.sub(r'[\n\r\t|]', ' ', item_cleaned)
+
+    # Collapse multiple whitespace characters into one
+    item_cleaned = re.sub(r'\s+', ' ', item_cleaned)
+
+    # Remove Markdown formatting symbols (optional)
+    item_cleaned = re.sub(r'[#>*_`~]', '', item_cleaned)
+
+    return item_cleaned.strip()
+
+def clean_phone(phone):
+    """
+    Sanitizes and validates phone numbers (7–15 digits, digits only).
+    """
+    regex_phone = r'^\d{7,15}$'
+
+    if not isinstance(phone, str):
+        phone = str(phone)
+
+    phone = re.sub(r'[^\d]', '', phone)  # Strip non-digit characters
+
+    # Strip country code if it starts with '1'
+    if phone.startswith('1') and len(phone) > 10:
+        phone = phone[1:]
+
+    return phone if re.match(regex_phone, phone) else ""
+
 
 def create_contacts_markdown_files(data, input_xlsx, output_folder):
     """
@@ -140,8 +158,11 @@ def create_contacts_markdown_files(data, input_xlsx, output_folder):
 
     with open(output_file, "w", encoding="utf-8") as md_file:
         md_file.write(f"# Contact Summary from {input_xlsx}\n\n")
-        md_file.write("| fullname | phone | email | user | AKA | Tag | business | fulladdress | case | original_file |\n")
-        md_file.write("|----------|-------|------|-------|-----|-----|---------|--------------|------|---------------|\n")
+        # md_file.write("| fullname | phone | email | user | AKA | Tag | business | fulladdress | case | original_file |\n")
+        # md_file.write("|----------|-------|------|-------|-----|-----|---------|--------------|------|---------------|\n")
+
+        md_file.write("| fullname | phone | user | fulladdress | case |\n")
+        md_file.write("|------------|-------|---------|-----------------|---------|\n")
 
         phone_regex = re.compile(r"^\+?[1-9]\d{1,14}$")  # E.164 format or similar valid phone patterns
 
@@ -161,7 +182,7 @@ def create_contacts_markdown_files(data, input_xlsx, output_folder):
             case = clean_data(row.get("case", ""))
             original_file = clean_data(row.get("original_file", ""))
 
-            md_file.write(f"| {fullname} | {phone} | {email} | {user}  | {aka} | {Tag} | {business} | {fulladdress} | {case} | {original_file} |\n")
+            md_file.write(f"| {fullname} | {phone} | {user}  | {fulladdress} | {case} |\n")
 
         md_file.write(f"\nSheet Name: {sheet_name}\n")
 
@@ -297,7 +318,7 @@ if __name__ == '__main__':
 
 
 """
-
+0.2.2 - shortened up -C output
 0.1.0 - working copy
 0.0.1 - created by ChatGPT
 """
