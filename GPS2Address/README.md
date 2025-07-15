@@ -149,4 +149,5 @@ Examples:
 ```
     GPX2XLSX.py -g single.gpx -O gpx__output.xlsx
     GPX2XLSX.py -G -O gpx_merged.xlsx
+    GPX2XLSX.py -k single.kmz -O kmz__output.xlsx
 ```
