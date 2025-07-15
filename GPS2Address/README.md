@@ -140,7 +140,7 @@ Google Earth Example:
 
 ## GPX2XLSX.py
 
-Parse (Garmin) GPX files and write results to Excel. 
+Parse GPX, KML & KMZ coordinate files and write results to Excel. 
 
 Usage: GPX2XLSX.py -G|-I file.gpx [-O gpx__output.xlsx]
 
