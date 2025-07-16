@@ -34,7 +34,7 @@ import argparse  # for menu system
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.1.6'
+version = '3.1.8'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -386,12 +386,8 @@ def main():
         
     if args.test:  
         print(f' using test module')
-        # whocalld()
-        # familytreephone()    #
-        # thatsthemphone()   #
-        # reversephonecheck()    #
-        veraxity()    #
-
+        ham_radio()
+        
 
     if args.usersmodules and len(users) > 0:  
         print(f'users = {users}')    
@@ -970,7 +966,11 @@ def disqus(): # testuser = kevinrose
         
         (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
         user = user.rstrip()
-        url = (f'http://disqus.com/{user}')
+        # url = (f'http://disqus.com/{user}')
+        # url = (f'http://disqus.com/by/{user}')  
+        url = (f'http://disqus.com/by/{user}/about/')  
+
+        
         (content, referer, osurl, titleurl, pagestatus) = request(url)
         
         if '404' not in pagestatus:
@@ -1596,6 +1596,7 @@ def ham_radio(): # testuser = K9CYC
     for user in users:    
         row_data = {}
         (query, ranking, info) = (user, '5 - ham radio', '')
+        (note) = ('https://www.arrl.org/advanced-call-sign-search')
         user = user.rstrip().upper()
         url = (f'https://www.radioqth.net/lookup')        
 
@@ -1610,6 +1611,7 @@ def ham_radio(): # testuser = K9CYC
             row_data["query"] = info
             row_data["ranking"] = ranking
             row_data["url"] = url
+            row_data["note"] = note
             data.append(row_data)
 
 
@@ -2790,6 +2792,7 @@ def read_text(filename):
             dnsdomain = dnsdomain.replace("http://", "")
             dnsdomain = dnsdomain.split('/')[0]
             notes2 = dnsdomain.split('.')[-1]
+            dnsdomain = dnsdomain.rstrip('/')
             if dnsdomain.lower() not in dnsdomains:            # don't add duplicates
                 dnsdomains.append(dnsdomain)
             
@@ -4441,43 +4444,37 @@ def whoisip():    # testuser=    77.15.67.232   only gets 403 Forbidden
     print(f"{color_yellow}\n\t<<<<< whois {color_blue}IP's{color_yellow} >>>>>{color_reset}")
     for ip in ips:    
         row_data = {}
-        (query, note) = (ip, '')
+        (query, ranking, note) = (ip, '9 - whois', '')
         (city, business, country, zipcode, state) = ('', '', '', '', '')
         (Latitude, Longitude) = ('', '')
 
         (content, titleurl, pagestatus) = ('', '', '')
         (email, phone, fullname, entity, fulladdress) = ('', '', '', '', '') 
         url = (f'https://www.ipaddress.com/ipv4/{ip}')      
-        
+
+        if regex_ipv6.match(ip):
+            url = f'https://www.ipaddress.com/ipv6/{ip}'
+
         if sys.platform == 'win32' or sys.platform == 'win64':    
             (content, referer, osurl, titleurl, pagestatus) = request(url)
             if '403 Forbidden' in content:
                 pagestatus = '403 Forbidden'
                 content = ''
+
             for eachline in content.split("\n"):
-                
-                if "www.ip-adress.com/legal-notice" in eachline:
-                    for eachline in content.split("<tr><th>"):
-                        if "Country<td>" in eachline:
-                            country = eachline.strip().split("Country<td>")[1]
-                        elif "City<td>" in eachline:
-                            city = eachline.strip().split("City<td>")[1]
-                        elif "ISP</abbr><td>" in eachline:
-                            business = eachline.strip().split("ISP</abbr><td>")[1]
-                        elif "Postal Code<td>" in eachline:
-                            zipcode = eachline.strip().split("Postal Code<td>")[1]
-                        elif "State<td>" in eachline:
-                            state = eachline.strip().split("State<td>")[1]
-               
-                elif "<tr><th>Country</th><td>" in eachline:
-                    country = eachline.strip().split("<tr><th>Country</th><td>")[1]
-                    country = country.split("<")[0]
-                elif "City: " in eachline:
-                    city = eachline.strip().split("<tr><th>City</th><td>")[1]
-                    city = city.split("<")[0]            
-                elif "<tr><th>Postal Code</th><td>" in eachline:
-                    zipcode = eachline.strip().split("<tr><th>Postal Code</th><td>")[1]
-                    zipcode = zipcode.split("<")[0] 
+                 #
+                if " is located in " in eachline:
+                    (ranking) = ('4 - whois')
+                    meta_match = re.search(r'content="([^"]+)"', eachline)
+                    if meta_match:
+                        note = meta_match.group(1)
+                    note = note.replace(' | Public IP Address', '')
+                if 'Reserved IP Address' in eachline:
+                    note = (f'{ip} is a reserved IP address.')
+
+
+
+                    
             time.sleep(3) #will sleep for 30 seconds
             if "Fail" in pagestatus:
                 pagestatus = 'fail'
@@ -4515,9 +4512,11 @@ def whoisip():    # testuser=    77.15.67.232   only gets 403 Forbidden
                 elif line.lower().startswith('org-name:'):entity = (line.split(': ')[1].lstrip())
 
         print(f'{color_green}{ip}{color_yellow}	{country}	{city}	{zipcode}{color_reset}')
+        if note == '':
+            note = entity
 
-        if '.' in ip:
-            ranking = '9 - whois'
+
+        if '.' in ip or ':' in ip:
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["url"] = url
@@ -4527,7 +4526,7 @@ def whoisip():    # testuser=    77.15.67.232   only gets 403 Forbidden
             row_data["url"] = url
             row_data["email"] = email
             row_data["phone"] = phone
-            row_data["note"] = entity
+            # row_data["note"] = entity
             row_data["fulladdress"] = fulladdress
             row_data["query"] = query
             
@@ -5684,18 +5683,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-https://www.ipaddress.com/ipv6/{ip} IF IP IS A IPV6
-
-
-
-https://www.arrl.org/advanced-call-sign-search
-
+https://www.deviantart.com/kevinrose/gallery
 
 implement convert_timestamp()
-
-
-https://www.roblox.com/user.aspx?username=kevinrose
-
 
 
 https://start.me/p/0Pqbdg/osint-500-tools   # reviewed
@@ -5713,9 +5703,7 @@ https://www.talkatone.com/
 https://www.pinger.com/
 https://www.tumblr.com/login
 https://www.tumblr.com/kevinrose
-
-
-
+https://www.tumblr.com/search/kevinrose?src=typed_query
 
 add timestamp to log sheet
 currently only reads input.txt. add input.xlsx input.
@@ -5726,12 +5714,10 @@ populate log sheet with todays date
 
 
 NAM = last name(comma) first name (space) Middle initial
-https://socialblade.com/search/search?query=kevinrose
-
 
 
 add ID and photo , phone2 column
-fix dnsdomains if it ends with / , take it off
+
 tkinter purely gui interface
 .replace isn't working in several modules
 instagramtwo()

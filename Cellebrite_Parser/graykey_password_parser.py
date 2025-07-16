@@ -13,11 +13,12 @@ from openpyxl.styles import Font, Alignment, PatternFill
 
 author = 'LincolnLandForensics'
 description = "convert graykey password file to xlsx"
-version = '1.4.0'
+version = '1.4.1'
 
 headers = [
     "URL", "Username", "Password", "Notes", "Case", "Exhibit", "protocol",
-    "fileType", "Encryption", "Complexity", "Hash", "Pwd", "PWDUMPFormat", "Length"
+    "fileType", "Encryption", "Complexity", "Hash", "Pwd", "PWDUMPFormat", "Length",
+    "Email", "IP"
 ]
 
 color_green = ''
@@ -43,7 +44,7 @@ def main():
     parser.add_argument('-I', '--input', help='', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
     parser.add_argument('-b', '--blank', help='create blank sheet', required=False, action='store_true')
-    parser.add_argument('-p', '--passwords', help='passwords module', required=False, action='store_true')
+    # parser.add_argument('-p', '--passwords', help='passwords module', required=False, action='store_true')
     parser.add_argument('-c', '--convert', help='convert GrayKey passwords to Excel', required=False, action='store_true')
 
     args = parser.parse_args()
@@ -104,6 +105,9 @@ def read_pwords():
 
     with open(input_file, 'r', encoding='utf-8') as f:
         content = f.read()
+        # content = content.replace("IP: N/A", "----------")  # for intel.veraxity.org output
+        content = re.sub(r'^(IP: .*)', r'\1----------', content, flags=re.MULTILINE)
+
         entries = content.split("----------")
 
         for block in entries:
@@ -111,7 +115,7 @@ def read_pwords():
                 "URL": '', "Username": '', "Password": '', "Notes": block.strip(),
                 "Case": Case, "Exhibit": Exhibit, "protocol": '', "fileType": fileType,
                 "Encryption": '', "Complexity": '', "Hash": '', "Pwd": '',
-                "PWDUMPFormat": '', "Length": ''
+                "PWDUMPFormat": '', "Length": '', "Email": '', "IP": ''
             }
 
             for line in block.strip().splitlines():
@@ -142,12 +146,17 @@ def read_pwords():
                         entry["Hash"] = pwd
                     else:
                         entry["Password"] = pwd
-
-
-            # if Password.endswith("=") or Password.endswith("~~"):
-                # Hash = Password
-                # Password = ""
-
+                elif line.startswith("Username: "):
+                    entry["Username"] = line.split("Username: ", 1)[1].strip().replace('N/A','')
+                elif line.startswith("Email: "):
+                    entry["Email"] = line.split("Email: ", 1)[1].strip().replace('N/A','')
+                elif line.startswith("Password: "):
+                    entry["Password"] = line.split("Password: ", 1)[1].strip().replace('N/A','')
+                elif line.startswith("Origin: "):
+                    entry["URL"] = line.split("Origin: ", 1)[1].strip().replace('N/A','') 
+                    entry["fileType"] = "intel.veraxity.org"
+                elif line.startswith("IP: "):
+                    entry["IP"] = line.split("IP: ", 1)[1].strip().replace('N/A','')
 
             if entry["URL"] == "AirPort":
                 entry["protocol"] = "AirPort"
@@ -174,6 +183,9 @@ def read_pwords():
     data = sorted(data, key=lambda x: (x["Length"] if isinstance(x["Length"], int) else 100))
     write_xlsx(data, sorted(uniq, key=len))
 
+
+
+
 def write_xlsx(data, uniq_list):
     message_square(f'Writing {output_xlsx}', color_green)
 
@@ -191,7 +203,7 @@ def write_xlsx(data, uniq_list):
         elif header in ["URL", "Length", "Complexity"]:
             cell.fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 
-    col_widths = [20, 20, 20, 35, 7, 6, 10, 9, 8, 12, 4, 17, 5]
+    col_widths = [20, 20, 20, 35, 7, 6, 10, 20, 8, 12, 4, 17, 5]
     for i, width in enumerate(col_widths):
         worksheet.column_dimensions[chr(65+i)].width = width
 
@@ -220,23 +232,25 @@ def usage():
     print(f"\t{file} -c -I sample_passwords.txt")
     print(f"\t{file} -c -I sample_passwords.txt -O passwords_sample_.xlsx")
     print(f"\t{file} -b -O blank_sheet.xlsx")
-
+    print(f"\t{file} -v -I input.txt")
+    
 if __name__ == '__main__':
     main()
-
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+0.5.0 - created intel.veraxity.org parser
+0.4.0 - create a seperate sheet for uniq passwords
 0.2.2 - working prototype
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-create a seperate sheet for uniq passwords
+also create an intel sheet
+
 
 
 """
