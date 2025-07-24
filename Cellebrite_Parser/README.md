@@ -66,8 +66,11 @@ Example:
 '''
 
 
+
 ## eml2xlsx.py 
-Parses .eml or .mbox files in a folder, extracts metadata, and exports to Excel.
+Parses .eml or .mbox email files from a folder, extracts metadata, and exports to Excel.
+
+Doesn't currently support zip files like RLEAP.
 
 Installation:
 ```
