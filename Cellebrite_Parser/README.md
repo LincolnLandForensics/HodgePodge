@@ -64,3 +64,30 @@ Example:
    
    python CellebriteEmailxlsx2xlsx.py -r -I Cellebrite_Emails.xlsx -O Cellebrite_Emails_Parsed.xlsx
 '''
+
+
+## eml2xlsx.py 
+Parses .eml or .mbox files in a folder, extracts metadata, and exports to Excel.
+
+Installation:
+```
+python pip install -r requirements_eml2xlsx.txt
+```
+
+help menu
+```
+python eml2xlsx.py
+```
+
+Examples:
+
+eml2xlsx.py -E [-I input_folder] [-O output.xlsx] 
+
+    eml2xlsx.py -E
+
+    eml2xlsx.py -E -I C:\emails -O parsed_emails.xlsx
+
+    eml2xlsx.py -M -I emails
+	
+	
+	
