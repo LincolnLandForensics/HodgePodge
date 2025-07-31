@@ -1,8 +1,8 @@
 
 ## eml2xlsx.py 
-Parses .eml or .mbox email files from a folder, extracts metadata, and exports to Excel.
+Parses .eml and .mbox files in a folder, extracts messages / non-spam contacts, and exports to Excel.
 
-Doesn't currently support zip files like RLEAP.
+NDCAC GoogleReturnViewer.exe does convert .json files to .eml, but then mostly crashes. This was my interum solution.
 
 Installation:
 ```
@@ -11,7 +11,7 @@ python pip install -r requirements_eml2xlsx.txt
 
 help menu
 ```
-python eml2xlsx.py
+python eml2xlsx.py -h
 ```
 
 Examples:
@@ -22,7 +22,6 @@ eml2xlsx.py -E [-I input_folder] [-O output.xlsx]
 
     eml2xlsx.py -E -I C:\emails -O parsed_emails.xlsx
 
-    eml2xlsx.py -M -I emails
 	
 	
 	
