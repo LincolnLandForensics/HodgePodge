@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # coding: utf-8
 """
-Read XLSX file analyze numbers with Benford's Law.
+Read and write XLSX files using openpyxl without Pandas.
 Author: LincolnLandForensics
-Version: 0.1.2
+Version: 0.0.2
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -11,6 +11,9 @@ Version: 0.1.2
 import os
 import sys
 import argparse
+# import openpyxl
+# from openpyxl import load_workbook, Workbook
+# from openpyxl.styles import PatternFill
 
 import numpy as np
 import pandas as pd
@@ -205,6 +208,7 @@ def usage():
     print("Example:")
     print(f"    {sys.argv[0]} -b")
     print(f"    {sys.argv[0]} -b -I benfordsLaw_tester.xlsx")
+    print(f"    {sys.argv[0]} -b -I benfordsLaw_tester.xlsx -c d")
 
 if __name__ == '__main__':
     main()
@@ -243,6 +247,15 @@ and statistically organic. These figures are either real-world samples or genera
 using randomization techniques that closely mimic legitimate datasets. They tend to 
 follow Benford’s Law, which predicts the frequency of first digits in many 
 naturally formed datasets.
+
+The Chi-Square Test is a statistical method used to evaluate whether observed frequencies 
+in a dataset differ significantly from expected frequencies under a certain hypothesis. 
+It's commonly applied to categorical data—like survey responses, classifications, or 
+groupings—to test for independence or goodness-of-fit.
+The bigger the number, the less likely it is that the differences occurred by chance, 
+and the more likely it is that something meaningful is happening in the data.
+
+Chi-Square Test ➤ Stat: 1114.61
 
 
 git clone https://github.com/SheetJS/enron_xls.git

@@ -26,16 +26,29 @@ Example:
     BenfordsLaw_Tester.py -b
 	
     BenfordsLaw_Tester.py -b -I benfordsLaw_tester.xlsx
-	
+
+    BenfordsLaw_Tester.py -b -I benfordsLaw_tester.xlsx -c b
+		
 Note:
-this currently reads column A in the first sheet.
+this currently reads column A in the first sheet use -c to specify a differnt column.
 	
 	
 ![sample output](images/BenfordsLaw_Enron.png)	
 	
+## Benford's Law (Blue line)
+Benford's Law, also known as the First-Digit Law, is a statistical principle that predicts 
+the frequency distribution of leading digits in naturally occurring datasets. 
+According to this law:
+• 	The number 1 appears as the leading digit about 30% of the time.
+• 	Higher digits occur less frequently, with 9 appearing as the first digit less than 5% of the time.
+This counterintuitive pattern holds true across many datasets—such as financial records, 
+population numbers, and scientific measurements—especially when the data spans several orders of magnitude.
 
+Benford's Law is widely used in fraud detection, particularly in accounting and forensic analysis. 
+Deviations from the expected distribution can signal manipulation or anomalies in the data.
+The blue line gives a baseline of what Benford's law should look like, as a baseline.
 
-## Manipulated Data
+## Manipulated Data (Red column)
 The Manipulated Data section simulates financial values that are artificially rounded 
 to the nearest thousand, creating unnaturally uniform distributions. These values do not 
 follow the logarithmic pattern predicted by Benford’s Law, which typically governs organic 
@@ -43,8 +56,8 @@ datasets. By comparing the first-digit frequency of this manipulated data to Ben
 expected distribution, the model helps demonstrate how fabricated or tampered numbers 
 diverge from statistical norms.
 
-## Authentic Data
-The ## Authentic Data section contains numerical values that are naturally occurring 
+## Authentic Data (Green column)
+The Authentic Data section contains numerical values that are naturally occurring 
 and statistically organic. These figures are either real-world samples or generated 
 using randomization techniques that closely mimic legitimate datasets. They tend to 
 follow Benford’s Law, which predicts the frequency of first digits in many 
