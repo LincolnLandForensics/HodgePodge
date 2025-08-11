@@ -38,9 +38,13 @@ this currently reads column A in the first sheet use -c to specify a differnt co
 ## Benford's Law (Blue line)
 Benford's Law, also known as the First-Digit Law, is a statistical principle that predicts 
 the frequency distribution of leading digits in naturally occurring datasets. 
+
 According to this law:
+
 • 	The number 1 appears as the leading digit about 30% of the time.
+
 • 	Higher digits occur less frequently, with 9 appearing as the first digit less than 5% of the time.
+
 This counterintuitive pattern holds true across many datasets—such as financial records, 
 population numbers, and scientific measurements—especially when the data spans several orders of magnitude.
 
