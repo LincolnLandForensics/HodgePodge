@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from openpyxl import load_workbook
-from scipy.stats import chisquare
+from scipy.stats import chisquare   # pip install scipy
 
 
 
@@ -35,7 +35,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description = "This script models Benford’s Law by generating and comparing authentic versus manipulated financial data. It outputs frequency distributions to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud."
-version = '0.0.1'
+version = '0.1.1'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -47,21 +47,24 @@ def main():
     row = 0  # defines arguments
     # Row = 1  # defines arguments   # if you want to add headers 
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-I', '--input', help='', required=False)
+    parser.add_argument('-I', '--input', help='', required=False, default='benfordsLaw_tester.xlsx')
     # parser.add_argument('-O', '--output', help='', required=False)
     parser.add_argument('-b', '--benfords', help='read xlsx', required=False, action='store_true')
     # parser.add_argument('-c', '--column', help='choose column', required=False, action='store_true')
-    parser.add_argument('-c', '--column', help='', required=False)
+    parser.add_argument('-c', '--column', help='', required=False, default='A')
     args = parser.parse_args()
 
 
     global input_file
-    input_file = args.input if args.input else "benfordsLaw_tester.xlsx"
+    # input_file = args.input if args.input else "benfordsLaw_tester.xlsx"
+    input_file = args.input
 
     global column_pick
-    column_pick = args.column if args.column else "A"
+    # column_pick = args.column if args.column else "A"
+    column_pick = args.column
+    print(f'Reading______ {input_file} column______ {column_pick}')
 
-
+    
     if args.benfords:
 
         file_exists = os.path.exists(input_file)
@@ -85,7 +88,7 @@ def main():
 def benfords(input_file):
 
     # 👀 Load one column from Excel using openpyxl
-    wb = load_workbook('benfordsLaw_tester.xlsx', data_only=True)
+    wb = load_workbook(input_file, data_only=True)
     ws = wb.active
     print(f'{wb.active}')   # temp
     column_data = [cell.value for cell in ws[column_pick] if isinstance(cell.value, (int, float))]
@@ -126,7 +129,10 @@ def benfords(input_file):
 
     # 📐 Chi-Square Test (Excel vs Benford)
     expected_counts = benford_dist['Expected'] * len(excel_first_digit)
-    observed_counts = excel_df['Freq']
+    # observed_counts = excel_df['Freq']    # errors
+    # Ensure all digits 1–9 are present in observed_counts
+    observed_counts = excel_df.set_index('Digit').reindex(range(1, 10), fill_value=0)['Freq']
+
     chi2_stat, p_value = chisquare(f_obs=observed_counts, f_exp=expected_counts)
     print(f"Chi-Square Test ➤ Stat: {chi2_stat:.2f}, p-value: {p_value:.4f}")
 
@@ -217,7 +223,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+0.1.0 - working copy
 
 """
 
@@ -225,7 +231,9 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+if there are no instances of a number, like 3, it blows an error
+    raise ValueError(f'shapes {shape1} and {shape2} could not be '
+ValueError: shapes (8,) and (9,) could not be broadcast together
 
 
 """
@@ -234,6 +242,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      notes            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+
+
 The Manipulated Data section simulates financial values that are artificially rounded 
 to the nearest thousand, creating unnaturally uniform distributions. These values do not 
 follow the logarithmic pattern predicted by Benford’s Law, which typically governs organic 
