@@ -1,6 +1,6 @@
 
 ## BenfordsLaw_Tester.py 
-This script models Benford’s Law by generating and comparing authentic versus manipulated financial data. It outputs frequency distributions to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud."
+This script models Benford’s Law. It outputs frequency distributions of the first digit to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud."
 
 
 
@@ -31,7 +31,7 @@ Example:
 		
 Note:
 this currently reads column A in the first sheet use -c to specify a differnt column.
-	
+
 	
 ![sample output](images/BenfordsLaw_Enron.png)	
 	
