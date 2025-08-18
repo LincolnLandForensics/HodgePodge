@@ -35,7 +35,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description = "This script models Benford’s Law by generating and comparing authentic versus manipulated financial data. It outputs frequency distributions to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud."
-version = '0.1.1'
+version = '0.2.1'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -86,89 +86,60 @@ def main():
     return 0
 
 def benfords(input_file):
-
-    # 👀 Load one column from Excel using openpyxl
     wb = load_workbook(input_file, data_only=True)
     ws = wb.active
-    print(f'{wb.active}')   # temp
     column_data = [cell.value for cell in ws[column_pick] if isinstance(cell.value, (int, float))]
 
-    # 📊 Generate synthetic data for Benford analysis
-    np.random.seed(123)
-    authentic_revenue = 10 ** np.random.uniform(np.log10(1000), np.log10(500000), 1000)
-    fraudulent_revenue = np.round(np.random.uniform(1000, 500000, 1000), -3)
+    if not column_data:
+        msg_blurb_square("No numeric data found in the selected Excel column. Skipping analysis.", color_yellow)
+        return
 
-    # 🔍 First-digit extraction
-    def get_first_digit(arr):
-        return [int(str(int(np.floor(x)))[0]) for x in arr if x > 0]
-
-    authentic_first_digit = get_first_digit(authentic_revenue)
-    fraudulent_first_digit = get_first_digit(fraudulent_revenue)
+    # Extract first digits from Excel data
     excel_first_digit = get_first_digit(column_data)
 
-    # 📈 Benford expected distribution
+    # Benford expected distribution
     benford_dist = pd.DataFrame({
         'Digit': range(1, 10),
         'Expected': np.log10(1 + 1 / np.arange(1, 10))
     })
 
-    # 🧮 Convert digit list to DataFrame
-    def digit_df(digits, label):
-        df = pd.Series(digits).value_counts().sort_index().reset_index()
-        df.columns = ['Digit', 'Freq']
-        df['Prop'] = df['Freq'] / df['Freq'].sum()
-        df['Type'] = label
-        return pd.merge(df, benford_dist, on='Digit', how='left')
+    # Convert digit list to DataFrame
+    df = pd.Series(excel_first_digit).value_counts().sort_index().reset_index()
+    df.columns = ['Digit', 'Freq']
+    df['Prop'] = df['Freq'] / df['Freq'].sum()
+    df['Type'] = 'Excel Data'
+    df = pd.merge(df, benford_dist, on='Digit', how='left')
 
-    authentic_df = digit_df(authentic_first_digit, 'Authentic Data')
-    fraudulent_df = digit_df(fraudulent_first_digit, 'Manipulated Data')
-    excel_df = digit_df(excel_first_digit, 'Excel Data')
-
-    # 📊 Combine datasets for plotting
-    data_plot = pd.concat([authentic_df, fraudulent_df, excel_df])
-
-    # 📐 Chi-Square Test (Excel vs Benford)
+    # Chi-Square Test
+    observed_counts = df.set_index('Digit').reindex(range(1, 10), fill_value=0)['Freq']
     expected_counts = benford_dist['Expected'] * len(excel_first_digit)
-    # observed_counts = excel_df['Freq']    # errors
-    # Ensure all digits 1–9 are present in observed_counts
-    observed_counts = excel_df.set_index('Digit').reindex(range(1, 10), fill_value=0)['Freq']
-
     chi2_stat, p_value = chisquare(f_obs=observed_counts, f_exp=expected_counts)
-    print(f"Chi-Square Test ➤ Stat: {chi2_stat:.2f}, p-value: {p_value:.4f}")
 
-    # 📏 MAD Test (Excel vs Benford)
-    mad = np.mean(np.abs(excel_df['Prop'] - excel_df['Expected']))
-    print(f"MAD ➤ Mean Absolute Deviation: {mad:.4f}")
+    # MAD Test
+    mad = np.mean(np.abs(df['Prop'] - df['Expected']))
 
-    # 📉 Plotting
+    # Plotting
     fig, ax = plt.subplots(figsize=(10, 6))
-    colors = {
-        'Authentic Data': 'darkgreen',
-        'Manipulated Data': 'red',
-        'Excel Data': 'orange'
-    }
-    offsets = {
-        'Authentic Data': -0.25,
-        'Manipulated Data': 0.25,
-        'Excel Data': 0.0
-    }
-    for label, group in data_plot.groupby('Type'):
-        ax.bar(group['Digit'] + offsets[label],
-               group['Prop'], width=0.25, alpha=0.7,
-               label=label, color=colors[label])
-
+    ax.bar(df['Digit'], df['Prop'], width=0.5, alpha=0.7, label='Excel Data', color='orange')
     ax.plot(benford_dist['Digit'], benford_dist['Expected'],
             color='blue', linewidth=2, label="Benford's Law")
 
-    ax.set_title(f"Benford's Law: {input_file}", fontsize=16, weight='bold')
+    ax.set_title(f"Benford's Law Analysis: {input_file}", fontsize=16, weight='bold')
     ax.set_xlabel('First Digit', fontsize=14)
     ax.set_ylabel('Proportion', fontsize=14)
     ax.set_xticks(range(1, 10))
     ax.legend()
     plt.grid(True, which='major', linestyle='--', alpha=0.4)
-    plt.tight_layout()
-    plt.show()
 
+    # Add Chi-Square and MAD results below the chart
+    stats_text = f"Chi-Square: {chi2_stat:.2f} (p={p_value:.4f})   |   MAD: {mad:.4f}"
+    fig.text(0.5, 0.01, stats_text,
+             ha='center', va='bottom',
+             fontsize=12,
+             bbox=dict(boxstyle='round,pad=0.4', facecolor='#f0f0f0', edgecolor='gray'))
+
+    plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for stats
+    plt.show()
 
 
 # 🧮 Convert digit list to DataFrame

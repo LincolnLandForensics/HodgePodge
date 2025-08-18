@@ -52,21 +52,6 @@ Benford's Law is widely used in fraud detection, particularly in accounting and 
 Deviations from the expected distribution can signal manipulation or anomalies in the data.
 The blue line gives a baseline of what Benford's law should look like, as a baseline.
 
-## Manipulated Data (Red column)
-The Manipulated Data section simulates financial values that are artificially rounded 
-to the nearest thousand, creating unnaturally uniform distributions. These values do not 
-follow the logarithmic pattern predicted by Benford’s Law, which typically governs organic 
-datasets. By comparing the first-digit frequency of this manipulated data to Benford's 
-expected distribution, the model helps demonstrate how fabricated or tampered numbers 
-diverge from statistical norms.
-
-## Authentic Data (Green column)
-The Authentic Data section contains numerical values that are naturally occurring 
-and statistically organic. These figures are either real-world samples or generated 
-using randomization techniques that closely mimic legitimate datasets. They tend to 
-follow Benford’s Law, which predicts the frequency of first digits in many 
-naturally formed datasets.
-
 ## Chi-Square Test
 The Chi-Square Test is a statistical method used to evaluate whether observed frequencies 
 in a dataset differ significantly from expected frequencies under a certain hypothesis. 
@@ -76,6 +61,12 @@ The bigger the number, the less likely it is that the differences occurred by ch
 and the more likely it is that something meaningful is happening in the data.
 
 Chi-Square Test ➤ Stat: 1114.61
+
+## Mean Absolute Deviation (MAD)
+MAD measures how far the observed digit proportions deviate from Benford’s expected distribution — on average. 
+It’s a simple yet powerful way to quantify irregularities: the higher the MAD, the more the data strays 
+from what Benford’s Law predicts. In forensic analysis, a low MAD suggests natural, unmanipulated data, 
+while a high MAD can signal potential anomalies worth investigating.
 
 
 
