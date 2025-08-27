@@ -227,6 +227,8 @@ def youtube(args):
         (owner_id, owner_url, download_name, error) = ('', '', '', '')
         (video_id, keywords) = ('', '')
 
+        dateDownloaded = todaysDate
+
         try:
             yt = YouTube(link)
             video_id = yt.video_id
@@ -245,8 +247,6 @@ def youtube(args):
                 stream.download()
             else:
                 yt.streams.first().download()
-
-            dateDownloaded = todaysDate
             caption = youtube_transcript(video_id)
 
         except AgeRestrictedError:
