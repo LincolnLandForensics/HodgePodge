@@ -1,55 +1,60 @@
 #!/usr/bin/python
 # coding: utf-8
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
-
 import sys
 import os
-import os.path
 import socket
 import argparse
+import re
+import time
 from tkinter import *
 from tkinter import messagebox
-from pytube import YouTube  # import pytube.exceptions
-from pytube.exceptions import AgeRestrictedError  # Import AgeRestrictedError
+from pytube import YouTube
+from pytube.exceptions import AgeRestrictedError
 
-from youtube_transcript_api import YouTubeTranscriptApi # pip install youtube-transcript-api # for windows
+import yt_dlp   # pip install yt-dlp
 
-import time # for sleep timer
+from youtube_transcript_api import (
+    YouTubeTranscriptApi,
+    TranscriptsDisabled,
+    NoTranscriptFound,
+    CouldNotRetrieveTranscript
+)
 
-from datetime import date, datetime
-from openpyxl.styles import Font 
+from datetime import datetime
 from openpyxl import Workbook
-from openpyxl.styles import Alignment
 
+from openpyxl.utils.exceptions import IllegalCharacterError
+
+
+
+# --------------------------------------------------------------------------
+# Globals
+# --------------------------------------------------------------------------
 d = datetime.today()
-Day = d.strftime("%d")
-Month = d.strftime("%m")
-Year = d.strftime("%Y")
-# todaysDate = d.strftime("%m/%d/%Y")
-# todaysDate = d.strftime("%Y-%m-%d")
 todaysDate = d.strftime("%Y-%m-%d %H:%M:%S")
-
-# todaysDateTime = d.strftime("%m_%d_%Y_%H-%M-%S")
 todaysDateTime = d.strftime("%Y-%m-%d_%H-%M-%S")
-
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description = "Download a list of Youtube videos from videos.txt, save list in xlsx file"
-version = '1.0.7'
+version = '1.2.2'
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
+# will be set in main()
+filename = None
+spreadsheet = None
+Row = None
+workbook = None
+Sheet1 = None
 
+# --------------------------------------------------------------------------
+# Main
+# --------------------------------------------------------------------------
 def main():
-    global filename
+    global filename, Row, spreadsheet
+
     filename = 'videos.txt'
-    global Row
     Row = 2
-    global spreadsheet
     spreadsheet = f'videos_{todaysDateTime}.xlsx'
-    global sheet_format
-    sheet_format = ''
 
     status = internet()
     if not status:
@@ -60,115 +65,88 @@ def main():
         create_xlsx()
 
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-I', '--input', help='', required=False)
-    parser.add_argument('-O', '--output', help='', required=False)
+    parser.add_argument('-I', '--input', help='input file (default videos.txt)', required=False)
+    parser.add_argument('-O', '--output', help='output Excel filename', required=False)
     parser.add_argument('-y', '--youtube', help='youtube download', required=False, action='store_true')
+    parser.add_argument('--sleep', type=int, default=30, help='seconds to sleep between downloads')
+    parser.add_argument('--headless', action='store_true', help='disable GUI popups')
+    parser.add_argument('--resolution', type=str, default="360p", help='video resolution to download (e.g., 360p, 720p)')
 
     args = parser.parse_args()
 
     if args.input:
         filename = args.input
     if args.output:
-        outputFile = args.output
+        spreadsheet = args.output
 
     if args.youtube:
-        youtube()
+        youtube(args)
     else:
-        youtube()
+        youtube(args)
 
     workbook.save(spreadsheet)
     return 0
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
-def caption_sort(captions): #beta
-    print(f'captions = type(captions)') # temp
-    # Sort captions based on start times
-    sorted_captions = sorted(captions, key=lambda x: x['start'])
-    # sorted_captions = captions
-
-    new_format_captions = '\n'.join([f"{caption['start']} : {caption['text']}" for caption in sorted_captions])
-    result_string = f"caption = [\n{new_format_captions}\n]"
-
-    return result_string
-
+# --------------------------------------------------------------------------
+# Helpers
+# --------------------------------------------------------------------------
 def check_keywords_in_captions(caption, keywords):
-    keyword = ''
-    """
-    Check for the presence of keywords in the captions.
-
-    Args:
-    - captions (str): The captions text.
-    - keywords (list of str): List of keywords to check.
-
-    Returns:
-    - found_keywords (list of str): List of keywords found in the captions.
-    """
+    """Check for keywords inside transcript text."""
     found_keywords = []
     for keyword in keywords:
         try:
-            if keyword.lower() in caption.lower():
+            if re.search(rf"\b{re.escape(keyword)}\b", caption, re.IGNORECASE):
                 found_keywords.append(keyword)
-        except:pass
-    # Convert found_keywords to a string
-    found_keywords_str = ", ".join(found_keywords)
+        except Exception:
+            pass
+    return ", ".join(found_keywords)
 
-    return found_keywords_str
+# Remove illegal characters for Excel
+def clean_excel_value(val):
+    if isinstance(val, str):
+        return re.sub(r'[\x00-\x1F\x7F]', '', val)
+    return val
+
 
 def create_xlsx():
-    global workbook
+    global workbook, Sheet1
     workbook = Workbook()
-    global Sheet1
     Sheet1 = workbook.active
     Sheet1.title = 'videos'
-    # header_format = openpyxl.styles.Font(bold=True)
-    # header_formatUrl = openpyxl.styles.Font(bold=True, color='FFc000')  # orange Case items
-
     Sheet1.freeze_panes = 'B2'
-    # Sheet1['B2'].selected = True
 
-    # Excel column width
-    Sheet1.column_dimensions['A'].width = 45
-    Sheet1.column_dimensions['B'].width = 45
-    Sheet1.column_dimensions['C'].width = 11
-    Sheet1.column_dimensions['D'].width = 9
-    Sheet1.column_dimensions['E'].width = 14
-    Sheet1.column_dimensions['F'].width = 18
-    Sheet1.column_dimensions['G'].width = 6
-    Sheet1.column_dimensions['H'].width = 30
-    Sheet1.column_dimensions['I'].width = 12
-    Sheet1.column_dimensions['J'].width = 14
-    Sheet1.column_dimensions['K'].width = 18
-    Sheet1.column_dimensions['L'].width = 15
-    Sheet1.column_dimensions['M'].width = 60
-    Sheet1.column_dimensions['N'].width = 2
-    Sheet1.column_dimensions['O'].width = 15    # keywords
-    # Sheet1.column_dimensions['P'].width = 10
+    # Excel column widths
+    widths = {
+        'A': 45, 'B': 45, 'C': 11, 'D': 9, 'E': 14,
+        'F': 18, 'G': 6, 'H': 30, 'I': 12, 'J': 14,
+        'K': 18, 'L': 15, 'M': 60, 'N': 2, 'O': 15
+    }
+    for col, w in widths.items():
+        Sheet1.column_dimensions[col].width = w
 
-    # Write column headers
-    Sheet1['A1'] = 'url'
-    Sheet1['B1'] = 'title'
-    Sheet1['C1'] = 'description'
-    Sheet1['D1'] = 'views'
-    Sheet1['E1'] = 'author'
-    Sheet1['F1'] = 'publish_date'
-    Sheet1['G1'] = 'length'
-    Sheet1['H1'] = 'download_name'
-    Sheet1['I1'] = 'video_id'
-    Sheet1['J1'] = 'thumbnail_url'
-    Sheet1['K1'] = 'dateDownloaded'
-    Sheet1['L1'] = 'error'
-    Sheet1['M1'] = 'caption'
-    # Sheet1['N1'] = 'rating'
-    Sheet1['O1'] = 'keywords'
+    # Headers
+    headers = [
+        'url','title','description','views','author','publish_date',
+        'length','download_name','video_id','thumbnail_url','dateDownloaded',
+        'error','caption','(unused)','keywords'
+    ]
+    for idx, h in enumerate(headers, 1):
+        Sheet1.cell(row=1, column=idx, value=h)
 
-   
-def finalMessage():
-    window = Tk()
-    window.geometry("1x1")
-    w = Label(window, text='Youtube Downloader', font="100")
-    w.pack()
-    print('\nSaved to current folder\n\nSaved info to %s  \n' % (spreadsheet))
-    messagebox.showinfo('information', '\nDownloaded all Youtube videos from %s  \n\nSaved to current folder\n\nSaved info to %s  \n' % (filename, spreadsheet))
+def finalMessage(headless=False):
+    if headless:
+        print(f"\nSaved to current folder\n\nSaved info to {spreadsheet}\n")
+    else:
+        try:
+            window = Tk()
+            window.geometry("1x1")
+            w = Label(window, text='Youtube Downloader', font="100")
+            w.pack()
+            print(f'\nSaved to current folder\n\nSaved info to {spreadsheet}\n')
+            messagebox.showinfo('information',
+                f'\nDownloaded all Youtube videos from {filename}\n\nSaved to {spreadsheet}\n')
+        except Exception:
+            print(f"\nSaved to {spreadsheet} (GUI disabled)\n")
 
 def internet(host="youtube.com", port=443, timeout=3):
     try:
@@ -180,181 +158,193 @@ def internet(host="youtube.com", port=443, timeout=3):
         return False
 
 def noInternetMsg():
-    window = Tk()
-    window.geometry("1x1")
-    w = Label(window, text='Youtube Downloader', font="100")
-    w.pack()
-    messagebox.showwarning("Warning", "CONNECT TO THE INTERNET FIRST")
+    try:
+        window = Tk()
+        window.geometry("1x1")
+        Label(window, text='Youtube Downloader', font="100").pack()
+        messagebox.showwarning("Warning", "CONNECT TO THE INTERNET FIRST")
+    except Exception:
+        print("CONNECT TO THE INTERNET FIRST")
 
 def noVideos():
-    window = Tk()
-    window.geometry("1x1")
-    w = Label(window, text='Youtube Downloader', font="100")
-    w.pack()
-    messagebox.showwarning("Warning", f"you are missing youtube videos in {filename}")
+    try:
+        window = Tk()
+        window.geometry("1x1")
+        Label(window, text='Youtube Downloader', font="100").pack()
+        messagebox.showwarning("Warning", f"Missing youtube videos in {filename}")
+    except Exception:
+        print(f"Missing youtube videos in {filename}")
 
 def youtube_transcript(video_id):
-    (caption) = ('')
-    
+    """Fetch transcript text, fallback if English not available."""
+    caption = ""
     try:
-        srt = YouTubeTranscriptApi.get_transcript(video_id)
-
-        for part in srt:
-            text = part['text']  # Extract text content
-            text = text.replace('[Music]', '')
-            text = text + ' '
-            caption += ' ' + text + ' '
-
-            caption = caption.strip()
-
+        # Try English transcript
+        srt = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+    except (TranscriptsDisabled, NoTranscriptFound, CouldNotRetrieveTranscript):
+        try:
+            # Fallback: any available transcript
+            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+            srt = transcript_list.find_transcript([t.language_code for t in transcript_list]).fetch()
+        except Exception:
+            return ""   # No transcripts available
     except Exception as e:
-        print(f"An error occurred : {str(e)}")
+        print(f"Transcript error for {video_id}: {str(e)}")
+        return ""
 
-    return caption
+    for part in srt:
+        text = part.get('text', '').strip()
+        if text.lower() == '[music]':
+            continue
+        caption += " " + text
 
+    return caption.strip()
 
-def youtube():
+# --------------------------------------------------------------------------
+# Main downloader
+# --------------------------------------------------------------------------
+def youtube(args):
     keywords_to_check = ["tax", "lambo", "drug dealer"]
 
-
-
     if not os.path.exists(filename):
-        print(f"\n\n\n\t {filename} does not exist\n\n\n\t")
+        print(f"\n{filename} does not exist\n")
         noVideos()
         exit()
-    else:
-        print('Downloading a list of Youtube videos from %s.\n\nThis can take a bit' % (filename))
-        csv_file = open(filename)
+
+    print(f'Downloading list of Youtube videos from {filename}. This can take a while...\n')
+    csv_file = open(filename)
 
     count = 0
 
     for each_line in csv_file:
-        (url, title, description, views, author, publish_date) = ('', '', '', '', '', '')
+        link = each_line.split(',')[0].strip()
+        if "youtu" not in link.lower():
+            continue
+
+        count += 1
+        (title, description, views, author, publish_date) = ('', '', '', '', '')
         (length, rating, thumbnail_url, dateDownloaded, owner, caption) = ('', '', '', '', '', '')
-        (owner_id, owner_url, captions, caption, download_name, error) = ('', '', '', '', '', '')
+        (owner_id, owner_url, download_name, error) = ('', '', '', '')
         (video_id, keywords) = ('', '')
-        
-        each_line = each_line.split(',')
-        each_line = each_line[0].strip()
 
-        link = each_line
+        try:
+            yt = YouTube(link)
+            video_id = yt.video_id
+            title = yt.title
+            download_name = f'{title}.mp4'
+            author = yt.author
+            description = yt.description
+            rating = yt.rating
+            publish_date = yt.publish_date
+            length = str(yt.length)
+            thumbnail_url = yt.thumbnail_url
+            views = yt.views
 
-        if "youtu" in link.lower():
-            count += 1
-
-            # try:
-                #                 Extract the video ID from the URL
-                # video_id = extract_video_id(link)            
-            # except:
-                # pass
-
-            try:
-                yt = YouTube(link)
-                video_id = yt.video_id
-
-                title = yt.title
-                download_name = f'{title}.mp4'
-                author = yt.author
-                description = yt.description
-                rating = yt.rating
-                publish_date = yt.publish_date
-                length = str(yt.length)
-                thumbnail_url = yt.thumbnail_url
-                views = yt.views
-
+            stream = yt.streams.filter(file_extension="mp4", res=args.resolution).first()
+            if stream:
+                stream.download()
+            else:
                 yt.streams.first().download()
-                mp4_files = yt.streams.filter(file_extension="mp4")
-                mp4_369p_files = mp4_files.get_by_resolution("360p")
-                mp4_369p_files.download("")  # <Download folder path>
-                dateDownloaded = todaysDate
 
-                if len(video_id) > 5:
-                    caption = youtube_transcript(video_id)
-                    caption = caption.strip()
-
-               # count += 1  # Increment count only if the video is successfully processed
-
-            except AgeRestrictedError as e:
-                print(f"age restricted and can't be accessed without logging in.")
-                error = (f"age restricted and can't be accessed without logging in. {download_name}")
-                download_name = ''
-                dateDownloaded = ''
-            except Exception as e:
-                print(f"An error occurred while processing video {link}: {str(e)}")
-                error = ('Error processing video. {download_name} {str(e)')
-                download_name = ''
-                dateDownloaded = ''                
-        else:
-            error = ('error')
-            dateDownloaded = ''
-
-        if len(video_id) > 5:
+            dateDownloaded = todaysDate
             caption = youtube_transcript(video_id)
-            caption = caption.replace('{\'text\': ', '')    # .replace(', \'start\': ', '^').replace(', \'duration\': ', '^')
 
-        # Check for keywords in captions
+        except AgeRestrictedError:
+            print(f"Video is age restricted: {link}")
+            error = f"Age restricted (requires login). {download_name}"
+        except Exception as e:
+            print(f"An error occurred while processing video {link}: {str(e)}")
+            error = f"Error processing video {download_name}: {str(e)}"
+            title, description, views, author, publish_date, length, download_name, error, caption, tags = yt__dlp(link)   # test
+
+
+        # Keyword search
         keywords = check_keywords_in_captions(caption, keywords_to_check)
 
         print(f'{link}  {title}')
-        time.sleep(30) #will sleep for 30 seconds
-        write_xlsx(link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords)
+        time.sleep(args.sleep)
+        write_xlsx(link, title, description, views, author, publish_date, length,
+                   download_name, rating, thumbnail_url, dateDownloaded, error,
+                   caption, video_id, owner, owner_id, owner_url, keywords)
 
     if count == 0:
         noVideos()
-        # exit()
     else:
-        finalMessage()
+        finalMessage(headless=args.headless)
 
-def write_xlsx(link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords):
 
-    global Row
-
-    Sheet1.cell(row=Row, column=1, value=link)
-    Sheet1.cell(row=Row, column=2, value=title)
-    Sheet1.cell(row=Row, column=3, value=description)
-    Sheet1.cell(row=Row, column=4, value=str(views))
-    Sheet1.cell(row=Row, column=5, value=author)
-    Sheet1.cell(row=Row, column=6, value=str(publish_date))
-    Sheet1.cell(row=Row, column=7, value=length)
-    Sheet1.cell(row=Row, column=8, value=download_name)  # download_name?
-    Sheet1.cell(row=Row, column=9, value=str(video_id))
-    Sheet1.cell(row=Row, column=10, value=thumbnail_url)
-    Sheet1.cell(row=Row, column=11, value=dateDownloaded)
-
-    # if download_name != '':
-        # Sheet1.cell(row=Row, column=11, value=dateDownloaded)
-    Sheet1.cell(row=Row, column=12, value=error)
-    Sheet1.cell(row=Row, column=13, value=caption)    
-    Sheet1.cell(row=Row, column=15, value=keywords)    
-        
-    # Save caption tracks info to cell
-    # if caption:
-        # print(f'caption = {caption}')
-        # caption_info = f"Language: {caption.language}\nName: {caption.name}\nCode: {caption.code}"
-        # Sheet1.cell(row=Row, column=13, value=caption_info)
-    # Sheet1.cell(row=Row, column=14, value=rating)
-    # Sheet1.cell(row=Row, column=15, value=owner_id) # not assigned
-    # Sheet1.cell(row=Row, column=16, value=owner_url) # not assigned
+def yt__dlp(video_url):
+    title = description = views = creator = release_date = length = display_id = caption = tags = ''
+    error = ''
     
+    ydl_opts = {
+        'format': 'mp4',
+        'outtmpl': '%(title)s.%(ext)s',
+        'quiet': True,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(video_url, download=True)
+
+            # Extract desired metadata
+            title = info.get('title')
+            description = info.get('description')
+            views = info.get('view_count')
+            creator = info.get('uploader')
+            release_date = info.get('upload_date')
+            length = info.get('duration')
+            display_id = info.get('display_id')
+            
+    except Exception as e:
+        print(f"An error occurred while processing video {video_url}: {str(e)}")
+        title = description = views = creator = release_date = length = display_id = caption = tags = ''
+        error = str(e)
+
+    return title, description, views, creator, release_date, length, display_id, error, caption, tags
+
+
+# --------------------------------------------------------------------------
+# Excel writer
+# --------------------------------------------------------------------------
+def write_xlsx(link, title, description, views, author, publish_date, length,
+               download_name, rating, thumbnail_url, dateDownloaded, error,
+               caption, video_id, owner, owner_id, owner_url, keywords):
+
+    global Row, workbook, Sheet1, spreadsheet
+
+    values = [
+        link, title, description, str(views), author, str(publish_date),
+        length, download_name, str(video_id), thumbnail_url, dateDownloaded,
+        error, caption, '', keywords
+    ]
+
+    # for idx, val in enumerate(values, 1):
+        # Sheet1.cell(row=Row, column=idx, value=val)
+
+    for idx, val in enumerate(values, 1):
+        try:
+            Sheet1.cell(row=Row, column=idx, value=clean_excel_value(val))
+        except IllegalCharacterError as e:
+            print(f"Illegal character in column {idx}, row {Row}: {e}")
+            Sheet1.cell(row=Row, column=idx, value="ERROR")
+
+
     Row += 1
+    workbook.save(spreadsheet)  # Autosave after each row
 
-def usage():
-    file = sys.argv[0].split('\\')[-1]
-    print("\nDescription: " + description)
-    print(file + f" Version: {version} by {author}")
-    print("\nExample:")
-    print(f"\t{file} -y\t\t")
-    print(f"\t{file} -y -I videos.txt")
-
+# --------------------------------------------------------------------------
 if __name__ == '__main__':
     main()
+
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 """
-
+1.2.1 - re-written by chatGPT   
+1.0.7 - works
 1.0.5 - transcript saved as caption, look for keywords like tax
 1.0.4 - functional copy
 """

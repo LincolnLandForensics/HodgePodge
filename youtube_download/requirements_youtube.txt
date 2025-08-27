@@ -1,2 +1,5 @@
 pytube
 xlsxwriter
+yt_dlp
+youtube-transcript-api
+openpyxl
