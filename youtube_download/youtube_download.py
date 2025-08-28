@@ -26,18 +26,17 @@ from openpyxl import Workbook
 
 from openpyxl.utils.exceptions import IllegalCharacterError
 
-
-
 # --------------------------------------------------------------------------
 # Globals
 # --------------------------------------------------------------------------
 d = datetime.today()
-todaysDate = d.strftime("%Y-%m-%d %H:%M:%S")
+# todaysDate = d.strftime("%Y-%m-%d %H:%M:%S")
+todaysDate = d.strftime("%Y-%m-%d")
 todaysDateTime = d.strftime("%Y-%m-%d_%H-%M-%S")
 
 author = 'LincolnLandForensics'
 description = "Download a list of Youtube videos from videos.txt, save list in xlsx file"
-version = '1.2.2'
+version = '1.2.3'
 
 # will be set in main()
 filename = None
@@ -106,7 +105,6 @@ def clean_excel_value(val):
     if isinstance(val, str):
         return re.sub(r'[\x00-\x1F\x7F]', '', val)
     return val
-
 
 def create_xlsx():
     global workbook, Sheet1
@@ -222,13 +220,39 @@ def youtube(args):
             continue
 
         count += 1
-        (title, description, views, author, publish_date) = ('', '', '', '', '')
-        (length, rating, thumbnail_url, dateDownloaded, owner, caption) = ('', '', '', '', '', '')
-        (owner_id, owner_url, download_name, error) = ('', '', '', '')
-        (video_id, keywords) = ('', '')
 
         dateDownloaded = todaysDate
 
+        link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords = yt__dlp(link)
+        # title, description, views, author, publish_date, length, download_name, error, caption, tags = yt__dlp(link)   # test
+        if error != '':
+            link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords = pytube(link)
+
+        # Keyword search
+        # keywords = check_keywords_in_captions(caption, keywords_to_check)
+
+        print(f'{link}  {title}')
+        time.sleep(args.sleep)
+        write_xlsx(link, title, description, views, author, publish_date, length,
+                   download_name, rating, thumbnail_url, dateDownloaded, error,
+                   caption, video_id, owner, owner_id, owner_url, keywords)
+
+    if count == 0:
+        noVideos()
+    else:
+        finalMessage(headless=args.headless)
+
+
+def pytube(link):
+    (title, description, views, author, publish_date) = ('', '', '', '', '')
+    (length, rating, thumbnail_url, owner, caption) = ('', '', '', '', '')
+    (owner_id, owner_url, download_name, error) = ('', '', '', '')
+    (video_id, keywords) = ('', '')
+
+    dateDownloaded = todaysDateTime
+
+    
+    if "youtu" not in link.lower():
         try:
             yt = YouTube(link)
             video_id = yt.video_id
@@ -257,25 +281,18 @@ def youtube(args):
             error = f"Error processing video {download_name}: {str(e)}"
             title, description, views, author, publish_date, length, download_name, error, caption, tags = yt__dlp(link)   # test
 
-
-        # Keyword search
-        keywords = check_keywords_in_captions(caption, keywords_to_check)
-
-        print(f'{link}  {title}')
-        time.sleep(args.sleep)
-        write_xlsx(link, title, description, views, author, publish_date, length,
-                   download_name, rating, thumbnail_url, dateDownloaded, error,
-                   caption, video_id, owner, owner_id, owner_url, keywords)
-
-    if count == 0:
-        noVideos()
-    else:
-        finalMessage(headless=args.headless)
+    return link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords
 
 
-def yt__dlp(video_url):
-    title = description = views = creator = release_date = length = display_id = caption = tags = ''
-    error = ''
+def yt__dlp(link):
+   
+    (title, description, views, author, publish_date) = ('', '', '', '', '')
+    (length, rating, thumbnail_url, owner, caption) = ('', '', '', '', '')
+    (owner_id, owner_url, download_name, error) = ('', '', '', '')
+    (video_id, keywords) = ('', '')
+    
+    dateDownloaded = todaysDateTime
+
     
     ydl_opts = {
         'format': 'mp4',
@@ -285,23 +302,30 @@ def yt__dlp(video_url):
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=True)
+            info = ydl.extract_info(link, download=True)
 
             # Extract desired metadata
             title = info.get('title')
+            download_name = f'{title}.mp4'
             description = info.get('description')
             views = info.get('view_count')
             creator = info.get('uploader')
             release_date = info.get('upload_date')
             length = info.get('duration')
             display_id = info.get('display_id')
-            
+            publish_date = info.get('upload_date')
+            artist = info.get('uploader')
+            video_id = info.get('id')
+            location = info.get('location')  
+            tags = info.get('tags')
+            keywords = ' '.join(tags)
+
     except Exception as e:
         print(f"An error occurred while processing video {video_url}: {str(e)}")
-        title = description = views = creator = release_date = length = display_id = caption = tags = ''
+        # title = description = views = creator = release_date = length = display_id = caption = tags = ''
         error = str(e)
 
-    return title, description, views, creator, release_date, length, display_id, error, caption, tags
+    return link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords
 
 
 # --------------------------------------------------------------------------
@@ -310,17 +334,14 @@ def yt__dlp(video_url):
 def write_xlsx(link, title, description, views, author, publish_date, length,
                download_name, rating, thumbnail_url, dateDownloaded, error,
                caption, video_id, owner, owner_id, owner_url, keywords):
-
+    # print(f'keywords = {keywords}') # temp
     global Row, workbook, Sheet1, spreadsheet
 
     values = [
         link, title, description, str(views), author, str(publish_date),
         length, download_name, str(video_id), thumbnail_url, dateDownloaded,
-        error, caption, '', keywords
+        error, caption, '', str(keywords)
     ]
-
-    # for idx, val in enumerate(values, 1):
-        # Sheet1.cell(row=Row, column=idx, value=val)
 
     for idx, val in enumerate(values, 1):
         try:
@@ -328,7 +349,6 @@ def write_xlsx(link, title, description, views, author, publish_date, length,
         except IllegalCharacterError as e:
             print(f"Illegal character in column {idx}, row {Row}: {e}")
             Sheet1.cell(row=Row, column=idx, value="ERROR")
-
 
     Row += 1
     workbook.save(spreadsheet)  # Autosave after each row
@@ -344,8 +364,7 @@ if __name__ == '__main__':
 
 """
 1.2.1 - re-written by chatGPT   
-1.0.7 - works
-1.0.5 - transcript saved as caption, look for keywords like tax
+1.0.5 - transcript saved as caption, look for keywords like lambo
 1.0.4 - functional copy
 """
 
@@ -353,8 +372,10 @@ if __name__ == '__main__':
 
 
 """
+remove redundant Global statements
 download a list of all urls the user has
 parse comments
+
 
 """
 
