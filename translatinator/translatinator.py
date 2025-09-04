@@ -521,6 +521,8 @@ def msg_blurb_square(msg_blurb, color):
 
 
 def strip_blank_lines(text):
+    if not text:
+        return ""
     lines = text.splitlines()
     # Remove leading blank lines
     while lines and not lines[0].strip():
@@ -529,8 +531,8 @@ def strip_blank_lines(text):
     while lines and not lines[-1].strip():
         lines.pop()
     return '\n'.join(lines)
-
-
+    
+    
 def translate_excel(input_xlsx, output_xlsx, source_language):
 
     row_count = 2
@@ -563,17 +565,10 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         (translation, note, e, confidence, length) = ('', '', '', '', '')
         (source_language, text, skipper) = ('', '', '')
         original_content = row[0].value
-        original_content = original_content.strip()
+        if original_content is not None:
+            original_content = original_content.strip()
+
         original_content = strip_blank_lines(original_content)
-
-        # if any(char.isalpha() for char in original_content):
-            # print('alpha characters present')
-        # else:
-            # print('no alpha characters present')
-
-
-
-
         
         source_language, confidence = language_detect(original_content)
         length = content_length(original_content)
@@ -584,7 +579,11 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
         elif original_content is not None and len(original_content) > 3660:
             note = '.Translation failed - too long'
    
+        # elif original_content is not None and original_content != '' and source_language != 'auto'  and source_language != 'en':
         elif original_content is not None and original_content != '' and source_language != 'auto'  and source_language != 'en':
+
+
+            # if any(char.isalpha() for char in original_content)
 
             if isinstance(original_content, (int, float)):
                 translation = original_content
