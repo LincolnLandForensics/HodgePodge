@@ -25,8 +25,6 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 
-
-
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
@@ -154,30 +152,11 @@ DEVICE_TYPES = {
 
     
 # Colorize section
-global color_red
-global color_green
-global color_reset
-color_green = ''
-color_green = ''
-color_red = ''
-color_reset = ''
-
-if sys.version_info > (3, 7, 9) and os.name == "nt":
-    version_info = os.sys.getwindowsversion()
-    major_version = version_info.major
-    build_version = version_info.build
-
-    if major_version >= 10 and build_version >= 22000: # Windows 11 and above
-        import colorama
-        from colorama import Fore, Back, Style  
-        print(f'{Back.BLACK}') # make sure background is black
-        color_red = Fore.RED
-        color_yellow = Fore.YELLOW
-        color_green = Fore.GREEN
-  
-        color_blue = Fore.BLUE
-        color_purple = Fore.MAGENTA
-        color_reset = Style.RESET_ALL
+color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
+from colorama import Fore, Back, Style
+print(Back.BLACK)
+color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
+color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
         
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -607,6 +586,7 @@ def parse_hackRF(input_folder, output_xlsx, data):     # hackrf
     data2 = []
     mac_uniq = []
     
+    mac_regex = r'(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}'
     mac_regex = r'(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}'
     
     # Read and process each .txt file in the folder
@@ -1154,17 +1134,11 @@ def process_wigle_file(filename, data):
                 subgroup = 'Speaker'
                 Icon = 'Display'
 
-
-
-
             elif "(oven)" in SSID.lower():
                 subgroup = 'Oven'
                 # Type = 'Display/Speaker'
                 Icon = 'BT'
 
-
-                    
-            # elif Type == 'BT': # todo
             elif "BT" in Type or "BLE" in Type:
                 subgroup = Type
                 Type = 'BlueTooth'

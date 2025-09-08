@@ -34,7 +34,7 @@ import argparse  # for menu system
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.1.8'
+version = '3.2.0'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -128,36 +128,21 @@ regex_phone11 = re.compile(r'^1\d{10}$')
 regex_phone2 = re.compile(r'(\d{3}) \W* (\d{3}) \W* (\d{4}) \W* (\d*)$')
 
 # Colorize section
-global color_red
-global color_yellow
-global color_green
-global color_blue
-global color_purple
-global color_reset
-color_red = ''
-color_yellow = ''
-color_green = ''
-color_blue = ''
-color_purple = ''
-color_reset = ''
 
-if sys.version_info > (3, 7, 9) and os.name == "nt":
-    version_info = os.sys.getwindowsversion()
-    major_version = version_info.major
-    build_version = version_info.build
 
-    if major_version >= 10 and build_version >= 22000: # Windows 11 and above
-        import colorama
-        from colorama import Fore, Back, Style  
-        print(f'{Back.BLACK}') # make sure background is black
-        color_red = Fore.RED
-        color_yellow = Fore.YELLOW
-        color_green = Fore.GREEN
-  
-        color_blue = Fore.BLUE
-        color_purple = Fore.MAGENTA
-        color_reset = Style.RESET_ALL
 
+# global color_red
+# global color_yellow
+# global color_green
+# global color_blue
+# global color_purple
+# global color_reset
+# colors
+color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
+from colorama import Fore, Back, Style
+print(Back.BLACK)
+color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
+color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -386,7 +371,7 @@ def main():
         
     if args.test:  
         print(f' using test module')
-        ham_radio()
+        go()
         
 
     if args.usersmodules and len(users) > 0:  
@@ -409,6 +394,7 @@ def main():
         foursquare()    #
         garmin()    #
         github()    #
+        go() # test
         gravatar()  # grab bonus urls
         ham_radio() # manual but works
         imageshack()    #
@@ -1494,7 +1480,17 @@ def github(): # testuser = kevinrose
             row_data["note"] = note             
             row_data["info"] = info
             data.append(row_data)  
-     
+
+def go(): 
+    if len(users) > 0:
+        row_data = {}
+        ranking = '9 - manual'
+        url = ('https://breachdirectory.org')
+
+        row_data["ranking"] = ranking
+        row_data["url"] = url
+        row_data["note"] = 'gosearch.exe {user} --no-false-positives'
+        data.append(row_data)     
 
 def gravatar(): # testuser = kevinrose      https://en.gravatar.com/kevinrose
     print(f'{color_yellow}\n\t<<<<< gravatar {color_blue}users{color_yellow} >>>>>{color_reset}')
@@ -1630,7 +1626,7 @@ def holehe_email(): # testEmail= kevinrose@gmail.com
     print(f'{color_yellow}\n\t<<<<< holehe {color_blue}emails{color_yellow} >>>>>{color_reset}')    # temp
     for email in emails:
         row_data = {}
-        (query, ranking) = (email, '9 - manual')
+        (query, ranking) = (email, '7 - manual')
         note = (f'cd C:\Forensics\scripts\python\git-repo\holehe && holehe -NP --no-color --no-clear --only-used {email}')
 
         if '@' in email.lower():
@@ -2890,16 +2886,23 @@ def read_xlsx(input_xlsx):
             emails.append(email)
             
         # phone
-        phone = (row_data.get("phone") or '').strip()
-
+        try:    
+            phone = (row_data.get("phone") or '').strip()
+        except:
+            phone = (row_data.get("phone") or '')
+            
         if phone:
             # Remove unwanted characters
-            phone = re.sub(r'[^\d+]', '', phone)
-
+            try:
+                phone = re.sub(r'[^\d+]', '', phone)
+            except:
+                pass
+                
             # Optional: validate E.164 format
-            if re.match(r'^\+?[1-9]\d{1,14}$', phone) and phone not in phones:
-                phones.append(phone)
-
+            try:
+                if re.match(r'^\+?[1-9]\d{1,14}$', phone) and phone not in phones:
+                    phones.append(phone)
+            except:pass
 
         # business
         business = (
@@ -2932,7 +2935,7 @@ def read_xlsx(input_xlsx):
             row_data.get("DOB") or
             row_data.get("dob") or
             ''
-        ).strip()
+        )   # .strip()
 
         # associates
         associates = (
@@ -2965,7 +2968,8 @@ def read_xlsx(input_xlsx):
 
 
         # timestamp
-        timestamp = (row_data.get("Time") or '').strip()
+        timestamp = (row_data.get("Time") or '')
+        timestamp = timestamp or ""
         timestamp, time_orig, timezone = convert_timestamp(timestamp, '', '')
 
 
@@ -4343,7 +4347,7 @@ def whatsmyname():    # testuser=   kevinrose
         url = ('https://whatsmyname.app/')
         
         note = (f'cd C:\Forensics\scripts\python\git-repo\WhatsMyName && python web_accounts_list_checker.py -u {user} -of C:\Forensics\scripts\python\output_{user}txt') 
-        ranking = '9 - manual'
+        ranking = '7 - manual'
         row_data["query"] = query
         row_data["ranking"] = ranking
         row_data["url"] = url
@@ -5683,6 +5687,10 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+https://breachdirectory.org  crack hashes with weakpass.com
+gosearch.exe kevinrose --no-false-positives
+
+
 https://www.deviantart.com/kevinrose/gallery
 
 implement convert_timestamp()

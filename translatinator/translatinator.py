@@ -18,6 +18,10 @@ from openpyxl import load_workbook
 import requests
 import argparse  # for menu system
 
+
+# pip uninstall googletrans googletrans-temp -y
+# pip install googletrans==4.0.0-rc1
+
 from googletrans import Translator  # pip install googletrans>=4.0.0-rc1
 
 # import requests.packages.urllib3
@@ -39,30 +43,12 @@ global auto_list
 auto_list = ['!','?']
 
 # Colorize section
-global color_red
-global color_yellow
-global color_green
-global color_blue
-global color_reset
-color_red = ''
-color_yellow = ''
-color_green = ''
-color_blue = ''
-color_reset = ''
-
-if sys.version_info > (3, 7, 9) and os.name == "nt":
-    version_info = os.sys.getwindowsversion()
-    major_version = version_info.major
-    build_version = version_info.build
-
-    if major_version >= 10 and build_version >= 22000: # Windows 11 and above
-        from colorama import Fore, Back, Style  
-        print(f'{Back.BLACK}') # make sure background is black
-        color_red = Fore.RED
-        color_yellow = Fore.YELLOW
-        color_green = Fore.GREEN
-        color_blue = Fore.BLUE
-        color_reset = Style.RESET_ALL
+# colors
+color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
+from colorama import Fore, Back, Style
+print(Back.BLACK)
+color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
+color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 def main():
@@ -200,23 +186,23 @@ def detect_language(input_xlsx, output_xlsx):
         (source_language, text, skipper, length) = ('', '', '', '')
         original_content = row[0].value
         
-        source_language, confidence = language_detect(original_content)
-        if source_language == 'en' or source_language == 'English':
-            note = ''
-        elif source_language == 'auto':
-            note = ''
-        elif source_language == 'ar' or source_language == 'Arabic':
-            note = '.'
-        elif source_language == 'zh-CN' or source_language == 'Chinese (Simplified)':
-            note = '.'
-        elif source_language == 'zh-TW' or source_language == 'Chinese (Traditional)':
-            note = '.'
-        elif source_language == 'ur' or source_language == 'Urdu':
-            note = '.'
-        elif source_language == 'fa' or source_language == 'Persian':
-            note = '.'
-        else:
-            note = '..'
+        # source_language, confidence = language_detect(original_content)   # task
+        # if source_language == 'en' or source_language == 'English':
+            # note = ''
+        # elif source_language == 'auto':
+            # note = ''
+        # elif source_language == 'ar' or source_language == 'Arabic':
+            # note = '.'
+        # elif source_language == 'zh-CN' or source_language == 'Chinese (Simplified)':
+            # note = '.'
+        # elif source_language == 'zh-TW' or source_language == 'Chinese (Traditional)':
+            # note = '.'
+        # elif source_language == 'ur' or source_language == 'Urdu':
+            # note = '.'
+        # elif source_language == 'fa' or source_language == 'Persian':
+            # note = '.'
+        # else:
+            # note = '..'
 
         length = content_length(original_content)  
         
@@ -263,6 +249,7 @@ def googletrans_ver():
         print(f"googletrans version {major_version}.{minor_version}")
         return True
     else:
+        print(f"googletrans version {major_version}.{minor_version}")
         print("Your version of Googletrans needs to be >=4")
         print("pip install googletrans>=4.0.0-rc1")
         print(f"The wont detect or translate")
@@ -303,23 +290,6 @@ def length(input_xlsx, output_xlsx):
         (source_language, text, skipper, length) = ('', '', '', '')
         original_content = row[0].value
         note = '..'
-        # source_language, confidence = language_detect(original_content)
-        # if source_language == 'en' or source_language == 'English':
-            # note = ''
-        # elif source_language == 'auto':
-            # note = ''
-        # elif source_language == 'ar' or source_language == 'Arabic':
-            # note = '.'
-        # elif source_language == 'zh-CN' or source_language == 'Chinese (Simplified)':
-            # note = '.'
-        # elif source_language == 'zh-TW' or source_language == 'Chinese (Traditional)':
-            # note = '.'
-        # elif source_language == 'ur' or source_language == 'Urdu':
-            # note = '.'
-        # elif source_language == 'fa' or source_language == 'Persian':
-            # note = '.'
-        # else:
-            # note = '..'
 
         length = content_length(original_content)  
         
@@ -480,18 +450,19 @@ def source_language_enhance(source_language):
 
     return source_language
 
-
 def language_detect(original_content):
-    (source_language, confidence) = ('', '')
+    source_language = ''
+    confidence = ''
+
     if original_content not in auto_list:
         try:
             translator = Translator()
             detection = translator.detect(original_content)
             source_language = detection.lang
-            # confidence = detection.confidence
-        except:
+            confidence = getattr(detection, 'confidence', '')
+        except Exception as e:
+            # print(f'Language detection error: {e}')
             source_language = 'auto'
-
     else:
         source_language = 'auto'
 
@@ -570,7 +541,10 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
 
         original_content = strip_blank_lines(original_content)
         
-        source_language, confidence = language_detect(original_content)
+        # source_language, confidence = language_detect(original_content) # it is only returning auto
+        # print(f'source_language = {source_language}')   # temp
+        
+        
         length = content_length(original_content)
         
         if original_content is None:
@@ -578,9 +552,28 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
             source_language = ''
         elif original_content is not None and len(original_content) > 3660:
             note = '.Translation failed - too long'
-   
+            
+            
+            
+        elif not any(char.isalpha() for char in original_content):
+            translation = original_content  # just copy it
+            source_language = 'n/a'
+
+        elif original_content and source_language not in ('auto', 'en'):
+            (translation, source_language, note) = translate_request(original_content, source_language, target_language, note)
+            sleep(1)
+            if not translation:
+                note = "Translation failed"
+                sleep(2)
+
+            source_language = source_language_enhance(source_language)
+
+            print(f'\n{color_red}{row_count} {color_blue}{original_content}      {color_yellow}{translation}  {color_green}{source_language}  {color_red}{note}{color_reset}')
+
+
+        elif source_language != 'en':
         # elif original_content is not None and original_content != '' and source_language != 'auto'  and source_language != 'en':
-        elif original_content is not None and original_content != '' and source_language != 'auto'  and source_language != 'en':
+        # elif original_content is not None and original_content != '' and source_language != 'auto'  and source_language != 'en':
 
 
             # if any(char.isalpha() for char in original_content)

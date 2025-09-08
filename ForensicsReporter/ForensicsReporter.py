@@ -71,35 +71,12 @@ regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/
 regex_sha1 = re.compile(r'^([a-fA-F\d]{40})$')    #regex_sha1
 regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')#regex_sha256
 
-# Colorize section
-global color_red
-global color_yellow
-global color_green
-global color_blue
-global color_purple
-global color_reset
-color_red = ''
-color_yellow = ''
-color_green = ''
-color_blue = ''
-color_purple = ''
-color_reset = ''
-
-if sys.version_info > (3, 7, 9) and os.name == "nt":
-    version_info = os.sys.getwindowsversion()
-    major_version = version_info.major
-    build_version = version_info.build
-
-    if major_version >= 10 and build_version >= 22000: # Windows 11 and above
-        import colorama
-        from colorama import Fore, Back, Style  
-        print(f"{Back.BLACK}") # make sure background is black
-        color_red = Fore.RED
-        color_yellow = Fore.YELLOW
-        color_green = Fore.GREEN
-        color_blue = Fore.BLUE
-        color_purple = Fore.MAGENTA
-        color_reset = Style.RESET_ALL
+# colors
+color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
+from colorama import Fore, Back, Style
+print(Back.BLACK)
+color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
+color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>

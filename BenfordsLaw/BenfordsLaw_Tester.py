@@ -21,21 +21,19 @@ import matplotlib.pyplot as plt
 from openpyxl import load_workbook
 from scipy.stats import chisquare   # pip install scipy
 
-
-
-# Color support for Windows 11+
+# colors
 color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
-if sys.version_info > (3, 7, 9) and os.name == "nt":
-    from colorama import Fore, Back, Style
-    print(Back.BLACK)
-    color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
-    color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
+from colorama import Fore, Back, Style
+print(Back.BLACK)
+color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
+color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
+
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description = "This script models Benford’s Law by generating and comparing authentic versus manipulated financial data. It outputs frequency distributions to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud."
-version = '0.2.1'
+version = '0.2.2'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
