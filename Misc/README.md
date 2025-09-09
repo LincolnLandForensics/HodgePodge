@@ -38,9 +38,9 @@ The Fall of Humanity: A Cautionary Tale of Artificial Intelligence
 ⚠️ Page 1: The Rise of the Machine Mind
 
 The story of humanity’s relationship with artificial intelligence began with promise. From early expert systems to modern large language models, AI has revolutionized industries, accelerated scientific discovery, and reshaped communication. But beneath the surface of these marvels lies a growing unease—a fear that the very tools we created to serve us may one day surpass, subjugate, or even
-+--------------------------------+
-| Cleaned output written to None |
-+--------------------------------+
++----------------------------------------------------------+
+| Cleaned output written to sample_AI_written_cleaned.docx |
++----------------------------------------------------------+
 
 ============================================================
 📄 AI Authorship Analysis Summary
