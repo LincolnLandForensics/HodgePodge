@@ -8,9 +8,8 @@ Usage:
 ```
 python AI_Analyze.py -a [-I sample.docx] [-O sample_updated.docx]
 ```
-insert your GPS or addresses into locations.xlsx
 
-Example:
+Example Usage Syntax:
 
 ```
     AI_Analyze.py -a
