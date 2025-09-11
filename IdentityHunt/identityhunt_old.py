@@ -4,8 +4,6 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
 try:
     from bs4 import BeautifulSoup
-    from playwright.async_api import async_playwright   # pip install playwright
-    from playwright_stealth import Stealth  # pip install playwright_stealth    
 except:
     print(f'install missing modules:    pip install -r requirements_identity_hunt.txt')
     exit()
@@ -31,17 +29,12 @@ from tkinter import messagebox
 import socket
 import argparse  # for menu system
 
-import importlib.util
-import platform
-from pathlib import Path
-import asyncio
-
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.2.3'
+version = '3.2.0'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -135,6 +128,16 @@ regex_phone11 = re.compile(r'^1\d{10}$')
 regex_phone2 = re.compile(r'(\d{3}) \W* (\d{3}) \W* (\d{4}) \W* (\d*)$')
 
 # Colorize section
+
+
+
+# global color_red
+# global color_yellow
+# global color_green
+# global color_blue
+# global color_purple
+# global color_reset
+# colors
 color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
 from colorama import Fore, Back, Style
 print(Back.BLACK)
@@ -329,25 +332,26 @@ def main():
     if args.emailmodules and len(emails) > 0:  
         print(f'Emails = {emails}') # temp
         main_email()    # 
-        breachbase()
         carrot_email()
         cyberbackground_email() # beta
-        epios_email()   # costs $$
-        # digitalfootprintcheckemail() # rate limited by day
+        epios_email()   # beta
+        # digitalfootprintcheckemail()
         ghunt()  # this is overwriting data
         google_calendar()     #
         have_i_been_pwned()    #
         holehe_email()    #
         osintIndustries_email()    #
         thatsthememail()    #
-        truepeople_email()  # nasty captcha
-
+        truepeople_email()
+        ## twitteremail()    # auth required    
+        veraxity()
+        wordpresssearchemail()  # requires auth
         
     if args.ips and len(ips) > 0:  
         print(f'IPs = {ips}')
         arinip()    # alpha
-        geoiptool()   # no content but is does only list 200's
         main_ip()
+        ## geoiptool() # works but need need to rate limit; expired certificate breaks this
         resolverRS()    #? 
         # thatsthemip() # broken
         whoisip()    #
@@ -360,79 +364,73 @@ def main():
         familytreephone()    #
         thatsthemphone()   #
         reversephonecheck()    #
+        # spydialer()    #
         validnumber()    #
         whitepagesphone()    #
-        whocalld()    # combined with spydialer
+        # whocalld()    # works
         
     if args.test:  
         print(f' using test module')
-        # allmylinks()
-        # facebook()     #
-        ebay()
+        go()
+        
 
     if args.usersmodules and len(users) > 0:  
         print(f'users = {users}')    
         main_user()
         about()    #
-        allmylinks()    #
         bitbucket()    #
-        blogspot_users()    #
+        blogspot_users()    # test
         bsky()
         cashapp()
-        # dailymotion()   # protected
-        disqus()    # 
-        ebay()
-        # etsy()  # protected by captcha puzzle
-        facebook()     # some false positives
+        disqus()    # test
+        # ebay()  # all false positives due to captcha
+        etsy()  # task
+        facebook()     #
         familytree()    #
-        # fiverr()    # occasional captcha
-        flickr()   # add photo
+        # fiverr()    # test
+        flickr()   # add photo, note, name, info
         freelancer()    #
-        # friendfinder()  # protected
+        # friendfinder()  # add (fullname, city, country, note, DOB, SEX)
+        foursquare()    #
         garmin()    #
         github()    #
-        go()
-        gravatar()  #
+        go() # test
+        gravatar()  # grab bonus urls
         ham_radio() # manual but works
-        heylink()   # 
         imageshack()    #
         instagram()    #
-        instantusername() # manual
+        instantusername() # test
         instructables()     #
-        inteltechniques()   # manual
-        gab()   # 
-        keybase()
-        kick()  # 
-        # kik()    # protected
+        inteltechniques()   #test
+        keybase()   # add location and twitter, and photo
+        kik()    #
         linkedin()    # cookie test
         # massageanywhere()   # broken ssl query
         mastadon()    #
-        # myfitnesspal()    # cloudflare
+        myfitnesspal()    #
         myshopify()    #
         myspace_users()    #
-        paypal()  #
+        paypal()  # needs work
         patreon()    #
-        pinterest() #
+        pinterest()
         poshmark()    #    
-        # public()    # 
+        public()    #
         reddit()
-        rumble()
+        # rumble()  # test
         roblox()
         sherlock()    #
-        slack()
+        # signal()    # test
+        # slack() # blows up on some users first.last#
         snapchat()    # must manually verify
         spotify()    #
-        # telegram()  # always answers yes
+        ## telegram()# crashes the script
         threads()    #
         tiktok()    #
         tinder() # add DOB, schools
-        # tripadvisor()   # protected with puzzle
         truthSocial()   # false positives
-        tumblr()
-        twitch()    # alpha
         twitter()   # needs auth
-        venmo()
-        vimeo()
+        venvmo()
+        # vimeo()   # test
         whatnot()
         whatsmyname()    #
         wordpress()    #
@@ -443,18 +441,21 @@ def main():
     if args.websitetitle and len(websites) > 0:  
         print(f'websites = {websites}')   
         main_website()
-        titles()
+        # titles()    # alpha
         
     if args.websites and len(websites) > 0:  
         print(f'websites = {websites}')    
         centralops()
         main_website()
+        # redirect_detect() # timed out and crashed
         robtex()
-        titles()
+        # titles()    # alpha
         viewdnsdomain()
         whoiswebsite()
 
     write_intel(data)
+
+
 
     # set linux ownership    
     if sys.platform == 'win32' or sys.platform == 'win64':
@@ -467,6 +468,9 @@ def main():
         input(f"See '{input_xlsx}' for output. Hit Enter to exit...")
 
     return 0
+    
+    # sys.exit()  # this code is unreachable
+
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<  Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -496,7 +500,7 @@ def about(): # testuser = kevinrose
                     note = fullname.split(' - ')[1]
                     fullname = fullname.split(' - ')[0]  
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             else:
                 fullname = ''
 
@@ -519,56 +523,6 @@ def about(): # testuser = kevinrose
 
             data.append(row_data)
 
-
-def allmylinks():   # https://allmylinks.com/terminator
-    print(f'{color_yellow}\n\t<<<<< allmylinks {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
-    for user in users:
-        row_data = {}
-        (query, ranking) = (user, '4 - allmylinks')
-        url = f"https://allmylinks.com/{user}"
-        (fullname, firstname, lastname, middlename) = ('', '', '', '')
-        (note) = ("")
-        # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-
-        
-        # if 1==1:
-        if pagestatus == 200:
-
-            fullname = titleurl
-            if ' (' in fullname:
-                fullname = fullname.split(' (')[0]
-
-            if ' ' in fullname:
-                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
-
-            print(f'{color_green}{url}{color_yellow}	   {fullname}{color_reset}')
-
-            row_data["query"] = query
-            row_data["ranking"] = ranking
-            row_data["user"] = user
-            row_data["url"] = url
-            row_data["fullname"] = fullname
-            row_data["firstname"] = firstname
-            row_data["middlename"] = middlename
-            row_data["lastname"] = lastname
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl             
-            data.append(row_data)
-            
-            
 def arinip():    # testuser=    77.15.67.232
     from subprocess import call, Popen, PIPE
     print(f"{color_yellow}\n\t<<<<< arin {color_blue}IP's{color_yellow} >>>>>{color_reset}")
@@ -665,7 +619,7 @@ def bitbucket(): # testuser = rick
                     fullname = match.group(1)
 
         if ' ' in fullname:
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
         else:
             fullname = ''
 
@@ -686,53 +640,34 @@ def bitbucket(): # testuser = rick
 
 def blogspot_users(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< blogspot {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return     
+    
     for user in users:
         row_data = {}
         (query, ranking) = (user, '4 - blogspot')
     
         url = f"https://{user}.blogspot.com"
 
-
+        (content, referer, osurl, titleurl, pagestatus) = request_url(url)
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}')
 
-        for eachline in content.split("<"):
-            if "og:title" in eachline:
-                fullname = eachline
-                # print(f'fullname = {fullname}') # temp
-                fullname = eachline.strip().split("\"")[1]
-            elif "og:description" in eachline:
-                note = eachline.strip().split("\"")[1]
-
-
-        if pagestatus == 200:    
-        # if 'Success' in pagestatus:
+        if 'Success' in pagestatus:
             titleurl = titleurl_og(content)
+            fullname = titleurl
 
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             else:
                 fullname = ''
-            print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
+
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["fullname"] = fullname
             row_data["firstname"] = firstname
             row_data["lastname"] = lastname 
             row_data["url"] = url
-            row_data["note"] = note
+            # row_data["titleurl"] = titleurl
             row_data["user"] = user
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl             
+            
             data.append(row_data)
 
 
@@ -757,7 +692,7 @@ def bsky(): # testuser = kevinrose
 
         if '@' in titleurl:
             
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
 
             print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
 
@@ -830,7 +765,7 @@ def cashapp(): # testuser = kevinrose
                 firstname = firstname.title()
                 lastname = lastname.upper()
                 middlename = middlename.title()
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             
             
             pattern2 = r'"country_code":"([^"]+)"'
@@ -994,52 +929,27 @@ def cyberbackground_email():# testEmail= kevinrose@gmail.com
             
 def digitalfootprintcheckemail():    # testuser=    kevinrose@gmail.com 
     print(f'{color_yellow}\n\t<<<<< digitalfootprintcheck {color_blue}emails{color_yellow} >>>>>{color_reset}')    
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return    
     
     for email in emails:
         row_data = {}
-        (query, content, note, ranking) = (email, '', '', '9 - digitalfootprintcheck')
+        (query, content, note) = (email, '', '')
         
         url = (f'https://www.digitalfootprintcheck.com/free-checker.html?q={email}')
 
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-        
-
-        if 'No results found' in content:
-            
-            print(f'{color_red}{url}{color_reset} {email}')
-        # else:
-            # print(f'{color_green}{url}{color_reset} {email}')
-            ranking = '5 - digitalfootprintcheck'
-                            
-            row_data["query"] = query
-            row_data["ranking"] = ranking
-            row_data["url"] = url
-            row_data["email"] = email  
-            # row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
-            # row_data["titleurl"] = titleurl        
-            data.append(row_data)
-        time.sleep(5) #will sleep for 5 seconds    
+        ranking = '9 - digitalfootprintcheck'
+                        
+        row_data["query"] = query
+        row_data["ranking"] = ranking
+        row_data["url"] = url
+        row_data["email"] = email                        
+        data.append(row_data)
 
 def disqus(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< discus {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
     for user in users:    
         row_data = {}
-        (query, ranking, note) = (user, '5 - discus', '')
-        (fullname, firstname, lastname, middlename) = ('', '', '', '')
+        (query, ranking) = (user, '5 - discus')
+        
         (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
         user = user.rstrip()
         # url = (f'http://disqus.com/{user}')
@@ -1047,111 +957,87 @@ def disqus(): # testuser = kevinrose
         url = (f'http://disqus.com/by/{user}/about/')  
 
         
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-
-        for eachline in content.split("<"):
-            if "twitter:description" in eachline:
-                note = eachline.strip().split("\"")[3]
-                if 's community of communities now has one central hub.' in note:
-                    note = ''
-            elif "twitter:title" in eachline:
-                fullname = eachline.split('"')[3]
-                if ' · ' in fullname:
-                    fullname = fullname.split(' · ')[0]
-                if user.lower() == fullname.lower():
-                    fullname = ''
-                fullname = fullname.replace('&Quot;', '"').replace('&quot;', '"')
-
-                if ' ' in fullname:
-                    (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-                
-        if pagestatus == 200:
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
+        
+        if '404' not in pagestatus:
             print(f'{color_green}{url}{color_reset}') 
 
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["url"] = url
             row_data["user"] = user
-            row_data["fullname"] = fullname
-            row_data["firstname"] = firstname
-            row_data["middlename"] = middlename
-            row_data["lastname"] = lastname            
-            row_data["note"] = note
+
             data.append(row_data)
 
 def ebay(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< ebay {color_blue}users{color_yellow} >>>>>{color_reset}')
     print(f'{color_yellow}\n\tthis can take a while >>>>>{color_reset}')
 
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-        
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '8 - ebay')
+        (query, ranking) = (user, '9 - ebay')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         (city, country, fullname, titleurl, pagestatus, note) = ('', '', '', '', '', '')
         user = user.rstrip()
         url = (f'https://www.ebay.com/str/{user}')
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-        if pagestatus == 200:
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
 
+        if "200" in pagestatus:
             titleurl = titleurl.replace(' | eBay Stores', '')
             fullname = titleurl
-            if 'Security Measure | eBay' in fullname:
-                fullname = ''
-                ranking = '9 - ebay'
-                print(f'{color_red} Security Measure{color_reset}')
+            
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-                ranking = '7 - ebay'
-            # else:
-                # fullname = ''          
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
+            else:
+                fullname = ''          
             
             
-            print(f'{color_green}{url}{color_yellow} {fullname}{color_reset}') 
+            print(f'{color_green}{url}{color_reset}') 
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["fullname"] = fullname
             row_data["url"] = url
             row_data["user"] = user
             row_data["note"] = note            
-            row_data["lastname"] = lastname
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl              
+           
 
             data.append(row_data)
 
         time.sleep(5) #will sleep for 5 seconds
 
-def epios_email(): 
-    if len(emails) > 0:
+
+def epios_email():# testEmail= kevinrose@gmail.com    
+    print(f'{color_yellow}\n\t<<<<< epios {color_blue}emails{color_yellow} >>>>>{color_reset}')
+    
+    for email in emails:
         row_data = {}
-        ranking = '9 - manual $$'
-        url = (f'https://epieos.com/')
-        row_data["ranking"] = ranking
-        row_data["url"] = url
-        data.append(row_data)
+        (query, content, note) = (email, '', '')
+        url = (f'https://epieos.com/?q={email}&t=email')
+        # (content, referer, osurl, titleurl, pagestatus) = request(url)        
+
+        if 1==1:
+            if ('results for') in content: 
+                note = 'results for'
+                ranking = '8 - epios'
+
+                print(f'{color_green} {email}   {url}{color_reset}')
+          
+            else:
+            
+                ranking = '9 - epios'
+
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["url"] = url
+            row_data["email"] = email
+            row_data["note"] = note
+            # row_data["content"] = content
+                        
+            data.append(row_data)
             
             
-def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # protected by a captcha
+def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose
     print(f'{color_yellow}\n\t<<<<< etsy {color_blue}users{color_yellow} >>>>>{color_reset}')
-    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return (content, referer, osurl, titleurl, pagestatus)
-
-
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '6 - etsy')
@@ -1159,22 +1045,15 @@ def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # pr
         (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
         user = user.rstrip()
         url = (f'https://www.etsy.com/people/{user}')
-        
-        # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-        if 1 == 1:
-        # if '404' not in pagestatus:
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
+        if '404' not in pagestatus:
             # grab display_name = fullname
             titleurl = titleurl.replace("'s favorite items - Etsy",'')
 
             fullname = titleurl
             
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             else:
                 fullname = ''
 
@@ -1182,8 +1061,7 @@ def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # pr
                 ranking = '9 - etsy'
                 fullname = ''
 
-            if 1 == 1:
-            # if ranking == '4 - etsy':
+            if ranking == '4 - etsy':
                 print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
 
                 row_data["query"] = query
@@ -1194,9 +1072,7 @@ def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # pr
                 row_data["url"] = url
                 row_data["user"] = user
                 row_data["city"] = city            
-                row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
-                row_data["titleurl"] = titleurl         
+         
 
                 data.append(row_data)
 
@@ -1204,40 +1080,23 @@ def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # pr
 
 def facebook(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< facebook {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-        
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '7 - Facebook')
+        (query, ranking) = (user, '4 - Facebook')
 
         (fullname,lastname,firstname) = ('','','')
         (content, referer, osurl, titleurl, pagestatus) = ('','','','','')
         user = user.rstrip()
         url = (f'https://facebook.com/{user}')
-
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-            
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
         fullname = titleurl.strip()
-        if ' | Facebook' in titleurl:
-            fullname = fullname.replace(' | Facebook', '')
-            ranking = '4 - Facebook'
-
-        if fullname == 'Facebook':
-            fullname = ''            
-            
         if ' ' in fullname:
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)        
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)        
+        else:
+            fullname = ''
 
-        if 1==1:
-        # if 'This content isn' not in content and 'Facebook' not in titleurl:
-            print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
+        if 'This content isn' not in content:
+            print(f'{color_green}{user}{color_yellow}	{fullname}{color_reset}') 
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["fullname"] = fullname
@@ -1245,9 +1104,7 @@ def facebook(): # testuser = kevinrose
             row_data["lastname"] = lastname
             row_data["url"] = url
             row_data["user"] = user
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl 
+
             data.append(row_data)        
 
 
@@ -1311,11 +1168,6 @@ def findwhocallsyou():# testPhone=
 
 def fiverr():    # testuser=    kevinrose
     print(f'{color_yellow}\n\t<<<<< fiverr {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-        
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '9 - fiverr')
@@ -1323,17 +1175,17 @@ def fiverr():    # testuser=    kevinrose
         (misc) = ('')
 
         url = (f'https://www.fiverr.com/{user}')
+        (content, referer, osurl, titleurl, pagestatus) = ('','','','','')
+
         try:
             # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+            content = content.strip()
+            titleurl = titleurl.strip()
 
+        except:
+            pass
             
         # time.sleep(1) # will sleep for 1 seconds
-        if pagestatus == 200:
-            ranking = '3 - fiverr'
-        
         if 1==1:
         # if 'alternate' in content:
             print(f'{color_green}{url}{color_reset}')    
@@ -1345,9 +1197,7 @@ def fiverr():    # testuser=    kevinrose
             row_data["firstname"] = firstname
             row_data["fullname"] = fullname
             row_data["note"] = note
-            row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
-            row_data["titleurl"] = titleurl  
+
 
             data.append(row_data)
 
@@ -1363,16 +1213,15 @@ def flickr(): # testuser = kevinrose
         url = (f'https://www.flickr.com/people/{user}')
         (content, referer, osurl, titleurl, pagestatus) = request(url)
 
-        for eachline in content.split("\n"):
+        for eachline in content.split("  <"):
             if "og:title" in eachline:
                 fullname = eachline.strip().split("\"")[1]
-            elif "<meta content=" in eachline and "name=\"description\"" in eachline:
-                note = eachline.split('"')[1]
+
         if '404' not in pagestatus and 'ail' not in pagestatus:
             if fullname.lower() == user.lower():
                 fullname = ''
             
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             if " " not in fullname:
                 fullname = ''
 
@@ -1385,9 +1234,57 @@ def flickr(): # testuser = kevinrose
             row_data["lastname"] = lastname
             row_data["url"] = url
             row_data["user"] = user            
-            row_data["note"] = note              
+            
             data.append(row_data)           
 
+def foursquare():    # testuser=    john
+    print(f'{color_yellow}\n\t<<<<< foursquare {color_blue}users>>>>>{color_reset}')    
+
+    for user in users:    
+        row_data = {}
+        (query, ranking) = (user, '7 - foursquare')
+        (fullname, note, firstname, lastname, middlename) = ('', '', '', '', '')
+        url = (f'https://foursquare.com/{user}')
+        (content, referer, osurl, titleurl, pagestatus) = ('','','','','')
+        try:
+            (content, referer, osurl, titleurl, pagestatus) = request(url)
+
+            content = content.strip()
+            titleurl = titleurl.strip()
+       
+        except:
+            pass
+
+        if ' on Foursquare' in titleurl:
+            pattern = r'<meta\s+content=["\'](.*?)["\']\s+property="og:description"'
+            match = re.search(pattern, content)
+
+            if match:
+                note = match.group(1)
+                if '"' in note:
+                    note = note.split('"')[1]
+                # print(note)
+
+            fullname = titleurl.rstrip(' on Foursquare')
+
+            if '' in fullname:
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
+        
+            print(f'{color_green}{url}{color_yellow} {fullname}{color_reset}')    
+
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["fullname"] = fullname
+            row_data["firstname"] = firstname
+            row_data["lastname"] = lastname
+            row_data["url"] = url
+            row_data["user"] = user            
+            row_data["note"] = note 
+            # row_data["titleurl"] = titleurl            
+            # row_data["content"] = content                          
+            data.append(row_data)  
+
+            
 
 def freelancer(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< freelancer {color_blue}users{color_yellow} >>>>>{color_reset}')
@@ -1408,7 +1305,7 @@ def freelancer(): # testuser = kevinrose
                 fullname = ''
 
             if '' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             if 'Browser ' not in fullname:
                 print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
                 row_data["query"] = query
@@ -1422,12 +1319,8 @@ def freelancer(): # testuser = kevinrose
                             
                 data.append(row_data)  
 
-def friendfinder():    # testuser=  kevinrose   # java math problem
+def friendfinder():    # testuser=  kevinrose
     print(f'{color_yellow}\n\t<<<<< friendfinder {color_blue}users{color_yellow} >>>>>{color_reset}')
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '7 - friendfinder')
@@ -1438,13 +1331,12 @@ def friendfinder():    # testuser=  kevinrose   # java math problem
         (content, referer, osurl, titleurl, pagestatus) = ('','','','','')
         # (fullname, info, note) = ('', '', '')
         try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+            (content, referer, osurl, titleurl, pagestatus) = request(url)
+      
+        except:
+            pass
 
-        if 1==1:
-        # if 'Register to Find' not in titleurl:
+        if 'Register to Find' not in titleurl:
             print(f'{color_green}{url}{color_reset}')    
 
             row_data["query"] = query
@@ -1459,9 +1351,8 @@ def friendfinder():    # testuser=  kevinrose   # java math problem
             row_data["note"] = note            
             row_data["DOB"] = DOB            
             row_data["SEX"] = SEX            
-            row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
-            row_data["titleurl"] = titleurl  
+            # row_data["content"] = content            
+
 
             data.append(row_data) 
 
@@ -1501,7 +1392,7 @@ def garmin(): # testuser = kevinrose
             fullname = fullname.split(" (")[0]
             fullname = fullname.replace("Garmin Connect","").strip()
 
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
 
             row_data["query"] = query
@@ -1517,58 +1408,10 @@ def garmin(): # testuser = kevinrose
             # row_data["note"] = note            
             # row_data["DOB"] = DOB            
             # row_data["SEX"] = SEX            
-            row_data["content"] = content            
+            # row_data["content"] = content            
 
             data.append(row_data) 
 
-
-def geoiptool():
-    print(f'{color_yellow}\n\t<<<<< geoiptool {color_blue}IPs{color_yellow} >>>>>{color_reset}')
-
-
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
-    for ip in ips:
-        row_data = {}
-        (query, ranking) = (ip, '9 - geoiptool')
-        url = f"https://www.geodatatool.com/en/?ip={ip}"
-        (fullname, firstname, lastname, middlename) = ('', '', '', '')
-        (note) = ("")
-        # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-
-
-        if pagestatus == 200:
-
-            fullname = titleurl
-            if ' (' in fullname:
-                fullname = fullname.split(' (')[0]
-
-            if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-            else:
-                fullname = ''
-
-            print(f'{color_green}{url}{color_yellow}	   {fullname}{color_reset}')
-
-            row_data["query"] = query
-            row_data["ranking"] = ranking
-            row_data["ip"] = ip
-            row_data["url"] = url
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl    
-            
-            data.append(row_data)
-            
-            
 def ghunt():    # testEmail= kevinrose@gmail.com
     for email in emails:
         row_data = {}
@@ -1620,7 +1463,7 @@ def github(): # testuser = kevinrose
             if fullname.lower() == user.lower():
                 fullname = ''
             
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             if " " not in fullname:
                 fullname = ''
 
@@ -1639,9 +1482,6 @@ def github(): # testuser = kevinrose
             data.append(row_data)  
 
 def go(): 
-    # https://breachdirectory.org  crack hashes with weakpass.com - cloudflare
-    # gosearch.exe kevinrose --no-false-positives
-
     if len(users) > 0:
         row_data = {}
         ranking = '9 - manual'
@@ -1656,11 +1496,9 @@ def gravatar(): # testuser = kevinrose      https://en.gravatar.com/kevinrose
     print(f'{color_yellow}\n\t<<<<< gravatar {color_blue}users{color_yellow} >>>>>{color_reset}')
     for user in users:    
         row_data = {}
-        (query, ranking, SEX, city, business, email) = (user, '7 - gravatar', '', '', '', '')
+        (query, ranking) = (user, '7 - gravatar')
         (city, country, fullname, titleurl, pagestatus, info) = ('', '', '', '', '', '')
         (info, lastname, firstname, note, otherurls, misc) = ('', '','', '', '', '')
-        (associates, AKA, country, state, owner, president) = ('', '', '', '', '', '')
-        (middlename) = ('')
         user = user.rstrip()
         url = (f' https://gravatar.com/{user}.json')        
 
@@ -1674,72 +1512,20 @@ def gravatar(): # testuser = kevinrose      https://en.gravatar.com/kevinrose
                 except TypeError as error:
                     print(f'{color_red}{error}{color_reset}')
 
-                # print(f'parsed_data = {parsed_data}')   # temp
+                
                 info = parsed_data['entry'][0]['photos'][0]['value']
 
 
                 if 'familyName' in content:
                     fullname = parsed_data['entry'][0]['name']['formatted']
 
-
-
-                if 'preferredUsername' in content:
-                    user = parsed_data['entry'][0]['preferredUsername']
-
-                if 'emails' in content:
-                    email = parsed_data['entry'][0]['emails'][0]['value']
-                    
-                if 'company' in content:
-                    business = parsed_data['entry'][0]['company']
-                    
-
-                if 'pronouns' in content:
-                    SEX = parsed_data['entry'][0]['pronouns']
-                    if 'she/her' in SEX:
-                        SEX = 'F'
-                    elif 'he/him' in SEX:
-                        SEX = 'M'                    
-
-                if 'currentLocation' in content:
-                    city = parsed_data['entry'][0]['currentLocation']
-                    if isinstance(city, str) and ', ' in city:
-                        parts = city.split(', ', 1)
-                        city, state = parts[0], parts[1]
-
-                    
-                if 'aboutMe' in content:
-                    note = parsed_data['entry'][0]['aboutMe'].replace('&amp', '&')
-
-
-                if 'displayName' in content:
-                    fullname = parsed_data['entry'][0]['displayName']
-                    fullname = fullname.replace('&amp', '&')
-                    if fullname == user:
-                        fullname = ''
-
-
-                if 'accounts' in content:
-                    misc = parsed_data['entry'][0]['accounts'][0]['url']
-                    try:
-                        associates = parsed_data['entry'][0]['accounts'][1]['url']
-                    except:pass
-                    try:
-                        AKA = parsed_data['entry'][0]['accounts'][2]['url']
-                    except:pass                    
-                    try:
-                        country = parsed_data['entry'][0]['accounts'][3]['url']
-                    except:pass
-                    try:
-                        owner = parsed_data['entry'][0]['accounts'][4]['url']
-                    except:pass                    
-                    try:
-                        president = parsed_data['entry'][0]['accounts'][5]['url']
-                    except:pass  
-
                 if ' ' in fullname:
-                    (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                    (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
 
-                    
+
+                if 'aboutMe' in content:
+                    note = parsed_data['entry'][0]['aboutMe']
+                    note = note.replace('&amp', '&')
 
                 url = (f'http://en.gravatar.com/{user}')
                 print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
@@ -1750,30 +1536,18 @@ def gravatar(): # testuser = kevinrose      https://en.gravatar.com/kevinrose
                 row_data["query"] = query
                 row_data["ranking"] = ranking
                 row_data["fullname"] = fullname
-                row_data["middlename"] = middlename                
                 row_data["firstname"] = firstname
                 row_data["lastname"] = lastname
-                
                 row_data["url"] = url
-                row_data["email"] = email
-                row_data["business"] = business
-                row_data["city"] = city 
-                row_data["user"] = user 
-                row_data["SEX"] = SEX
+                row_data["user"] = user            
                 row_data["info"] = info 
                 row_data["misc"] = misc                 
                 row_data["note"] = note 
                 row_data["titleurl"] = titleurl            
-                row_data["city"] = city
-                row_data["state"] = state                 
+                row_data["city"] = city            
                 row_data["country"] = country            
                 row_data["note"] = note            
-                row_data["associates"] = associates   
-                row_data["owner"] = owner  
-                row_data["president"] = president  
-                row_data["AKA"] = AKA 
-                # row_data["content"] = content                
-                row_data["country"] = country           
+                # row_data["content"] = content            
                 data.append(row_data)
 
 def google_calendar():# testEmail= kevinrose@gmail.com    
@@ -1839,64 +1613,15 @@ def ham_radio(): # testuser = K9CYC
 
 def have_i_been_pwned(): 
     if len(emails) > 0:
-        # hibp-api-key = 'YOUR_API_KEY'
         row_data = {}
         ranking = '8 - manual'
         url = ('https://haveibeenpwned.com')
-        # url = ('https://haveibeenpwned.com/api/v3/breachedaccount/{email}')
+
         row_data["ranking"] = ranking
         row_data["url"] = url
         data.append(row_data)
 
 
-def heylink():  # kevin
-    print(f'{color_yellow}\n\t<<<<< heylink {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
-    for user in users:
-        row_data = {}
-        (query, ranking) = (user, '5 - heylink')
-        url = f"https://heylink.me/{user}"
-        (fullname, firstname, lastname, middlename) = ('', '', '', '')
-        (note) = ("")
-        # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-
-        # if 1==1:
-        if pagestatus == 200:
-
-            fullname = titleurl
-            fullname = fullname.replace('HeyLink.me | ','')
-
-
-            if ' ' in fullname:
-                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
-
-
-            print(f'{color_green}{url}{color_yellow}	   {fullname}{color_reset}')
-
-            row_data["query"] = query
-            row_data["ranking"] = ranking
-            row_data["user"] = user
-            row_data["url"] = url
-            row_data["fullname"] = fullname
-            row_data["firstname"] = firstname
-            row_data["middlename"] = middlename
-            row_data["lastname"] = lastname
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl    
-            
-            data.append(row_data)
-            
-            
 def holehe_email(): # testEmail= kevinrose@gmail.com
     print(f'{color_yellow}\n\t<<<<< holehe {color_blue}emails{color_yellow} >>>>>{color_reset}')    # temp
     for email in emails:
@@ -1980,7 +1705,7 @@ def instagram():    # testuser=    kevinrose     # add info
         if '@' in titleurl:
             fullname = titleurl.split(" (")[0]
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
                 ranking = '3 - instagram'
             else:
                 fullname = ''
@@ -2077,7 +1802,7 @@ def instructables(): # testuser = kevinrose
             fullname = titleurl
             
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             else:
                 fullname = ''           
             
@@ -2097,7 +1822,6 @@ def inteltechniques():
         url = ('https://inteltechniques.com/tools/')
 
         row_data["ranking"] = ranking
-        row_data["url"] = url
         # row_data["user"] = user
         data.append(row_data)                
 
@@ -2145,61 +1869,12 @@ def is_running_in_virtual_machine():
             print('This is running in a virtual machine')
     return False
 
-
-def gab():  # kevinrose
-    print(f'{color_yellow}\n\t<<<<< gab {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
-    for user in users:
-        row_data = {}
-        (query, ranking) = (user, '6 - gab')
-        url = f"https://gab.com/{user}"
-        (fullname, firstname, lastname, middlename) = ('', '', '', '')
-        (note) = ("")
-        try:
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-
-        if pagestatus == 200:
-
-            fullname = titleurl
-            if ' (' in fullname:
-                fullname = fullname.split(' (')[0]
-
-            if ' ' in fullname:
-                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
-
-            print(f'{color_green}{url}{color_yellow}	   {fullname}{color_reset}')
-
-            row_data["query"] = query
-            row_data["ranking"] = ranking
-            row_data["user"] = user
-            row_data["url"] = url
-            row_data["fullname"] = fullname
-            row_data["firstname"] = firstname
-            row_data["middlename"] = middlename
-            row_data["lastname"] = lastname
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl    
-            
-            data.append(row_data)
-            
-            
 def keybase():    # testuser=    kevin
     print(f'{color_yellow}\n\t<<<<< keybase.io {color_blue}users{color_yellow} >>>>>{color_reset}')
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '3 - keybase')
-        (fullname, firstname, lastname, middlename) = ('', '', '', '')
-        (info, misc, associates) = ('', '', '')
-
+        (fullname, firstname, lastname, middlename) = ('','','','')
         url = (f'https://keybase.io/{user}')
         
         (content, referer, osurl, titleurl, pagestatus) = ('','','','','')
@@ -2213,20 +1888,15 @@ def keybase():    # testuser=    kevin
             fullname = titleurl
             if " (" in fullname:
                 fullname = fullname.split(" (")[1].split(")")[0]
-                if 'Keybase' in fullname:
-                    fullname = ''
-                
                 if ' ' in fullname:
-                    (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-                    if 'Keybase' in fullname:
-                        fullname = ''
+                    (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
+                else:
+                    fullname = ''
             for eachline in content.split("\n"):
                 if "@context" in eachline:
                     content = eachline.strip()
                 elif 'og:title' in eachline and 'content=\"' in eachline:
                     fullname = eachline.split('\"')[1].split(' (')[0]
-                    if 'Keybase' in fullname:
-                        fullname = ''                    
                 elif 'ProfilePage\",\"description' in eachline:
                     info = eachline
                     # Load the JSON data
@@ -2234,18 +1904,7 @@ def keybase():    # testuser=    kevin
 
                     # Extract the description value and print it
                     note = datatemp['description']
-                elif 'rel="me"' in eachline and 'a href' in eachline:
-                    if '"' in eachline:
-                        eachline = eachline.split('"')[1]
-                    if note == '':
-                        note = eachline
-                    elif info == '':
-                        info = eachline                        
-                    elif misc == '':
-                        misc = eachline   
-                    elif associates == '':
-                        associates = eachline 
-
+       
         except:
             pass
             
@@ -2264,58 +1923,13 @@ def keybase():    # testuser=    kevin
             row_data["lastname"] = lastname
             row_data["info"] = info
             row_data["note"] = note
-            row_data["misc"] = misc            
-            row_data["associates"] = associates
-            
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl             
-            
-            
             data.append(row_data)
 
 
-def kick():    # kevin
-    print(f'{color_yellow}\n\t<<<<< kick {color_blue}users{color_yellow} >>>>>{color_reset}')
 
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
-    for user in users:
-        row_data = {}
-        (query, ranking) = (user, '4 - kick')
-        url = f"https://kick.com/{user}/about"
-        (fullname, firstname, lastname, middlename, note) = ('', '', '', '', '')
-        (note) = ("")
-
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-
-        if 'About' in titleurl:
-            print(f'{color_green}{url}{color_yellow}{color_reset}')
-
-            row_data["query"] = query
-            row_data["ranking"] = ranking
-            row_data["user"] = user
-            row_data["url"] = url
-            row_data["note"] = note
-            # row_data["pagestatus"] = pagestatus   
-            
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl 
-            data.append(row_data)
-            
     
 def kik(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< kik {color_blue}users{color_yellow} >>>>>{color_reset}')
-    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return (content, referer, osurl, titleurl, pagestatus)
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '4 - kik')
@@ -2328,11 +1942,7 @@ def kik(): # testuser = kevinrose
         misc = (f'https://kik.me/{user}')
                
         
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}')
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
         for eachline in content.split(","):
             if "firstName" in eachline:
                 firstname = eachline.strip().split(":")[1]
@@ -2353,13 +1963,12 @@ def kik(): # testuser = kevinrose
             fullname = (f'{firstname} {lastname}')
             fullname = fullname.replace("\"}","")
             # if ' ' in fullname:
-                # (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                # (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             # else:
                 # fullname = ''
-
-        if 1 == 1:
-        # if pagestatus == 200:
-        # if '404' not in pagestatus:
+            
+            
+        if '404' not in pagestatus:
             print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}')
 
             row_data["query"] = query
@@ -2372,22 +1981,16 @@ def kik(): # testuser = kevinrose
             row_data["fullname"] = fullname
             row_data["firstname"] = firstname
             row_data["lastname"] = lastname
-            row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
-            row_data["titleurl"] = titleurl 
+
+
             data.append(row_data)
 
 
 def linkedin(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< linkedin {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-        
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '4 - linkedin')
+        (query, ranking) = (user, '9 - linkedin')
         (city, country, fullname, titleurl, pagestatus, content) = ('', '', '', '', '', '')
         (note) = ('')
         try:
@@ -2395,28 +1998,20 @@ def linkedin(): # testuser = kevinrose
         except:
             pass        
         url = (f'https://www.linkedin.com/in/{user}')
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+        # (content, referer, osurl, titleurl, pagestatus) = request(url)
 
-        fullname = titleurl.replace(' | LinkedIn','')
-
-        for eachline in content.split("\n"):
-            if "og:description" in eachline:
-                note = eachline.strip()
+        for eachline in content.split("  <"):
+            if "og:title" in eachline:
                 try:
-                    note = note.split('"')[3]
-                    print(f'note = {note}') # temp
+                    fullname = eachline.strip().split("\"")[1]
                 except:
                     pass
-
-        if pagestatus == 200: 
-            if ' - ' in fullname:
-                fullname = fullname.split(' - ')[0]
+        if 1==1:
+        # if '404' not in pagestatus and 'ail' not in pagestatus:
+            if fullname.lower() == user.lower():
+                fullname = ''
             
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             if " " not in fullname:
                 fullname = ''
 
@@ -2426,11 +2021,10 @@ def linkedin(): # testuser = kevinrose
             row_data["ranking"] = ranking
             row_data["fullname"] = fullname
             row_data["firstname"] = firstname
-            row_data["middlename"] = middlename
             row_data["lastname"] = lastname
             row_data["url"] = url
-            row_data["user"] = user 
-            row_data["note"] = note            
+            row_data["user"] = user            
+
             data.append(row_data)   
 
 def mastadon(): # testuser = kevinrose
@@ -2460,7 +2054,7 @@ def mastadon(): # testuser = kevinrose
             fullname = ''
                
         if ' ' in fullname:
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
 
         if "uccess" in pagestatus and 'This resource could not be found' not in content:
             print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
@@ -2478,12 +2072,8 @@ def mastadon(): # testuser = kevinrose
 
             data.append(row_data)
 
-def myfitnesspal(): # testuser = kevinrose protected by cloudflare
+def myfitnesspal(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< myfitnesspal {color_blue}users{color_yellow} >>>>>{color_reset}')
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '3 - myfitnesspal')
@@ -2491,21 +2081,15 @@ def myfitnesspal(): # testuser = kevinrose protected by cloudflare
         user = user.rstrip()
         url = (f'https://www.myfitnesspal.com/profile/{user}')
 
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-        if 1==1:
-        # if "uccess" in pagestatus and 'This resource could not be found' not in content:
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
+
+        if "uccess" in pagestatus and 'This resource could not be found' not in content:
             print(f'{color_green}{url}{color_reset}') 
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["user"] = user
             row_data["url"] = url
-            row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
-            row_data["titleurl"] = titleurl 
+
             data.append(row_data)
 
 
@@ -2561,37 +2145,20 @@ def myshopify():    # testuser=    rothys
 
 def myspace_users():
     print(f'{color_yellow}\n\t<<<<< myspace {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return (content, referer, osurl, titleurl, pagestatus)
-    else:
-        print(f'Playwright is installed')
-
     for user in users:
         row_data = {}
         (query, ranking) = (user, '4 - myspace')
         url = f"https://myspace.com/{user}"
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         (note) = ("")
-        # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+        (content, referer, osurl, titleurl, pagestatus) = request_url(url)
 
-        # if 1==1:
-        if pagestatus == 200:
-        # if pagestatus == 200 and ('Your search did not return any results') not in content:
-        # if 'Success' in pagestatus and ('Your search did not return any results') not in content:
+
+        if 'Success' in pagestatus and ('Your search did not return any results') not in content:
             fullname = titleurl
-            if ' (' in fullname:
-                fullname = fullname.split(' (')[0]
 
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             else:
                 fullname = ''
 
@@ -2605,10 +2172,8 @@ def myspace_users():
             row_data["firstname"] = firstname
             row_data["middlename"] = middlename
             row_data["lastname"] = lastname
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl    
-            
+            row_data["note"] = note            
+
             data.append(row_data)
 
 def main_email(): 
@@ -2673,10 +2238,6 @@ def main_website():
 def massageanywhere():    # testuser=   Misty0427
     print(f'{color_yellow}\n\t<<<<< massageanywhere {color_blue}users{color_yellow} >>>>>{color_reset}')
 
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '7 - massageanywhere')
@@ -2686,11 +2247,18 @@ def massageanywhere():    # testuser=   Misty0427
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         (content, referer, osurl, titleurl, pagestatus) = request_url(url)
         
+        
         try:
             # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+            # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
+                        
+            
+            
+            
+            
+            print(f' temp test')
+        except:
+            pass
 
         if 1==1:
         # if 'Profile for' in titleurl:
@@ -2703,7 +2271,7 @@ def massageanywhere():    # testuser=   Misty0427
                     fulladdress = titleurl.split(' of ')[1]
 
                     if ' ' in fullname:
-                        (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                        (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
                     else:
                         (fullname, firstname, lastname, middlename) = ('', '', '', '')
 
@@ -2772,7 +2340,7 @@ def patreon(): # testuser = kevinrose
         (content, referer, osurl, titleurl, pagestatus) = request(url)
 
         if '404' not in pagestatus:
-            print(f'{color_green}{url}{color_yellow}{fullname}{color_reset}') 
+            print(f'{color_green}{url}{color_yellow}{color_reset}') 
 
             row_data["query"] = query
             row_data["ranking"] = ranking
@@ -2781,11 +2349,7 @@ def patreon(): # testuser = kevinrose
             row_data["lastname"] = lastname
             row_data["firstname"] = firstname
             row_data["fullname"] = fullname
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl 
-
-
+            
             data.append(row_data)
 
 
@@ -2830,7 +2394,7 @@ def paypal(): # testuser = kevinrose
                 fullname = re.search(r'"displayName":"(.*?)"', datatemp).group(1)
 
                 if ' ' in fullname:
-                    (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                    (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             except:pass                
             try:    
                 email = re.search(r'"displayEmail":(null|".*?")', datatemp).group(1)
@@ -2971,29 +2535,18 @@ def phone_state_check(phone, state):
 
 def pinterest():    # testuser=    kevinrose     # add city
     print(f'{color_yellow}\n\t<<<<< pinterest {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '9 - pinterest')
         (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
-        (country, email, fullname, middlename, lastname, firstname) = ('', '', '','','', '')
+        (country, email, fullname,lastname,firstname) = ('', '', '','','')
         (success, note, photo, website, city, otherurls) = ('','','','','', '')
 
         url = (f'https://www.pinterest.com/{user}/')
         otherurls = (f'https://pinterest.com/search/users/?q={user}')
 
         try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-
-
-        try:
+            (content, referer, osurl, titleurl, pagestatus) = request(url)
             parts = titleurl.split(' (', 1)
 
             if len(parts) > 1:
@@ -3001,12 +2554,15 @@ def pinterest():    # testuser=    kevinrose     # add city
             fullname = titleurl
             if ' ' in fullname:
                 ranking = '4 - pinterest'
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
+                
+            else:
+                fullname = ''
+  
         except:
             pass
-            
         fullname = fullname.replace('User AVATAR', '')  # test
-        if pagestatus == 200:
+        if 'Success' in pagestatus:
             if titleurl != 'None':
                 print(f'{color_green} {url}{color_yellow}	   {fullname}	{note}{color_reset}')
                 
@@ -3016,105 +2572,11 @@ def pinterest():    # testuser=    kevinrose     # add city
                 row_data["url"] = url
                 row_data["fullname"] = fullname
                 row_data["firstname"] = firstname
-                row_data["middlename"] = middlename
+                # row_data["middlename"] = middlename
                 row_data["lastname"] = lastname
-                row_data["note"] = note    
-                # row_data["pagestatus"] = pagestatus    
-                # row_data["content"] = content                
-                # row_data["titleurl"] = titleurl 
-                
+                row_data["note"] = note            
 
                 data.append(row_data)                
-
-def is_package_installed(package_name: str) -> bool:
-    return importlib.util.find_spec(package_name) is not None
-
-def playwright_installed() -> bool:
-    """
-    Checks if Playwright browser binaries are installed by verifying
-    presence of versioned browser folders under Playwright's cache directory.
-    """
-    if platform.system() == "Windows":
-        base_dir = Path(os.getenv("LOCALAPPDATA", "")) / "ms-playwright"
-    else:
-        base_dir = Path.home() / ".cache" / "ms-playwright"
-
-    if not base_dir.exists():
-        return False
-
-    # Look for folders that start with browser names and a dash
-    expected_prefixes = ["chromium-", "firefox-", "webkit-"]
-    found = {prefix: False for prefix in expected_prefixes}
-
-    for item in base_dir.iterdir():
-        if item.is_dir():
-            for prefix in expected_prefixes:
-                if item.name.startswith(prefix):
-                    found[prefix] = True
-
-    return all(found.values())
-    
-def playwright_browsers_installed() -> bool:
-    """
-    Checks if Playwright browser binaries are installed.
-    Looks for versioned folders like chromium-*, firefox-*, webkit-*.
-    """
-    if platform.system() == "Windows":
-        base_dir = Path(os.getenv("LOCALAPPDATA", "")) / "ms-playwright"
-    else:
-        base_dir = Path.home() / ".cache" / "ms-playwright"
-
-    if not base_dir.exists():
-        return False
-
-    expected_prefixes = ["chromium-", "firefox-", "webkit-"]
-    found = {prefix: False for prefix in expected_prefixes}
-
-    for item in base_dir.iterdir():
-        if item.is_dir():
-            for prefix in expected_prefixes:
-                if item.name.startswith(prefix):
-                    found[prefix] = True
-
-    return all(found.values())
-
-def playwright_ready() -> bool:
-    """
-    Returns True if both packages are installed and browser binaries exist.
-    """
-    return (
-        is_package_installed("playwright") and
-        is_package_installed("playwright_stealth") and
-        playwright_browsers_installed()
-    )
-
-
-
-async def playwright_url(URL: str):
-    async with Stealth().use_async(async_playwright()) as p:
-        browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page()
-
-        try:
-            response = await page.goto(URL, wait_until="domcontentloaded", timeout=30000)
-            await page.wait_for_timeout(1000)
-
-            content = await page.content()
-            referer = response.request.headers.get("referer", "") if response else ""
-
-
-            osurl = page.url
-            titleurl = await page.title()
-            pagestatus = response.status if response else "No response"
-
-            return (content, referer, osurl, titleurl, pagestatus)
-
-        except Exception as e:
-            return ("", "", "", "", f"Error: {e}")
-
-        finally:
-            await browser.close()
-
 
 
 def poshmark():    # testuser=    kevinrose
@@ -3136,7 +2598,7 @@ def poshmark():    # testuser=    kevinrose
                     fullname = eachline.strip().split("\"")[1].replace('\'s Closet', '')
                     
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             else:
                 fullname = ''                    
                     
@@ -3154,10 +2616,6 @@ def poshmark():    # testuser=    kevinrose
                 row_data["fullname"] = fullname
                 # row_data["middlename"] = middlename
                 row_data["lastname"] = lastname
-                # row_data["pagestatus"] = pagestatus    
-                # row_data["content"] = content                
-                # row_data["titleurl"] = titleurl                 
-                
 
 
                 data.append(row_data)   
@@ -3177,33 +2635,25 @@ def print_logo():
 
 def public():    # testuser=    kevinrose
     print(f'{color_yellow}\n\t<<<<< public {color_blue}users{color_yellow} >>>>>{color_reset}')
-    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return (content, referer, osurl, titleurl, pagestatus)
-
-
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '8 - public')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '','')
         url = (f'https://public.com/@{user}')
-        try:
+        # try:
             # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+        # except:
+            # pass
 
-        # if 1 == 1:
-        if pagestatus == 200:
+        if 'Success' in pagestatus:
             for eachline in content.split("\n"):
                 if eachline == "": pass                                             # skip blank lines
                 elif "og:title" in eachline:
                     fullname = eachline.strip().split("\"")[1]
                     fullname = fullname.split(" (")[0]
                     if ' ' in fullname:
-                        (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                        (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
                     else:
                         fullname = ''
             if 1==1:
@@ -3217,10 +2667,7 @@ def public():    # testuser=    kevinrose
                 row_data["firstname"] = firstname
                 # row_data["middlename"] = middlename
                 row_data["lastname"] = lastname
-                row_data["pagestatus"] = pagestatus
-                row_data["titleurl"] = titleurl
-                row_data["content"] = content
-                # row_data["titleurl"] = titleurl                
+
                 data.append(row_data)   
  
 
@@ -3635,6 +3082,49 @@ def reddit(): # testuser = kevinrose
             data.append(row_data)           
 
 
+def redirect_detect():  # https://goo.gle
+    print(f'{color_yellow}\n\t<<<<< redirected {color_blue}websites{color_yellow} >>>>>{color_reset}')
+    for website in websites:    
+        row_data = {}
+        (query, ranking) = (website, '7 - redirect')
+        (ip) = ('')    
+        (final_url, dnsdomain, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '', '')
+        url = website
+        url = url.replace("http://", "https://")
+        if "http" not in url.lower():
+            url = (f'https://{website}')
+            
+        referer = url.lower().strip()
+        try:
+            response = requests.get(url)
+
+            final_url = response.url
+
+        except TypeError as error:
+
+            pass
+        
+        dnsdomain = url.lower()
+        dnsdomain = dnsdomain.replace("https://", "")
+        dnsdomain = dnsdomain.replace("http://", "")
+        dnsdomain = dnsdomain.split('/')[0]
+
+        ip = ip_address(dnsdomain)
+        
+        if dnsdomain not in final_url:
+            print(f'{color_green}{url} redirects to {final_url}{color_reset}') 
+
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["url"] = final_url
+            row_data["ip"] = ip
+            row_data["titleurl"] = titleurl
+            row_data["referer"] = referer
+            row_data["dnsdomain"] = dnsdomain
+
+            data.append(row_data)
+
+
 def request_url(url):
     
     fake_referer = 'https://www.google.com/'
@@ -3874,10 +3364,10 @@ def reversephonecheck():# testPhone=
         if '404' in pagestatus:
             ranking = '99 - reversephonecheck'
         elif pagestatus == 'research' and count == 2:
-            print(f'{color_green}{url}{color_yellow} {phone}{color_reset}')
+            print(f'{color_green}{url}{color_reset} {phone}')
             ranking = '5 - reversephonecheck'
         else:
-            print(f'{color_red}{url}{color_yellow} {phone}{color_reset}')
+            print(f'{color_red}{url}{color_reset} {phone}')
             ranking = '9 - reversephonecheck'
 
         if state == '':
@@ -3922,7 +3412,7 @@ def roblox(): # testuser = kevinrose
             if fullname.lower() == user.lower():
                 fullname = ''
             
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             if " " not in fullname:
                 fullname = ''
 
@@ -3943,34 +3433,28 @@ def roblox(): # testuser = kevinrose
 
 def rumble(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< rumble {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '4 - rumble')
+        (query, ranking) = (user, '9 - rumble')
         (city, country, fullname, titleurl, pagestatus, content) = ('', '', '', '', '', '')
         (note) = ('')
         user = user.strip()
         # url = (f'https://rumble.com/user/{user}/about')
         url = (f'https://rumble.com/c/{user}/about')
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
 
-        fullname = titleurl
-        if 'umble' in fullname:
-            fullname == ''
+        for eachline in content.split("  <"):
+            if "og:title" in eachline:
+                fullname = eachline.strip().split("\"")[1]
 
-        if pagestatus == 200:
+        if 1==1:
+        # if '404' not in pagestatus and 'ail' not in pagestatus:
+            if fullname.lower() == user.lower():
+                fullname = ''
             
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             if " " not in fullname:
-                firstname = fullname
+                fullname = ''
 
             print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
 
@@ -3981,9 +3465,9 @@ def rumble(): # testuser = kevinrose
             row_data["lastname"] = lastname
             row_data["url"] = url
             row_data["user"] = user            
-            # row_data["titleurl"] = titleurl
-            # row_data["pagestatus"] = pagestatus
-            # row_data["content"] = content
+            row_data["titleurl"] = titleurl
+            row_data["pagestatus"] = pagestatus
+            row_data["content"] = content
             
             data.append(row_data)  
 
@@ -4064,13 +3548,48 @@ def sherlock():    # testuser=    kevinrose
             data.append(row_data)
 
 
+def signal(): # testuser = kevinrose
+    print(f'{color_yellow}\n\t<<<<< signal {color_blue}users{color_yellow} >>>>>{color_reset}')
+    for user in users:    
+        row_data = {}
+        (query, ranking) = (user, '9 - signal')
+        (city, country, fullname, titleurl, pagestatus, content) = ('', '', '', '', '', '')
+        (note) = ('')
+        user = user.strip()
+        url = (f'https://www.signal.com/people/{user}')
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
+
+        for eachline in content.split("  <"):
+            if "og:title" in eachline:
+                fullname = eachline.strip().split("\"")[1]
+
+
+        if '404' not in pagestatus and 'ail' not in pagestatus:
+            if fullname.lower() == user.lower():
+                fullname = ''
+            
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
+            if " " not in fullname:
+                fullname = ''
+
+            print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
+
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["fullname"] = fullname
+            row_data["firstname"] = firstname
+            row_data["lastname"] = lastname
+            row_data["url"] = url
+            row_data["user"] = user            
+            row_data["titleurl"] = titleurl
+            row_data["pagestatus"] = pagestatus
+            row_data["content"] = content
+            
+            data.append(row_data)   
+            
+
 def slack(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< slack {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return
-        
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '6 - slack')
@@ -4078,11 +3597,11 @@ def slack(): # testuser = kevinrose
         (note) = ('')
         user = user.strip()
         url = (f'https://{user}.slack.com')
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
+
+        # for eachline in content.split("  <"):
+            # if "og:title" in eachline:
+                # fullname = eachline.strip().split("\"")[1]
 
 
         # Regex to extract teamName
@@ -4095,12 +3614,11 @@ def slack(): # testuser = kevinrose
         dnsdomain = dnsdomain.lstrip('@')
 
 
-        if pagestatus == 200:
-        # if '404' not in pagestatus and 'ail' not in pagestatus:
+        if '404' not in pagestatus and 'ail' not in pagestatus:
             if fullname.lower() == user.lower():
                 fullname = ''
             
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             if " " not in fullname:
                 fullname = ''
 
@@ -4116,49 +3634,31 @@ def slack(): # testuser = kevinrose
             # row_data["titleurl"] = titleurl
             row_data["dnsdomain"] = dnsdomain
             # row_data["content"] = content
-            # row_data["pagestatus"] = pagestatus
+            
             data.append(row_data)   
             
 
 def snapchat(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< snapchat {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return (content, referer, osurl, titleurl, pagestatus)
-
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '7 - snapchat')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         user = user.rstrip()
         url = (f'https://www.snapchat.com/add/{user}?')
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-        # for eachline in content.split("\n"):
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
 
-            # if "og:title" in eachline:
-                # fullname = eachline.strip().split("\"")[1].replace(' on Snapchat','')
-            # if ' ' in fullname:
-                # (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-                # ranking = ('5 - snapchat')
-            # else:
-                # fullname = ''
+        for eachline in content.split("\n"):
 
+            if "og:title" in eachline:
+                fullname = eachline.strip().split("\"")[1].replace(' on Snapchat','')
+            if ' ' in fullname:
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
+                ranking = ('5 - snapchat')
+            else:
+                fullname = ''
 
-        fullname = titleurl
-        if '(' in fullname:
-            fullname = fullname.split('(')[0].strip()
-            ranking = ('5 - snapchat') 
-        if ' ' in fullname:
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-            ranking = ('3 - snapchat')           
-
-        if pagestatus == 200:
+        if 'name=\"description' in content:
 
             print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
             row_data["query"] = query
@@ -4169,8 +3669,6 @@ def snapchat(): # testuser = kevinrose
             row_data["middlename"] = middlename
             row_data["lastname"] = lastname
             row_data["user"] = user
-            # row_data["pagestatus"] = pagestatus
-            # row_data["titleurl"] = titleurl
             data.append(row_data)
 
 
@@ -4188,7 +3686,7 @@ def spotify(): # testuser = kevinrose
             titleurl = titleurl.replace(" on Spotify","").strip()
             fullname = titleurl
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
                 ranking = ('5 - spotify')
             else:
                 fullname = ''
@@ -4214,6 +3712,27 @@ def spotify(): # testuser = kevinrose
             # row_data["pagestatus"] = pagestatus            
                         
             data.append(row_data)
+
+
+def spydialer():# testPhone= 
+    print(f'{color_yellow}\n\t<<<<< spydialer {color_blue}users{color_yellow} >>>>>{color_reset}')
+
+    for phone in phones:
+        row_data = {}
+        (query, pagestatus, state) = (phone, 'research', '')
+        state = phone_state_check(phone, state) 
+        url = ('https://www.spydialer.com')
+        print(f'{color_yellow}{phone}{color_reset}')
+
+        ranking = '3 - spydialer'
+        row_data["query"] = query
+        row_data["ranking"] = ranking
+        row_data["url"] = url
+        row_data["phone"] = phone
+        row_data["state"] = state        
+        # row_data["pagestatus"] = pagestatus            
+                        
+        data.append(row_data)
 
   
 def thatsthememail():   # testEmail= smooth8101@yahoo.com 
@@ -4342,43 +3861,31 @@ def thatsthemphone():# testPhone=
 
 def telegram(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< telegram {color_blue}users{color_yellow} >>>>>{color_reset}')
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
     for user in users:    
         row_data = {}
-        (query, ranking, note) = (user, '9 - telegram', '')
+        (query, ranking, note) = (user, '7 - telegram', '')
         
         (city, country, fullname, titleurl, pagestatus, content) = ('', '', '', '', 'research', '')
         user = user.rstrip()
         url = (f'https://t.me/{user}')
-
+        
         try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-
-        try:
+            (content, referer, osurl, titleurl, pagestatus) = request(url)
+            # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
 
             for eachline in content.split("\n"):
                 if "og:title" in eachline:
-                    fullname = eachline.strip().split("\"")[3]
+                    fullname = eachline.strip().split("\"")[1]
 
-            if 1==1:
-            # if 'nofollow' not in fullname:
-                print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
+            if 'Telegram' not in fullname:
+                print(f'{color_green}{url}{color_yellow}	{titleurl}{color_reset}') 
 
                 row_data["query"] = query
                 row_data["ranking"] = ranking
-                # row_data["fullname"] = fullname                
+                row_data["fullname"] = fullname                
                 row_data["url"] = url
                 row_data["user"] = user
-                row_data["note"] = fullname
-                row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
-                row_data["titleurl"] = titleurl                 
+                row_data["note"] = note
                 data.append(row_data)
 
         except TypeError as error:
@@ -4387,10 +3894,6 @@ def telegram(): # testuser = kevinrose
 
 def threads():    # testuser=    kevinrose     # add info
     print(f'{color_yellow}\n\t<<<<< threads {color_blue}users{color_yellow} >>>>>{color_reset}')
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return (content, referer, osurl, titleurl, pagestatus)
-
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '3 - threads')
@@ -4399,33 +3902,29 @@ def threads():    # testuser=    kevinrose     # add info
         url = (f'https://www.threads.net/@{user}')
 
         try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
+            (content, referer, osurl, titleurl, pagestatus) = request(url)
+ 
             content = content.strip()
             titleurl = titleurl.strip()
-            # for eachline in content.split("\n"):
-                # if "@context" in eachline:
-                    # content = eachline.strip()
-                # elif 'og:title' in eachline and 'content=\"' in eachline:
-                    # fullname = eachline.split('\"')[1].split(' (')[0]
-                # elif "og:description" in eachline:
-                    # note = eachline.strip()
-                    # note = note.replace("\" property=\"og:description\"/>",'').replace("<meta content=\"",'')
+            for eachline in content.split("\n"):
+                if "@context" in eachline:
+                    content = eachline.strip()
+                elif 'og:title' in eachline and 'content=\"' in eachline:
+                    fullname = eachline.split('\"')[1].split(' (')[0]
+                elif "og:description" in eachline:
+                    note = eachline.strip()
+                    note = note.replace("\" property=\"og:description\"/>",'').replace("<meta content=\"",'')
 
         except:
             pass
         
-        fullname = titleurl
-        if ' (' in fullname:
-            fullname = fullname.split(' (')[0]
         if ' ' in fullname:
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
         else:
             fullname = ''
         
-        # if 1 == 1:
-        if '@' in titleurl:
-            print(f'{color_green}{url}{color_reset} {fullname}')    
+        if 'on Threads' in titleurl:
+            print(f'{color_green}{url}{color_reset}')    
 
             row_data["query"] = query
             row_data["ranking"] = ranking
@@ -4435,9 +3934,7 @@ def threads():    # testuser=    kevinrose     # add info
             row_data["middlename"] = middlename
             row_data["fullname"] = fullname
             row_data["note"] = note
-            # row_data["pagestatus"] = pagestatus
-            # row_data["titleurl"] = titleurl            
-            # row_data["content"] = content           
+             
             data.append(row_data)
 
 
@@ -4463,7 +3960,7 @@ def tiktok(): # testuser = kevinrose
                 ranking = '8 - tiktok'
                 fullname = ''
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
                 ranking = '4 - tiktok'
             else:
                 fullname = ''            
@@ -4571,11 +4068,6 @@ def titleurl_og(content):
 
 def tripadvisor(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< tripadvisor {color_blue}users{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-        
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '9 - tripadvisor')
@@ -4584,23 +4076,33 @@ def tripadvisor(): # testuser = kevinrose
         user = user.strip()
         url = (f'https://www.tripadvisor.com/Profile/{user}')
 
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
 
+        for eachline in content.split("  <"):
+            if "og:title" in eachline:
+                fullname = eachline.strip().split("\"")[1]
 
-        if pagestatus == 200:
-
+        if 1==1:
+        # if '404' not in pagestatus and 'ail' not in pagestatus:
+            if fullname.lower() == user.lower():
+                fullname = ''
+            
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
+            if " " not in fullname:
+                fullname = ''
 
             print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
 
             row_data["query"] = query
             row_data["ranking"] = ranking
+            row_data["fullname"] = fullname
+            row_data["firstname"] = firstname
+            row_data["lastname"] = lastname
             row_data["url"] = url
             row_data["user"] = user            
+            row_data["titleurl"] = titleurl
             row_data["pagestatus"] = pagestatus
+            row_data["content"] = content
             
             data.append(row_data)  
             
@@ -4675,7 +4177,7 @@ def truthSocial(): # testuser = realdonaldtrump https://truthsocial.com/@realDon
                 note = eachline.strip().split("\"")[1]
 
         if ' ' in fullname:
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
         else:
             fullname = ''
 
@@ -4694,145 +4196,7 @@ def truthSocial(): # testuser = realdonaldtrump https://truthsocial.com/@realDon
             row_data["pagestatus"] = pagestatus
             data.append(row_data)
 
-
-def tumblr(): # testuser = kevinrose
-
-    
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return (content, referer, osurl, titleurl, pagestatus)
-    else:
-        print(f'Playwright is installed')
-        
-    print(f'{color_yellow}\n\t<<<<< Tumblr {color_blue}users{color_yellow} >>>>>{color_reset}')
-    for user in users:    
-        row_data = {}
-        (query, ranking, fullname, note) = (user, '4 - tumblr', '', '')
-        (content, referer, osurl, titleurl, pagestatus) = ('','', '', '', '')
-        (firstname, middlename, lastname) = ('','', '')
-        user = user.rstrip()
-        url = (f'https://www.tumblr.com/{user}')
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            # (content, referer, osurl, titleurl, pagestatus) = playwright_url(url: str)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-            
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}')    
-
-        for eachline in content.split("\n"):
-            if 'og:title' in eachline:
-                match = re.search(r'content="([^"]+)"', eachline)
-                if match:
-                    content_value = match.group(1)
-                    parts = content_value.split('·')
-                    fullname = parts[1].strip() if len(parts) > 1 else ""
-                    if fullname == "Untitled":
-                       fullname = ""
-                # else:
-                    # fullname = eachline # temp
-        # print(f'fullname = {fullname}') # temp
-        
-        if ' ' in fullname:
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-        # else:
-            # fullname = ''
-
-
-        if ' on Tumblr' not in titleurl:
-            ranking = '7 - tumblr'
-
-        if pagestatus == 200:
-
-            print(f'{color_green}{url}  {color_yellow}{fullname}{color_reset}') 
-
-            row_data["query"] = query
-            
-            row_data["ranking"] = ranking
-            row_data["fullname"] = fullname
-            row_data["user"] = user
-            row_data["url"] = url
-            row_data["firstname"] = firstname           
-            row_data["lastname"] = lastname  
-            row_data["middlename"] = middlename  
-            # row_data["titleurl"] = titleurl 
-            # row_data["content"] = content
-                                 
-            
-            data.append(row_data)
    
-
-
-
-def twitch(): # testuser = kevinrose
-
-    
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return (content, referer, osurl, titleurl, pagestatus)
-        
-    print(f'{color_yellow}\n\t<<<<< twitch {color_blue}users{color_yellow} >>>>>{color_reset}')
-    for user in users:    
-        row_data = {}
-        (query, ranking, fullname, note) = (user, '4 - tumblr', '', '')
-        (content, referer, osurl, titleurl, pagestatus) = ('','', '', '', '')
-        (firstname, middlename, lastname) = ('','', '')
-        user = user.rstrip()
-        url = (f'https://www.twitch.tv/{user}')
-        url2 = (f'https://twitchtracker.com/{user}')
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url2))
-            
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}')    
-
-        for eachline in content.split("\n"):
-            if 'og:title' in eachline:
-                match = re.search(r'content="([^"]+)"', eachline)
-                if match:
-                    content_value = match.group(1)
-                    parts = content_value.split('·')
-                    fullname = parts[1].strip() if len(parts) > 1 else ""
-                    if fullname == "Untitled":
-                       fullname = ""
-                # else:
-                    # fullname = eachline # temp
-        # print(f'fullname = {fullname}') # temp
-        
-        if ' ' in fullname:
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-        # else:
-            # fullname = ''
-
-
-        # if ' on Tumblr' not in titleurl:
-            # ranking = '7 - tumblr'
-
-        # if 1==1:
-        if pagestatus == 200:
-
-            print(f'{color_green}{url}  {color_yellow}{fullname}{color_reset}') 
-
-            row_data["query"] = query
-            
-            row_data["ranking"] = ranking
-            row_data["fullname"] = fullname
-            row_data["user"] = user
-            row_data["url"] = url
-            row_data["note"] = url2
-            # row_data["firstname"] = firstname           
-            # row_data["lastname"] = lastname  
-            # row_data["middlename"] = middlename  
-            # row_data["titleurl"] = titleurl 
-            # row_data["content"] = content
-            
-            # row_data["pagestatus"] = pagestatus                                 
-            
-            data.append(row_data)
-            
-            
 def twitter():    # testuser=    kevinrose     # add info
     print(f'{color_yellow}\n\t<<<<< twitter {color_blue}users{color_yellow} >>>>>{color_reset}')
     for user in users:    
@@ -4881,25 +4245,23 @@ def twitter():    # testuser=    kevinrose     # add info
         # time.sleep(10) #will sleep for 10 seconds
 
 
-def breachbase(): 
+def veraxity(): 
     if len(emails) > 0:
         row_data = {}
         ranking = '8 - manual'
-        url = ('https://breachbase.com/')
+        url = ('https://intel.veraxity.org')
+        note = ('https://breachbase.com/')
         row_data["ranking"] = ranking
         row_data["url"] = url
+        row_data["note"] = note
         data.append(row_data)
             
 
 def vimeo():    # testuser=    kevinrose
     print(f'{color_yellow}\n\t<<<<< vimeo {color_blue}users{color_yellow} >>>>>{color_reset}')
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '3 - vimeo')
+        (query, ranking) = (user, '9 - vimeo')
         (fullname, firstname, lastname, middlename, note, DOB)  = ('','','','', '', '')
         (misc) = ('')
 
@@ -4908,37 +4270,30 @@ def vimeo():    # testuser=    kevinrose
 
         try:
             # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
+
+            content = content.strip()
+            titleurl = titleurl.strip()
+
+        except:
+            pass
             
         # time.sleep(1) # will sleep for 1 seconds
-        if pagestatus == 200:
-            
-            for eachline in content.split("  <"):
-                if "og:description" in eachline:
-                    note = eachline.strip().split("\"")[3]
-            
-            
-            fullname = titleurl
-            if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)        
-        
-            print(f'{color_green}{url}{color_reset} {fullname}')    
+        if 1==1:
+        # if 'alternate' in content:
+            print(f'{color_green}{url}{color_reset}')    
 
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["url"] = url
             row_data["lastname"] = lastname
             row_data["firstname"] = firstname
-            row_data["middlename"] = firstname
             row_data["fullname"] = fullname
             row_data["note"] = note
             # row_data["DOB"] = DOB
             # row_data["misc"] = misc
-            # row_data["content"] = content
-            # row_data["pagestatus"] = pagestatus
-            # row_data["titleurl"] = titleurl
+            row_data["content"] = content
+            row_data["pagestatus"] = pagestatus
+            row_data["titleurl"] = titleurl
 
             data.append(row_data)
 
@@ -5065,7 +4420,8 @@ def whocalld():# testPhone=  DROP THE LEADING 1
             ranking = '3 - spydialer'
             row_data["query"] = query
             row_data["ranking"] = ranking
-            row_data["url"] = 'https://www.spydialer.com/'
+            row_data["url"] = 'https://www.spydialer.com'
+            # row_data["url"] = url            
             row_data["note"] = note
             row_data["fullname"] = fullname
             row_data["phone"] = phone
@@ -5073,10 +4429,7 @@ def whocalld():# testPhone=  DROP THE LEADING 1
             row_data["city"] = city
             row_data["country"] = country
             row_data["state"] = state
-            row_data["zipcode"] = zipcode   
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl                
+            row_data["zipcode"] = zipcode            
             data.append(row_data)
 
         else:
@@ -5266,6 +4619,39 @@ def wordpress_profiles(): # testuser = kevinrose
 
             data.append(row_data)
 
+
+
+def wordpresssearchemail():    # testuser=    kevinrose@gmail.com 
+    print(f'{color_yellow}\n\t<<<<< wordpressemail {color_blue}emails{color_yellow} >>>>>{color_reset}')    
+    
+    for email in emails:
+        row_data = {}
+        (query, content, note) = (email, '', '')
+        
+        url = (f'http://en.search.wordpress.com/?q={email}')
+
+        try:
+            (content, referer, osurl, titleurl, pagestatus) = request(url)
+        except:
+            (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
+            pass
+        if 'No sites found' not in content:
+            content = content.split('\n') 
+            for eachline in content:
+
+                if eachline == "": pass                                             # skip blank lines
+                else:
+                    if 'post-title' in eachline:
+                        # print(eachline) # temp
+                        eachline = eachline.split('\"')
+                        url = eachline[3]
+                        ranking = '9 - wordpress'
+                        
+                        row_data["query"] = query
+                        row_data["ranking"] = ranking
+                        row_data["url"] = url
+                        row_data["email"] = email                        
+                        print(f'{color_green}{url}{color_reset}')    
 
 def write_blurb():
     '''
@@ -5909,7 +5295,7 @@ def youtube(): # testuser = kevinrose
             if fullname.lower() == user.lower():
                 fullname = ''
             if ' ' in fullname:
-                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                (fullname, firstname, lastname, middlename) = fullname_parse(fullname)
             else:
                 (fullname, firstname, lastname, middlename) = ('', '', '', '')
 
@@ -5975,11 +5361,6 @@ def robtex():
 def titles():    # testsite= google.com
     from subprocess import call, Popen, PIPE
     print(f'{color_yellow}\n\t<<<<< Titles grab {color_blue}Website\'s{color_yellow} >>>>>{color_reset}')
-
-    if playwright_ready() is False:
-        print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return 
-        
     for website in websites:    
         row_data = {}
         (query, ranking) = (website, '7 - website')
@@ -5998,11 +5379,10 @@ def titles():    # testsite= google.com
         url = url.replace("https://", "http://")
 
         try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
+            (content, referer, osurl, titleurl, pagestatus) = request(url)
         except TypeError as error:
-            print(f'{color_red}{error}{color_reset}') 
-
+            print(f'{color_red}{error}{color_reset}')
+        
         # dnsdomain
         dnsdomain = url.lower()
         dnsdomain = dnsdomain.replace("https://", "")
@@ -6011,12 +5391,12 @@ def titles():    # testsite= google.com
         
         # ip
         ip = ip_address(dnsdomain)
+        print(f'{color_green}{website}{color_yellow}	   {pagestatus}	{color_blue}{titleurl}{color_reset}')
+        if 1==1:
 
-        if pagestatus == 200:
-            print(f'{color_green}{website}{color_yellow}	   {pagestatus}	{color_blue}{titleurl}{color_reset}')
             row_data["query"] = query
             row_data["ranking"] = ranking
-            # row_data["fullname"] = fullname
+            row_data["fullname"] = fullname
             row_data["url"] = url
             row_data["ip"] = ip            
           
@@ -6026,10 +5406,8 @@ def titles():    # testsite= google.com
             row_data["osurl"] = osurl              
             row_data["titleurl"] = titleurl              
             row_data["pagestatus"] = pagestatus              
-          
+
             data.append(row_data) 
-        else:
-            print(f'{color_red}{website}{color_yellow}	   {pagestatus}	{color_blue}{titleurl}{color_reset}')            
 
 def validnumber():# testPhone= 
     print(f'{color_yellow}\n\t<<<<< validnumber {color_blue}phone numbers{color_yellow} >>>>>{color_reset}')
@@ -6082,49 +5460,23 @@ def validnumber():# testPhone=
             data.append(row_data) 
 
 
-def venmo(): # testuser = kevinrose
+def venvmo(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< venmo {color_blue}users{color_yellow} >>>>>{color_reset}')
-    if playwright_ready() is False:
-        # print(f'{color_red}pip install playwright playwright_stealth{color_reset}')
-        return (content, referer, osurl, titleurl, pagestatus)
-    # else:
-        # print(f'Playwright is installed')
-
-
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '4 - venmo')
-        (fullname, firstname, lastname, middlename) = ('', '', '', '')
+        (query, ranking) = (user, '9 - venmo')
+
         (fullname) = ('')
         user = user.rstrip()
         url = (f'https://account.venmo.com/u/{user}')
-        
-        try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
-        except TypeError as error:
-            print(f'{color_red}{error}{color_reset}')         
-        
-        
-        titleurl = titleurl.replace('Venmo | ','')
-        fullname = titleurl.strip()
-        if ' ' in fullname:
-            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-            
+        # (content, referer, osurl, titleurl, pagestatus) = request(url)
+        # titleurl = titleurl.replace(' - venmo','')
         # if '404' not in pagestatus:
-        if pagestatus == 200:
-            print(f'{color_green}{url}   {color_reset}{fullname}')
+        if 1 ==1:
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["user"] = user
-            row_data["fullname"] = fullname
-            row_data["firstname"] = firstname
-            row_data["lastname"] = lastname
-            row_data["middlename"] = middlename
             row_data["url"] = url
-            # row_data["pagestatus"] = pagestatus
-            # row_data["content"] = content
-            # row_data["titleurl"] = titleurl
             data.append(row_data)
             
 
@@ -6323,7 +5675,6 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-3.0.3 - playwright scraper
 3.0.2 - slack, roblox, ham_radio
 3.0.1 - Convert area code to state if it doesn't exist, instantusername
 3.0.0 - switched to openpyxl, added log sheet
@@ -6336,11 +5687,8 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-https://magabook.com/Mike
-https://gamejolt.com/site-api/web/profile/@menutkart
-https://www.digitalfootprintcheck.com/free-checker.html?q=kevinrose@gmail.com
-https://www.geocaching.com/p/?u=kevinrose
-https://www.kickstarter.com/profile/kevinrose
+https://breachdirectory.org  crack hashes with weakpass.com
+gosearch.exe kevinrose --no-false-positives
 
 
 https://www.deviantart.com/kevinrose/gallery
@@ -6354,13 +5702,16 @@ https://start.me/p/1kJKR9/commandergirl-s-suggestions
 
 
 
-# phone : whatsapp, group me, weibo, chime, crickwick,
-walkie talkie, apple,okru, 
+# phone : whatsapp, haveibeenpwned, group me, true call, weibo, chime, qq, crickwick,
+discord, foursquare, facebook, walkie talkie, apple, marco polo, okru, 
 
 
 https://www.textnow.com/
 https://www.talkatone.com/
-
+https://www.pinger.com/
+https://www.tumblr.com/login
+https://www.tumblr.com/kevinrose
+https://www.tumblr.com/search/kevinrose?src=typed_query
 
 add timestamp to log sheet
 currently only reads input.txt. add input.xlsx input.
@@ -6390,7 +5741,7 @@ https://opengovus.com/search?q=kevinrose%2C+LLC
 if 1- main, then write a report of your findings.
 change the order of columns by modifying headers in the write module
 
-Protected by cookies: dailymotion, trello
+Protected by cookies: dailymotion, linkedin, trello, xboxgamertag, twitch.tv, telegram, tripadvisor
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     The End        >>>>>>>>>>>>>>>>>>>>>>>>>>
