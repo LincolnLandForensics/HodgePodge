@@ -113,14 +113,15 @@ fsutil fsinfo ntfsinfo d:  >>%logfile%
 fsutil fsinfo ntfsinfo e:  >>%logfile%
 fsutil fsinfo ntfsinfo f:  >>%logfile%
 
-
 echo. >>%logfile%
+
 echo ======== ipconfig ======== >>%logfile%
 ipconfig | find "IPv" | find ":" >>%logfile%
 
 
 echo ======== net user ======== >>%logfile%
 
+net user >>%logfile%
 
 echo ==== User Account Audit (%date% %time%) ==== >> "%logfile%"
 
