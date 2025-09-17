@@ -5,17 +5,17 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "IDOR" # ISP, MWW
+agency = "MWW" # ISP, MWW
 global agencyFull
-agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
+agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
 global divisionFull
-divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
+divisionFull = "Criminal Investigation Division" # Criminal Investigation Division
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.4.6'
+version = '3.4.7'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -97,7 +97,8 @@ def main():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-I', '--input', help='default is input_case.xlsx or input.txt', required=False)
     parser.add_argument('-O', '--output', help='', required=False)
-    parser.add_argument('-b', '--blank', help='create a blank sheet', required=False, action='store_true')
+    parser.add_argument('-b', '--blankone', help='create a blank sheet', required=False, action='store_true')
+
     parser.add_argument('-c','--caseNotes', help='casenotes module (optional) used with -r', required=False, action='store_true')
     parser.add_argument('-C','--checklist', help='checklist module', required=False, action='store_true')
 
@@ -107,6 +108,8 @@ def main():
     parser.add_argument('-L', '--logs_parse', help='dump all your logs into Logs\ folder', required=False, action='store_true')
     parser.add_argument('-r', '--report', help='write report', required=False, action='store_true')
     parser.add_argument('-s', '--sticker', help='write sticker', required=False, action='store_true')
+
+
 
     args = parser.parse_args()
 
@@ -144,6 +147,9 @@ def main():
     win = Frame()
     win.grid(sticky=N+S+E+W)
 
+
+
+
     if args.output:
         output_xlsx = args.output
 
@@ -151,11 +157,9 @@ def main():
         filename = args.input  
         input_file = args.input  
 
-    if args.blank:  # test
-        data = []  
-        print(f'insert blank write_here')   # temp
-        write_xlsx()
-        
+    if args.blankone:  # test
+        create_and_write_xlsx()
+
     if args.report:
         global case_notes_status
         if args.caseNotes:  # if you add -c                                  
@@ -182,7 +186,7 @@ def main():
     elif args.guidataentry:
         gui_data_entry()
 
-    if not any([args.guidataentry, args.logparse, args.logs_parse, args.report, args.caseNotes, args.checklist, args.sticker]):
+    if not any([args.blankone, args.guidataentry, args.logparse, args.logs_parse, args.report, args.caseNotes, args.checklist, args.sticker]):
         parser.print_help()
         banner_print()
         usage()
@@ -208,7 +212,7 @@ def banner_print():
     """
     print(f"{color_blue}{art}{color_reset}")
 
-def convert_timestamp(timestamp, time_orig=None, timezone=None):
+def convert_timestamp(timestamp, time_orig=None, timezone=None):    # not in use?
     timezone = timezone or ''
     time_orig = time_orig or timestamp
     timestamp = str(timestamp)
@@ -300,11 +304,11 @@ def create_docx():
     # p = document.add_paragraph('Subject of Activity:\t\t\t\tCase Agent:\t\tType By:')
     # p = document.add_paragraph('%s\t\t\t\t%s\t\t%s' %(subjectBusinessName, caseAgent, forensicExaminer))
 
-    document.save(output_docx)   # was output_xlsx
+    document.save(output_docx) 
     print(f"{color_green}created {output_docx}{color_reset}")       
     return document
     
-def enter_data():
+def enter_data():  # not in use?
     """
         GUI data input section using tkinter
     """
@@ -1547,7 +1551,6 @@ def parse_log():
         write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, forensicExaminer, reportStatus, notes, summary, tempNotes, exhibitType, makeModel, serial, OS, hostname, userName, userPwd, email, emailPwd, ip, phoneNumber, phoneIMEI, phone2, phoneIMEI2, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, seizureAddress, seizureRoom, dateSeized, seizedBy, seizureStatus, dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, storageLocation, status, imagingTool, imagingType, imageMD5, imageSHA256, imageSHA1, verifyHash, writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, qrCode, operation, vaultCaseNumber, vaultTotal, caseNumberOrig, Action, priority, temp)
     print(f"{color_green}Exporting logs as {spreadsheet}{color_reset}")    
 
-
 def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
     empty_line = f"| {' ' * (len(msg_blurb))} |"
@@ -1558,7 +1561,6 @@ def msg_blurb_square(msg_blurb, color):
     print(empty_line)
     print(horizontal_line)
     print(f'{color_reset}')
-
 
 def pdf_extract(filename):
     """
@@ -1724,8 +1726,7 @@ def pdf_extract(filename):
         imagingFinished, imagingTool, imagingType, storageSize, evidenceDataSize, analysisTool, tempNotes, imagingTool
     )
 
-
-def pdf_filltest(input_pdf_path, output_pdf_path, data_dict):   
+def pdf_filltest(input_pdf_path, output_pdf_path, data_dict):       # not in use?
     """
     Fill out PDF form fields based on a provided dictionary of values.
     
@@ -1778,9 +1779,6 @@ def pdf_filltest(input_pdf_path, output_pdf_path, data_dict):
     
     # Write the filled PDF to the output path
     pdfrw.PdfWriter().write(output_pdf_path, template_pdf)
-
-
-
 
 def pdf_fill(input_pdf_path, output_pdf_path, data_dict):   
     """
@@ -2348,7 +2346,6 @@ All digital images obtained pursuant to this investigation will be maintained on
     write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer)
     write_todo(caseNumber, caseNumberTodo, bodyDoing, bodyTodo, bodyDone)
 
-
 def sanitize_filename(name):
     # Define a pattern for illegal characters
     name = name.replace('d/b/a ', '')
@@ -2356,8 +2353,6 @@ def sanitize_filename(name):
     illegal_chars = r'[<>:"/\\|?*\x00]'
     # Replace them with an underscore or other safe character
     return re.sub(illegal_chars, '_', name)
-    
-    
     
 def write_checklist():  # panda edition
     """
@@ -2867,118 +2862,87 @@ def write_output(caseNumber, exhibit, caseName, subjectBusinessName, caseType, c
 
 def create_and_write_xlsx():
     """
-        Creates an xlsx database file with formatting and writes data to it
+    Creates an xlsx database file with formatting and writes data to it using openpyxl and pandas
     """
-    # DataFrame to store the data
+    from openpyxl.utils import get_column_letter
+
+
+    # Define the data structure
     data = {
-        'caseNumber': [],
-        'exhibit': [],
-        'caseName': [],
-        'subjectBusinessName': [],
-        'caseType': [],
-        'caseAgent': [],
-        'forensicExaminer': [],
-        'reportStatus': [],
-        'notes': [],
-        'summary': [],
-        'tempNotes': [],       
-        'exhibitType': [],
-        'makeModel': [],
-        'serial': [],
-        'OS': [],
-        'hostname': [],        
-        'userName': [],
-        'userPwd': [],
-        'email': [],
-        'emailPwd': [],
-        'ip': [],
-        'phoneNumber': [],
-        'phoneIMEI': [],
-        'phone2': [],          
-        'phoneIMEI2': [],
-        'mobileCarrier': [],
-        'biosTime': [],
-        'currentTime': [],
-        'timezone': [],
-        'shutdownMethod': [],
-        'shutdownTime': [],
-        'seizureAddress': [],
-        'seizureRoom': [],
-        'dateSeized': [],
-        'seizedBy': [],
-        'seizureStatus': [],        
-        'dateReceived': [],
-        'receivedBy': [],
-        'removalDate': [],
-        'removalStaff': [],
-        'reasonForRemoval': [],
-        'inventoryDate': [],
-        'storageLocation': [],
-        'status': [],
-        'imagingTool': [],
-        'imagingType': [],
-        'imageMD5': [],
-        'imageSHA256': [],        
-        'imageSHA1': [],
-        'verifyHash': [],           
-        'writeBlocker': [],
-        'imagingStarted': [],
-        'imagingFinished': [],
-        'storageType': [],
-        'storageMakeModel': [],
-        'storageSerial': [],
-        'storageSize': [],
-        'evidenceDataSize': [],
-        'analysisTool': [],
-        'analysisTool2': [],
-        'exportLocation': [],
-        'exportedEvidence': [],
-        'qrCode': [],
-        'operation': [],        
-        'vaultCaseNumber': [],   
-        'vaultTotal': [],
-        'caseNumberOrig': [],
-        'Action': [],        
-        'priority': [],
-        'temp': []
+        'caseNumber': [], 'exhibit': [], 'caseName': [], 'subjectBusinessName': [],
+        'caseType': [], 'caseAgent': [], 'forensicExaminer': [], 'reportStatus': [],
+        'notes': [], 'summary': [], 'tempNotes': [], 'exhibitType': [], 'makeModel': [],
+        'serial': [], 'OS': [], 'hostname': [], 'userName': [], 'userPwd': [], 'email': [],
+        'emailPwd': [], 'ip': [], 'phoneNumber': [], 'phoneIMEI': [], 'phone2': [],
+        'phoneIMEI2': [], 'mobileCarrier': [], 'biosTime': [], 'currentTime': [],
+        'timezone': [], 'shutdownMethod': [], 'shutdownTime': [], 'seizureAddress': [],
+        'seizureRoom': [], 'dateSeized': [], 'seizedBy': [], 'seizureStatus': [],
+        'dateReceived': [], 'receivedBy': [], 'removalDate': [], 'removalStaff': [],
+        'reasonForRemoval': [], 'inventoryDate': [], 'storageLocation': [], 'status': [],
+        'imagingTool': [], 'imagingType': [], 'imageMD5': [], 'imageSHA256': [],
+        'imageSHA1': [], 'verifyHash': [], 'writeBlocker': [], 'imagingStarted': [],
+        'imagingFinished': [], 'storageType': [], 'storageMakeModel': [], 'storageSerial': [],
+        'storageSize': [], 'evidenceDataSize': [], 'analysisTool': [], 'analysisTool2': [],
+        'exportLocation': [], 'exportedEvidence': [], 'qrCode': [], 'operation': [],
+        'vaultCaseNumber': [], 'vaultTotal': [], 'caseNumberOrig': [], 'Action': [],
+        'priority': [], 'temp': []
     }
 
-    # Create the DataFrame
+    # Create DataFrame
     df = pd.DataFrame(data)
 
-    # Write the DataFrame to Excel
-    excel_filename = 'output.xlsx'
-    df.to_excel(excel_filename, index=False)
+    # Create workbook and worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Cases"
+    ws.freeze_panes = "B2"
 
-    # Get the Excel writer
-    writer = pd.ExcelWriter(excel_filename, engine='xlsxwriter')
-    workbook = writer.book
+    # Define styles
+    bold_font = Font(bold=True)
+    border = Border(left=Side(style='thin'), right=Side(style='thin'),
+                    top=Side(style='thin'), bottom=Side(style='thin'))
 
-    # Get or create the worksheet
-    if 'Cases' in workbook.sheetnames:
-        worksheet = workbook['Cases']    # was 'forensics'
-    else:
-        worksheet = workbook.create_sheet('Cases')  # was 'forensics'
+    # Color groups by column name (not letter)
+    orange = {'caseNumber', 'caseName', 'subjectBusinessName', 'caseType', 'caseAgent', 'forensicExaminer', 'reportStatus'}
+    yellow = {'exhibit', 'exhibitType', 'makeModel', 'serial', 'OS', 'hostname', 'userName', 'userPwd', 'email', 'emailPwd',
+              'ip', 'phoneNumber', 'phoneIMEI', 'phone2', 'phoneIMEI2', 'mobileCarrier', 'biosTime', 'currentTime', 'timezone', 'shutdownMethod', 'shutdownTime'}
+    violet = {'notes', 'summary', 'tempNotes'}
+    green = {'seizureAddress', 'seizureRoom', 'dateSeized', 'seizedBy', 'seizureStatus', 'dateReceived', 'receivedBy', 'removalDate', 'removalStaff', 'reasonForRemoval', 'inventoryDate'}
+    blue = {'storageLocation', 'status', 'imagingTool', 'imagingType', 'imageMD5', 'imageSHA256', 'imageSHA1',
+            'verifyHash', 'writeBlocker', 'imagingStarted', 'imagingFinished', 'storageType', 'storageMakeModel', 'storageSerial', 'storageSize', 'evidenceDataSize',
+            'analysisTool', 'analysisTool2', 'exportLocation', 'exportedEvidence'}
+    pink = {'qrCode', 'operation', 'vaultCaseNumber', 'vaultTotal', 'caseNumberOrig', 'Action', 'priority'}
 
-    worksheet = writer.sheets['Cases'] # Replace 'Cases' with the name of your sheet
+    # Color mapping
+    color_map = {
+        'orange': ('FFC000', orange),
+        'yellow': ('FFFF00', yellow),
+        'violet': ('CCCCFF', violet),
+        'green': ('92D050', green),
+        'blue': ('66CCFF', blue),
+        'pink': ('FF99FF', pink)
+    }
 
+    # Write headers with formatting
+    for col_num, col_name in enumerate(df.columns, start=1):
+        cell = ws.cell(row=1, column=col_num, value=col_name)
+        cell.font = bold_font
+        cell.border = border
 
+        # Apply color fill based on group
+        for color_hex, group in color_map.values():
+            if col_name in group:
+                cell.fill = PatternFill(start_color=color_hex, end_color=color_hex, fill_type='solid')
+                break
 
-    # Define the header formats
-    header_format = workbook.add_format({'bold': True, 'border': 1})
-    header_formatCase = workbook.add_format({'bold': True, 'border': 1, 'bg_color':'#FFc000'})
-    # Add more header formats as needed...
+        # Set column width
+        ws.column_dimensions[get_column_letter(col_num)].width = 20
 
-    # Write the column headers with the specified formats
-    for col_num, col_name in enumerate(df.columns):
-        worksheet.write(0, col_num, col_name, header_format)
+    # Save workbook
+    wb.save(output_xlsx)
 
-    # Set column widths as needed...
-    # For example: worksheet.set_column(0, 0, 15)  # Set width of column 'caseNumber' to 15
-
-    # Close the Excel writer
-    writer.save()
-
+    msg_blurb = (f'Blank sheet saved as {output_xlsx}')
+    msg_blurb_square(msg_blurb, color_green)
 
 def ufdx_parser(xml_path):
     import xml.etree.ElementTree as ET
@@ -3017,135 +2981,6 @@ def ufdx_parser(xml_path):
     exportLocation = extraction.attrib.get('Path', '') if extraction is not None else ''
     return (caseNumber, exhibit, subjectBusinessName, caseType, forensicExaminer, makeModel, seizureAddress, seizedBy, imagingType, exportLocation)
 
-def write_report(caseNumber, exhibit, caseName, subjectBusinessName, caseType, caseAgent, 
-        forensicExaminer, reportStatus, notes, summary, exhibitType, makeModel, serial, OS, phoneNumber, 
-        phoneIMEI, mobileCarrier, biosTime, currentTime, timezone, shutdownMethod, shutdownTime, 
-        userName, userPwd, email, emailPwd, ip, seizureAddress, seizureRoom, dateSeized, seizedBy, 
-        dateReceived, receivedBy, removalDate, removalStaff, reasonForRemoval, inventoryDate, 
-        seizureStatus, status, imagingTool, imagingType, imageMD5, imageSHA1, imageSHA256, 
-        writeBlocker, imagingStarted, imagingFinished, storageType, storageMakeModel, storageSerial, 
-        storageSize, evidenceDataSize, analysisTool, analysisTool2, exportLocation, exportedEvidence, 
-        storageLocation, caseNumberOrig, priority, operation, Action, vaultCaseNumber, qrCode, 
-        vaultTotal, tempNotes, hostname, phoneIMEI2, phone2, verifyHash):
-    """
-        write the report to a word document        
-    """
-    # Create or load the DataFrame
-    try:
-        df = pd.read_excel(spreadsheet)
-    except FileNotFoundError:
-
-        df = pd.DataFrame(columns=[
-            "caseNumber", "exhibit", "caseName", "subjectBusinessName", "caseType"
-            , "caseAgent", "forensicExaminer", "reportStatus", "notes", "summary"
-            , "tempNotes", "exhibitType", "makeModel", "serial", "OS", "hostname"
-            , "userName", "userPwd", "email", "emailPwd", "ip", "phoneNumber"
-            , "phoneIMEI", "phone2", "phoneIMEI2", "mobileCarrier", "biosTime"
-            , "currentTime", "timezone", "shutdownMethod", "shutdownTime"
-            , "seizureAddress", "seizureRoom", "dateSeized", "seizedBy"
-            , "seizureStatus", "dateReceived", "receivedBy", "removalDate"
-            , "removalStaff", "reasonForRemoval", "inventoryDate", "storageLocation"
-            , "status", "imagingTool", "imagingType", "imageMD5", "imageSHA256"
-            , "imageSHA1", "verifyHash", "writeBlocker", "imagingStarted"
-            , "imagingFinished", "storageType", "storageMakeModel", "storageSerial"
-            , "storageSize", "evidenceDataSize", "analysisTool", "analysisTool2"
-            , "exportLocation", "exportedEvidence", "qrCode", "operation"
-            , "vaultCaseNumber", "vaultTotal", "caseNumberOrig", "Action"
-            , "priority", "temp"
-        ])
-        
-
-    # Create a dictionary of the case data
-    case_data = {
-        'CaseNumber': caseNumber,
-        'Exhibit': exhibit,
-        'CaseName': caseName,
-        'SubjectBusinessName': subjectBusinessName,
-        'CaseType': caseType,
-        'CaseAgent': caseAgent,
-        'ForensicExaminer': forensicExaminer,
-        'ReportStatus': reportStatus,
-        'Notes': notes,
-        'Summary': summary,
-        'ExhibitType': exhibitType,
-        'MakeModel': makeModel,
-        'Serial': serial,
-        'OS': OS,
-        'PhoneNumber': phoneNumber,
-        'PhoneIMEI': phoneIMEI,
-        'MobileCarrier': mobileCarrier,
-        'BiosTime': biosTime,
-        'CurrentTime': currentTime,
-        'Timezone': timezone,
-        'ShutdownMethod': shutdownMethod,
-        'ShutdownTime': shutdownTime,
-        'UserName': userName,
-        'UserPwd': userPwd,
-        'Email': email,
-        'EmailPwd': emailPwd,
-        'IP': ip,
-        'SeizureAddress': seizureAddress,
-        'SeizureRoom': seizureRoom,
-        'DateSeized': dateSeized,
-        'SeizedBy': seizedBy,
-        'DateReceived': dateReceived,
-        'ReceivedBy': receivedBy,
-        'RemovalDate': removalDate,
-        'RemovalStaff': removalStaff,
-        'ReasonForRemoval': reasonForRemoval,
-        'InventoryDate': inventoryDate,
-        'SeizureStatus': seizureStatus,
-        'Status': status,
-        'ImagingTool': imagingTool,
-        'ImagingType': imagingType,
-        'ImageMD5': imageMD5,
-        'ImageSHA1': imageSHA1,
-        'ImageSHA256': imageSHA256,
-        'WriteBlocker': writeBlocker,
-        'ImagingStarted': imagingStarted,
-        'ImagingFinished': imagingFinished,
-        'StorageType': storageType,
-        'StorageMakeModel': storageMakeModel,
-        'StorageSerial': storageSerial,
-        'StorageSize': storageSize,
-        'EvidenceDataSize': evidenceDataSize,
-        'AnalysisTool': analysisTool,
-        'AnalysisTool2': analysisTool2,
-        'ExportLocation': exportLocation,
-        'ExportedEvidence': exportedEvidence,
-        'StorageLocation': storageLocation,
-        'CaseNumberOrig': caseNumberOrig,
-        'Priority': priority,
-        'Operation': operation,
-        'Action': Action,
-        'VaultCaseNumber': vaultCaseNumber,
-        'QRCode': qrCode,
-        'VaultTotal': vaultTotal,
-        'TempNotes': tempNotes,
-        'Hostname': hostname,
-        'phoneIMEI2': phoneIMEI2,
-        'phone2': phone2,
-        'verifyHash': verifyHash        
-    }
-
-    # Append the case data to the DataFrame
-    df = pd.concat([df, pd.DataFrame(case_data, index=[0])], ignore_index=True)
-
-    # Save the DataFrame to the Excel file
-    # df.to_excel(file_path, index=False)
-
-    # Load the workbook and set all cells to text format
-    # wb = openpyxl.load_workbook(file_path)
-    # ws = wb.active
-
-    # for row in ws.iter_rows():
-        # for cell in row:
-            # cell.number_format = '@'  # Set cell format to text
-
-
-    # Save the DataFrame to the Excel file
-    df.to_excel('out_log.xlsx', index=False)
-    
 def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, forensicExaminer, caseType, executiveSummary, body, footer): 
     """
         write %s__%s_%s_%s_DRAFT.docx
@@ -3174,7 +3009,6 @@ def write_activity_report(caseNumber, caseName, subjectBusinessName, caseAgent, 
 
     msg_blurb = (f'Activity report written to {output_docx}')
     msg_blurb_square(msg_blurb, color_green)
-      
 
 def write_sticker():
     """
@@ -3274,7 +3108,6 @@ Agent: {caseAgent}
     document.save(output_docx)
     print(f"{color_green}Data written to {output_docx}")
 
-
 def write_todo(caseNumber, caseNumberTodo, bodyDoing, bodyTodo, bodyDone):
     # Define the filename
     todo_filename = f'Todo_{caseNumber}.md'
@@ -3327,6 +3160,7 @@ def usage():
     print(f"\n    {color_yellow}insert your info into input_case.xlsx")
     print(f"\n    or insert logs into Logs folder{color_reset}")
     print(f"\nExample:")
+    print(f"    {file} -b")    
     print(f"    {file} -C")
     print(f"    {file} -g")
     print(f"    {file} -l")
@@ -3334,7 +3168,6 @@ def usage():
     print(f"    {file} -r")
     print(f"    {file} -r -c -C -s -I ForensicCasesExample.xlsx")
     print(f"    {file} -s")
-
  
 if __name__ == '__main__':
     main()
@@ -3342,6 +3175,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+3.4.6 - fixed -b blank 
 3.4.2 - parse .ufdx logs 
 3.4.1 - if exhibit ends in 0 , like 10 , it strips off the 0 and now it's a 1, same with phone2
 3.4.0 - ReOrganized column order (run old sheets through -r) to re-organize old data)
