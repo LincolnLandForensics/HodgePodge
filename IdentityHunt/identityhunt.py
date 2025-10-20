@@ -368,7 +368,7 @@ def main():
         print(f' using test module')
         # allmylinks()
         # facebook()     #
-        ebay()
+        spotify() 
 
     if args.usersmodules and len(users) > 0:  
         print(f'users = {users}')    
@@ -381,7 +381,7 @@ def main():
         cashapp()
         # dailymotion()   # protected
         disqus()    # 
-        ebay()
+        ebay()  # Security Measure
         # etsy()  # protected by captcha puzzle
         facebook()     # some false positives
         familytree()    #
@@ -1556,7 +1556,7 @@ def geoiptool():
             else:
                 fullname = ''
 
-            print(f'{color_green}{url}{color_yellow}	   {fullname}{color_reset}')
+            print(f'{color_green}{url}{color_reset}')
 
             row_data["query"] = query
             row_data["ranking"] = ranking
@@ -6336,6 +6336,12 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+hackcheck.io
+deflock.me
+intelx.io
+leakix.net
+fofa.so
+
 https://magabook.com/Mike
 https://gamejolt.com/site-api/web/profile/@menutkart
 https://www.digitalfootprintcheck.com/free-checker.html?q=kevinrose@gmail.com
