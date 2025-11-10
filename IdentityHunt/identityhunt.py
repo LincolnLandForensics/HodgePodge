@@ -41,7 +41,7 @@ import asyncio
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.2.3'
+version = '3.2.4'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -164,7 +164,7 @@ def main():
     global filename
     filename = 'input.txt'
     global input_xlsx
-    input_xlsx = 'Intel.xlsx'
+    input_xlsx = 'Intel2.xlsx'
     # global inputDetails
     # inputDetails = 'no'
 
@@ -337,6 +337,7 @@ def main():
         ghunt()  # this is overwriting data
         google_calendar()     #
         have_i_been_pwned()    #
+        # hibp_email() # test
         holehe_email()    #
         osintIndustries_email()    #
         thatsthememail()    #
@@ -366,9 +367,7 @@ def main():
         
     if args.test:  
         print(f' using test module')
-        # allmylinks()
-        # facebook()     #
-        spotify() 
+        medium()
 
     if args.usersmodules and len(users) > 0:  
         print(f'users = {users}')    
@@ -407,6 +406,7 @@ def main():
         linkedin()    # cookie test
         # massageanywhere()   # broken ssl query
         mastadon()    #
+        medium()
         # myfitnesspal()    # cloudflare
         myshopify()    #
         myspace_users()    #
@@ -1848,6 +1848,31 @@ def have_i_been_pwned():
         row_data["url"] = url
         data.append(row_data)
 
+def hibp_email():# testEmail= kevinrose@gmail.com    
+    print(f'{color_yellow}\n\t<<<<< HaveIBeenPwned {color_blue}emails{color_yellow} >>>>>{color_reset}')
+    headers = {"User-Agent": "OSINTTool"}
+    for email in emails:
+        row_data = {}
+        (query, ranking, content, note) = (email, '', '', '')
+        url = f"https://haveibeenpwned.com/api/v3/breachedaccount/{email}"
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                ranking = ('3 - HaveIBeenPwned')
+
+                row_data["query"] = query
+                row_data["ranking"] = ranking
+                row_data["url"] = url
+                row_data["email"] = email
+                row_data["note"] = note
+                data.append(row_data)
+
+            if response.status_code == 404:
+                print(f"No breach found for {email}")
+        except Exception as e:
+            print(f"HIBP check failed for {email}: {e}")
+        return False
+
 
 def heylink():  # kevin
     print(f'{color_yellow}\n\t<<<<< heylink {color_blue}users{color_yellow} >>>>>{color_reset}')
@@ -2477,6 +2502,49 @@ def mastadon(): # testuser = kevinrose
             row_data["lastname"] = lastname
 
             data.append(row_data)
+
+def medium(): # testuser = kevinrose 
+    print(f'{color_yellow}\n\t<<<<< medium {color_blue}users{color_yellow} >>>>>{color_reset}')
+    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
+
+    for user in users:    
+        row_data = {}
+        (query, ranking) = (user, '6 - medium')
+        (firstname, lastname) = ('', '')
+        (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
+        user = user.rstrip()
+        url = (f'https://medium.com/@{user}/about')
+        try:
+            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
+        except TypeError as error:
+            print(f'{color_red}{error}{color_reset}') 
+        if 'About' in titleurl:
+            ranking = '4 - medium'
+            titleurl = titleurl.replace('About – ', '').replace(' – Medium', '')
+
+            fullname = titleurl
+            
+            if ' ' in fullname:
+                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            else:
+                fullname = ''
+
+            if 1 == 1:
+                print(f'{color_green}{url}{color_yellow}	{fullname}{color_reset}') 
+
+                row_data["query"] = query
+                row_data["ranking"] = ranking
+                row_data["fullname"] = fullname
+                row_data["firstname"] = firstname            
+                row_data["lastname"] = lastname
+                row_data["url"] = url
+                row_data["user"] = user
+                row_data["titleurl"] = titleurl         
+
+                data.append(row_data)
+
+        # time.sleep(5) #will sleep for 5 seconds
+
 
 def myfitnesspal(): # testuser = kevinrose protected by cloudflare
     print(f'{color_yellow}\n\t<<<<< myfitnesspal {color_blue}users{color_yellow} >>>>>{color_reset}')
