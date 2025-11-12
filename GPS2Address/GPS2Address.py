@@ -27,6 +27,8 @@ import simplekml    # pip install simplekml
 import geohash2    # pip install geohash2
 from datetime import datetime
 
+import pytz
+
 from geopy.distance import distance # test
 from math import radians, cos, sin  # test
 
@@ -75,7 +77,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.4.5'
+version = '1.5.0'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -526,6 +528,29 @@ def haversine(lat1, lon1, lat2, lon2):
         print(f'{e} error ') # temp
     return distance
 
+def kml_time(Time: str) -> str:
+    """
+    Converts a timestamp from 'YYYY-MM-DD HH:MM:SS' to ISO 8601 format with CST/CDT offset.
+    Example: '2025-10-01 13:39:56' → '2025-10-01T13:39:56-05:00'
+    """
+    if Time == "" or Time is None:
+        return ''
+    
+    # Parse input string to naive datetime
+    naive_dt = datetime.strptime(Time, "%Y-%m-%d %H:%M:%S")
+
+    # Localize to US Central Time
+    central = pytz.timezone("America/Chicago")
+    localized_dt = central.localize(naive_dt, is_dst=None)
+
+    # Get UTC offset in hours and minutes
+    offset = localized_dt.strftime('%z')  # e.g., '-0500' or '-0600'
+    formatted_offset = f"{offset[:3]}:{offset[3:]}"  # Convert to '-05:00' format
+
+    # Format final ISO 8601 string
+    iso_timestamp = localized_dt.strftime(f"%Y-%m-%dT%H:%M:%S{formatted_offset}")
+    return iso_timestamp
+
 def kml_to_excel(data):
 # def kml_to_excel(input_kml, output_xlsx):
     coordinates = []
@@ -546,7 +571,7 @@ def kml_to_excel(data):
 
                 if isinstance(placemark, kml.Placemark):
                     (tag, type_data, styleUrl, Altitude, source_file, business) = ('', '', '', '', input_kml, '')
-                    (fulladdress, IconStyle, latitude, longitude, coordinate) = ('', '', '' ,'', '')
+                    (fulladdress, IconStyle, latitude, longitude, Coordinate) = ('', '', '' ,'', '')
 
                     name = placemark.name or ""
                     if "/" in name:
@@ -679,75 +704,7 @@ def travel_path_kml(coordinates):
 
     msg_blurb = (f'extra travel_path KML file {output_file} created successfully!')
     msg_blurb_square(msg_blurb, color_blue) 
-    
-def travel_path_kml_old(coordinates):
-    '''
-    This reads latitude and longitude coordinates and generates a KML file with lines 
-    connecting the points and no icons displayed.
-    integrate this with (same_day, time_dif) = time_compare(Time_previous, Time)
-    calculate distance between lat1/long1 and lat2/long2. calclulate time to see if this trip was possible
-    randomize line color for different trips
-    '''
-
-    kml2 = simplekml.Kml()
-    heat = kml2.newfolder(name="travel_path")
-
-    output_file = (f'travel_path_{datatype}.kml') 
-    # Create lines between consecutive points
-    for i in range(len(coordinates) - 1):
-        (same_day, time_diff) = ('', '')
-        coord1 = coordinates[i]
-        coord2 = coordinates[i + 1]
-        try:
-            # Access individual components
-            lat1, long1, time1 = coord1
-            lat2, long2, time2 = coord2            
-
-            long_lat1 = (f'{long1},{lat1}')
-            long_lat2 = (f'{long2},{lat2}')            
-            lat_long1 = (f'{lat1},{long1}')
-            lat_long2 = (f'{lat2},{long2}')            
-
-
-        except ValueError as e:
-            print(f'{e} Time error {Time} {coordinates} ') # temp
-            # print(f'Error: {e}, coord1: {coord1}, coord2: {coord2}')
-        
-        (same_day, time_diff) = time_compare(time1, time2)
-        # if same_day and time_diff != '0.0':
-        if 0.001 < time_diff < 1400 and lat_long1 != lat_long2:
-        
-        # if 0.001 < time_diff < 1400 and long_lat1 != long_lat2:
-        # if same_day and time_diff != '0.0' and long_lat1 != long_lat2:
-            # print(f'less than 1 day with different location {long_lat1} - {long_lat2}')
-            print(f'less than 1 day with different location {lat_long1} - {lat_long2}')
-
-            # heat.newlinestring(coords=[long_lat1, long_lat2])
-            heat.newlinestring(coords=[lat_long1, lat_long2])
-
-    # Ensure no icons are visible
-    heat.stylemap.normalstyle.iconstyle.scale = 0
-    heat.stylemap.normalstyle.iconstyle.icon.href = ''
-
-    # Ensure lines are displayed in color
-    # heat.stylemap.normalstyle.linestyle.color = simplekml.Color.blue # only does white
-    heat.style.linestyle.color = random_color()
-    # heat.style.linestyle.color = simplekml.Color.red  # Make the line red
-    # heat.style.linestyle.color = simplekml.Color.orange  # Make the line orange
-    # heat.style.linestyle.color = simplekml.Color.yellow  # Make the line yellow
-    # heat.style.linestyle.color = simplekml.Color.green  # Make the line green
-    # heat.style.linestyle.color = simplekml.Color.blue  # Make the line blue
-    # heat.style.linestyle.color = simplekml.Color.purple  # Make the line purple
-    # heat.style.linestyle.color = simplekml.Color.white  # Make the line white
-    # heat.style.linestyle.color = simplekml.Color.black  # Make the line black
-
-    heat.style.linestyle.width = 2  # Set line width
-
-    kml2.save(output_file)
-
-    msg_blurb = (f'extra travel_path KML file {output_file} created successfully!')
-    msg_blurb_square(msg_blurb, color_blue)    
-    
+       
 def kml_to_xlsx(kml_file, xlsx_file):
     data = []
     from pykml import parser    # pip install pykml
@@ -939,7 +896,6 @@ def read_gps(data):
     
     """
 
-
     coordinates_list = [] # a list of coordinate and fulladdress   
 
     for row_index, row_data in enumerate(data):
@@ -947,7 +903,7 @@ def read_gps(data):
         (street, fulladdress) = ('', '')
         
         (zipcode, business, number, street, city, county) = ('', '', '', '', '', '')
-        (state, latitude, longitude, query, coordinate) = ('', '', '', '', '')
+        (state, latitude, longitude, query, Coordinate) = ('', '', '', '', '')
         (Index, country, latitude, longitude, PlusCode) = ('', '', '', '', '')
         (county, query, type_data) = ('', '', '')
         (location, skip, address) = ('', '', '')
@@ -956,33 +912,93 @@ def read_gps(data):
         (deleted, service_id, carved, sighting_state, sighting_location, manually_decoded) = ('', '', '', '', '', '')
         
         fulladdress = row_data.get("fulladdress", "")
+        if fulladdress is None:
+            fulladdress = ''   
+            
+        name_data = row_data.get("Name", "")
+        if name_data is None:
+            name_data = ''  
 
-        name_data = row_data.get("Name")
+
 
         latitude = str(row_data.get("Latitude", ""))
-        longitude = str(row_data.get("Longitude", ""))
-      
-        address = row_data.get("Address") # works
-        type_data = row_data.get("Type") # works  
-        business = row_data.get("business")
-        number = row_data.get("number")
-        street = row_data.get("street")
-        city = row_data.get("city")
-        Time = row_data.get("Time")
-        county = row_data.get("county")
-        state = row_data.get("state")
-        zipcode = row_data.get("zipcode")
-        query = row_data.get("query")
-        country = row_data.get("country")
-        Subgroup = row_data.get("Subgroup")
+        if latitude is None:
+            latitude = ''        
         
-        coordinate = row_data.get("Coordinate")
+        
+        longitude = str(row_data.get("Longitude", ""))
+        if longitude is None:
+            longitude = ''    
+            
+        address = row_data.get("Address", "") # works
+        if address is None:
+            address = ''        
+        
+        
+        type_data = row_data.get("Type", "") # works  
+        if type_data is None:
+            type_data = ''          
+        business = row_data.get("business", "")
+        if business is None:
+            business = ''
+
+        
+        number = row_data.get("number", "")
+        if number is None:
+            number = ''   
+        
+        street = row_data.get("street", "")
+        if street is None:
+            street = ''        
+        
+        city = row_data.get("city", "")
+        if city is None:
+            city = ''        
+        Time = row_data.get("Time", "")
+        if Time is None:
+            Time = ''         
+        county = row_data.get("county", "")
+        if county is None:
+            county = ''          
+        
+        state = row_data.get("state", "")
+        if state is None:
+            state = ''         
+        zipcode = row_data.get("zipcode", "")
+        if zipcode is None:
+            zipcode = ''         
+        query = row_data.get("query", "")
+        if query is None:
+            query = ''         
+        country = row_data.get("country", "")
+        if country is None:
+            country = ''         
+        Subgroup = row_data.get("Subgroup", "")
+        if Subgroup is None:
+            Subgroup = ''         
+        coordinate = row_data.get("Coordinate", "")
+        if coordinate is None:
+            coordinate = ''          
+        if ',None' in coordinate:
+            coordinate = coordinate.replace(',None', '')
+            
         row_data["Index"] = (row_index + 2)
-        PlusCode = row_data.get("PlusCode")
-        Radius = row_data.get("Radius") 
-        Azimuth = row_data.get("Azimuth") # test
-        speed = row_data.get("speed") # test
-        parked = row_data.get("parked") # test
+        PlusCode = row_data.get("PlusCode", "")
+        if PlusCode is None:
+            PlusCode = ''          
+        Radius = row_data.get("Radius", "") 
+        if Radius is None:
+            Radius = ''          
+        Azimuth = row_data.get("Azimuth", "") # test
+        if Azimuth is None:
+            Azimuth = '' 
+            
+        speed = row_data.get("speed", "") # test
+        if speed is None:
+            speed = ''         
+        parked = row_data.get("parked", "") # test
+        if parked is None:
+            parked = '' 
 
         if Radius is None:
             Radius == ''
@@ -992,30 +1008,13 @@ def read_gps(data):
             except ValueError:
                 Radius == ''
 
+        if fulladdress is None:
+            fulladdress = ''
         
-# add uniq coordinates to coordinates_list
-        
-        # Iterate over the list of coordinate and fulladdress
-        # for coordinate, fulladdress in coordinates_list:
-            # print(f'test')  # temp
-            # coordinate = create_coordinate(latitude, longitude)
-            # check_full_address(coordinates_to_addresses, coordinate)
-
-        # Function to check if full address exists for a coordinate
-        # def check_full_address(coordinates_list, coordinate):
-            # if coordinate in coordinates_list:
-                # print("Full address exists.")
-        
-
-# skip lines with fulladdress
-        # if fulladdress != '' or fulladdress == 'Soul Buoy':  
-        if "," in fulladdress:        
+        elif "," in fulladdress:        
             print(f'skipping fulladdress')    # temp
-        # if len(fulladdress) > 2 or fulladdress == 'Soul Buoy':        
             if fulladdress == 'Soul Buoy':
                 fulladdress = ''
-        # if len(fulladdress) < 2 or fulladdress == 'Soul Buoy':        
-            # fulladdress = ''
             skip == 'skip'
 # GPS to fulladdress
         elif latitude != '' and isinstance(latitude, str) and len(latitude) > 5:
@@ -1076,9 +1075,11 @@ def read_gps(data):
 # coordinate        
             if latitude != '' and longitude != '' and coordinate == '':
                 coordinate = (f'{latitude},{longitude}')
-                # coordinate = (f'{longitude},{latitude}')
 
                 time.sleep(8)   # Sleep for x seconds
+            if latitude == '' and longitude == '' and coordinate == '':
+                coordinate = row_data.get("Position", "")
+
 
         elif PlusCode != '':
             print(f'testing PlusCode {PlusCode}')
@@ -1197,8 +1198,7 @@ def read_gps(data):
 
         if type_data == "":
             type_data = active_sheet_title
-
-        print(f'active_sheet_title = {active_sheet_title}   type_data = {type_data}')  # temp
+        type_data = type_data or ""
 
         Icon = row_data.get("Icon", "")
 
@@ -1280,111 +1280,75 @@ def read_intel(input_xlsx):
         (end_time, category, time_orig, timezone, PlusCode, Icon) = ('', '', '', '', '', '')
         (Radius) = ('')
 # Time
-        # Time = ''
-        Time = row_data.get("Time")
-        if Time is None:
-            Time = ''
-
+        Time = row_data.get("Time", "")
+        
 # Latitude
-        # latitude = ''
-        latitude = row_data.get("Latitude")
-        latitude = str(latitude)
-        if latitude is None or latitude == 'None':
-            latitude = ''        
+        latitude = row_data.get("Latitude", "")
 
+        if latitude is None or str(latitude).strip() == "None":
+            latitude = ""
+        else:
+            latitude = str(latitude)
+    
 # Latitude
-        # longitude = ''
-        longitude = row_data.get("Longitude")
-        longitude = str(longitude)
-        if longitude is None or longitude == 'None':
-            longitude = ''        
+        longitude = row_data.get("Longitude", "")
+
+        if longitude is None or str(longitude).strip() == "None":
+            longitude = ""
+        else:
+            longitude = str(longitude)
 
 # Coordinate    
-        Coordinate = ''
-        Coordinate = row_data.get("Coordinate")
-        if Coordinate is None:
-            Coordinate = ''
-            
+        Coordinate = row_data.get("Coordinate", "")            
+
 # address
-        address = row_data.get("fulladdress")
-        if address is None:
-            address = ''    
-            
+        address = row_data.get("fulladdress", "")
+        
 # Name    
-        Name = ''
-        Name = row_data.get("fullname")
-        if Name is None:
-            Name = ''
+        Name = row_data.get("fullname", "")
 
 # source
-        source = row_data.get("Source")
-        if source is None:
-            source = ''        
-            
+        source = row_data.get("Source", "")   
+        
 # source file
-        source_file = row_data.get("Source file information")
-        if source_file is None:
-            source_file = ''
-
+        source_file = row_data.get("Source file information", "")
+        
 # original_file
-        original_file = row_data.get("original_file")
-        if original_file is None or original_file == "":
-            original_file = input_xlsx
-            
+        original_file = row_data.get("original_file") or input_xlsx
+        original_file = original_file or ""
 # sosagent    
-        sosagent = ''
-        sosagent = row_data.get("sosagent")
-        if sosagent is None:
-            sosagent = ''
-            
+        sosagent = row_data.get("sosagent", "")
+        
 # phone    
-        phone = ''
-        phone = row_data.get("phone")
-        if phone is None:
-            phone = ''
-        else:
-            description = (f'{description}\nPhone:{phone}')
+        phone = row_data.get("phone", "")
+        if phone != "":
+            description += f'\nPhone:{phone}'
 
 # business    
-        business = ''
-        business = row_data.get("business")
-        if business is None:
+        business = row_data.get("business", "")
+        if business == None:
             business = ''
-        else:
-            description = (f'{description}\nBusiness:{business}')
+        
+        if str(business).strip().lower() not in ["none", "null", ""]:
+            description += f'\nBusiness:{business.strip()}'
 
         description = description.strip()
 
 # city    
-        city = ''
-        city = row_data.get("city")
-        if city is None:
-            city = ''
+        city = row_data.get("city", "")
 
 # country    
-        country = ''
-        country = row_data.get("Country")
-        if country is None:
-            country = ''
-
+        country = row_data.get("Country", "")
 
 # state    
-        state = row_data.get("state")
-        if state is None:
-            state = ''
-
+        state = row_data.get("state", "")
+            
 # state    
         if state == '':
-            state = row_data.get("State/Province")
-            if state is None:
-                state = ''
-
+            state = row_data.get("State/Province", "")
 
 # Icon    
-        Icon = ''
-        Icon = row_data.get("Icon")
-        if Icon is None:
-            Icon = ''
+        Icon = row_data.get("Icon", "")
 
       
 # write rows to data
@@ -1491,120 +1455,107 @@ def read_locations(input_xlsx):
         (speed, parked) = ('', '')
 
         if Icon == '':  # there is an icon section at the bottom
-            Icon = row_data.get("Icon")
+            Icon = row_data.get("Icon", "")
         if Icon is None:
             Icon = ''
 
 # Name
-        name_data = row_data.get("Name")
+        name_data = row_data.get("Name", "")
         if name_data is None:
             name_data = ''
         if name_data == '':
-            name_data = row_data.get("File Name")   # Axiom Pictures
+            name_data = row_data.get("File Name", "")   # Axiom Pictures
             if name_data is None:
                 name_data = ''            
         if name_data == '':
-            name_data = row_data.get("Network Name (SSID)")   # iOS Wifi
+            name_data = row_data.get("Network Name (SSID)", "")   # iOS Wifi
             if name_data is None:
                 name_data = ''   
 
 # no 
-        no = row_data.get("#")
-        if no is None:
-            no = ''
-        # add row number as pin name
-        # if no == '':
-            # no = row_index + 2
+        no = row_data.get("#", "")
 
 # Description    
-        description = row_data.get("Description")
-        if description is None:
-            description = ''
+        description = row_data.get("Description", "")
 
 # Time
-        Time = row_data.get("Time")
-        if Time is None:
-            Time = ''
+        Time = row_data.get("Time", "")
 
         if Time == '':
-            Time = row_data.get("Vicinity Exit Date/Time")
-            if Time is None:
-                Time = ''
+            Time = row_data.get("Vicinity Exit Date/Time", "")
 
         if Time == '':
-            Time = row_data.get("Timestamp Date/Time - UTC+00:00 (M/d/yyyy)")   # Find my locations (Axiom)
+            Time = row_data.get("Timestamp Date/Time - UTC+00:00 (M/d/yyyy)", "")   # Find my locations (Axiom)
             Timezone = 'GMT'
             if Time is None:
                 Time = ''
         if Time == '':
-            Time = row_data.get("END_DATE")   # Sprint CDMA Cell dump
+            Time = row_data.get("END_DATE", "")   # Sprint CDMA Cell dump
             if Time is None:
                 Time = ''
         if Time == '':
-            Time = row_data.get("Created Date/Time - UTC+00:00 (M/d/yyyy)")   # Axiom Apple Maps Searches
+            Time = row_data.get("Created Date/Time - UTC+00:00 (M/d/yyyy)", "")   # Axiom Apple Maps Searches
             timezone = 'GMT'    # test
             if Time is None:
                 Time = ''
         if Time == '':
-            Time = row_data.get("Last Joined Date/Time - UTC-06:00 (M/d/yyyy)[DST]")   # Axiom iOS wifi
+            Time = row_data.get("Last Joined Date/Time - UTC-06:00 (M/d/yyyy)[DST]", "")   # Axiom iOS wifi
             if Time is None:
                 Time = ''
 
         if Time == '':
-            Time = row_data.get("Created Date/Time - UTC-06:00 (M/d/yyyy)[DST]")   # Axiom Significant locations
+            Time = row_data.get("Created Date/Time - UTC-06:00 (M/d/yyyy)[DST]", "")   # Axiom Significant locations
             if Time is None:
                 Time = ''
 
         if Time == '':
-            Time = row_data.get("ns0:time")   # GPX to xml conversion
+            Time = row_data.get("ns0:time", "")   # GPX to xml conversion
             if Time is None:
                 Time = '' 
             Time = Time.replace('T', ' ').strip()
                
 
 # Start Time
-        start_time = row_data.get("Start Date/Time - UTC-06:00 (M/d/yyyy)[DST]")
+        start_time = row_data.get("Start Date/Time - UTC-06:00 (M/d/yyyy)[DST]", "")
         if start_time is None:
             start_time = ''
         if start_time == '':
-            start_time = row_data.get("Start Date/Time - UTC+00:00 (M/d/yyyy)")
+            start_time = row_data.get("Start Date/Time - UTC+00:00 (M/d/yyyy)", "")
             if start_time is None:
                 start_time = ''
 
         if start_time == '':
-            start_time = row_data.get("Vicinity Entry Date/Time")
+            start_time = row_data.get("Vicinity Entry Date/Time", "")
             if start_time is None:
                 start_time = ''
         if Time == '':
-            Time = row_data.get("START_DATE")   # Sprint CDMA Cell dump
+            Time = row_data.get("START_DATE", "")   # Sprint CDMA Cell dump
             if Time is None:
                 Time = ''
 
 
 # Start Time original
-        time_orig_start = row_data.get("time_orig_start")
+        time_orig_start = row_data.get("time_orig_start", "")
         if time_orig_start is None:
             time_orig_start = ''
 
 # timezone_start
-        timezone_start = row_data.get("timezone_start")
-        if timezone_start is None:
-            timezone_start = ''
+        timezone_start = row_data.get("timezone_start", "")
             
 # Time
         if Time == '':
-            Time = row_data.get("End Date/Time - UTC-06:00 (M/d/yyyy)[DST]")
+            Time = row_data.get("End Date/Time - UTC-06:00 (M/d/yyyy)[DST]", "")
             if Time is None:
                 Time = ''
 
 
 # time_orig
-        time_orig = row_data.get("Time Original")
+        time_orig = row_data.get("Time Original", "")
         if time_orig is None:
             time_orig = ''
 
 # Capture Time
-        capture_time  = row_data.get("Capture Time") 
+        capture_time  = row_data.get("Capture Time", "") 
         if capture_time is None:
             capture_time = ''     
 
@@ -1613,7 +1564,7 @@ def read_locations(input_xlsx):
                 Time = capture_time
 
 # Capture Date
-        capture_date  = row_data.get("Capture Date") 
+        capture_date  = row_data.get("Capture Date", "") 
         if capture_date is None:
             capture_date = ''     
 
@@ -1622,7 +1573,7 @@ def read_locations(input_xlsx):
                 Time = capture_date
 
 # Apple Maps time
-        apple_maps_date  = row_data.get("Date/Time - UTC-06:00 (M/d/yyyy)[DST]") 
+        apple_maps_date  = row_data.get("Date/Time - UTC-06:00 (M/d/yyyy)[DST]", "") 
         if apple_maps_date is None:
             apple_maps_date = ''     
 
@@ -1631,7 +1582,7 @@ def read_locations(input_xlsx):
                 Time = apple_maps_date
                 
 # Time (LOCAL)
-        time_local  = row_data.get("Time (LOCAL)") 
+        time_local  = row_data.get("Time (LOCAL)", "") 
         if time_local is None:
             time_local = ''     
 
@@ -1640,12 +1591,12 @@ def read_locations(input_xlsx):
                 Time = time_local
                 capture_date = time_local
         if Time == '':
-            Time  = row_data.get("Start Date/Time - UTC+00:00 (M/d/yyyy)") 
+            Time  = row_data.get("Start Date/Time - UTC+00:00 (M/d/yyyy)", "") 
             if Time is None:
                 Time = ''               
 # GPS tracker
         if Time == '':
-            Time  = row_data.get("report_time (GMT)") 
+            Time  = row_data.get("report_time (GMT)", "") 
             timezone = 'GMT'
             if Time is None:
                 Time = ''    
@@ -1653,7 +1604,7 @@ def read_locations(input_xlsx):
 
 # GPS tracker
         if Time == '':
-            Time  = row_data.get("report_time (CT)") 
+            Time  = row_data.get("report_time (CT)", "") 
             timezone = 'CT'
             if Time is None:
                 Time = ''    
@@ -1661,7 +1612,7 @@ def read_locations(input_xlsx):
                 
 # GPS tracker 2
         if Time == '':
-            Time  = row_data.get("Date Time (CT)") 
+            Time  = row_data.get("Date Time (CT)", "") 
             if Time is None:
                 Time = ''    
             else:
@@ -1669,12 +1620,12 @@ def read_locations(input_xlsx):
                 
 # timezone
         if timezone == '':
-            timezone  = row_data.get("Timezone")
+            timezone  = row_data.get("Timezone", "")
             if timezone is None:
                 timezone = ''  
 
 # time Gmail warrant retuirn
-        time2  = row_data.get("Timestamp (UTC)")
+        time2  = row_data.get("Timestamp (UTC)", "")
         if time2 is None:
             time2 = ''  
         if Time == "" and time2 != "":
@@ -1695,13 +1646,11 @@ def read_locations(input_xlsx):
             time_orig = Time
 
         if Time != '':
+            Time = Time or ''
             try:
                 (Time, time_orig, timezone) = convert_timestamp(Time, time_orig, timezone)
                 Time = Time.strftime(output_format)
-                
-                # print(f'            Time = {Time}   time_orig = {time_orig}')   # temp
-                if Time is None:
-                    Time = ''              
+                Time = Time or ''             
                 
             except ValueError as e:
                 print(f"Error time2: {e} - {Time}")
@@ -1726,57 +1675,45 @@ def read_locations(input_xlsx):
                 pass
 
 # End time
-        end_time = row_data.get("End time")
+        end_time = row_data.get("End time", "")
         if end_time is None:
             end_time = ''        
         if end_time == '':
-            end_time = row_data.get("End Date/Time - UTC+00:00 (M/d/yyyy)")
+            end_time = row_data.get("End Date/Time - UTC+00:00 (M/d/yyyy)", "")
             if end_time is None:
                 end_time = '' 
 
 # Category
-        category = row_data.get("Category")
-        if category is None:
-            category = ''        
+        category = row_data.get("Category", "")
 
 # Altitude
-        Altitude = row_data.get("Altitude")
-        if Altitude is None:
-            Altitude = ''  
+        Altitude = row_data.get("Altitude", "")
 
         if Altitude == '':
-            Altitude = row_data.get("Altitude (meters)")    # test Axiom Live Photos
-            if Altitude is None:
-                Altitude = ''  
-        # if Altitude == '':
-            # Altitude = row_data.get("ns0:ele")    # GPS tracker
-            # if Altitude is None:
-                # Altitude = ''  
-
+            Altitude = row_data.get("Altitude (meters)", "")
 
 # gps
-
-        latitude = row_data.get("Latitude")
+        latitude = row_data.get("Latitude", "")
         latitude = str(latitude)
         if latitude is None or latitude == 'None':
             latitude = ''        
         if latitude == '':
-            latitude = row_data.get("latitude")
+            latitude = row_data.get("latitude", "")
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = ''             
 
-        longitude = row_data.get("Longitude")
+        longitude = row_data.get("Longitude", "")
         longitude = str(longitude)
         if longitude is None or longitude == 'None':
             longitude = ''        
         if longitude == '':
-            longitude = row_data.get("longitude")
+            longitude = row_data.get("longitude", "")
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = ''   
         if longitude == '':
-            longitude = row_data.get("longitute")   # GPS tracker
+            longitude = row_data.get("longitute", "")   # GPS tracker
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = ''   
@@ -1793,79 +1730,75 @@ def read_locations(input_xlsx):
             # longitude = ''
 
         if latitude == '': 
-            latitude = row_data.get("Capture Location Latitude")
+            latitude = row_data.get("Capture Location Latitude", "")
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = ''        
 
         if latitude == '': 
-            latitude = row_data.get("LAT")
+            latitude = row_data.get("LAT", "")
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = ''  
         if latitude == '': 
-            latitude = row_data.get("lat")
+            latitude = row_data.get("lat", "")
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = ''                  
       
 
         if latitude == '': 
-            latitude = row_data.get("Destination Latitude")
+            latitude = row_data.get("Destination Latitude", "")
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = ''   
         if latitude == '': 
-            latitude = row_data.get("GPS Latitude")
+            latitude = row_data.get("GPS Latitude", "")
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = '' 
         if latitude == '': 
-            latitude = row_data.get("Latitude (On App Startup)")    # Axiom Uber Accounts
+            latitude = row_data.get("Latitude (On App Startup)", "")    # Axiom Uber Accounts
             latitude = str(latitude)
             if latitude is None or latitude == 'None':
                 latitude = '' 
 
-
-
-
-
-                
         if longitude == '':
-            longitude = row_data.get("Capture Location Longitude")
+            longitude = row_data.get("Capture Location Longitude", "")
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = ''  
                 
         if longitude == '': 
-            longitude = row_data.get("Destination Longitude")
+            longitude = row_data.get("Destination Longitude", "")
             longitude = str(longitude)
-            if longitude is None or longitude == 'None':
-                longitude = '' 
+            if not longitude or longitude == 'None':
+                longitude = ''
+
 
         if longitude == '': 
-            longitude = row_data.get("LONG")
+            longitude = row_data.get("LONG", "")
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = '' 
         if longitude == '': 
-            longitude = row_data.get("lon")
+            longitude = row_data.get("lon", "")
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = '' 
         if longitude == '': 
-            longitude = row_data.get("GPS Longitude")
+            longitude = row_data.get("GPS Longitude", "")
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = '' 
             else:
-                longitude_ref = row_data.get("GPS Longitude Reference")
+                longitude_ref = row_data.get("GPS Longitude Reference", "")
                 
                 if longitude_ref == 'West':
                     longitude = '-' + longitude
 
         if longitude == '': 
-            longitude = row_data.get("Longitude (On App Startup)")  # Axiom Uber Accounts
+            longitude = row_data.get("Longitude (On App Startup)", "")  # Axiom Uber Accounts
             longitude = str(longitude)
             if longitude is None or longitude == 'None':
                 longitude = '' 
@@ -1873,21 +1806,21 @@ def read_locations(input_xlsx):
 
         (latitude, longitude) = gps_cleanup(latitude, longitude)
 
-        origin_latitude = row_data.get("Origin Latitude")
+        origin_latitude = row_data.get("Origin Latitude", "")
         origin_latitude = str(origin_latitude)
         if origin_latitude is None or origin_latitude == 'None':
             origin_latitude = ''  
 
-        origin_longitude = row_data.get("Origin Longitude")
+        origin_longitude = row_data.get("Origin Longitude", "")
         origin_longitude = str(origin_longitude)
         if origin_longitude is None or origin_longitude == 'None':
             origin_longitude = ''  
 
         if origin_longitude == '' and start_time == '': # cellebrite journey
-            to_point = row_data.get("To point")
+            to_point = row_data.get("To point", "")
             if to_point is None or to_point == 'None':
                 to_point = '' 
-            from_point = row_data.get("From point")
+            from_point = row_data.get("From point", "")
             if from_point is None or from_point == 'None':
                 from_point = ''             
             
@@ -1926,6 +1859,8 @@ def read_locations(input_xlsx):
 
 # coordinate        
 
+
+       
         if latitude != '' and longitude != '' and Altitude != '':
             coordinate = (f'{latitude},{longitude},{Altitude}')
             # coordinate = (f'{longitude},{latitude},{Altitude}')
@@ -1933,19 +1868,25 @@ def read_locations(input_xlsx):
             coordinate = (f'{latitude},{longitude}')
             # coordinate = (f'{longitude},{latitude}')
    
-        elif row_data.get("Coordinate") != None:
-            coordinate = row_data.get("Coordinate")
+        elif row_data.get("Coordinate", "") != None:
+            coordinate = row_data.get("Coordinate", "")
             # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
-        elif row_data.get("Capture Location") != None:
-            coordinate = row_data.get("Capture Location")
+        elif row_data.get("Position") != None:  # task
+            coordinate = row_data.get("Position", "")
+            coordinate = coordinate.replace('(', '').replace(')', '')           
+            
+        elif row_data.get("Capture Location", ""):
+            coordinate = row_data.get("Capture Location", "")
             # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
         elif row_data.get("Capture Location (Latitude,Longitude)") != None:
-            coordinate = row_data.get("Capture Location (Latitude,Longitude)")
+            coordinate = row_data.get("Capture Location (Latitude,Longitude)", "")
             # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
         elif row_data.get("Coordinate(Lat., Long)") != None:
-            coordinate = row_data.get("Coordinate(Lat., Long)")
+            coordinate = row_data.get("Coordinate(Lat., Long)", "")
             # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
-
+        elif row_data.get("Position") != None:
+            coordinate = row_data.get("Position", "")
+            print(f'bobs your uncle mark')  # temp
         # if len(coordinate) > 6:
         coordinate = coordinate.replace('(', '').replace(')', '')
 
@@ -1972,63 +1913,53 @@ def read_locations(input_xlsx):
             # (f"{row['Latitude']}, {row['Longitude']}", row['Time'])
 # address
         
-        address = row_data.get("Address")
-        if address is None:
-            address = ''        
+        address = row_data.get("Address", "")
+        # if address is None:
+            # address = ''        
         if address == '':
-            address = row_data.get("TOWER ADDR")
-            if address is None:
-                address = ''    
+            address = row_data.get("TOWER ADDR", "")
+            # if address is None:
+                # address = ''    
         if address == '':
-            address = row_data.get("Estimated Address")
-            if address is None:
-                address = ''    
+            address = row_data.get("Estimated Address", "")
+            # if address is None:
+                # address = ''    
 
 
 # group
-        group = row_data.get("Group")
-        if group is None:
-            group = ''
-
+        group = row_data.get("Group", "")
+        
 # subgroup
-        subgroup = row_data.get("Subgroup")
-        if subgroup is None or subgroup == 'None':
-            subgroup = ''
+        subgroup = row_data.get("Subgroup", "")
         
         if subgroup == '':
-            subgroup = row_data.get("Location Type")    # Axiom find my location / Significant Locations 
-            if subgroup is None or subgroup == 'None':
-                subgroup = ''
-            if subgroup == "Safe Location" or subgroup == "Home":
-                tag = 'Of interest'
-            
-            if subgroup == "Home":
-                # tag = 'Of interest'
-                if Icon == '' :
-                        Icon = 'Home'   # task
+            subgroup = row_data.get("Location Type", "").strip()
+            if subgroup in ["Safe Location", "Home"]:
+                tag = "Of interest"
+                if subgroup == "Home" and not Icon:
+                    Icon = "Home"
                   
 # type_data
 
 
         if type_data == '':
-            type_data = row_data.get("Type")
+            type_data = row_data.get("Type", "")
         if type_data is None:
             type_data = ''  
         if type_data == '':
-            type_data = row_data.get("type")
+            type_data = row_data.get("type", "")
         if type_data is None:
             type_data = ''  
         if type_data == '':
-            type_data = row_data.get("ns4:vehicleType")
+            type_data = row_data.get("ns4:vehicleType", "")
         if type_data is None:
             type_data = ''  
         if type_data == '':
             type_data = active_sheet_title
-        # print(f'active_sheet_title = {active_sheet_title}   type_data = {type_data}') # temp
 
-        Icon = row_data.get("Icon")
-        if type_data is None:
-            type_data = ''
+        Icon = row_data.get("Icon", "")
+
+        type_data = type_data or ""
 
         if type_data == '':
             if subgroup == '':
@@ -2041,7 +1972,6 @@ def read_locations(input_xlsx):
                 type_data = "Chats"
 
             elif "Search" in active_sheet_title:    # test
-                # type_data = "Searched"
                 if Icon == '':
                     Icon = "Searched" 
             elif active_sheet_title == 'Apple Maps Trips':
@@ -2057,7 +1987,6 @@ def read_locations(input_xlsx):
                 if Icon == '':
                     Icon = "Car4" 
         elif type_data != '' and Icon == '':
-            # if type_data == 'gps':
             if type_data == 'gps' or type_data == 'cell':
 
                 Icon = 'Car4'
@@ -2065,160 +1994,105 @@ def read_locations(input_xlsx):
             Icon = 'Car'
 
 
-
-        # Apple Maps Trips = "Map"
-        # Google Maps https://banner2.cleanpng.com/lnd/20240523/jeo/axziljwt9.webp = "Map"
-        # Lyft Last Known Location
-        # Lyft Location Shortcuts
-        # Parked Car Locations
-        # PlaceCardTap
-        # Apple Maps = "Map"
-            # Show
-        # Significant Locations
-        # Significant Locations Visits
-        # Uber Cached Locations
-
-
-
-
 # tag
-        if tag == '':
-            tag = row_data.get("Tag")
-            if tag is None:
-                tag = ''
+        tag = row_data.get("tag", "")
+
         
         if tag == '':
-            tag = row_data.get("Tags")
-            if tag is None:
-                tag = ''        
+            tag = row_data.get("Tags", "")
 
 # tag from label
-        label  = row_data.get("Label") 
-        if label is None:
-            label = ''     
+        label = row_data.get("Label", "")
 
-        if tag == '':
-            if label != '':
-                tag = label
-
-
+        if not tag and label:
+            tag = label
 
 # source
-        if source == '':
-            source = row_data.get("Source")
-        if source is None:
-            source = ''
+        source = row_data.get("Source", "")
+
         if type_data == 'Unknown' or type_data == 'Locations':  # cellebrite Journeys
             type_data = source
         if source == '':
             source = active_sheet_title # test
-
-
+        source = source or ''
 
 # carved
-        carved = row_data.get("Source file information")
+        carved = row_data.get("Source file information", "")
         if carved is None or (isinstance(carved, str) and 'xlsx' in carved):
         # if carved is None or 'xlsx' in carved:
             carved = ''
 
 # source file
-        source_file = row_data.get("Source file information")
-        if source_file is None:
-            source_file = ''
+        source_file = row_data.get("Source file information", "")
+
 
 # original_file
-        original_file = row_data.get("original_file")
-        if original_file is None or original_file == "":
+        original_file = row_data.get("original_file", "")
+
+        if original_file == "":
             original_file = input_xlsx
 
 
-        if 'Apple Maps' in original_file:
-            # source = 'Apple Maps'
+        if original_file and 'Apple Maps' in original_file:
+
             type_data = 'Apple Maps'
             icon = "Map"
             if type_data == '':
                 type_data = 'Locations'
-        elif 'Google Maps' in original_file:
+        elif original_file and 'Google Maps' in original_file:
             source = 'Google Maps'
             icon = "Map"
             if type_data == '':
                 type_data = 'Locations'
             
 # business  
-        business = row_data.get("business")
-        if business is None:
-            business = ''
+        business = row_data.get("business", "")
 
 # fulladdress
-        fulladdress  = row_data.get("fulladdress")
-        if fulladdress is None:
-            fulladdress = ''       
+        fulladdress = row_data.get("fulladdress", "")
+     
         if fulladdress == '':
-            fulladdress  = row_data.get("Location Address") # Find My Locations (Axiom)
-            if fulladdress is None:
-                fulladdress = ''         
-        
-        
-
+            fulladdress = row_data.get("Location Address", "") # Find My Locations (Axiom)
 
 # query
-        query  = row_data.get("query")
-        if query is None:
-            query = ''     
+        query = row_data.get("query", "")
 
         if query == '':
-            query  = row_data.get("Search Query")   # google maps
-            if query is None:
-                query = ''  
-
-
+            query = row_data.get("Search Query", "")   # google maps
 
 # Plate
-        plate  = row_data.get("Plate")         # red
-        if plate is None:
-            plate = ''     
-
-        if plate != '' and type_data == '':
-            type_data = 'LPR'
+        plate = row_data.get("Plate", "")   # red
+        if str(plate).strip() and str(type_data).strip().lower() in ["", "None", "null"]:
+            type_data = "LPR"
 
 # country
-        country = row_data.get("country")
-        if country is None:
-            country = ''     
+        country = row_data.get("country", "")
 
         if country == '':
-            country = row_data.get("Country")
-            if country is None:
-                country = ''   
+            country = row_data.get("Country", "")
 
 # Country Code
-        country_code  = row_data.get("Country Code") 
-        if country_code is None:
-            country_code = ''     
+        if country_code == '':
+            country_code = row_data.get("Country Code", "")
 
         if country == '':
             if country_code != '':
                 country = country_code
 
 # county  
-        county = row_data.get("county")
-        if county is None:
-            county = ''
+        county = row_data.get("county", "")
 
 # state  
-        state = row_data.get("state")
-        if state is None:
-            state = ''
-        
+        state = row_data.get("state", "")
+
         if state == '':
-            state = row_data.get("State/Province")
-            if state is None:
-                state = ''        
+            state = row_data.get("State/Province", "")
+
 
 # state_ftk
-        state_ftk  = row_data.get("Region") 
-        if state_ftk is None:
-            state_ftk = ''     
+        
+        state_ftk  = row_data.get("Region", "")
+    
         if state == '':
             if state_ftk != '':
                 state = state_ftk
@@ -2240,77 +2114,50 @@ def read_locations(input_xlsx):
             except:pass    
 
 # zipcode  
-        zipcode = row_data.get("zipcode")
-        if zipcode is None:
-            zipcode = ''
+        zipcode = row_data.get("zipcode", "")
 
         if zipcode == '':
-            zipcode = row_data.get("ZIP/Postal Code")
-            if zipcode is None:
-                zipcode = ''        
+            zipcode = row_data.get("ZIP/Postal Code", "")
 
         if zipcode == '':
-            zipcode = row_data.get("ZIP")
-            if zipcode is None:
-                zipcode = ''    
+            zipcode = row_data.get("ZIP", "")
 
 # number  
-        number = row_data.get("number")
-        if number is None:
-            number = ''
+        number = row_data.get("number", "")
             
 # street  
-        street = row_data.get("street")
-        if street is None:
-            street = ''
-
+        street = row_data.get("street", "")
 
 # city  
-        city = row_data.get("city")
-        if city is None:
-            city = ''
+        city = row_data.get("city", "")
 
 # City
-        city_ftk  = row_data.get("City") 
-        if city_ftk is None:
-            city_ftk = ''     
+        city_ftk  = row_data.get("City", "") 
 
         if city == '':
             if city_ftk != '':
                 city = city_ftk 
  
         if city == '':
-            city = row_data.get("CITY")
-            if city is None:
-                city = ''
+            city = row_data.get("CITY", "") 
+
             
 # hwy
-        hwy  = row_data.get("Highway Name")
-        if hwy is None:
-            hwy = ''           
+        hwy  = row_data.get("Highway Name", "") 
 
         if hwy == '':
-            hwy  = row_data.get("Capture Camera")
-            if hwy is None:
-                hwy = ''           
+            hwy  = row_data.get("Capture Camera", "") 
+            hwy = ''           
 
 # Direction
-        direction  = row_data.get("Direction")
-        if direction is None:
-            direction = ''    
+        direction  = row_data.get("Direction", "") 
         if direction == '':
-            direction  = row_data.get("direction")
-            if direction is None:
-                direction = ''  
+            direction  = row_data.get("direction", "") 
         if direction == '':
-            direction  = row_data.get("Heading")
-            if direction is None:
-                direction = ''  
+            direction  = row_data.get("Heading", "") 
 
         if direction == '':
-            direction  = row_data.get("ns2:course")
-            if direction is None:
-                direction = ''  
+            direction  = row_data.get("ns2:course", "") 
                 
         if direction == '':
             match = re.search(r'\((\w+)\)',hwy)
@@ -2336,8 +2183,6 @@ def read_locations(input_xlsx):
             direction = direction.replace('East', 'E')
             direction = direction.replace('South', 'S')
             direction = direction.replace('West', 'W')
-          
-            
         except: pass    
 
         if isinstance(direction, (int, float)) and 0 <= direction <= 360:
@@ -2345,16 +2190,14 @@ def read_locations(input_xlsx):
             direction = direction_convert(direction)
             
 # PlusCode
-        PlusCode  = row_data.get("PlusCode")
-        if PlusCode is None:
-            PlusCode = ''  
+        PlusCode  = row_data.get("PlusCode", "") 
 
 # Icon    
-        if Icon == '':
-            Icon = row_data.get("Icon")
-        if Icon is None:
-            Icon = ''
-        if Icon != "":
+        # if Icon == '':
+            # Icon = row_data.get("Icon", "") 
+        Icon = row_data.get("Icon", "") or Icon  # fallback if Icon is empty
+    
+        if isinstance(Icon, str) and Icon:
             Icon = Icon[0].upper() + Icon[1:].lower()
 
         if Icon != "":
@@ -2383,26 +2226,10 @@ def read_locations(input_xlsx):
             Icon = "Yellow"
         elif direction != "":    # test
             Icon = direction        
-        # elif type_data            
-            # if subgroup == "SearchedPlaces":
-                # Icon = "Searched"
-            # elif subgroup == "Shared":
-                # Icon = "Shared"   
-            # elif subgroup == "Mentioned":
-                # Icon = "Locations"  # task
-            # elif subgroup == "HarvestedCellTower":
-                # Icon = "Locations"   # task add a phone icon or tower
-            # elif subgroup == "MediaProbablyCaptured":
-                # Icon = "Images"  
-            # elif subgroup == "MobilePayment":
-                # Icon = "Payment"  # add $ icon
-            # elif subgroup == "VehicleParked":
-                # Icon = "Car"  ations"
-
-
         elif type_data == "Cell Towers":
-            Icon = "Locations"  # task add a phone icon or tower
-
+            Icon = "Tower"  # task add a phone icon or tower
+        elif type_data == "GSM":
+            Icon = "Tower"  # task add a phone icon or tower
         elif type_data == "Searched Items":
             Icon = "Searched"
         elif type_data == "Toll":
@@ -2440,48 +2267,29 @@ def read_locations(input_xlsx):
         Significant Locations
         Significant Locations Visits
         Uber Cached Locations
-
-
         '''
 
 
 # case    
         if case == '':
-            case = row_data.get("case")
-        if case is None:
-            case = ''
+            case = row_data.get("case", "") 
         if case == '':
             case = case_prompt
-            
- # case 2   
-        # if case == '':
-            # case = row_data.get("Evidence number")  # breaks Axiom "Find my locations"
-            # if case is None:
-                # case = ''           
+  
 
 # location
-        location  = row_data.get("Location")
-        if location is None:
-            location = ''  
+        location  = row_data.get("Location", "") 
 
 # Azimuth
-        Azimuth  = row_data.get("Azimuth")
-        if Azimuth is None:
-            Azimuth = '' 
+        Azimuth  = row_data.get("Azimuth", "") 
 
 # Radius
         if Radius == '':
-            Radius  = row_data.get("Radius")
-            if Radius is None:
-                Radius = ''  
+            Radius  = row_data.get("Radius", "") 
         if Radius == '':
-            Radius  = row_data.get("Accuracy (meters)")
-            if Radius is None:
-                Radius = ''  
+            Radius  = row_data.get("Accuracy (meters)", "") 
         if Radius == '':
-            Radius  = row_data.get("Accuracy")
-            if Radius is None:
-                Radius = ''  
+            Radius  = row_data.get("Accuracy", "") 
 
         if Radius is None:
             Radius == ''
@@ -2493,30 +2301,27 @@ def read_locations(input_xlsx):
 
 # speed
         if speed == '':
-            speed  = row_data.get("speed")
-            if speed is None:
-                speed = '' 
+            speed  = row_data.get("speed", "") 
         if speed == '':
-            speed  = row_data.get("Speed (mph)")
-            if speed is None:
-                speed = '' 
+            speed  = row_data.get("Speed (mph)", "") 
         if speed == '':
-            speed  = row_data.get("ns2:speed")
-            if speed is None:
-                speed = '' 
+            speed  = row_data.get("ns2:speed", "") 
 
 # parked
         if parked == '':
-            parked  = row_data.get("parked")
-            if parked is None:
-                parked = '' 
+            parked  = row_data.get("parked", "") 
         if parked == '':
-            parked  = row_data.get("Park Time")
-            if parked is None:
-                parked = '' 
+            parked  = row_data.get("Park Time", "") 
         
         if Coordinate != '':
             cnt += 1
+        
+        type_data = type_data or ""
+        business = business or ""
+        source = source or ""
+        plate = plate or ""
+        
+        
         
 # write rows to data
         row_data["#"] = no
@@ -2594,6 +2399,8 @@ def point_icon_maker(Icon):
     # red_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/red-circle.png'
     # white_circle_icon = 'http://maps.google.com/mapfiles/kml/paddle/wht-circle.png'
 
+    Icon = Icon or ''
+    
     ap_unlocked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon51.png'   # red star
     ap_locked_icon = 'http://maps.google.com/mapfiles/kml/pal4/icon59.png'   # white star
     bluetooth_icon = 'https://maps.google.com/mapfiles/kml/pal4/icon57.png'   # white circle        
@@ -2629,7 +2436,7 @@ def point_icon_maker(Icon):
     w_icon = 'https://earth.google.com/images/kml-icons/track-directional/track-12.png'
 
    
-    if Icon == "Lpr" or Icon == "Car":
+    if Icon == "LPR" or Icon == "Car":
         point_icon = car_icon
   
     elif Icon.lower() == "wifi":
@@ -2682,7 +2489,7 @@ def point_icon_maker(Icon):
     elif Icon == "Lte":
         point_icon = tower_icon
         # print(f'found a tower Icon {Icon}')    # temp
-    elif Icon == "Gsm":
+    elif Icon == "Tower":
         point_icon = tower_icon
         print(f'found a tower Icon {Icon}')    # temp
         # (kml, point) = radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, Altitude, point_icon)
@@ -2780,42 +2587,45 @@ def write_kml(data):
         # if no is None or no == '':
             # no = index_data
 
-        Time = row_data.get("Time") #
-        latitude = row_data.get("Latitude") #
-        longitude = row_data.get("Longitude") #
-        address = row_data.get("Address") #
-        group_data = row_data.get("Group") 
-        subgroup = row_data.get("Subgroup")   
-        description = row_data.get("Description")
-        type_data = row_data.get("Type")#
-        tag = row_data.get("Tag")
-        source_file = row_data.get("Source file information") #
-        name_data = row_data.get("Name")
-        business = row_data.get("business")
-        fulladdress  = row_data.get("fulladdress")
-        plate  = row_data.get("Plate")   
-        hwy  = row_data.get("Highway Name") #
-        coordinate = row_data.get("Coordinate")
-        direction  = row_data.get("Direction")
-        end_time = row_data.get("End time")
-        category = row_data.get("Category")
-        Icon = row_data.get("Icon")
-        original_file = row_data.get("original_file")
-        case = row_data.get("case") # task
+        Time = row_data.get("Time", "")
+        
 
-        start_time = row_data.get("Start Time") # test
-        origin_latitude = row_data.get("Origin Latitude") # test
-        origin_longitude = row_data.get("Origin Longitude") # test
+        latitude = row_data.get("Latitude", "")
+        longitude = row_data.get("Longitude", "")
+        address = row_data.get("Address", "")
+        group_data = row_data.get("Group", "")
+        subgroup = row_data.get("Subgroup", "")
+        description = row_data.get("Description", "")
+        type_data = row_data.get("Type", "")
+        tag = row_data.get("Tag", "")
+        # source_file = row_data.get("Source file information") #
+        source_file = row_data.get("Source file information", "")
+        name_data = row_data.get("Name", "")
+        business = row_data.get("business", "")
+        fulladdress  = row_data.get("fulladdress", "")
+        plate  = row_data.get("Plate", "") 
+        hwy  = row_data.get("Highway Name", "")
+        coordinate = row_data.get("Coordinate", "")
+        direction  = row_data.get("Direction", "")
+        end_time = row_data.get("End time", "")
+        category = row_data.get("Category", "")
+        Icon = row_data.get("Icon", "")
+        original_file = row_data.get("original_file", "")
+        case = row_data.get("case", "") # task
+
+        start_time = row_data.get("Start Time", "") # test
+        origin_latitude = row_data.get("Origin Latitude", "") # test
+        origin_longitude = row_data.get("Origin Longitude", "") # test
 
         # print(f'2origin_longitude = {origin_longitude}   origin_latitude = {origin_latitude}')   # temp
 
-        Azimuth = row_data.get("Azimuth") # test
-        Radius = row_data.get("Radius") # test
-        Altitude = row_data.get("Altitude") # test
-        time_orig_start = row_data.get("time_orig_start") # test
-        timezone_start = row_data.get("timezone_start") # test
-        speed = row_data.get("speed") # test
-        parked = row_data.get("parked") # test
+        Azimuth = row_data.get("Azimuth", "") # test
+        Radius = row_data.get("Radius", "") # test
+        Altitude = row_data.get("Altitude", "") # test
+        time_orig_start = row_data.get("time_orig_start", "") # test
+        timezone_start = row_data.get("timezone_start", "") # test
+        speed = row_data.get("speed", "") # test
+        parked = row_data.get("parked", "") # test
 
 # Radius
         if Radius is None:
@@ -2827,8 +2637,8 @@ def write_kml(data):
             except ValueError:
                 Radius = ''
 
-        if Altitude == '' or Altitude is None:
-            Altitude == ''
+        if Altitude in [None, ""]:
+            Altitude = ""
         
         if name_data != '':
             (description) = (f'{description}\nNAME: {name_data}')
@@ -2882,6 +2692,7 @@ def write_kml(data):
             (description) = (f'{description}\nAZIMUTH: {Azimuth}')
         if Radius != '' and Radius != '0' :
             (description) = (f'{description}\nRadius: {Radius}')
+        original_file = original_file or ""
         if original_file != '':
             (description) = (f'{description}\nSOURCE: {original_file}')
         if speed != '':
@@ -2891,6 +2702,11 @@ def write_kml(data):
 
 # row # in description
         (description) = (f'{description}\nROW#: {row_index + 2}') # test
+
+
+        # converts timestamp to ISO standard for point_start.timestamp.when = Time (Time Slider)
+        Time = kml_time(Time)
+
 
 
 # description_start
@@ -2914,6 +2730,7 @@ def write_kml(data):
                 description=f"{description}",
                 coords=[(longitude, latitude, Altitude)]
             )
+            point.timestamp.when = Time  # ISO 8601 with offset
             point.style.iconstyle.icon.href = point_icon
             point.altitudemode = simplekml.AltitudeMode.relativetoground
 
@@ -2929,8 +2746,9 @@ def write_kml(data):
                 name=f"{no}_start",                
                 description=f"{description_start}",
                 coords=[(origin_longitude, origin_latitude)]
-              
             )
+            point_start.timestamp.when = Time
+
 # Create line and specify style
             line = kml.newlinestring(name="trip line", coords=[(longitude, latitude), (origin_longitude, origin_latitude)])
 
@@ -3383,6 +3201,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+1.5.0 - Added timestamps to KML so the Google Earth Slider works
 1.3.7 - added Bluetooth, cell tower and AP points
 1.3.1 - Trip path (default blue line, but can change color manually)
 1.3.0 - Injest Celltower dumps (Azimuth, Radius)
@@ -3393,6 +3212,12 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+make Google earch use a time bar slider 
+<TimeStamp>
+  <when>2025-11-12T11:44:00Z</when>
+</TimeStamp>
+
+
 line 2610 errors sometimes point_icon = shared_icon
 
 
