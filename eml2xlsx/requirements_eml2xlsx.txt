@@ -1,2 +1,5 @@
-beautifulsoup4
 openpyxl
+beautifulsoup4
+lxml
+python-dateutil
+colorama
