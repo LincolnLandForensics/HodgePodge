@@ -1,4 +1,4 @@
-🕵️ ## EML to XLSX Parser GUI
+## 🕵️ EML to XLSX Parser GUI
 
 A forensic-grade GUI tool for parsing .eml, .mbox, and .json email files into structured Excel workbooks. Designed for investigators, fraud analysts, and digital forensic workflows.
 
@@ -19,6 +19,8 @@ git clone https://github.com/LincolnLandForensics/HodgePodge.git
 ```
 cd eml2xlsx
 
+
+🧪 modules installation
 ```
 pip install -r requirements_eml2xlsx.txt
 ```
@@ -29,10 +31,10 @@ pip install -r requirements_eml2xlsx.txt
 python eml2xlsx_gui.py
 ```
 
-- Select your input folder containing .eml, .mbox, .json, or .zip files
+- Select your input folder containing .eml, .mbox, .json, and/or .zip files
 - Choose an output filename (e.g., email.xlsx)
 - (Optional) Un-Check the DeDuplicate box to keep duplicate SHA256 hashes
-- Click Start Parsing and monitor progress in the log window
+- Click <Start Parsing> and monitor progress in the log window
 
 📁 Output Structure
 The Excel file contains:
