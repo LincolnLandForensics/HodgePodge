@@ -59,9 +59,9 @@ You can re-arrange the headers to meet your needs.
 
 Example:
 
-'''
+```
    python  CellebriteEmailxlsx2xlsx.py -r
    
    python CellebriteEmailxlsx2xlsx.py -r -I Cellebrite_Emails.xlsx -O Cellebrite_Emails_Parsed.xlsx
-'''
+```
 
