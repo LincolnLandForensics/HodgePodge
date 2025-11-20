@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "3.DailyNotes/2025_02/2025-02-01.md",
+                "file": "5.Templates/8.WrapUp.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2025-02-01"
+              "title": "8.WrapUp"
             }
           },
           {
@@ -225,6 +225,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "bases:Create new base": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
@@ -236,19 +237,22 @@
   },
   "active": "3fa9c28ead42b9b8",
   "lastOpenFiles": [
+    "5.Templates/7.Tasks_DVR.md",
+    "5.Templates/3.Tasks_Phone.md",
+    "5.Templates/3.Tasks_Phone - Copy.md",
+    "5.Templates/0.Tasks_Pre-Warrant.md",
+    "5.Templates/Daily_ Notes.md",
+    "5.Templates/1.Tasks_Onsite.md",
+    "5.Templates/8.WrapUp.md",
+    "5.Templates/5.Tasks_Linux.md",
+    "5.Templates/4.Tasks_Windows.md",
     "3.DailyNotes/2025_02/2025-02-04.md",
     "3.DailyNotes/2025_02/2025-02-01.md",
     "6.Logs/Study/PoliceAlphabet.md",
     "6.Logs/Study/PoliceCodes.md",
-    "5.Templates/1.Tasks_Onsite.md",
-    "5.Templates/0.Tasks_Pre-Warrant.md",
     "5.Templates/Ex.md",
     "5.Templates/6.Tasks_Mac.md",
-    "5.Templates/5.Tasks_Linux.md",
-    "5.Templates/4.Tasks_Windows.md",
-    "5.Templates/3.Tasks_Phone.md",
     "5.Templates/2.Tasks_Lab.md",
-    "5.Templates/Daily_ Notes.md",
     "5.Templates/_note.md",
     "5.Templates/setup_case_folder.canvas",
     "5.Templates/Untitled Kanban.md",
@@ -262,9 +266,6 @@
     "4.Documents/EML_example_email2_UPPERCASE.md",
     "4.Documents/Canon_40D.md",
     "9.Assets/media/Canon_40D.jpg",
-    "4.Documents/yml_sample - Copy.md",
-    "8. Tasks/1. Shopping.md",
-    "8. Tasks/0. Todo.md",
     "0. Case",
     "Activity Report. Case",
     "New folder",
