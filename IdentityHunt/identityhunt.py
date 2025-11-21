@@ -41,7 +41,7 @@ import asyncio
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.2.4'
+version = '3.2.5'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -65,6 +65,11 @@ headers_locations = [
     , "Category", "Manually decoded", "Account", "PlusCode", "Time Original", "Timezone"
     , "Icon", "original_file", "case", "Index"
     ]
+
+# --- Global Configuration ---
+# User Agent (mimicking the Perl script's UA)
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.63 Safari/537.31"
+HEADERS = {'User-Agent': USER_AGENT}
     
 
 # Regex section
@@ -348,6 +353,7 @@ def main():
         print(f'IPs = {ips}')
         arinip()    # alpha
         geoiptool()   # no content but is does only list 200's
+        ipinfo()    # 
         main_ip()
         resolverRS()    #? 
         # thatsthemip() # broken
@@ -367,7 +373,7 @@ def main():
         
     if args.test:  
         print(f' using test module')
-        medium()
+        ipinfo()    
 
     if args.usersmodules and len(users) > 0:  
         print(f'users = {users}')    
@@ -2215,7 +2221,68 @@ def gab():  # kevinrose
             # row_data["titleurl"] = titleurl    
             
             data.append(row_data)
+
             
+def ipinfo():    # testuser=    77.15.67.232
+    from subprocess import call, Popen, PIPE
+    print(f"{color_yellow}\n\t<<<<< ipinfo.io {color_blue}IP's{color_yellow} >>>>>{color_reset}")
+    for ip in ips:    
+        row_data = {}
+        (query, note, dnsdomain) = (ip, '', '')
+        (city, business, country, state, entity, zipcode) = ('', '', '', '', '', '')
+        (Latitude, Longitude, Coordinate) = ('', '', '')
+
+        (content, titleurl, pagestatus) = ('', '', '')
+        url = (f'https://ipinfo.io/{ip}/json')        
+
+        if sys.platform == 'win32' or sys.platform == 'win64':    
+            response = requests.get(url, headers=HEADERS, timeout=10, verify=False)
+            response.raise_for_status()
+            dataip = response.json()            
+
+            if isinstance(dataip, list) and dataip:
+                dataip = dataip[0]
+
+            if not isinstance(dataip, dict):
+                 print(item(f"{Fore.RED}API returned unexpected dataip format (not a dictionary).{Fore.WHITE}"))
+                 return
+
+
+            dnsdomain = dataip.get('hostname', '')
+            city = dataip.get('city', '')
+            country = f"{dataip.get('country', '')}"
+            state = f"{dataip.get('region', 'N/A')}"
+            Coordinate = dataip.get('loc', 'N/A')
+            note = dataip.get('org', 'N/A')            
+            
+            if ',' in Coordinate:
+                parts = Coordinate.split(',')
+            try:
+                Latitude = float(parts[0].strip())
+                Longitude = float(parts[1].strip())
+            except: pass
+
+        print(f'{color_green}{ip}{color_yellow}	{country}	{city}{color_reset}')
+
+        if "Wrong ip" not in content:
+            ranking = '6 - ipinfo'
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["url"] = url
+            row_data["ip"] = ip
+            row_data["note"] = note
+            row_data["zipcode"] = zipcode
+            row_data["url"] = url
+            row_data["note"] = note
+            row_data["query"] = query
+            row_data["city"] = city
+            row_data["country"] = country
+            row_data["state"] = state
+            row_data["Latitude"] = Latitude
+            row_data["Longitude"] = Longitude
+            row_data["Coordinate"] = Coordinate            
+            row_data["dnsdomain"] = dnsdomain
+            data.append(row_data)            
             
 def keybase():    # testuser=    kevin
     print(f'{color_yellow}\n\t<<<<< keybase.io {color_blue}users{color_yellow} >>>>>{color_reset}')
