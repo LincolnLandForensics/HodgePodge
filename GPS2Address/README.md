@@ -152,6 +152,7 @@ Examples:
     GPX2XLSX.py -k single.kmz -O kmz__output.xlsx
 ```
 
+---
 
 ## LatLong DB to XLSX Converter
 
