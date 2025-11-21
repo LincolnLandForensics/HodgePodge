@@ -5,7 +5,7 @@ Read .docx, .txt, or .pdf files and analyze if they were written by AI
 Author: LincolnLandForensics
 Version: 0.0.3
 """
-
+ 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>> #
 
 import os
@@ -14,6 +14,8 @@ import sys
 import math
 import hashlib
 import argparse
+import tkinter as tk
+from tkinter import filedialog
 
 import unicodedata
 
@@ -22,6 +24,9 @@ from typing import Dict, Any, List
 from docx import Document
 from PyPDF2 import PdfReader
 from docx.opc import coreprops
+import threading
+
+
 
 # colors
 color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
@@ -31,54 +36,67 @@ color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
 color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
 
 
+DEFAULT_OUTPUT = "sample_AI_Cleaned.docx"
+
+# Global log function, defaults to print
+log_func = print
+
+
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Main           >>>>>>>>>>>>>>>>>>>>>>>>>> #
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze DOCX or PDF for AI authorship indicators")
-    parser.add_argument('-I', '--input', help='Input DOCX, TXT or PDF file', required=False)
-    parser.add_argument('-a', '--analyzeAI', help='Analyze the input file for AI-like characteristics', action='store_true')
+    global args
+
+    parser = argparse.ArgumentParser(description="Analyze DOCX, TXT, or PDF for AI-authorship indicators")
+
+    parser.add_argument('-I', '--input', help='Input DOCX, TXT, or PDF file', required=False)
     parser.add_argument('-O', '--output', help='Write cleaned text to this file', required=False)
+    parser.add_argument('-a', '--analyzeAI', help='Analyze the input file for AI-like characteristics', action='store_true')
+    parser.add_argument('-g', '--gui', help='Force GUI mode', action='store_true')
 
     args = parser.parse_args()
 
+    # ⬅ DEFAULT BEHAVIOR: start GUI if no CLI action provided
+    if len(sys.argv) == 1 or args.gui:
+        build_gui()
+        return
+
+    # CLI MODE
     input_file = args.input if args.input else "sample.docx"
-
-
-    # Replace last '.' with '_cleaned.'
     parts = input_file.rsplit('.', 1)
-    output_file2 = f"{parts[0]}_cleaned.{parts[1]}" if len(parts) == 2 else input_file + "_cleaned"
+    suggested_output = f"{parts[0]}_cleaned.{parts[1]}" if len(parts) == 2 else input_file + "_cleaned"
 
-    output_file = args.output if args.output else output_file2
+    output_file = args.output if args.output else suggested_output
 
     if args.analyzeAI:
-        if os.path.exists(input_file):
-            msg_blurb_square(f"Reading {input_file}", color_green)
-
-            result = analyze_document(input_file, highlight=True, clean=True)
-
-            if "highlighted_text" in result:
-                print("\n--- Highlighted Text Preview ---\n")
-                print(result["highlighted_text"][:500])
-
-            # if args.output and "cleaned_text" in result:
-            if "cleaned_text" in result:
-            
-                with open(output_file, "w", encoding="utf-8") as f:
-                # with open(args.output, "w", encoding="utf-8") as f:
-                    # f.write(result["cleaned_text"])
-                    write_to_docx(output_file, result["cleaned_text"])
-
-                msg_blurb_square(f"Cleaned output written to {args.output}", color_green)
-
-            print_pretty_summary(result)
-
-        else:
-            msg_blurb_square(f"{input_file} does not exist", color_red)
-            sys.exit(1)
+        analyze_AI(input_file, output_file)
     else:
         usage()
 
+
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Core Logic     >>>>>>>>>>>>>>>>>>>>>>>>>> #
+
+def analyze_AI(input_file, output_file):
+    if not os.path.exists(input_file):
+        msg_blurb_square(f"{input_file} does not exist", color_red)
+        sys.exit(1)
+
+    msg_blurb_square(f"Reading {input_file}", color_green)
+
+    result = analyze_document(input_file, highlight=True, clean=True)
+
+    if "highlighted_text" in result:
+        print("\n--- Highlighted Text Preview ---\n")
+        print(result["highlighted_text"][:500])
+
+    if "cleaned_text" in result:
+        write_to_docx(output_file, result["cleaned_text"])
+        msg_blurb_square(f"Cleaned output written to {output_file}", color_green)
+
+    print_pretty_summary(result)
+
+
+
 
 def analyze_document(q: str, highlight: bool = False, clean: bool = False) -> Dict[str, Any]:
     if q.lower().endswith(".docx") or q.lower().endswith(".doc"):
@@ -127,27 +145,70 @@ def analyze_document(q: str, highlight: bool = False, clean: bool = False) -> Di
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Utilities      >>>>>>>>>>>>>>>>>>>>>>>>>> #
 
+def build_gui():
+    global input_entry, output_entry, message_box
+
+    root = tk.Tk()
+    root.title("AI Document Analyzer")
+
+    tk.Label(root, text="🧠 AI Authorship Analyzer",
+             font=("Arial", 12, "bold")).pack(pady=(5, 0))
+
+    frame = tk.Frame(root)
+    frame.pack(pady=5)
+
+    # Input
+    tk.Label(frame, text="Input File:").grid(row=0, column=0, sticky="e")
+    input_entry = tk.Entry(frame, width=50)
+    input_entry.insert(0, os.path.join(os.getcwd(), "sample.docx"))
+    input_entry.grid(row=0, column=1)
+    tk.Button(
+        frame, text="Browse",
+        command=lambda: input_entry.delete(0, tk.END) or
+                        input_entry.insert(0, filedialog.askopenfilename(
+                            filetypes=[("Documents", "*.docx *.doc *.pdf *.txt")]))
+    ).grid(row=0, column=2)
+
+    # Output
+    tk.Label(frame, text="Output File:").grid(row=1, column=0, sticky="e")
+    output_entry = tk.Entry(frame, width=50)
+    output_entry.insert(0, "sample_Cleaned.docx")
+    output_entry.grid(row=1, column=1)
+    tk.Button(
+        frame, text="Browse",
+        command=lambda: output_entry.delete(0, tk.END) or
+                        output_entry.insert(0, filedialog.asksaveasfilename(
+                            defaultextension=".docx",
+                            filetypes=[("DOCX File", "*.docx")]))
+    ).grid(row=1, column=2)
+
+    # Button
+    tk.Button(root, text="Analyze",
+              command=start_gui_analysis,
+              bg="lightblue").pack(pady=10)
+
+    # Colored output window
+    message_box = tk.Text(root, width=90, height=12, state="disabled")
+    message_box.tag_config("red", foreground="red")
+    message_box.tag_config("green", foreground="green")
+    message_box.tag_config("blue", foreground="blue")
+    message_box.tag_config("black", foreground="black")
+    message_box.pack(pady=5)
+
+    root.mainloop()
+
+    
+    
 def entropy_score(text: str) -> float:
-    """
-    Estimates Shannon entropy of the input text.
-    Higher entropy suggests more randomness; lower entropy suggests repetition or predictability.
-    """
     if not text:
         return 0.0
-
-    # Normalize text: lowercase and remove whitespace
     normalized = text.lower().replace(" ", "")
-    
-    # Count character frequencies
     freq = Counter(normalized)
     total = sum(freq.values())
-
-    # Compute entropy
     entropy = -sum((count / total) * math.log2(count / total) for count in freq.values())
-    # print(f' temp entopy score = {entropy}')    # temp
-    
-    print(f'{color_blue}Entropy score: {round(entropy, 4)}{color_reset}')
+    log_func(f'Entropy score: {round(entropy, 4)}', "blue")
     return round(entropy, 4)
+
 
 
 def extract_text_from_docx(input_file: str) -> str:
@@ -257,6 +318,13 @@ def highlight_hidden_characters(text: str, findings: Dict[str, Any]) -> str:
         highlighted = highlighted.replace(char, f"[{name}]")
     return highlighted
 
+def log_gui(text, tag="black"):
+    message_box.config(state="normal")
+    message_box.insert(tk.END, text + "\n", tag)
+    message_box.config(state="disabled")
+    message_box.see(tk.END)
+
+
 def clean_text(text: str, findings: Dict[str, Any]) -> str:
     cleaned = (
         text.replace("’", "'")
@@ -320,7 +388,7 @@ def generate_summary(result: Dict[str, Any]) -> str:
 
 def msg_blurb_square(msg, color):
     border = f"+{'-' * (len(msg) + 2)}+"
-    print(f"{color}{border}\n| {msg} |\n{border}{color_reset}")
+    log_func(f"{border}\n| {msg} |\n{border}", color)
 
 def print_pretty_summary(result: Dict[str, Any]):
     print("\n" + "=" * 60)
@@ -350,6 +418,28 @@ def print_pretty_summary(result: Dict[str, Any]):
 
         
     print("\n" + "=" * 60 + "\n")
+
+def start_gui_analysis():
+    input_file = input_entry.get().strip()
+    output_file = output_entry.get().strip()
+
+    log_gui(f"Analyzing: {input_file}", "blue")
+
+    # Run analysis in separate thread to avoid freezing GUI
+    threading.Thread(target=gui_analysis_thread, args=(input_file, output_file), daemon=True).start()
+
+def gui_analysis_thread(input_file, output_file):
+    global log_func
+    old_log_func = log_func
+    log_func = lambda msg, color="black": log_gui(msg, color)
+
+    try:
+        analyze_AI(input_file, output_file)
+        log_gui(f"Saved cleaned document → {output_file}", "green")
+    except Exception as e:
+        log_gui(f"Error: {e}", "red")
+    finally:
+        log_func = old_log_func  # restore original log function
 
 def write_to_docx(output_path: str, text: str) -> None:
     doc = Document()
