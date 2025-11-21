@@ -151,3 +151,47 @@ Examples:
     GPX2XLSX.py -G -O gpx_merged.xlsx
     GPX2XLSX.py -k single.kmz -O kmz__output.xlsx
 ```
+
+
+## LatLong DB to XLSX Converter
+
+A simple utility for converting ALEAPP-generated _latlong.db SQLite databases into a clean, formatted Excel file (Aleap_latlong.xlsx).
+Supports both GUI mode (Tkinter) and command-line mode (-c).
+
+🔧 Features
+
+Converts ALEAPP _latlong.db SQLite files into Excel .xlsx
+
+Command-line mode for batch operations
+
+Safe defaults: uses _latlong.db → Aleap_latlong.xlsx if no paths are provided
+
+🚀 Usage
+GUI Mode
+
+Simply run:
+
+```
+python latlong2xlsx.py
+```
+
+This opens the Tkinter interface where you can browse for a .db file and select an output path.
+
+Command-Line Mode
+
+Run with -c / --convert:
+
+Use defaults:
+```
+python latlong2xlsx.py -c
+```
+
+Specify only input DB:
+```
+python latlong2xlsx.py -c input.db
+```
+
+Specify input and output:
+```
+python latlong2xlsx.py -c input.db output.xlsx
+```
