@@ -173,7 +173,7 @@ GUI Mode
 Simply run:
 
 ```
-python latlong2xlsx.py
+python aleap_latlong_db2xlsx.py
 ```
 
 This opens the Tkinter interface where you can browse for a .db file and select an output path.
@@ -184,15 +184,15 @@ Run with -c / --convert:
 
 Use defaults:
 ```
-python latlong2xlsx.py -c
+python aleap_latlong_db2xlsx.py -c
 ```
 
 Specify only input DB:
 ```
-python latlong2xlsx.py -c _latlong.db
+python aleap_latlong_db2xlsx.py -c _latlong.db
 ```
 
 Specify input and output:
 ```
-python latlong2xlsx.py -c _latlong.db aleap_latlong.xlsx
+python aleap_latlong_db2xlsx.py -c _latlong.db aleap_latlong.xlsx
 ```
