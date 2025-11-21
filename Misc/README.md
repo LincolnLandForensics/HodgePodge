@@ -1,4 +1,4 @@
-
+This folder is for random scripts I didn't feel like organizing.
 
 
 ## AI_Analyze.py
