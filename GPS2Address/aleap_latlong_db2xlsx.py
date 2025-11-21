@@ -15,7 +15,6 @@ from openpyxl.styles import Font, PatternFill, Alignment
 
 DEFAULT_OUTPUT = "Aleap_latlong.xlsx"
 
-print(f'hello world')
 # -----------------------------------------------------------
 #  UTILITY: write colored text into Tkinter Text widget
 # -----------------------------------------------------------
