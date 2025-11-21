@@ -157,7 +157,7 @@ Examples:
 ## LatLong DB to XLSX Converter
 
 A simple utility for converting ALEAPP-generated _latlong.db SQLite databases into a clean, formatted Excel file (Aleap_latlong.xlsx).
-Supports both GUI mode (Tkinter) and command-line mode (-c).
+Supports both GUI mode (Tkinter) and command-line mode (-c). Can then be run through GPS2Address.py
 
 🔧 Features
 
