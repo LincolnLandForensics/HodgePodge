@@ -189,10 +189,10 @@ python latlong2xlsx.py -c
 
 Specify only input DB:
 ```
-python latlong2xlsx.py -c input.db
+python latlong2xlsx.py -c _latlong.db
 ```
 
 Specify input and output:
 ```
-python latlong2xlsx.py -c input.db output.xlsx
+python latlong2xlsx.py -c _latlong.db aleap_latlong.xlsx
 ```
