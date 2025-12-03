@@ -1,5 +1,5 @@
 
-## Activity Report Draft:
+## Activity Report Draft:  
 
 
 
@@ -26,7 +26,7 @@
 
 | ==Hits== | ==Keyword== | ==Notes== |
 | ---- | ------- | ----- |
-|      | mytax   |       |
+|      |         |       |
 |      |         |       |
 |      |         |       |
 |      |         |       |
