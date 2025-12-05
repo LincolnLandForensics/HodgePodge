@@ -108,29 +108,9 @@ C:\Program Files (x86)\CDSG\WriteBlocking Validation Utility\Test Results
 
 Fill in the required fields in the application GUI:
 
-Field
-
-Description
-
-LogFile (HTML)
-
 Use Browse to select the .html test report file you generated.
 
-ID: (Ex. WB-03)
-
-Field for the unique asset ID assigned to the write blocker or Faraday containment system.
-
-Output File (Excel)
-
-The path and name of the logbook Excel file. Defaults to Lab_Certification.xlsx in the current directory.
-
-DFE (Pull-down)
-
-Select the Data Forensic Examiner's name from the list.
-
-Custom Tester Name (Optional)
-
-Use this if your name/initials are not in the DFE list. This value will override the DFE pull-down selection.
+ID: (Ex. WB-03) (Only use labeled/tested items)
 
 3. Import Data
 
