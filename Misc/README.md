@@ -143,3 +143,4 @@ The results section at the bottom will display the specific data extracted and t
 ![Log Importer](Images/Weibtech_parser.png)
 
 ![Help Button](Images/Weibtech_Help.png)
+ 
