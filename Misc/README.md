@@ -90,11 +90,7 @@ pip install openpyxl beautifulsoup4
 ``` 
 
 
-✨ Running the Application:
-
-Save the provided Python code as log_importer.py.
-
-Run the script from your terminal:
+✨ Usage:
 
 ```
 python log_importer.py
