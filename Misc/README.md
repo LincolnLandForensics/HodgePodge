@@ -75,11 +75,7 @@ This log can also be used to chart Faraday Bag/Box certification.
 This tool ensures consistent formatting, data integrity, and centralized logging for lab environments.
 
 
-🛠️ Installation:
-
-This application requires Python and a few common third-party libraries.
-
-Prerequisites:
+🛠️Prerequisites:
 
 Python: Ensure you have Python 3.6+ installed on your system.
 
@@ -118,23 +114,23 @@ Description
 
 LogFile (HTML)
 
-	Use Browse to select the .html test report file you generated.
+Use Browse to select the .html test report file you generated.
 
 ID: (Ex. WB-03)
 
-	Field for the unique asset ID assigned to the write blocker or Faraday containment system.
+Field for the unique asset ID assigned to the write blocker or Faraday containment system.
 
 Output File (Excel)
 
-	The path and name of the logbook Excel file. Defaults to Lab_Certification.xlsx in the current directory.
+The path and name of the logbook Excel file. Defaults to Lab_Certification.xlsx in the current directory.
 
 DFE (Pull-down)
 
-	Select the Data Forensic Examiner's name from the list.
+Select the Data Forensic Examiner's name from the list.
 
 Custom Tester Name (Optional)
 
-	Use this if your name/initials are not in the DFE list. This value will override the DFE pull-down selection.
+Use this if your name/initials are not in the DFE list. This value will override the DFE pull-down selection.
 
 3. Import Data
 
@@ -144,3 +140,6 @@ A confirmation box will appear upon success.
 
 The results section at the bottom will display the specific data extracted and the row number where it was added in the Excel file.
 
+![Log Importer](Images/Weibtech_parser.png)
+
+![Help Button](Images/Weibtech_Help.png)
