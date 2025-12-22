@@ -41,7 +41,7 @@ import asyncio
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.2.5'
+version = '3.2.6'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -342,6 +342,7 @@ def main():
         ghunt()  # this is overwriting data
         google_calendar()     #
         have_i_been_pwned()    #
+        lookups_io_email()
         # hibp_email() # test
         holehe_email()    #
         osintIndustries_email()    #
@@ -373,7 +374,7 @@ def main():
         
     if args.test:  
         print(f' using test module')
-        ipinfo()    
+        discoverprofile() 
 
     if args.usersmodules and len(users) > 0:  
         print(f'users = {users}')    
@@ -1034,6 +1035,20 @@ def digitalfootprintcheckemail():    # testuser=    kevinrose@gmail.com
             # row_data["titleurl"] = titleurl        
             data.append(row_data)
         time.sleep(5) #will sleep for 5 seconds    
+
+def discoverprofile(): 
+    if len(users) > 0:
+        row_data = {}
+        ranking = '8 - manual'
+        url = ('https://discoverprofile.com/')
+        # url = (f'https://discoverprofile.com/{user}')
+
+        row_data["ranking"] = ranking
+        row_data["url"] = url
+        data.append(row_data)
+
+
+
 
 def disqus(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< discus {color_blue}users{color_yellow} >>>>>{color_reset}')
@@ -2175,6 +2190,16 @@ def is_running_in_virtual_machine():
             return True
             print('This is running in a virtual machine')
     return False
+
+
+def lookups_io_email():     # https://lookups.io/email/kevinrose@gmail.com
+    if len(emails) > 0:
+        row_data = {}
+        ranking = '8 - manual'
+        url = ('https://lookups.io')
+        row_data["ranking"] = ranking
+        row_data["url"] = url
+        data.append(row_data)
 
 
 def gab():  # kevinrose
@@ -6471,6 +6496,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+https://socialeye.net/  $$
 hackcheck.io
 deflock.me
 intelx.io
