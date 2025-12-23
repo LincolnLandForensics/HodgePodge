@@ -1,6 +1,6 @@
 
 ## cellebrite_parser.py 
-convert Cellebrite contacts, account, web history, chats and call exports to intel format
+convert Cellebrite contacts, account, web history, chats, call (and more) exports to intel format
 
 
 Installation:
