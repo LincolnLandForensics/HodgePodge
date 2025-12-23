@@ -19,6 +19,10 @@ python cellebrite_parser.py
 ```
 ![sample output](images/Cellebrite_Parser.png)	
 	
+
+![sample output](images/Intel_Contacts_Sample.png)	
+
+
 or command line:
 
 process call logs
@@ -54,7 +58,6 @@ Example:
 	
 	
 	
-![sample output](images/Intel_Contacts_Sample.png)	
 	
 
 
