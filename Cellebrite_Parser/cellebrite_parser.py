@@ -22,6 +22,10 @@ from openpyxl.styles import PatternFill
 import argparse  # for menu system
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
+import tkinter as tk
+from tkinter import filedialog, ttk
+import threading
+
 
 
 # Colorize section
@@ -58,13 +62,19 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert Cellebrite contacts, account, web history, chats and call exports to intel format"
-version = '1.1.3'
+version = '1.1.6'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 def main():
     global row
     row = 0  # defines arguments
+    
+    # If no arguments provided, launch GUI
+    if len(sys.argv) == 1:
+        gui_main()
+        return 0
+
     # Row = 1  # defines arguments   # if you want to add headers 
     parser = argparse.ArgumentParser(description=description2)
     parser.add_argument('-I', '--input', help='', required=False)
@@ -75,12 +85,20 @@ def main():
     args = parser.parse_args()
     data = []
     global output_xlsx
-    output_xlsx = args.output
+    output_xlsx = "output.xlsx"
+    
+    
+    if args.output:
+        output_xlsx = args.output    
 
     if args.blank:
         data = []
-        print(f'{color_green}Writing to {output_xlsx} {color_reset}')
-        write_xlsx(data)
+        # print(f'{color_green}Writing to {output_xlsx} {color_reset}')
+        msg_blurb = (f'Writing to {output_xlsx}')
+        msg_blurb_square(msg_blurb, color_green)
+        
+        
+        write_xlsx(data, output_xlsx)
 
     elif args.cellebrite:
         if not args.input: 
@@ -105,7 +123,7 @@ def main():
             msg_blurb_square(msg_blurb, color_green)
 
             data = read_cellebrite(input_xlsx)
-            write_xlsx(data)
+            write_xlsx(data, output_xlsx)
 
             workbook.close()
             msg_blurb = (f'Writing to {output_xlsx}')
@@ -120,6 +138,114 @@ def main():
         usage()
     
     return 0
+
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      GUI            >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+def gui_main():
+    root = tk.Tk()
+    root.title(f"Cellebrite Parser V {version}")
+    
+    # Configure main window
+    root.geometry("700x600")
+    
+    # Header
+    tk.Label(root, text=f"Cellebrite Parser V {version}", font=("Arial", 12, "bold")).pack(pady=(10, 0))
+    tk.Label(root, text=description2, font=("Arial", 9)).pack(pady=(0, 10))
+    
+    frame = tk.Frame(root)
+    frame.pack(pady=5, padx=10, fill=tk.X)
+    
+    # Input Folder
+    tk.Label(frame, text="Input File:").grid(row=0, column=0, sticky="e", padx=5)
+    input_entry = tk.Entry(frame, width=50)
+    input_entry.grid(row=0, column=1, padx=5)
+    tk.Button(frame, text="Browse", command=lambda: input_entry.delete(0, tk.END) or input_entry.insert(0, filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx")]))).grid(row=0, column=2, padx=5)
+    
+    # Output Folder
+    tk.Label(frame, text="Output File:").grid(row=1, column=0, sticky="e", padx=5)
+    output_entry = tk.Entry(frame, width=50)
+    output_entry.insert(0, os.path.join(os.getcwd(), "output.xlsx"))
+    output_entry.grid(row=1, column=1, padx=5)
+    tk.Button(frame, text="Browse", command=lambda: output_entry.delete(0, tk.END) or output_entry.insert(0, filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel Files", "*.xlsx")]))).grid(row=1, column=2, padx=5)
+    
+    # Case Number
+    tk.Label(frame, text="Case Number:").grid(row=2, column=0, sticky="e", padx=5)
+    case_entry = tk.Entry(frame, width=50)
+    case_entry.grid(row=2, column=1, padx=5)
+    
+    # Radio buttons
+    mode_var = tk.StringVar(value="convert")
+    tk.Radiobutton(root, text="Convert", variable=mode_var, value="convert").pack()
+    tk.Radiobutton(root, text="Blank Sheet", variable=mode_var, value="blank").pack()
+    
+    # Progress bar
+    progress = ttk.Progressbar(root, orient="horizontal", length=600, mode="indeterminate")
+    progress.pack(pady=10)
+    
+    # Status label
+    status_label = tk.Label(root, text="Ready", font=("Arial", 9))
+    status_label.pack()
+    
+    # Message box
+    msg_frame = tk.Frame(root)
+    msg_frame.pack(pady=5, padx=10, fill=tk.BOTH, expand=True)
+    
+    scrollbar = tk.Scrollbar(msg_frame)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    
+    message_box = tk.Listbox(msg_frame, yscrollcommand=scrollbar.set, font=("Courier", 9))
+    message_box.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    scrollbar.config(command=message_box.yview)
+    
+    def log(msg):
+        message_box.insert(tk.END, msg)
+        message_box.see(tk.END)
+        status_label.config(text=msg)
+    
+    def run_conversion():
+        input_path = input_entry.get()
+        output_path = output_entry.get()
+        case_num = case_entry.get()
+        mode = mode_var.get()
+        
+        if mode == "convert" and not input_path:
+            log("❌ Error: Please select an input file.")
+            return
+
+        progress.start(10)
+        log(f"Starting Process: {mode}")
+        
+        def worker():
+            try:
+                if mode == "blank":
+                    log(f"Creating blank sheet at {output_path}")
+                    write_xlsx([], output_path, status_callback=log)
+                else:
+                    log(f"Reading {input_path}")
+                    data = read_cellebrite(input_path, case_number_arg=case_num, status_callback=log)
+                    if data:
+                        log(f"Writing to {output_path}")
+                        write_xlsx(data, output_path, status_callback=log)
+                        log(f"✅ Successfully created {output_path}")
+                    else:
+                        log("❌ No data found to convert.")
+            except Exception as e:
+                log(f"❌ Error: {e}")
+                import traceback
+                traceback.print_exc()
+            finally:
+                root.after(0, progress.stop)
+                log("Done.")
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    tk.Button(root, text="Convert", bg="lightblue", font=("Arial", 10, "bold"), command=run_conversion).pack(pady=10)
+    
+    root.mainloop()
+
+gui_main = gui_main
+
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -270,13 +396,19 @@ def msg_blurb_square(msg_blurb, color):
     print(f'{color_reset}')
 
 
-def read_cellebrite(input_xlsx):
+def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
 
     """Read data from an xlsx file and return as a list of dictionaries.
     Read XLSX Function: The read_xlsx() function reads data from the input 
     Excel file using the openpyxl library. It extracts headers from the 
     first row and then iterates through the data rows.    
     """
+    def log(msg):
+        if status_callback:
+            status_callback(msg)
+        print(msg)
+
+    log(f"Loading workbook: {input_xlsx}")
 
     wb = openpyxl.load_workbook(input_xlsx)
     ws = wb.active
@@ -285,12 +417,29 @@ def read_cellebrite(input_xlsx):
     datatype = datatype.replace('.xlsx', '')
     
     # get header values from first row
-    global headers
+    # Find header row dynamically
+    header_row_idx = 1
     headers = []
-    for cell in ws[1]:
-        headers.append(cell.value)
+    
+    # Scan first 5 rows to find the header
+    for i, row in enumerate(ws.iter_rows(min_row=1, max_row=5, values_only=True), start=1):
+        # Count non-empty cells
+        non_empty = sum(1 for cell in row if cell is not None and str(cell).strip() != "")
+        if non_empty > 3:
+            header_row_idx = i
+            headers = list(row)
+            break
+            
+    # Fallback if no specific header row found (unlikely), default to row 1
+    if not headers:
+        header_row_idx = 1
+        for cell in ws[1]:
+            headers.append(cell.value)
 
-    case_prompt = case_number_prompt()
+    if case_number_arg is not None:
+        case_prompt = case_number_arg
+    else:
+        case_prompt = case_number_prompt()
 
 # regex patterns
     regex_phone = r'^\d{7,15}$'  # Matches a digit-only number between 7 and 15 digits
@@ -334,7 +483,8 @@ def read_cellebrite(input_xlsx):
         r'User ID-Username:\s*(\S+)',  
         r'User ID-WeChat ID:\s*(\S+)',   
         r'User ID-Facebook Id:\s*([^\s]+)',
-        r'User ID-cash tag:\s*([^\s]+)',        
+        r'User ID-cash tag:\s*([^\s]+)',     
+        r'User ID-UNIQUE ID:\s*([^\s]+)',     
     ]
 
     url_patterns = [
@@ -373,7 +523,7 @@ def read_cellebrite(input_xlsx):
         ]
 
     # get data rows
-    for row in ws.iter_rows(min_row=2, values_only=True):
+    for row in ws.iter_rows(min_row=header_row_idx + 1, values_only=True):
         row_data = {}
         for header, value in zip(headers, row):
             row_data[header] = value
@@ -390,7 +540,7 @@ def read_cellebrite(input_xlsx):
 
     for row_index, row_data in enumerate(data):
         (fullname, url, phone, email, business, misc) = ('', '', '', '', '', '')
-        (lastname, firstname, snippet) = ('', '', '')
+        (lastname, firstname, snippet, Icon) = ('', '', '', '')
         (Time, time_orig, timezone) = ('', '', '')
         (ranking, source_file, original_file) = (f'4 - {datatype}', '', '')
         (fulladdress , note, info, source, user, query) = ('', '', '', '', '', '')
@@ -463,11 +613,11 @@ def read_cellebrite(input_xlsx):
 # info        
      
         info = row_data.get("Entries") or row_data.get("Entry") or ''
-        info2 = row_data.get("Body") or row_data.get("Message") or ''
+        info2 = row_data.get("Body") or row_data.get("Message") or '' # chats cellebrite
+      
+        
         entry2 = row_data.get("Entry (2)") or ''
         entry3 = row_data.get("Entry (3)") or ''        
-        
-
 
         if entry2:
             info += '\n' + entry2
@@ -476,6 +626,9 @@ def read_cellebrite(input_xlsx):
 
         info = (info or '').strip()
        
+
+        # print(f'info = {info}')   # temp
+
 
         cleaned_info = info.replace('\n', ' ')  # .replace('\r', '')
 
@@ -498,6 +651,8 @@ def read_cellebrite(input_xlsx):
         
         if info == "" and info2 != "":
             info = info2
+            print(f'___________info2 = {info2}') # temp
+            
             ranking == "3 - Chats"
             Time = (row_data.get("Timestamp: Time") or '').strip()
 
@@ -540,7 +695,6 @@ def read_cellebrite(input_xlsx):
                     note = (f'map,{note}')
                     Coordinate = parse_qs(parsed_url.query).get('ll', [''])[0]
                     if 'None' in Coordinate:
-                        # print(f'bobs your uncle')   # temp
                         Coordinate == ''
                     if "," in Coordinate:
                         Latitude, Longitude = map(str, Coordinate.split(','))
@@ -555,7 +709,8 @@ def read_cellebrite(input_xlsx):
             "Partners",
             "Phone 1 - Value",
             "Mobile Phone",
-            "Phone"
+            "Phone",
+            "Entries"
         ]
 
         phone = row_data.get("phone") or ''
@@ -563,7 +718,8 @@ def read_cellebrite(input_xlsx):
         # Go through fallback keys only if phone is still empty
         for key in fallback_keys:
             if not phone:
-                candidate = row_data.get(key)
+                candidate = row_data.get(key) or ''
+
                 if candidate:
                     phone = str(candidate)
                     if key == "_ChatId":
@@ -581,7 +737,7 @@ def read_cellebrite(input_xlsx):
                     # Convert back to string with one phone number per line
                     phone = '\n'.join(found_phones)
                   
-                    phone = (row_data.get("phone") or '').strip()
+                    # phone = (row_data.get("phone") or '').strip() # test
 
 # email
         email = row_data.get("email") or ''
@@ -600,9 +756,9 @@ def read_cellebrite(input_xlsx):
         Parties = row_data.get("Parties") or ''
         misc = row_data.get("Time") or '' if Parties else ''
             
-        info = (f'{row_data.get("Direction")} {row_data.get("Status")} {row_data.get("Duration")}')
-        if info == 'None None None':
-            info = ''
+        # info = (f'{row_data.get("Direction")} {row_data.get("Status")} {row_data.get("Duration")}')
+        # if info == 'None None None':
+            # info = ''
         Parties = Parties.replace('From:  ', '').replace('To:  ', '').lstrip('+')
         if " " in Parties:
             Parties = Parties.split(' ', 1)
@@ -699,6 +855,9 @@ def read_cellebrite(input_xlsx):
             matches = re.findall(pat, info, re.MULTILINE)
             for user in matches:
                 # if user not in found_users and user != '_' and user != '.':
+                
+                if 'User ID-UNIQUE ID' in pat:
+                    print(f'user = {user} _________________________________User ID-UNIQUE ID in pat') # temp
                 if len(user) > 2 and user not in {'_', '.'} and user not in found_users:
 
                     found_users.add(user)
@@ -774,6 +933,9 @@ def read_cellebrite(input_xlsx):
                 url = (f'https://www.facebook.com/{username}/')
             elif len(misc) > 5:
                 url = (f'https://www.facebook.com/{misc}/')
+
+        if 'www.google.com/maps/place/' in url.lower():
+            business, fulladdress, Latitude, Longitude, Coordinate, Icon = googleplace(url)
                 
 # DOB
         dob_matches = []
@@ -803,15 +965,15 @@ def read_cellebrite(input_xlsx):
         misc = '\n'.join(misc_matches)
 
         if misc is not None and "@" in misc:
+            
             email = misc   
             misc = ''
+
         # if phone == '' and misc.startswith("+"):
         phone = phone or ''
-        if phone is not None and phone == '' and misc is not None and "+" in misc:
-        # if phone == '' and "+" in misc:
-            phone = misc   
-            phone = phone.replace("+", '')
-            misc = ''
+        # if phone is not None and phone == '' and misc is not None and "+" in misc:        
+        
+        # if phone == '' and misc is not None and "+" in misc:        
 
         misc3 = (row_data.get("Participants") or '').strip()
         
@@ -846,6 +1008,17 @@ def read_cellebrite(input_xlsx):
                     fullname = Sender.split(' ', 1)[1]
                 except:
                     fullname = Sender
+
+
+        if phone == '' and "+" in misc:        
+
+        # if phone == '' and "+" in misc:
+            phone = misc   
+            phone = phone.replace("+", '')
+            # print(f'___________phone = misc {phone}')  # temp
+            misc = ''
+            # print(f'______________________________________phone3 = {phone} misc = {misc}')  # temp
+
 
         if active_sheet_title == 'Facebook Messenger Messages':
             fullname = fullname or row_data.get("Sender Name") or ''
@@ -941,14 +1114,16 @@ STATUS:{status}
             
 # Map Address
         fulladdress3 = row_data.get("Map Address")
-        if fulladdress3 is None:
-            fulladdress3 = ''
-            query = row_data.get("Value")
-            if query is None:
-                query = ''
-        else:
-            fulladdress3 = fulladdress3.strip()
 
+        if fulladdress3 == '' or info == '':
+            info = row_data.get("Value") or ''
+
+                
+        else:
+            try:
+                fulladdress3 = fulladdress3.strip()
+            except: pass
+            
         if len(fulladdress) < 2:
             fulladdress = fulladdress3
 
@@ -993,7 +1168,9 @@ STATUS:{status}
 
 # type_data
         type_data = row_data.get("Type") or ''
-        Icon = row_data.get("Icon") or ''
+        
+        if Icon != '':
+            Icon = row_data.get("Icon") or ''
 
         if type_data == "":
             if "Searched" in original_file:
@@ -1019,12 +1196,13 @@ STATUS:{status}
         ).strip()
         
 # Icon    
-        Icon = row_data.get("Icon") or ''
-        if not Icon:
-            for keyword in ("Searched", "Chats"):
-                if keyword in original_file:
-                    Icon = keyword
-                    break
+        if Icon != '':
+            Icon = row_data.get("Icon") or ''
+            if not Icon:
+                for keyword in ("Searched", "Chats"):
+                    if keyword in original_file:
+                        Icon = keyword
+                        break
 
 # Time
         # List of potential time fields in priority order
@@ -1103,8 +1281,8 @@ STATUS:{status}
 
 # clean phone
         cleaned_phones = ""
-
-        for line in phone.splitlines():
+        # print(f'______________________________________phone = {phone} misc = {misc}')  # temp
+        for line in str(phone).splitlines():
             cleaned = clean_phone(line)
             if cleaned:
                 cleaned_phones += cleaned + "\n"
@@ -1113,7 +1291,6 @@ STATUS:{status}
         phone = cleaned_phones.strip()
 
         phone = dedupe(phone)  # test
-
 
 
 # cleanup cells # test
@@ -1195,15 +1372,55 @@ def fullname_parse(fullname):
             fullname = (f'{firstname} {middlename} {lastname}')
             
     return fullname, firstname, middlename, lastname
+
+def googleplace(url):
+    """
+    Extracts business name, full address, and coordinates from a Google Maps URL.
+    Returns: (business, fulladdress, coordinates)
+    """
+    
+    Icon = business = fulladdress = Coordinate = Latitude = Longitude = ''
+
+    # Parse and decode the URL
+    parsed = urlparse(url)
+    path = unquote(parsed.path)
+
+    # Extract business and address from /place/ segment
+    match_place = re.search(r'/place/([^/@]+)', path)
+    if match_place:
+        place_raw = match_place.group(1)
+        parts = [p.strip() for p in place_raw.split(',')]
+        if parts:
+            business = parts[0]
+            fulladdress = ', '.join(parts[1:]) if len(parts) > 1 else ''
+
+    # Extract coordinates from @lat,lng segment
+    match_coords = re.search(r'@([-.\d]+),([-.\d]+)', path)
+    if match_coords:
+        Latitude, Longitude = match_coords.groups()
+        Coordinate = f"{Latitude},{Longitude}"
+        Icon = "Searched"
+        
+    business = business.replace('+', ' ')
+    fulladdress = fulladdress.replace('+', ' ')
+
+    return business, fulladdress, Latitude, Longitude, Coordinate, Icon
+
+
     
 
-def write_xlsx(data):
+def write_xlsx(data, output_filename, status_callback=None):
     '''
     The write_xlsx() function receives the processed data as a list of 
     dictionaries and writes it to a new Excel file using openpyxl. 
     It defines the column headers, sets column widths, and then iterates 
     through each row of data, writing it into the Excel worksheet.
     '''
+    def log(msg):
+        if status_callback:
+            status_callback(msg)
+        print(msg)
+
 
     global workbook
     workbook = Workbook()
@@ -1211,8 +1428,8 @@ def write_xlsx(data):
     worksheet = workbook.active
 
 # active sheet (current sheet)
-    # active_sheet = workbook.active
-    # active_sheet_title = active_sheet.title 
+    active_sheet = workbook.active
+    active_sheet_title = active_sheet.title 
     print(f'Reading {active_sheet_title} sheet\n')
     worksheet.title = active_sheet_title
     header_format = {'bold': True, 'border': True}
@@ -1309,7 +1526,7 @@ def write_xlsx(data):
             except Exception as e:
                 print(f"{color_red}Error printing line: {str(e)}{color_reset}")
     
-    workbook.save(output_xlsx)
+    workbook.save(output_filename)
 
 
 def usage():
@@ -1349,6 +1566,9 @@ if __name__ == '__main__':
 
 """
 if tik tok and user, create a url
+        elif 'TikTok' in ranking:
+            url = (f'https://www.tiktok.com/@{user}')
+
 info needs to have new lines so things like phone regex need to be done in a for loop by line
 if phone = '' and misc is a phone number: phone = misc
 AKA needs work

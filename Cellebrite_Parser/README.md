@@ -11,6 +11,16 @@ python pip install -r requirements_cellebrite_parser.txt
 ```
 
 Usage:\
+
+GUI Interface
+```
+python cellebrite_parser.py
+
+```
+![sample output](images/Cellebrite_Parser.png)	
+	
+or command line:
+
 process call logs
 ```
 python cellebrite_parser.py -c -I calls.xlsx
