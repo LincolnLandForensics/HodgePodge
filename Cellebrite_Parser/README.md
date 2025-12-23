@@ -8,7 +8,7 @@ Installation:
 python pip install -r requirements_cellebrite_parser.txt
 ```
 
-Usage:\
+Usage:
 
 GUI Interface
 ```
