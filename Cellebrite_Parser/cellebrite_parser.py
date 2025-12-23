@@ -160,12 +160,28 @@ def gui_main():
     tk.Label(frame, text="Input File:").grid(row=0, column=0, sticky="e", padx=5)
     input_entry = tk.Entry(frame, width=50)
     input_entry.grid(row=0, column=1, padx=5)
-    tk.Button(frame, text="Browse", command=lambda: input_entry.delete(0, tk.END) or input_entry.insert(0, filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx")]))).grid(row=0, column=2, padx=5)
+    
+    def browse_input():
+        filename = filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx")])
+        if filename:
+            input_entry.delete(0, tk.END)
+            input_entry.insert(0, filename)
+            
+            # Suggest output filename
+            directory = os.path.dirname(filename)
+            basename = os.path.basename(filename)
+            output_name = f"intel_{basename}"
+            output_path = os.path.join(directory, output_name)
+            
+            output_entry.delete(0, tk.END)
+            output_entry.insert(0, output_path)
+
+    tk.Button(frame, text="Browse", command=browse_input).grid(row=0, column=2, padx=5)
     
     # Output Folder
     tk.Label(frame, text="Output File:").grid(row=1, column=0, sticky="e", padx=5)
     output_entry = tk.Entry(frame, width=50)
-    output_entry.insert(0, os.path.join(os.getcwd(), "output.xlsx"))
+    # output_entry.insert(0, os.path.join(os.getcwd(), "output.xlsx"))
     output_entry.grid(row=1, column=1, padx=5)
     tk.Button(frame, text="Browse", command=lambda: output_entry.delete(0, tk.END) or output_entry.insert(0, filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel Files", "*.xlsx")]))).grid(row=1, column=2, padx=5)
     
@@ -212,6 +228,10 @@ def gui_main():
         if mode == "convert" and not input_path:
             log("❌ Error: Please select an input file.")
             return
+
+        if not output_path:
+            output_path = "output.xlsx"
+            log(f"Since you didn't pick an output file I'm saving this as {output_path}")
 
         progress.start(10)
         log(f"Starting Process: {mode}")
