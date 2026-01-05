@@ -7,8 +7,6 @@ it will export the emails, ip's, md5's, phone numbers and users into _output fol
 ## Example:
     python NCMEC_PDFs_parser.py
 
-![sample output](images/NCMEC_screenshot.png)
-
 ## Note:
 	try md5_hunter.py for one that just does md5's.
 
@@ -30,6 +28,7 @@ pip install pdfplumber
 python NCMEC_PDF_parser.py
 ```
 
+![sample output](images/NCMEC_screenshot.png)
 
 ## Flowchart:
 	
