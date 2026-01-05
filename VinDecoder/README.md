@@ -6,27 +6,27 @@ Decodes a list of Vehicle Identification Numbers (VINs) using the NHTSA API and 
 
 
 
-\*\*Features:\*\*
+Features:
 
-\*   \*\*GUI Mode:\*\* Launches by default.
+GUI Mode: Launches by default.
 
-&nbsp;   \*   \*\*Input File:\*\* Select a text file containing one VIN per line (Defaults to `vins.txt`).
+	Input File: Select a text file containing one VIN per line (Defaults to `vins.txt`).
 
-&nbsp;   \*   \*\*Output File:\*\* Select the destination Excel file (Defaults to `vins.xlsx`).
+	Output File: Select the destination Excel file (Defaults to `vins.xlsx`).
 
-&nbsp;   \*   \*\*Progress Tracking:\*\* Visual progress bar and detailed logs.
+	Progress Tracking: Visual progress bar and detailed logs.
 
-\*   \*\*CLI Mode:\*\* Currently defaults to GUI; main logic refactored for flexibility.
+CLI Mode: Currently defaults to GUI; main logic refactored for flexibility.
 
 
 
-\*\*Dependencies:\*\*
+Dependencies:
 
-\*   `requests`
+`requests`
 
-\*   `openpyxl`
+`openpyxl`
 
-\*   `tkinter` (standard library)
+`tkinter` (standard library)
 
 
 
@@ -34,7 +34,7 @@ Decodes a list of Vehicle Identification Numbers (VINs) using the NHTSA API and 
 
 
 
-\*\*Running with GUI:\*\*
+Running with GUI:
 
 Simply run the script via python:
 
