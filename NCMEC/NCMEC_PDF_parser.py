@@ -25,11 +25,122 @@ except Exception as e:
 
 sys.stdout.reconfigure(encoding='utf-8')  # Python 3.7+
 
+import threading
+import tkinter as tk
+from tkinter import ttk, filedialog, scrolledtext, messagebox
+
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description = "read .zip and .pdfs and extract out NCMEC intel"
-version = '0.1.8'
+version = '1.1.0'
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<    GUI    >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+class PDFParserGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title(f"NCMEC PDF Parser {version}")
+        self.root.geometry("600x520")
+
+        # Label
+        lbl_intro = tk.Label(root, text="add NCMEC PDFs or Zips into a folder (Defaults to NCMEC folder)", font=("Arial", 10))
+        lbl_intro.pack(pady=10)
+
+        # Input Folder
+        frame_input = tk.Frame(root)
+        frame_input.pack(fill=tk.X, padx=10, pady=5)
+        tk.Label(frame_input, text="Input Folder:").pack(side=tk.LEFT)
+        self.entry_input = tk.Entry(frame_input)
+        self.entry_input.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        current_dir = os.getcwd()
+        default_input = os.path.join(current_dir, "NCMEC")
+        self.entry_input.insert(0, default_input)
+        tk.Button(frame_input, text="Browse", command=self.browse_input).pack(side=tk.LEFT)
+
+        # Output Folder
+        frame_output = tk.Frame(root)
+        frame_output.pack(fill=tk.X, padx=10, pady=5)
+        tk.Label(frame_output, text="Output Folder:").pack(side=tk.LEFT)
+        self.entry_output = tk.Entry(frame_output)
+        self.entry_output.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        self.entry_output.insert(0, os.path.join(default_input, "_output"))
+        tk.Button(frame_output, text="Browse", command=self.browse_output).pack(side=tk.LEFT)
+
+        # Progress Bar
+        self.progress = ttk.Progressbar(root, orient=tk.HORIZONTAL, length=100, mode='indeterminate')
+        self.progress.pack(fill=tk.X, padx=10, pady=10)
+
+        # Parse Button
+        self.btn_parse = tk.Button(root, text="Parse", command=self.start_thread, bg="green", fg="white", font=("Arial", 12, "bold"))
+        self.btn_parse.pack(pady=5)
+
+        # Message Window
+        self.text_area = scrolledtext.ScrolledText(root, state='disabled', height=15)
+        self.text_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+    def browse_input(self):
+        folder = filedialog.askdirectory(initialdir=os.getcwd(), title="Select Input Folder")
+        if folder:
+            self.entry_input.delete(0, tk.END)
+            self.entry_input.insert(0, folder)
+            # Update output folder default
+            self.entry_output.delete(0, tk.END)
+            self.entry_output.insert(0, os.path.join(folder, "_output"))
+
+    def browse_output(self):
+        folder = filedialog.askdirectory(initialdir=os.getcwd(), title="Select Output Folder")
+        if folder:
+            self.entry_output.delete(0, tk.END)
+            self.entry_output.insert(0, folder)
+
+    def start_thread(self):
+        input_folder = self.entry_input.get()
+        output_folder = self.entry_output.get()
+        
+        if not os.path.exists(input_folder):
+            messagebox.showerror("Error", f"Input folder does not exist:\n{input_folder}")
+            return
+            
+        # Create output folder if not exists (handling this here or in run_process)
+        if not os.path.exists(output_folder):
+            try:
+                os.makedirs(output_folder, exist_ok=True)
+                self.log(f"Created output folder: {output_folder}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Could not create output folder: {e}")
+                return
+
+        self.btn_parse.config(state='disabled')
+        self.progress.start(10)
+        self.log(f"Starting processing in: {input_folder}")
+        
+        t = threading.Thread(target=self.run_process, args=(input_folder, output_folder))
+        t.daemon = True
+        t.start()
+
+    def run_process(self, input_folder, output_folder):
+        try:
+            process_pdfs_and_unzip(input_folder, output_folder, log_func=self.log)
+            self.log("Done")
+            self.root.after(0, lambda: messagebox.showinfo("Finished", "Done"))
+        except Exception as e:
+            self.log(f"An error occurred: {e}")
+            self.root.after(0, lambda: messagebox.showerror("Error", str(e)))
+        finally:
+            self.root.after(0, self.stop_progress)
+
+    def stop_progress(self):
+        self.progress.stop()
+        self.btn_parse.config(state='normal')
+
+    def log(self, message):
+        def _log():
+            self.text_area.config(state='normal')
+            self.text_area.insert(tk.END, str(message) + "\n")
+            self.text_area.see(tk.END)
+            self.text_area.config(state='disabled')
+        self.root.after(0, _log)
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<    Main    >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -37,47 +148,56 @@ def main():
     """
     Main function to parse arguments and initiate file conversion.
     """
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-I', '--input', help='Input folder path', required=False)
-    parser.add_argument('-O', '--output', help='Output folder path', required=False)
-    parser.add_argument('-p', '--parse', help='parse PDFs', required=False, action='store_true')
+    # Check if any arguments were provided
+    if len(sys.argv) > 1:
+        parser = argparse.ArgumentParser(description=description)
+        parser.add_argument('-I', '--input', help='Input folder path', required=False)
+        parser.add_argument('-O', '--output', help='Output folder path', required=False)
+        parser.add_argument('-p', '--parse', help='parse PDFs', required=False, action='store_true')
 
-    args = parser.parse_args()
+        args = parser.parse_args()
 
-    global input_folder
-    global output_folder
+        global input_folder
+        global output_folder
 
-    input_folder = "NCMEC"    # Specify the folder containing .PDF and/or .zip files
-    output_folder = os.path.join(input_folder, '_output')
+        input_folder = "NCMEC"    # Specify the folder containing .PDF and/or .zip files
+        output_folder = os.path.join(input_folder, '_output')
 
-    # Set input and output folders based on arguments, if provided
-    if args.input:
-        input_folder = args.input
-    if args.output:
-        output_folder = args.output
-        output_folder = output_folder.lstrip("\\")  # doesn't work with something like \temp
-    # else:
-        # print(f'output folder is: {output_folder}')  # temp        
+        # Set input and output folders based on arguments, if provided
+        if args.input:
+            input_folder = args.input
+        if args.output:
+            output_folder = args.output
+            output_folder = output_folder.lstrip("\\")  # doesn't work with something like \temp
+        # else:
+            # print(f'output folder is: {output_folder}')  # temp        
 
-    # Ensure the input folder exists
-    if not os.path.exists(input_folder):
-        print(f"Input folder doesn't exist: {input_folder}")
-        return 1
-        
-    # Ensure the output folder exists, or create it if it doesn’t
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder, exist_ok=True)
-        print(f"Output folder doesn't exist: {output_folder}")
-        print(f'Output folder created: {output_folder}')
-        
-    if args.parse:
-        process_pdfs_and_unzip(input_folder, output_folder)
+        # Ensure the input folder exists
+        if not os.path.exists(input_folder):
+            print(f"Input folder doesn't exist: {input_folder}")
+            return 1
+            
+        # Ensure the output folder exists, or create it if it doesn’t
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder, exist_ok=True)
+            print(f"Output folder doesn't exist: {output_folder}")
+            print(f'Output folder created: {output_folder}')
+            
+        if args.parse:
+            process_pdfs_and_unzip(input_folder, output_folder)
 
+        else:
+            parser.print_help()
+            Usage()
+
+        return 0
+    
     else:
-        parser.print_help()
-        Usage()
-
-    return 0
+        # Launch GUI
+        root = tk.Tk()
+        app = PDFParserGUI(root)
+        root.mainloop()
+        return 0
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -104,9 +224,9 @@ def cleanup_email(email_list):
     ]
 
 
-def process_pdfs_and_unzip(input_folder, output_folder):
-    print(f'\nParsing files in {input_folder} folder\n')
-    unzip_all_in_folder(input_folder, output_folder)
+def process_pdfs_and_unzip(input_folder, output_folder, log_func=print, progress_func=None):
+    log_func(f'\nParsing files in {input_folder} folder\n')
+    unzip_all_in_folder(input_folder, output_folder, log_func)
 
     today = datetime.now().strftime("%Y-%m-%d")
     # word_list, sentence_list, email_list, md5_list, ip_list, phone_list, user_list = ([] for _ in range(7))
@@ -155,13 +275,13 @@ def process_pdfs_and_unzip(input_folder, output_folder):
                     ip_list.extend(ip_pattern.findall(text))
             # pdfs_parsed += 1
         except Exception as e:
-            print(f"Error processing {file_path}: {str(e)}")
+            log_func(f"Error processing {file_path}: {str(e)}")
 
         # test for pdf's that need to be OCR'd first
         if text and text.strip():  # If any page has text, return
             blah = 'blah'
         else:
-            print(f"{file_path} needs to be OCR'd to read it.")  
+            log_func(f"{file_path} needs to be OCR'd to read it.")  
 
 
     for root, _, files in os.walk(input_folder):
@@ -193,15 +313,15 @@ def process_pdfs_and_unzip(input_folder, output_folder):
 
     if pdfs_parsed != 0:
         # print(f"\n{pdfs_parsed} PDfs parsed")
-        print(f"\nPDfs parsed")
+        log_func(f"\nPDfs parsed")
 
-    print(f"\n	{len(unique_sorted(email_list))} emails")
-    print(f"\t{len(unique_sorted(file_list))} files")    
-    print(f"\t{len(unique_sorted(ip_list))} IPs")
-    print(f"\t{len(unique_sorted(md5_list))} MD5 hashes")
-    print(f"\t{len(unique_sorted(phone_list))} phone numbers")
-    print(f"\t{len(unique_sorted(user_list))} users")
-    print(f"\nSee output in {output_folder} folder.")
+    log_func(f"\n	{len(unique_sorted(email_list))} emails")
+    log_func(f"\t{len(unique_sorted(file_list))} files")    
+    log_func(f"\t{len(unique_sorted(ip_list))} IPs")
+    log_func(f"\t{len(unique_sorted(md5_list))} MD5 hashes")
+    log_func(f"\t{len(unique_sorted(phone_list))} phone numbers")
+    log_func(f"\t{len(unique_sorted(user_list))} users")
+    log_func(f"\nSee output in {output_folder} folder.")
 
 
 def split_word_list(word_list):
@@ -215,7 +335,7 @@ def split_word_list(word_list):
     return cleaned_words
 
 
-def unzip_all_in_folder(input_folder, output_folder):
+def unzip_all_in_folder(input_folder, output_folder, log_func=print):
     zip_count = 0
     date_string = datetime.now().strftime("%Y-%m-%d")
 
@@ -234,12 +354,12 @@ def unzip_all_in_folder(input_folder, output_folder):
                     try:
                         zip_ref.extractall(target_folder)
                     except Exception as e:
-                        print(f"{str(e)}")
+                        log_func(f"{str(e)}")
                     
                 zip_count += 1
 
     if zip_count != 0:
-        print(f"\n{zip_count} files unzipped")
+        log_func(f"\n{zip_count} files unzipped")
     
     return zip_count
 
