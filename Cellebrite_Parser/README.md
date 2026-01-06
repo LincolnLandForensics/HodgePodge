@@ -93,6 +93,6 @@ Example:
 
 ![sample output](images/GrayKey_password_parser1.png)	
 
-![sample output](images/GrayKey_password2.png)	
+![sample output](images/GrayKey_password_2.png)	
 
 
