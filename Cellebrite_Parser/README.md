@@ -76,3 +76,23 @@ Example:
    python CellebriteEmailxlsx2xlsx.py -r -I Cellebrite_Emails.xlsx -O Cellebrite_Emails_Parsed.xlsx
 ```
 
+
+
+
+## graykey_password_parser.py
+
+Read a passwords file from GrayKey, convert it to a xlsx file, with better passwords at the top.
+
+
+Example:
+
+```
+   python  graykey_password_parser.py
+```
+
+
+![sample output](images/GrayKey_password_parser1.png)	
+
+![sample output](images/GrayKey_password2.png)	
+
+
