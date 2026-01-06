@@ -6,7 +6,7 @@ import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 
-version = '1.0'
+version = '1.1'
 
 # Constants
 VIN_API_ENDPOINT = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/{vin}?format=json"
@@ -29,7 +29,7 @@ class VINDecoderGUI:
         self.root.geometry("600x520")
 
         # Label
-        lbl_intro = tk.Label(root, text="add NCMEC PDFs or Zips into a folder (Defaults to NCMEC folder)", font=("Arial", 10))
+        lbl_intro = tk.Label(root, text="Lookup VIN numbers and export the details to vins.xlsx", font=("Arial", 10))
         lbl_intro.pack(pady=10)
 
         # Input File
