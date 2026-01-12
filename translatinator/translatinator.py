@@ -19,9 +19,6 @@ import requests
 import argparse  # for menu system
 
 
-# pip uninstall googletrans googletrans-temp -y
-# pip install googletrans==4.0.0-rc1
-
 from googletrans import Translator  # pip install googletrans>=4.0.0-rc1
 
 # import requests.packages.urllib3
@@ -36,7 +33,7 @@ requests.packages.urllib3.disable_warnings()
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Read input_translate.xlsx filled with another language and translate it to english"
-version = '1.1.2'
+version = '1.1.3'
 
 # global variables
 global auto_list
@@ -150,7 +147,6 @@ def content_length(original_content):
     if original_content is None:
         return 0
     return len(original_content)
-
 
 def detect_language(input_xlsx, output_xlsx):
     '''
@@ -471,7 +467,6 @@ def language_detect(original_content):
 
     return source_language, confidence
 
-
 def msg_blurb_square(msg_blurb, color):
     '''
 +----------------------------------+
@@ -490,7 +485,6 @@ def msg_blurb_square(msg_blurb, color):
     print(horizontal_line)
     print(f'{color_reset}')
 
-
 def strip_blank_lines(text):
     if not text:
         return ""
@@ -502,8 +496,7 @@ def strip_blank_lines(text):
     while lines and not lines[-1].strip():
         lines.pop()
     return '\n'.join(lines)
-    
-    
+        
 def translate_excel(input_xlsx, output_xlsx, source_language):
 
     row_count = 2
@@ -557,7 +550,7 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
             
         elif not any(char.isalpha() for char in original_content):
             translation = original_content  # just copy it
-            source_language = 'n/a'
+            source_language = ''
 
         elif original_content and source_language not in ('auto', 'en'):
             (translation, source_language, note) = translate_request(original_content, source_language, target_language, note)
@@ -588,6 +581,7 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
                     # note = "Translation failed"
                     # sleep(2)
             elif re.search(word_pattern, original_content):
+                original_content = original_content.strip().replace("\r", "").replace("\n", "")
                 (translation, source_language, note) = translate_request(original_content, source_language, target_language, note)   # works
                 # source_language = source_language
                 sleep(1)
@@ -615,7 +609,6 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
 
     msg_blurb = (f'Saving to {output_xlsx}')
     msg_blurb_square(msg_blurb, color_green)
-
 
 def translate_googletrans(text, source_language, target_language, note):
     '''
@@ -645,7 +638,6 @@ def translate_googletrans(text, source_language, target_language, note):
             # sleep(2)
 
     return (translation, source_language, note)
-
 
 def translate_request(text, source_language, target_language, note):
     '''
