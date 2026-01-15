@@ -6,7 +6,7 @@ import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, scrolledtext, messagebox
 
-version = '1.1'
+version = '1.3'
 
 # Constants
 VIN_API_ENDPOINT = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/{vin}?format=json"
@@ -14,11 +14,16 @@ INPUT_FILE = "vins.txt"
 OUTPUT_FILE = "vins.xlsx"
 
 # Fields of interest from NHTSA response
+# FIELDS_TO_EXTRACT = [
+    # "VIN", "Make", "Model", "ModelYear", "BodyClass",
+    # "VehicleType", "EngineCylinders", "DisplacementL",
+    # "FuelTypePrimary", "TransmissionStyle", "PlantCountry"
+# ]
+
 FIELDS_TO_EXTRACT = [
-    "VIN", "Make", "Model", "ModelYear", "BodyClass",
-    "VehicleType", "EngineCylinders", "DisplacementL",
-    "FuelTypePrimary", "TransmissionStyle", "PlantCountry"
-]
+    "VIN", "ModelYear", "Make", "Model", "Trim", "BodyClass", "VehicleType", "BodyCabType", "EngineCylinders", "DisplacementL", "MakeID", "ModelID", "FuelTypePrimary", "TransmissionStyle", "PlantCountry", "AdditionalErrorText", "AirBagLocFront", "AirBagLocSide", "BodyCabType", "BrakeSystemType", "BusFloorConfigType", "BusType", "CustomMotorcycleType", "DisplacementCC", "DisplacementCI", "Doors", "DriveType", "DriverAssist", "DynamicBrakeSupport", "ErrorCode", "ErrorText", "GVWR", "Manufacturer", "ManufacturerId", "MotorcycleChassisType", "MotorcycleSuspensionType", "NCSABodyType", "NCSAMake", "NCSAModel", "Note", "OtherEngineInfo", "OtherRestraintSystemInfo", "SeatBeltsAll", "SteeringLocation", "TPMS", "TrailerBodyType", "TrailerType", "Turbo", "VehicleDescriptor", "VehicleType", "Message", "SearchCriteria", "Results", "ABS", "ActiveSafetySysNote", "AdaptiveCruiseControl", "AdaptiveDrivingBeam", "AdaptiveHeadlights", "", "AirBagLocCurtain", "AirBagLocKnee", "AirBagLocSeatCushion", "", "AutoReverseSystem", "AutomaticPedestrianAlertingSound", "AxleConfiguration", "Axles", "BasePrice", "BatteryA", "BatteryA_to", "BatteryCells", "BatteryInfo", "BatteryKWh", "BatteryKWh_to", "BatteryModules", "BatteryPacks", "BatteryType", "BatteryV", "BatteryV_to", "BedLengthIN", "BedType", "BlindSpotIntervention", "BlindSpotMon", "BrakeSystemDesc", "BusLength", "CAN_AACN", "CashForClunkers", "ChargerLevel", "ChargerPowerKW", "CombinedBrakingSystem", "CoolingType", "CurbWeightLB", "DaytimeRunningLight", "DestinationMarket", "", "EDR", "ESC", "EVDriveUnit", "ElectrificationLevel", "EngineConfiguration", "EngineCycles", "EngineHP", "EngineHP_to", "EngineKW", "EngineManufacturer", "EngineModel", "EntertainmentSystem", "ForwardCollisionWarning", "FuelInjectionType", "FuelTankMaterial", "FuelTankType", "FuelTypeSecondary", "GCWR", "GCWR_to", "GVWR_to", "KeylessIgnition", "LaneCenteringAssistance", "LaneDepartureWarning", "LaneKeepSystem", "LowerBeamHeadlampLightSource", "", "", "Count", "NCSAMapExcApprovedBy", "NCSAMapExcApprovedOn", "NCSAMappingException", "NCSANote", "NonLandUse", "OtherBusInfo", "OtherMotorcycleInfo", "", "OtherTrailerInfo", "ParkAssist", "PedestrianAutomaticEmergencyBraking", "", "", "", "PossibleValues", "Pretensioner", "RearAutomaticEmergencyBraking", "RearCrossTrafficAlert", "RearVisibilitySystem", "SAEAutomationLevel", "SAEAutomationLevel_to", "SeatRows", "Seats", "SemiautomaticHeadlampBeamSwitching", "Series", "Series2", "SuggestedVIN", "", "TopSpeedMPH", "TrackWidth", "TractionControl", "TrailerLength", "TransmissionSpeeds", "Trim2", "ValveTrainDesign", "WheelBaseLong", "WheelBaseShort", "WheelBaseType", "WheelSizeFront", "WheelSizeRear", "WheelieMitigation", "Wheels", "Windows"
+    ]
+
 
 # print(f'try https://berla.co/vehicle-lookup')
 
