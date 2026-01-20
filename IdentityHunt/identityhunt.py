@@ -41,7 +41,7 @@ import asyncio
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.2.6'
+version = '3.2.7'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -374,7 +374,7 @@ def main():
         
     if args.test:  
         print(f' using test module')
-        discoverprofile() 
+        osint_rocks()
 
     if args.usersmodules and len(users) > 0:  
         print(f'users = {users}')    
@@ -417,6 +417,7 @@ def main():
         # myfitnesspal()    # cloudflare
         myshopify()    #
         myspace_users()    #
+        osint_rocks()
         paypal()  #
         patreon()    #
         pinterest() #
@@ -1048,8 +1049,6 @@ def discoverprofile():
         data.append(row_data)
 
 
-
-
 def disqus(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< discus {color_blue}users{color_yellow} >>>>>{color_reset}')
 
@@ -1604,6 +1603,8 @@ def ghunt():    # testEmail= kevinrose@gmail.com
                 row_data["email"] = email
                 row_data["note"] = note
                 data.append(row_data)
+
+
 
 
 def github(): # testuser = kevinrose
@@ -2920,6 +2921,17 @@ def osintIndustries_email():
         row_data["ranking"] = ranking
         row_data["url"] = url
         data.append(row_data)
+
+def osint_rocks():    # testEmail= kevinrose@gmail.com
+    row_data = {}
+    (query, note, url) = ('', '', 'https://osint.rocks/')
+    ranking = ('7 - osint.rocks')
+    # row_data["query"] = query
+    row_data["ranking"] = ranking
+    row_data["url"] = url
+    data.append(row_data)
+
+
 
 def patreon(): # testuser = kevinrose
     print(f'{color_yellow}\n\t<<<<< patreon {color_blue}users{color_yellow} >>>>>{color_reset}')
