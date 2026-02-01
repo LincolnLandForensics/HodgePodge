@@ -2,6 +2,9 @@
 
 **Pinginator** is a powerful, cross-platform network forensic utility designed for rapid network sweeps and targeted port scanning. It helps investigators and security professionals discover live hosts in a subnet and fingerprint them through identified ports, MAC addresses, and service titles.
 
+![sample output](images/output.png)	
+
+
 ## Features
 
 - **Dual Mode Interface**: Seamlessly switch between a modern **Tkinter GUI** and a robust **Command Line Interface (CLI)**.
@@ -68,9 +71,6 @@ sudo python pinginator.py -S -I live_hosts.txt
 ```bash
 sudo python pinginator.py -N -I live_hosts.txt -o forensic_report.csv
 ```
-
-![sample output](images/output.png)	
-
 
 ## Forensic Use Case
 Pinginator is designed to assist in network forensics by:
