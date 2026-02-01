@@ -83,6 +83,12 @@ Pinginator is designed to assist in network forensics by:
 
 ## Note
 This is built with all native python modules so it works well from Kali on a Raspberry Pi.
+For Linux, you will have to make this executable
+
+```
+sudo chmod +x *.py
+```
+
 Use these powers for good.
 
 
