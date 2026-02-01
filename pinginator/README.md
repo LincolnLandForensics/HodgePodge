@@ -23,7 +23,9 @@
 ### GUI Mode
 Simply run the script without arguments to launch the graphical interface:
 ```bash
-python Pinginator.py
+python Pinginator.py 
+or
+sudo python Pinginator.py # for linux
 ```
 1. **Input File**: Specify where to save discovered hosts or which file to scan.
 2. **PingSubnet**: Check this to scan the local network first.
@@ -61,12 +63,12 @@ Use command-line arguments for automated or remote execution:
 #### Examples:
 **Scan for live hosts in the local subnet:**
 ```bash
-python Pinginator.py -S -I live_hosts.txt
+sudo python Pinginator.py -S -I live_hosts.txt
 ```
 
 **Perform a port scan/fingerprinting on a list of IPs:**
 ```bash
-python Pinginator.py -N -I live_hosts.txt -o forensic_report.csv
+sudo python Pinginator.py -N -I live_hosts.txt -o forensic_report.csv
 ```
 
 ![sample output](images/output.png)	
