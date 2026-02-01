@@ -23,7 +23,7 @@
 ### GUI Mode
 Simply run the script without arguments to launch the graphical interface:
 ```bash
-python pinginator.py 
+python pinginator.py
 or
 sudo python pinginator.py # for linux
 ```
@@ -32,22 +32,20 @@ sudo python pinginator.py # for linux
 3. **PortScan**: Check this to perform a light fingerprinting on the hosts in the input file.
 4. **Start Scan**: Click to begin.
 
-
+You just ping 1 or more subnets:
 ![Scan your subnets](images/ping_subnet.png)	
 
-If multiple subnets are found, you select which subnets to ping
-
-
+If multiple subnets are found, you select which subnets to ping:
 
 ![Select subnets](images/subnet_selection.png)	
 
-
+You can just port scan a set of IP's:
 ![Port scan from a list of IP's in nodes.txt](images/pinginator1.jpg)	
 
-
+You can ping and port scan all at once:
 ![subnet ping and port scan combined](images/ping_and_scan.png)	
 
-
+You have options.
 
 
 ### CLI Mode
