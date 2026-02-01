@@ -7,7 +7,7 @@
 
 ## Features
 
-- **Dual Mode Interface**: Seamlessly switch between a modern **Tkinter GUI** and a robust **Command Line Interface (CLI)**.
+- **Dual Mode Interface**: Seamlessly switch between a modern **GUI** and a robust **Command Line Interface**.
 - **Network Discovery**: Automatically detects local IPv4 subnets (Windows & Linux) and performs ICMP/ARP sweeps to identify live hosts.
 - **Targeted Port Scanning**: Integrates with `nmap` to perform service fingerprinting on a customizable set of common ports.
 - **Device Identification**: Heuristics to identify devices such as routers, Windows machines, and various IoT devices (Amazon, Google Home, Blink, etc.).
