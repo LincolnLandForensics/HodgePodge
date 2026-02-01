@@ -74,7 +74,7 @@ sudo python pinginator.py -N -I live_hosts.txt -o forensic_report.csv
 
 ## Forensic Use Case
 Pinginator is designed to assist in network forensics by:
-1. Finging and fingerprinting all nodes in a network.
+1. Finding and fingerprinting all nodes in a network.
 2. Identifying the host machine ("scanner") to exclude its own traffic from analysis.
 3. Mapping MAC addresses to manufacturers to quickly ID devices.
 4. Correlating service banners and web titles.
