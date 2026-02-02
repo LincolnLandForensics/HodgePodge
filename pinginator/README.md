@@ -2,7 +2,7 @@
 
 **Pinginator** is a powerful, cross-platform network forensic utility designed for rapid network sweeps and targeted port scanning. It helps investigators and security professionals discover live hosts subnet(s) and fingerprint them through identified ports, MAC addresses, and service titles.
 
-![sample output](images/output.png)	
+![sample output](images/output.png)	 
 
 
 ## Features
