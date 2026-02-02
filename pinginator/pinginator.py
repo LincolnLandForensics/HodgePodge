@@ -9,35 +9,34 @@ Rewritten for Python 3 and PEP 8 compliance.
 import os
 import re
 import csv
+import ssl
 import sys
 import time
 import socket
 import random
+import threading
 import argparse
+import ipaddress
 import subprocess
 import urllib.request
 import urllib.error
 import urllib.parse
 import struct
-
-import ipaddress
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext, simpledialog
 from tkinter import ttk
-import threading
 
-import ssl
+
 from html.parser import HTMLParser
 
 # Pre-Sets
 AUTHOR = 'LincolnLandForensics'
-DESCRIPTION = "A rapid network‑sweep utility that discovers live host in subnet(s) and/or performs targeted port scans to fingerprint and identify each device."
+DESCRIPTION = "A rapid network-sweep utility that discovers live host in subnet(s) and/or performs targeted port scans to fingerprint and identify each device."
 TECH = 'kali'        # change this to your name
-VERSION = '2.0.4'
+VERSION = '2.1.1'
 INPUT_FILENAME = 'nodes.txt'
 
 # Pre-Sets removed globals
-
 
 # Regex Compilation
 REGEX_HOST = re.compile(
@@ -46,27 +45,6 @@ REGEX_HOST = re.compile(
     r'|lnk|log|vbs|lco|bat|shell|quit|pdb|vbp|bdoda|bsspx|save|cpl|wav|tmp|close|ico|ini'
     r'|sleep|run|dat$|scr|jar|jxr|apt|w32|css|js|xpi|class|apk|rar|zip|hlp|cpp|crl'
     r'|cfg|cer|plg|lxdns|cgi|xn$)(?:xn--[a-zA-Z0-9]{2,22}|[a-zA-Z]{2,13}))(?:\s|$)'
-)
-
-REGEX_IPV4 = re.compile(
-    r'(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
-    r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
-)
-REGEX_IPV6 = re.compile(
-    r'(S*([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}S*|S*('
-    r'[0-9a-fA-F]{1,4}:){1,7}:S*|S*([0-9a-fA-F]{1,4}:)'
-    r'{1,6}:[0-9a-fA-F]{1,4}S*|S*([0-9a-fA-F]{1,4}:)'
-    r'{1,5}(:[0-9a-fA-F]{1,4}){1,2}S*|S*([0-9a-fA-F]'
-    r'{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}S*|S*('
-    r'[0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}S*'
-    r'|S*([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4})'
-    r'{1,5}S*|S*[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4})'
-    r'{1,6})S*|S*:((:[0-9a-fA-F]{1,4}){1,7}|:)S*|::(ffff'
-    r'(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}'
-    r'[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}['
-    r'0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25['
-    r'0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25['
-    r'0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))'
 )
 
 def cls():
@@ -118,8 +96,6 @@ def main():
     if args.nmap:
         nmap_scan(lines, writer) 
 
-    # if args.hostname:
-        # hostname(lines, writer)  
 
     # Close file
     try:
@@ -141,10 +117,10 @@ def main():
 def nmap_scan(lines, writer, logger=None, progress_callback=None):
     """Comprehensive Nmap Scan."""
     writer.writerow([
-        'IP','hostname','notes','OS','MAC','Manufacturer','DeviceType'
-        ,'Http','Https','Smb','SMB','Rdp','Ftp','Ssh','Telnet','Smtp'
-        ,'Vnc','Dns','Rshell','Sql','DB2','Mysql','Oracle','JetDirect'
-        ,'Other','os_url','title_url','page_status'
+        'IP','Hostname','Status','MAC','CompanyName','OS','DeviceType','SSID'
+        ,'Description','OS_URL','Title_URL','Page_Status','Http','Https','Smb','SMB'
+        ,'Ssh','Dns','Rdp','Ftp','Telnet','Smtp','Vnc','Rshell','Sql','DB2'
+        ,'Mysql','Oracle','JetDirect','Other','Coordinate','Type','Time'
     ])
     
     current_hostname = socket.gethostname()
@@ -157,45 +133,58 @@ def nmap_scan(lines, writer, logger=None, progress_callback=None):
     # print(f'    Reading {writer}\n')
     log(f'    Running NMap... This can take a while (go get some coffee)\n')
 
-    # nmap_ports = "80,443,445,139" # Common
-    nmap_ports = "80,443,139,445,3389,21,22,23,25,5900,53,8081" # MEDIUM set
-    # nmap_ports = "80,443,139,445,3389,21,22,23,25,5900,53,514,1433,523,3306,1521,8081,9100" # big set
-    log(f'    Checking {nmap_ports}\n')
+    # nmap_ports = "80,443,139,445" # Small set
+    nmap_ports =   "80,443,139,445,3389,21,22,23,25,5900,53,8081" # Medium set
+    # nmap_ports = "80,443,139,445,3389,21,22,23,25,5900,53,8081,1433,514,523,3306,1521,9100" # Big set
+    log(f'    Checking ports: {nmap_ports}\n')
 
     total_lines = len(lines)
     for idx, line in enumerate(lines, 1):
         if progress_callback:
              progress_callback(int((idx / total_lines) * 100))
 
-        ip, hostname, notes, OS, MAC, Manufacturer, DeviceType = [''] * 7
+        IP, Hostname, Description, OS, MAC, CompanyName, DeviceType = [''] * 7
         Http, Https, Smb, SMB, Rdp, Ftp, Ssh, Telnet, Smtp = [''] * 9
         Vnc, Dns, Rshell, Sql, DB2, Mysql, Oracle, JetDirect, Other = [''] * 9
-        os_url, title_url, page_status = [''] * 3
-
-        # Check if hostname
+        OS_URL, Title_URL, Page_Status, Status, SSID = [''] * 5
+        Coordinate,Type,Time = [''] * 3
+        # Check if Hostname or IP
         if re.search(REGEX_HOST, line):
-            hostname = line
+            Hostname = line
 
-        if re.match(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', line):
-            ip = line
+        is_ipv4 = re.match(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', line)
+        is_ipv6 = False
+        if not is_ipv4:
+            try:
+                # Basic quick check for IPv6 before calling ip_address
+                if ":" in line and ipaddress.ip_address(line).version == 6:
+                    is_ipv6 = True
+            except ValueError:
+                pass
+
+        if is_ipv4 or is_ipv6:
+            IP = line
 
             try:
-                # socket.gethostbyaddr(ip) returns (hostname, aliaslist, ipaddrlist)
-                dns = socket.gethostbyaddr(ip)
-                hostname = dns[0]
-                if current_hostname in hostname:
-                    notes = "scanner" 
+                # socket.gethostbyaddr(IP) returns (Hostname, aliaslist, ipaddrlist)
+                dns = socket.gethostbyaddr(IP)
+                Hostname = dns[0]
+                if current_hostname in Hostname:
+                    Description = "scanner" 
 
             except socket.error as e:
                 msg = str(e)
-                notes = msg
-                if "host not found" in notes:
-                    notes= ""
+                Description = msg
+                if "host not found" in Description:
+                    Description= ""
             
-            if notes:
-                 log(f"    Note: {notes}")
+            if Description:
+                 log(f"    Note: {Description}")
 
-            nmap_args = f'nmap -sS --open -p {nmap_ports} {ip}'
+            if is_ipv4:
+                nmap_args = f'nmap -sS --open -p {nmap_ports} {IP}'
+            else:
+                nmap_args = f'nmap -sS --open -p {nmap_ports} -6 {IP}'
             
             try:
                 proc = subprocess.Popen(nmap_args, shell=True, stdout=subprocess.PIPE)
@@ -203,12 +192,16 @@ def nmap_scan(lines, writer, logger=None, progress_callback=None):
                 output = stdout.decode('utf-8', errors='ignore')
                 
                 for output_line in output.splitlines():
-                    if "80/tcp" in output_line: 
+                    
+                    
+                    if "Host is up" in output_line: Status = 'Up' 
+                    elif "Host seems down" in output_line: Status = 'Down?'
+                    elif "80/tcp" in output_line: 
                         Http = '80'
-                        os_url = f"http://{ip}:80"
+                        OS_URL = f"http://{IP}:80"
                     elif "443/tcp" in output_line: 
                         Https = '443'
-                        if ip.endswith('254'):
+                        if IP.endswith('254'):
                             DeviceType = "Router"
                     elif "1433/tcp" in output_line: Sql = '1433'
                     elif "523/tcp" in output_line: DB2 = '523'
@@ -235,32 +228,32 @@ def nmap_scan(lines, writer, logger=None, progress_callback=None):
                     elif "/tcp" in output_line:
                         temp = output_line.replace('/tcp', '').replace(' open', '').strip()
                         # regex to clean valid port?
-                        other = f"{other} {temp}".strip()
+                        Other = f"{Other} {temp}".strip()
                     elif "MAC Address: " in output_line:
                         MAC = output_line.replace("MAC Address: ", "").strip().replace(' (Unknown)', '')
                         if ' (' in MAC:
-                            Manufacturer = MAC.split(' (')[1].replace(')', '')
+                            CompanyName = MAC.split(' (')[1].replace(')', '')
                             MAC = MAC.split(' (')[0]
 
-                    if DeviceType == "" and hostname.startswith(
+                    if DeviceType == "" and Hostname.startswith(
                         ("amazon-", "blink-", "esp_", "gemodule", "google-home")
                         ):
                         DeviceType = "IoT"
 
-                if os_url != "":
-                    content, referer, os_url, title_url, page_status = request(os_url)
+                if OS_URL != "":
+                    content, referer, OS_URL, Title_URL, Page_Status = request(OS_URL)
                 
 
             except Exception as e:
                 log(f"Nmap error: {e}")
             
-            log(f'{ip}\t ({hostname}) [{DeviceType}] {Http} {Https} {Smb} {SMB}')
+        log(f'{IP}\t ({Hostname}) [{DeviceType}] {Http} {Https} {Smb} {SMB}')
 
-            writer.writerow([
-                ip,hostname,notes,OS,MAC,Manufacturer,DeviceType,Http,Https,Smb,SMB,Rdp,Ftp,Ssh,Telnet,Smtp,Vnc,Dns,Rshell,Sql,DB2,Mysql,Oracle,JetDirect,Other,os_url,title_url,page_status])
+        writer.writerow([
+            IP,Hostname,Status,MAC,CompanyName,OS,DeviceType,SSID,Description,OS_URL,Title_URL,Page_Status,Http,Https,Smb,SMB,Ssh,Dns,Rdp,Ftp,Telnet,Smtp,Vnc,Rshell,Sql,DB2,Mysql,Oracle,JetDirect,Other,Coordinate,Type,Time])
 
 def get_subnets():
-    """Return a list of (ip, mask, cidr) tuples found on Windows or Linux."""
+    """Return a list of (IP, mask, cidr) tuples found on Windows or Linux."""
     subnets = []
     
     # Windows
@@ -275,20 +268,20 @@ def get_subnets():
             ips = re.findall(r"IPv4 Address[^\d]+(\d+\.\d+\.\d+\.\d+)", output)
             masks = re.findall(r"Subnet Mask[^\d]+(\d+\.\d+\.\d+\.\d+)", output)
 
-            for ip, mask in zip(ips, masks):
-                if ip.startswith("127."):
+            for IP, mask in zip(ips, masks):
+                if IP.startswith("127."):
                     continue
                 cidr = sum(bin(int(o)).count("1") for o in mask.split("."))
-                subnets.append((ip, mask, cidr))
+                subnets.append((IP, mask, cidr))
         except Exception as e:
             print(f"Error running ipconfig: {e}")
 
     # Linux
     else:
         try:
-            # Use ip -o -4 addr show for easier parsing
+            # Use IP -o -4 addr show for easier parsing
             output = subprocess.check_output(
-                ["ip", "-o", "-4", "addr", "show"],
+                ["IP", "-o", "-4", "addr", "show"],
                 text=True,
                 encoding="utf-8",
                 errors="ignore"
@@ -299,14 +292,14 @@ def get_subnets():
                 if len(parts) >= 4:
                     ip_cidr = parts[3]
                     if '/' in ip_cidr:
-                        ip, cidr = ip_cidr.split('/')
-                        if ip.startswith("127."):
+                        IP, cidr = ip_cidr.split('/')
+                        if IP.startswith("127."):
                             continue
                         # Calculate netmask from CIDR
                         mask = socket.inet_ntoa(struct.pack('!I', (1 << 32) - (1 << (32 - int(cidr)))))
-                        subnets.append((ip, mask, int(cidr)))
+                        subnets.append((IP, mask, int(cidr)))
         except Exception as e:
-            print(f"Error running ip addr: {e}")
+            print(f"Error running IP addr: {e}")
 
     return subnets
 
@@ -330,22 +323,22 @@ class TitleParser(HTMLParser):
             self.title += data.strip()
 
 
-def request(os_url):
+def request(OS_URL):
     content = ""
     referer = ""
-    title_url = ""
-    page_status = ""
+    Title_URL = ""
+    Page_Status = ""
 
     # Ignore SSL certificate errors
     ssl_ctx = ssl._create_unverified_context()
 
     try:
-        req = urllib.request.Request(os_url)
+        req = urllib.request.Request(OS_URL)
         req.add_header("User-Agent", "Mozilla/5.0")
         req.add_header("Referer", referer)
 
         with urllib.request.urlopen(req, context=ssl_ctx, timeout=5) as response:
-            page_status = response.getcode()
+            Page_Status = response.getcode()
             raw = response.read()
 
             try:
@@ -356,29 +349,29 @@ def request(os_url):
             # Parse title manually
             parser = TitleParser()
             parser.feed(content)
-            title_url = parser.title or ""
+            Title_URL = parser.title or ""
 
     except urllib.error.HTTPError as e:
-        page_status = e.code
+        Page_Status = e.code
     except urllib.error.URLError:
-        page_status = "Fail"
+        Page_Status = "Fail"
     except Exception:
-        page_status = "Fail"
+        Page_Status = "Fail"
 
     # Normalize status text
-    ps = str(page_status)
+    ps = str(Page_Status)
     if ps.startswith("2"):
-        page_status = f"Success - {ps}"
+        Page_Status = f"Success - {ps}"
     elif ps.startswith("3"):
-        page_status = f"Redirect - {ps}"
+        Page_Status = f"Redirect - {ps}"
     elif ps.startswith("4") or ps.startswith("5"):
-        page_status = f"Fail - {ps}"
+        Page_Status = f"Fail - {ps}"
     elif ps.startswith("1"):
-        page_status = f"Info - {ps}"
+        Page_Status = f"Info - {ps}"
     else:
-        page_status = "Fail"
+        Page_Status = "Fail"
 
-    return content, referer, os_url, title_url, page_status
+    return content, referer, OS_URL, Title_URL, Page_Status
 
 def parse_selection(selection, max_index):
     """Parse input like '1,3-5' into a list of integers."""
@@ -429,8 +422,8 @@ def subnet_scan(writer=None, logger=None, progress_callback=None, gui_selection_
          pass
     # If only one subnet, use it automatically
     elif len(subnets) == 1:
-        ip, mask, cidr = subnets[0]
-        log(f"[+] One subnet detected: {ip}/{cidr}")
+        IP, mask, cidr = subnets[0]
+        log(f"[+] One subnet detected: {IP}/{cidr}")
         chosen_indices = [1]
     else:
         if gui_selection_callback:
@@ -438,8 +431,8 @@ def subnet_scan(writer=None, logger=None, progress_callback=None, gui_selection_
              chosen_indices = gui_selection_callback(subnets)
         else:
             log("\nMultiple network ranges detected:")
-            for idx, (ip, mask, cidr) in enumerate(subnets, start=1):
-                log(f"  {idx}. {ip}/{cidr}   (Mask: {mask})")
+            for idx, (IP, mask, cidr) in enumerate(subnets, start=1):
+                log(f"  {idx}. {IP}/{cidr}   (Mask: {mask})")
 
             # Prompt for multi-selection
             while True:
@@ -461,15 +454,15 @@ def subnet_scan(writer=None, logger=None, progress_callback=None, gui_selection_
     chosen_subnets = [subnets[i - 1] for i in chosen_indices]
 
     log("\n[+] Subnets selected for scanning:")
-    for ip, mask, cidr in chosen_subnets:
-        log(f"    - {ip}/{cidr}")
+    for IP, mask, cidr in chosen_subnets:
+        log(f"    - {IP}/{cidr}")
 
     # Scan each subnet
     live_hosts = []
 
     total_subnets = len(chosen_subnets)
-    for idx, (ip, mask, cidr) in enumerate(chosen_subnets, 1):
-        subnet_cidr = f"{ip}/{cidr}"
+    for idx, (IP, mask, cidr) in enumerate(chosen_subnets, 1):
+        subnet_cidr = f"{IP}/{cidr}"
         log(f"\n[+] Scanning subnet: {subnet_cidr}")
 
         try:
@@ -590,9 +583,9 @@ class GuiApp:
             if len(subnets) > 1:
                 # Get selection on main thread
                 msg = "Multiple subnets found:\n"
-                for idx, (ip, mask, cidr) in enumerate(subnets, 1):
-                    msg += f"{idx}. {ip}/{cidr} (Mask: {mask})\n"
-                msg += "\nEnter indices (e.g. 1,2):"
+                for idx, (IP, mask, cidr) in enumerate(subnets, 1):
+                    msg += f"{idx}. {IP}/{cidr} (Mask: {mask})\n"
+                msg += "\nSelect  (e.g. 1,3):"
                 
                 res = simpledialog.askstring("Subnet Selection", msg, parent=self.root)
                 if res:
