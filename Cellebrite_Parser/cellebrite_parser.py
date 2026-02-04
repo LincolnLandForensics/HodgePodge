@@ -62,7 +62,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert Cellebrite contacts, account, web history, chats and call exports to intel format"
-version = '1.1.6'
+version = '1.1.7'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -434,6 +434,8 @@ def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
     ws = wb.active
     data = []
     datatype = input_xlsx
+    datatype = os.path.basename(datatype)   # test
+
     datatype = datatype.replace('.xlsx', '')
     
     # get header values from first row
@@ -453,6 +455,15 @@ def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
     # Fallback if no specific header row found (unlikely), default to row 1
     if not headers:
         header_row_idx = 1
+        for cell in ws[1]:
+            headers.append(cell.value)
+
+    # Delete rows above the header if necessary
+    if header_row_idx > 1:
+        log(f"Removing {header_row_idx - 1} rows above the header.")
+        ws.delete_rows(1, amount=header_row_idx - 1)
+        # Re-read headers from the new first row (just to be safe)
+        headers = []
         for cell in ws[1]:
             headers.append(cell.value)
 
@@ -543,7 +554,7 @@ def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
         ]
 
     # get data rows
-    for row in ws.iter_rows(min_row=header_row_idx + 1, values_only=True):
+    for row in ws.iter_rows(min_row=2, values_only=True):
         row_data = {}
         for header, value in zip(headers, row):
             row_data[header] = value
@@ -855,9 +866,11 @@ def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
 
 # source
         source = row_data.get("Source")
+        source = os.path.basename(source)
+        print(f'source = {source}')  # temp
         if source is None:
             source = ''
-        elif ranking2 is not None:
+        elif ranking2 is not None and "-" not in ranking:
             ranking = (f'{ranking} - {ranking2}')
             ranking = ranking.replace("4 -", "3 -")
         else:
@@ -1182,6 +1195,9 @@ STATUS:{status}
 
 # original_file
         original_file = row_data.get("original_file") or input_xlsx
+        original_file = os.path.basename(original_file)
+        
+
 
 # Altitude
         Altitude = Altitude or row_data.get("Altitude") or row_data.get("ns0:ele") or ''

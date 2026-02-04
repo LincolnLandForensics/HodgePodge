@@ -20,6 +20,9 @@ import argparse  # for menu system
 
 
 from googletrans import Translator  # pip install googletrans>=4.0.0-rc1
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox, scrolledtext
+import threading
 
 # import requests.packages.urllib3
 # requests.packages.urllib3.disable_warnings()  # Disable SSL verification warnings
@@ -33,19 +36,11 @@ requests.packages.urllib3.disable_warnings()
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Read input_translate.xlsx filled with another language and translate it to english"
-version = '1.1.3'
+version = '1.1.5'
 
 # global variables
 global auto_list
 auto_list = ['!','?']
-
-# Colorize section
-# colors
-color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
-from colorama import Fore, Back, Style
-print(Back.BLACK)
-color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
-color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 def main():
@@ -66,20 +61,25 @@ def main():
 
     args = parser.parse_args()
 
+    # If no command line arguments (other than output default), launch GUI
+    if len(sys.argv) == 1:
+        launch_gui()
+        return 0
+
     source_language = '' 
     input_xlsx = ('input_translate.xlsx')
 
     if args.copyright:  # this section might be redundant
-        print(f'{color_blue}{copyright}{color_reset}')
+        print(f'{copyright}')
         return 0
-        input(f"{color_green}Hit any key to continue{color_reset}")
+        input("Hit any key to continue")
         sys.exit() 
         
     if args.howto:  # this section might be redundant
         parser.print_help()
         usage()
         return 0
-        input(f"{color_green}Hit any key to continue{color_reset}")
+        input("Hit any key to continue")
         sys.exit() 
 
     if args.version:
@@ -87,7 +87,7 @@ def main():
         print(f'{file} {version}')
         googletrans_ver()
         return 0
-        input(f"{color_green}Hit any key to continue{color_reset}")
+        input("Hit any key to continue")
         sys.exit() 
         
     if args.input:  # defaults to input_translate.xlsx
@@ -110,8 +110,105 @@ def main():
         check_internet_connection()        
         translate_excel(input_xlsx, output_xlsx, source_language)
 
-    input(f"{color_green}Hit any key to continue{color_reset}")
+    input("Hit any key to continue")
     sys.exit()
+
+def launch_gui():
+    root = tk.Tk()
+    gui = TranslatinatorGUI(root)
+    root.mainloop()
+
+class TranslatinatorGUI:
+    def __init__(self, master):
+        self.master = master
+        self.master.title(f"Translatinator {version}")
+        self.master.geometry("700x600")
+
+        # Header
+        ttk.Label(master, text="Translate to English", font=("Helvetica", 16, "bold")).pack(pady=10)
+
+        # Input File
+        file_frame = ttk.Frame(master)
+        file_frame.pack(fill="x", padx=20, pady=5)
+        
+        ttk.Label(file_frame, text="Input File:").grid(row=0, column=0, sticky="w")
+        self.input_file_var = tk.StringVar(value="input_translate.xlsx")
+        ttk.Entry(file_frame, textvariable=self.input_file_var, width=50).grid(row=0, column=1, padx=5)
+        ttk.Button(file_frame, text="Browse", command=self.browse_input).grid(row=0, column=2)
+
+        # Output File
+        ttk.Label(file_frame, text="Output File:").grid(row=1, column=0, sticky="w", pady=5)
+        self.output_file_var = tk.StringVar(value="translation_.xlsx")
+        ttk.Entry(file_frame, textvariable=self.output_file_var, width=50).grid(row=1, column=1, padx=5, pady=5)
+        ttk.Button(file_frame, text="Browse", command=self.browse_output).grid(row=1, column=2, pady=5)
+
+        # Progress Bar
+        self.progress_var = tk.DoubleVar()
+        self.progress_bar = ttk.Progressbar(master, variable=self.progress_var, maximum=100)
+        self.progress_bar.pack(fill="x", padx=20, pady=10)
+
+        # Message Window
+        self.log_window = scrolledtext.ScrolledText(master, height=15, state="disabled")
+        self.log_window.pack(fill="both", expand=True, padx=20, pady=10)
+
+        # Translate Button
+        self.translate_btn = ttk.Button(master, text="Translate", command=self.start_translation)
+        self.translate_btn.pack(pady=10)
+
+    def browse_input(self):
+        filename = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
+        if filename:
+            self.input_file_var.set(filename)
+
+    def browse_output(self):
+        filename = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+        if filename:
+            self.output_file_var.set(filename)
+
+    def log(self, message):
+        self.log_window.config(state="normal")
+        self.log_window.insert(tk.END, message + "\n")
+        self.log_window.see(tk.END)
+        self.log_window.config(state="disabled")
+
+    def update_progress(self, value):
+        self.progress_var.set(value)
+        self.master.update_idletasks()
+
+    def start_translation(self):
+        self.translate_btn.config(state="disabled")
+        self.progress_var.set(0)
+        self.log_window.config(state="normal")
+        self.log_window.delete(1.0, tk.END)
+        self.log_window.config(state="disabled")
+        
+        input_xlsx = self.input_file_var.get()
+        output_xlsx = self.output_file_var.get()
+
+        threading.Thread(target=self.run_translation, args=(input_xlsx, output_xlsx), daemon=True).start()
+
+    def run_translation(self, input_xlsx, output_xlsx):
+        try:
+            check_internet_connection_gui(self.log)
+            translate_excel(input_xlsx, output_xlsx, '', log_callback=self.log, progress_callback=self.update_progress)
+            self.log("\nDone")
+            messagebox.showinfo("Done", "Translation completed successfully!")
+        except Exception as e:
+            self.log(f"Error: {e}")
+            messagebox.showerror("Error", f"An error occurred: {e}")
+        finally:
+            self.translate_btn.config(state="normal")
+
+def check_internet_connection_gui(log_callback=None):
+    try:
+        response = requests.get("http://www.google.com", timeout=5)
+        response.raise_for_status()
+        if log_callback:
+            log_callback('Internet connection is available.')
+    except:
+        if log_callback:
+            log_callback('Internet connection is not available.')
+        raise Exception("Internet connection not available.")
 
 
 
@@ -131,7 +228,7 @@ def check_internet_connection():
 
     except:
         msg_blurb = 'Internet connection is not available.'
-        msg_blurb_square(msg_blurb, color_red)
+        msg_blurb_square(msg_blurb)
         exit(1)  # Exit with error status 1
 
 def content_length(original_content):
@@ -148,7 +245,7 @@ def content_length(original_content):
         return 0
     return len(original_content)
 
-def detect_language(input_xlsx, output_xlsx):
+def detect_language(input_xlsx, output_xlsx, log_callback=None, progress_callback=None):
     '''
     read each line and detect the language
     Does not require internet access
@@ -162,14 +259,19 @@ def detect_language(input_xlsx, output_xlsx):
     file_exists = os.path.exists(input_xlsx)
     if file_exists == True:
         msg_blurb = (f'Reading {input_xlsx} to detect languages only')
-        msg_blurb_square(msg_blurb, color_green)
+        if log_callback: log_callback(msg_blurb)
+        msg_blurb_square(msg_blurb)
         workbook = load_workbook(input_xlsx)        
         sheet = workbook.active
     else:
         msg_blurb = (f'Create {input_xlsx} and insert foreign language lines in the first column')
-        msg_blurb_square(msg_blurb, color_red) 
-        input(f"{color_green}Hit any key to continue{color_reset}")
-        sys.exit()
+        if log_callback: log_callback(msg_blurb)
+        msg_blurb_square(msg_blurb) 
+        if not log_callback:
+            input("Hit any key to continue")
+            sys.exit()
+        else:
+            return
 
     sheet.cell(row=1, column=2, value='English')
     sheet.cell(row=1, column=3, value='Language')
@@ -232,7 +334,7 @@ def detect_language(input_xlsx, output_xlsx):
     workbook.save(output_xlsx)
 
     msg_blurb = (f'Language detection saved to {output_xlsx}')
-    msg_blurb_square(msg_blurb, color_green)
+    msg_blurb_square(msg_blurb)
 
 def googletrans_ver():
     import googletrans
@@ -252,7 +354,7 @@ def googletrans_ver():
 
         return False
 
-def length(input_xlsx, output_xlsx):
+def length(input_xlsx, output_xlsx, log_callback=None, progress_callback=None):
     '''
     read each line and detect the length
     Does not require internet access
@@ -266,14 +368,19 @@ def length(input_xlsx, output_xlsx):
     file_exists = os.path.exists(input_xlsx)
     if file_exists == True:
         msg_blurb = (f'Reading {input_xlsx} to calculate length only')
-        msg_blurb_square(msg_blurb, color_green)
+        if log_callback: log_callback(msg_blurb)
+        msg_blurb_square(msg_blurb)
         workbook = load_workbook(input_xlsx)        
         sheet = workbook.active
     else:
         msg_blurb = (f'Create {input_xlsx} and insert foreign language lines in the first column')
-        msg_blurb_square(msg_blurb, color_red) 
-        input(f"{color_green}Hit any key to continue{color_reset}")
-        sys.exit()
+        if log_callback: log_callback(msg_blurb)
+        msg_blurb_square(msg_blurb) 
+        if not log_callback:
+            input("Hit any key to continue")
+            sys.exit()
+        else:
+            return
 
     sheet.cell(row=1, column=2, value='English')
     sheet.cell(row=1, column=3, value='Language')
@@ -321,7 +428,7 @@ def length(input_xlsx, output_xlsx):
     workbook.save(output_xlsx)
 
     msg_blurb = (f'Language detection saved to {output_xlsx}')
-    msg_blurb_square(msg_blurb, color_green)
+    msg_blurb_square(msg_blurb)
 
 def source_language_enhance(source_language):
     '''
@@ -467,7 +574,7 @@ def language_detect(original_content):
 
     return source_language, confidence
 
-def msg_blurb_square(msg_blurb, color):
+def msg_blurb_square(msg_blurb):
     '''
 +----------------------------------+
 |                                  |
@@ -478,12 +585,11 @@ def msg_blurb_square(msg_blurb, color):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
     empty_line = f"| {' ' * (len(msg_blurb))} |"
 
-    print(color + horizontal_line)
+    print(horizontal_line)
     print(empty_line)
     print(f"| {msg_blurb} |")
     print(empty_line)
     print(horizontal_line)
-    print(f'{color_reset}')
 
 def strip_blank_lines(text):
     if not text:
@@ -497,7 +603,7 @@ def strip_blank_lines(text):
         lines.pop()
     return '\n'.join(lines)
         
-def translate_excel(input_xlsx, output_xlsx, source_language):
+def translate_excel(input_xlsx, output_xlsx, source_language, log_callback=None, progress_callback=None):
 
     row_count = 2
     word_pattern = re.compile(r'\b\w+\b')
@@ -509,14 +615,19 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
     file_exists = os.path.exists(input_xlsx)
     if file_exists == True:
         msg_blurb = (f'Reading {input_xlsx}')
-        msg_blurb_square(msg_blurb, color_green)
+        if log_callback: log_callback(msg_blurb)
+        msg_blurb_square(msg_blurb)
         workbook = load_workbook(input_xlsx)        
         sheet = workbook.active
     else:
         msg_blurb = (f'Create {input_xlsx} and insert foreign language lines in the first column')
-        msg_blurb_square(msg_blurb, color_red)  # Using ANSI escape code for color
-        input(f"{color_green}Hit any key to continue{color_reset}")
-        sys.exit()
+        if log_callback: log_callback(msg_blurb)
+        msg_blurb_square(msg_blurb)  # Using ANSI escape code for color
+        if not log_callback:
+            input("Hit any key to continue")
+            sys.exit()
+        else:
+            return
 
         
     sheet.cell(row=1, column=2, value='English')
@@ -525,7 +636,11 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
     # sheet.cell(row=1, column=5, value='Confidence')   # task
     sheet.cell(row=1, column=6, value='Length')    
     
+    max_row = sheet.max_row
     for row in sheet.iter_rows(min_row=2):
+        if progress_callback and max_row > 1:
+            progress_callback(((row[0].row - 1) / (max_row - 1)) * 100)
+
         (translation, note, e, confidence, length) = ('', '', '', '', '')
         (source_language, text, skipper) = ('', '', '')
         original_content = row[0].value
@@ -561,7 +676,9 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
 
             source_language = source_language_enhance(source_language)
 
-            print(f'\n{color_red}{row_count} {color_blue}{original_content}      {color_yellow}{translation}  {color_green}{source_language}  {color_red}{note}{color_reset}')
+            msg = f'{row_count} {original_content}      {translation}  {source_language}  {note}'
+            if log_callback: log_callback(msg)
+            print(f'\n{msg}')
 
 
         elif source_language != 'en':
@@ -592,7 +709,9 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
                     sleep(2)
             source_language = source_language_enhance(source_language)
 
-            print(f'\n{color_red}{row_count} {color_blue}{original_content}      {color_yellow}{translation}  {color_green}{source_language}  {color_red}{note}{color_reset}')
+            msg = f'{row_count} {original_content}      {translation}  {source_language}  {note}'
+            if log_callback: log_callback(msg)
+            print(f'\n{msg}')
 
         else:
             source_language = source_language_enhance(source_language)
@@ -608,7 +727,8 @@ def translate_excel(input_xlsx, output_xlsx, source_language):
     workbook.save(output_xlsx)
 
     msg_blurb = (f'Saving to {output_xlsx}')
-    msg_blurb_square(msg_blurb, color_green)
+    if log_callback: log_callback(msg_blurb)
+    msg_blurb_square(msg_blurb)
 
 def translate_googletrans(text, source_language, target_language, note):
     '''
@@ -634,7 +754,7 @@ def translate_googletrans(text, source_language, target_language, note):
         except Exception as e:
             note = (f'.Error occurred while translating {e}')
             msg_blurb = (f'Error translating_: {e}')
-            msg_blurb_square(msg_blurb, color_red)
+            msg_blurb_square(msg_blurb)
             # sleep(2)
 
     return (translation, source_language, note)
@@ -675,7 +795,7 @@ def translate_request(text, source_language, target_language, note):
             source_language = ''
             
     except Exception as e:
-        print(f'Error occurred while translating: {color_red}{e}{color_reset}')
+        print(f'Error occurred while translating: {e}')
         (translation, source_language) = ('', '')
         note = (f'.Error occurred while translating {e}')
         source_language = ''
@@ -685,9 +805,9 @@ def translate_request(text, source_language, target_language, note):
 def usage():
     file = sys.argv[0].split('\\')[-1]
 
-    print(f'\nDescription: {color_green}{description}{color_reset}')
+    print(f'\nDescription: {description}')
     print(f'{file} Version: {version} by {author}')
-    print(f'\n    {color_yellow}insert your info into input_translate.xlsx')
+    print('\n    insert your info into input_translate.xlsx')
     print(f'\nExample:')
     print(f'    {file} -a') # beta
     print(f'    {file}')
@@ -697,7 +817,7 @@ def usage():
     print(f'    {file} -C # print copyright') 
 
 copyright = '''
-Copyright (c) 2024 LincolnLandForensics
+Copyright (c) 2026 LincolnLandForensics
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
