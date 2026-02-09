@@ -19,6 +19,13 @@ or
 double click identityhunt.exe
 ```
 
+Hunt: "Full OSINT search across username, email, IP, phone, and websites."
+Blurb: "Generate a Word document (.docx) summary from an existing Intel Excel sheet."
+Blank: "Create a new, formatted Excel Intel sheet with all required headers."
+Samples: "Display examples of valid input formats in the status window."
+
+
+
 ![sample output](Images/ID_gui.png)
 
 
