@@ -24,11 +24,7 @@ from openpyxl.styles import PatternFill
 from scipy.stats import chisquare   # pip install scipy
 
 # colors
-color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
-from colorama import Fore, Back, Style
-print(Back.BLACK)
-color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
-color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
+# Colorama removed as requested
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -116,14 +112,14 @@ def main():
         file_exists = os.path.exists(input_file)
         if file_exists == True:
             msg_blurb = (f'Reading {input_file} column {column_pick}')
-            msg_blurb_square(msg_blurb, color_green)    
+            msg_blurb_square(msg_blurb)    
             
             # data = read_xlsx(input_file)
             benfords(input_file, output_file)
 
         else:
             msg_blurb = (f'{input_file} does not exist')
-            msg_blurb_square(msg_blurb, color_red)      
+            msg_blurb_square(msg_blurb)      
             exit()
 
     else:
@@ -343,7 +339,7 @@ def benfords(input_file, output_file=None):
     column_data = [cell.value for cell in ws[column_pick] if isinstance(cell.value, (int, float))]
 
     if not column_data:
-        msg_blurb_square("No numeric data found in the selected Excel column. Skipping analysis.", color_yellow)
+        msg_blurb_square("No numeric data found in the selected Excel column. Skipping analysis.")
         return
 
     # Extract first digits from Excel data
@@ -530,9 +526,9 @@ def get_first_digit(arr):
 
 
 
-def msg_blurb_square(msg, color):
+def msg_blurb_square(msg):
     border = f"+{'-' * (len(msg) + 2)}+"
-    print(f"{color}{border}\n| {msg} |\n{border}{color_reset}")
+    print(f"{border}\n| {msg} |\n{border}")
 
 def read_xlsx(file_path):
     """Read data from an XLSX file and return a list of dictionaries."""
