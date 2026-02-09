@@ -12,9 +12,16 @@ python pip install -r requirements_benfords.txt
 Usage:\
 analyze numbers
 ```
+python BenfordsLaw_Tester.py
+
+or 
+
 python BenfordsLaw_Tester.py -c -I benfordsLaw_tester.xlsx
 ```
 
+
+	
+![GUI](images/BenfordsLaw_GUI.png)	
 
 help menu
 ```
