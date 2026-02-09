@@ -28,10 +28,18 @@ Usage:
 
 default behavior, if you enter no options it just runs with -E -i -p -U -W selected
 ```
+python identityhunt.py
+
+or
+
 double click identityhunt.exe
 or
 python identityhunt.py (from command prompt) 
 ```
+
+![sample output](Images/ID_gui.png)
+
+
 blurb
 ```
 python identityhunt.py -b

@@ -35,13 +35,15 @@ import importlib.util
 import platform
 from pathlib import Path
 import asyncio
+import threading
+from tkinter import ttk, filedialog, scrolledtext
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
 tech = 'LincolnLandForensics'  # change this to your name if you are using Linux
-version = '3.2.7'
+version = '3.3.3'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -73,15 +75,6 @@ HEADERS = {'User-Agent': USER_AGENT}
     
 
 # Regex section
-# regex_host = re.compile(r'\b((?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+(?i)(?!exe|php|dll|doc' \
-                        # '|docx|txt|rtf|odt|xls|xlsx|ppt|pptx|bin|pcap|ioc|pdf|mdb|asp|html|xml|jpg|gif$|png' \
-                        # '|lnk|log|vbs|lco|bat|shell|quit|pdb|vbp|bdoda|bsspx|save|cpl|wav|tmp|close|ico|ini' \
-                        # '|sleep|run|dat$|scr|jar|jxr|apt|w32|css|js|xpi|class|apk|rar|zip|hlp|cpp|crl' \
-                        # '|cfg|cer|plg|lxdns|cgi|xn$)(?:xn--[a-zA-Z0-9]{2,22}|[a-zA-Z]{2,13}))(?:\s|$)')
-
-# regex_email = re.compile(
-    # r'(([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)(\s*;\s*|\s*$))*') # test
-# terrible. matches emails and phone numbers
 
 regex_host = re.compile(
     r'(?i)\b((?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+'
@@ -91,11 +84,6 @@ regex_host = re.compile(
     '|cfg|cer|plg|lxdns|cgi|xn$)'
     '(?:xn--[a-zA-Z0-9]{2,22}|[a-zA-Z]{2,13}))(?:\s|$)')
 
-# regex_url = re.compile(
-    # r'(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)') # test
-# failed
-
-
 regex_md5 = re.compile(r'^([a-fA-F\d]{32})$')  # regex_md5        [a-f0-9]{32}$/gm
 regex_sha1 = re.compile(r'^([a-fA-F\d]{40})$')  # regex_sha1
 regex_sha256 = re.compile(r'^([a-fA-F\d]{64})$')  # regex_sha256
@@ -104,35 +92,9 @@ regex_sha512 = re.compile(r'^([a-fA-F\d]{128})$')  # regex_sha512
 regex_number = re.compile(r'^(^\d)$')  # regex_number    #Beta
 regex_number_fb = re.compile(r'^\d{9,15}$')  # regex_number    #to match facebook user id
 
-# regex_ipv4 = re.compile('(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}' +
-                        # '(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)') # works
-
 regex_ipv4 = re.compile('([1-2]?[0-9]?[0-9]\.[1-2]?[0-9]?[0-9]\.[1-2]?[0-9]?[0-9]\.[1-2]?[0-9]?[0-9])') # test
 
-
-# regex_ipv6 = re.compile('(S*([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}S*|S*(' +
-                        # '[0-9a-fA-F]{1,4}:){1,7}:S*|S*([0-9a-fA-F]{1,4}:)' +
-                        # '{1,6}:[0-9a-fA-F]{1,4}S*|S*([0-9a-fA-F]{1,4}:)' +
-                        # '{1,5}(:[0-9a-fA-F]{1,4}){1,2}S*|S*([0-9a-fA-F]' +
-                        # '{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}S*|S*(' +
-                        # '[0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}S*' +
-                        # '|S*([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4})' +
-                        # '{1,5}S*|S*[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4})' +
-                        # '{1,6})S*|S*:((:[0-9a-fA-F]{1,4}){1,7}|:)S*|::(ffff' +
-                        # '(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}' +
-                        # '[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[' +
-                        # '0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[' +
-                        # '0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[' +
-                        # '0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))')    # works
-
 regex_ipv6 = re.compile('(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))')    # test
-
-
-
-
-# regex_phone = re.compile(
-    # r'^(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9][0-8][0-9])\s*\)|([2-9][0-8][0-9]))\s*(?:[.-]\s*)?)?'
-    # r'([2-9][0-9]{2})\s*(?:[.-]\s*)?([0-9]{4})$|^(\d{10})$|^1\d{10}$')  # works
 
 regex_phone = re.compile(r'^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$')  # test
 
@@ -140,52 +102,215 @@ regex_phone11 = re.compile(r'^1\d{10}$')
 regex_phone2 = re.compile(r'(\d{3}) \W* (\d{3}) \W* (\d{4}) \W* (\d*)$')
 
 # Colorize section
+# Colorama removed as requested for clean GUI/terminal output
 color_red = color_yellow = color_green = color_blue = color_purple = color_reset = ''
-from colorama import Fore, Back, Style
-print(Back.BLACK)
-color_red, color_yellow, color_green = Fore.RED, Fore.YELLOW, Fore.GREEN
-color_blue, color_purple, color_reset = Fore.BLUE, Fore.MAGENTA, Style.RESET_ALL
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
-def main():
+# <<<<<<<<<<<<<<<<<<<<<<<<<<     GUI            >>>>>>>>>>>>>>>>>>>>>>>>>>
 
+class TextRedirector(object):
+    def __init__(self, widget, tag="stdout"):
+        self.widget = widget
+        self.tag = tag
+        self.terminal = sys.stdout
+
+    def write(self, str):
+        self.terminal.write(str)
+        try:
+            self.widget.configure(state='normal')
+            self.widget.insert(END, str, (self.tag,))
+            self.widget.see(END)
+            self.widget.configure(state='disabled')
+        except:
+            pass
+
+    def flush(self):
+        self.terminal.flush()
+
+def launch_gui():
+    """Launch the Tkinter GUI interface."""
+    global root, input_file_entry, output_file_entry, progress_bar, status_text, process_button
+    global mode_var
+    
+    root = Tk()
+    script_name = os.path.basename(sys.argv[0])
+    root.title(f"{script_name} {version}")
+    root.geometry("800x650")
+    
+    # Apply vista theme
+    try:
+        style = ttk.Style()
+        style.theme_use('vista')
+    except:
+        pass
+    
+    # Description
+    desc_label = Label(root, text=description2, font=("Arial", 10, "bold"), wraplength=750, justify="center")
+    desc_label.pack(pady=10)
+    
+    # Mode Selection (Radio Buttons)
+    mode_frame = LabelFrame(root, text="Processing Mode", padx=10, pady=10)
+    mode_frame.pack(pady=10, padx=20, fill=X)
+    
+    mode_var = StringVar(value="hunt")
+    
+    def update_defaults(*args):
+        mode = mode_var.get()
+        input_file_entry.delete(0, END)
+        output_file_entry.delete(0, END)
+        if mode == "hunt":
+            input_file_entry.insert(0, "input.txt")
+            output_file_entry.insert(0, "Intel__DRAFT_V1.xlsx")
+        elif mode == "blurb":
+            input_file_entry.insert(0, "Intel__DRAFT_V1.xlsx")
+            output_file_entry.insert(0, "OSINT__DRAFT_V1.docx")
+        elif mode == "blank":
+            input_file_entry.insert(0, "") # No input
+            output_file_entry.insert(0, "Intel__DRAFT_V1.xlsx")
+        elif mode == "samples":
+            input_file_entry.insert(0, "") # No input
+            output_file_entry.insert(0, "") # No output
+            
+    Radiobutton(mode_frame, text="Hunt", variable=mode_var, value="hunt").pack(side=LEFT, padx=20)
+    Radiobutton(mode_frame, text="Blurb", variable=mode_var, value="blurb").pack(side=LEFT, padx=20)
+    Radiobutton(mode_frame, text="Blank", variable=mode_var, value="blank").pack(side=LEFT, padx=20)
+    Radiobutton(mode_frame, text="Samples", variable=mode_var, value="samples").pack(side=LEFT, padx=20)
+
+    # Input File Row
+    input_frame = Frame(root)
+    input_frame.pack(pady=5, padx=20, fill=X)
+    Label(input_frame, text="Input File:", width=15, anchor='w').pack(side=LEFT)
+    input_file_entry = Entry(input_frame)
+    input_file_entry.insert(0, "input.txt")
+    input_file_entry.pack(side=LEFT, fill=X, expand=True, padx=5)
+    
+    def browse_input():
+        file = filedialog.askopenfilename(title="Select Input File")
+        if file:
+            input_file_entry.delete(0, END)
+            input_file_entry.insert(0, file)
+                
+    Button(input_frame, text="Browse", command=browse_input).pack(side=LEFT)
+    
+    # Output File Row
+    output_frame = Frame(root)
+    output_frame.pack(pady=5, padx=20, fill=X)
+    Label(output_frame, text="Output File:", width=15, anchor='w').pack(side=LEFT)
+    output_file_entry = Entry(output_frame)
+    output_file_entry.insert(0, "Intel__DRAFT_V1.xlsx")
+    output_file_entry.pack(side=LEFT, fill=X, expand=True, padx=5)
+    
+    def browse_output():
+        file = filedialog.asksaveasfilename(defaultextension=".xlsx", title="Select Output File")
+        if file:
+            output_file_entry.delete(0, END)
+            output_file_entry.insert(0, file)
+            
+    Button(output_frame, text="Browse", command=browse_output).pack(side=LEFT)
+    
+    # Add trace after entry widgets are created
+    mode_var.trace_add("write", update_defaults)
+    
+    # Progress Bar
+    progress_bar = ttk.Progressbar(root, mode='indeterminate')
+    progress_bar.pack(fill=X, padx=22, pady=5)
+    
+    # Status ScrolledText
+    status_label = Label(root, text="Status:")
+    status_label.pack(anchor=W, padx=22)
+    status_text = scrolledtext.ScrolledText(root, height=15, width=80)
+    status_text.pack(pady=5, padx=20, fill=BOTH, expand=True)
+    status_text.configure(state='disabled')
+    
+    # Hunt Button
+    def start_processing():
+        process_button.config(state=DISABLED)
+        progress_bar.start()
+        status_text.configure(state='normal')
+        status_text.delete(1.0, END)
+        status_text.configure(state='disabled')
+        
+        # Capture settings before starting thread
+        current_input = input_file_entry.get()
+        current_output = output_file_entry.get()
+        current_mode = mode_var.get()
+        
+        t = threading.Thread(target=run_hunt_task, args=(current_input, current_output, current_mode))
+        t.daemon = True
+        t.start()
+        
+    process_button = Button(root, text="Hunt", command=start_processing, 
+                            bg="#4CAF50", fg="white", font=("Arial", 12, "bold"), padx=20, pady=5)
+    process_button.pack(pady=10)
+    
+    root.mainloop()
+
+def run_hunt_task(input_path, output_path, mode):
+    """Run the hunting process in a background thread."""
+    global filename, input_xlsx, output_xlsx, data
+    
+    # Redirect stdout
+    old_stdout = sys.stdout
+    sys.stdout = TextRedirector(status_text)
+    
+    try:
+        print(f"Starting {mode} process...")
+        if input_path:
+            print(f"Input file: {input_path}")
+            
+        # Set up global variables as if we were in CLI
+        filename = input_path
+        output_xlsx = output_path
+        
+        # Mocking arguments for the internal logic
+        class Args:
+            pass
+        args = Args()
+        args.input = input_path
+        args.output = output_path
+        args.blurb = (mode == "blurb")
+        args.blank = (mode == "blank")
+        args.samples = (mode == "samples")
+        args.search = (mode == "hunt")
+        args.convert = False
+        args.locations = False
+        args.test = False
+
+        # Run the core logic from main()
+        # Note: We need to handle the case where main() would exit
+        run_core_logic(args)
+        
+        print(f"\nDone! Output saved to: {output_xlsx}")
+        root.after(0, lambda: messagebox.showinfo("Complete", f"Identity Hunt finished successfully!\nOutput: {output_xlsx}"))
+        
+    except Exception as e:
+        print(f"\nError: {str(e)}")
+        root.after(0, lambda: messagebox.showerror("Error", f"An error occurred: {str(e)}"))
+    finally:
+        sys.stdout = old_stdout
+        root.after(0, progress_bar.stop)
+        root.after(0, lambda: process_button.config(state=NORMAL))
+
+def run_core_logic(args):
+    """Refactored core logic from main() to be callable by CLI and GUI."""
+    global data, filename, input_xlsx, output_xlsx, row, emails, ips, phones, users, dnsdomains, websites
+    
     # check internet status
     status = internet()
     status2 = is_running_in_virtual_machine()
 
     if status2 == True:
-        print(f'{color_yellow}This is a virtual machine. Not checking for internet connectivity{color_reset}')
-        # apparently when running from a VM (and maybe behind a proxy) it says internet isn't connected
+        print(f'This is a virtual machine. Not checking for internet connectivity')
     elif status == False:
-        noInternetMsg()
-        input(f'{color_red}CONNECT TO THE INTERNET FIRST. Hit Enter to exit...{color_reset}')
-        exit()
+        print(f'CONNECT TO THE INTERNET FIRST.')
+        return
     else:
-        print(color_green + '\nINTERNET IS CONNECTED\n' + color_reset)
+        print('\nINTERNET IS CONNECTED\n')
 
-    # global section
-    global data
-    global filename
     filename = 'input.txt'
-    global input_xlsx
     input_xlsx = 'Intel2.xlsx'
-    # global inputDetails
-    # inputDetails = 'no'
-
-    global output_xlsx
-        
-    global row
     row = 1
-
-    global emails
-    global ips
-    global phones
-    global users
-    global dnsdomains
-    global websites
-    global data
-    input_file_type = ''
     data = []
     emails = []
     ips = []
@@ -193,288 +318,218 @@ def main():
     users = []
     dnsdomains = []
     websites = [] 
-    
-    parser = argparse.ArgumentParser(description=description2)
-    parser.add_argument('-I', '--input', help='', required=False)
-    parser.add_argument('-O', '--output', help='', required=False)
-    parser.add_argument('-c','--convert', help='convert from old headers', required=False, action='store_true')
-
-    parser.add_argument('-E','--emailmodules', help='email modules', required=False, action='store_true')
-    parser.add_argument('-b','--blurb', help='write ossint blurb', required=False, action='store_true')
-    parser.add_argument('-B','--blank', help='create blank intel sheet', required=False, action='store_true')
-
-    parser.add_argument('-H','--howto', help='help module', required=False, action='store_true')
-    parser.add_argument('-i','--ips', help='ip modules', required=False, action='store_true')
-    parser.add_argument('-l','--locations', help='convert intel 2 locations format', required=False, action='store_true')
-    parser.add_argument('-p','--phonestuff', help='phone modules', required=False, action='store_true')
-    parser.add_argument('-s','--samples', help='print sample inputs', required=False, action='store_true')
-    parser.add_argument('-t','--test', help='testing individual modules', required=False, action='store_true')
-    parser.add_argument('-U','--usersmodules', help='username modules', required=False, action='store_true')
-    parser.add_argument('-w','--websitetitle', help='websites titles', required=False, action='store_true')    
-
-    parser.add_argument('-W','--websites', help='websites modules', required=False, action='store_true')    
-    
-
-    args = parser.parse_args()
-    cls()
-    print_logo()
+    input_file_type = ''
 
     if args.samples:  
         samples()
-        return 0 
-        sys.exit()
+        return 
 
-
-    if args.howto:  # this section might be redundant
-        parser.print_help()
-        usage()
-        return 0
-        sys.exit()
-
-
-
-# default input
+    # default input
     if not args.input: 
         input_file_type = 'txt'
-
-# txt input
     elif '.txt' in args.input:
         input_file_type = 'txt'
         filename = args.input
-        emails,dnsdomains,ips,users,phones,websites = read_text(filename)
-
-# xlsx input        
+        if os.path.exists(filename) and os.path.getsize(filename) > 0:
+            emails,dnsdomains,ips,users,phones,websites = read_text(filename)
     elif '.xlsx' in args.input:
         input_file_type = 'xlsx'
         input_xlsx = args.input
     else:
         input_xlsx = args.input 
-        # input_xlsx = args.input
-        
-        
-# output xlsx
-    if not args.output:     # openpyxl conversion
+   
+    # output xlsx
+    if not args.output:
         output_xlsx = "Intel__DRAFT_V1.xlsx"          
     else:
         output_xlsx = args.output
 
-
     if args.blank:  
-        # write_intel_basic(data, output_xlsx)
         write_intel(data)
-        return 0 
-        sys.exit()
+        return 
 
-
-
-# if text file input
+    # if text file input
     if input_file_type == 'txt':
         if not os.path.exists(filename):
-            input(f"{color_red}{filename} doesnt exist.{color_reset}")
-            sys.exit()
+            print(f"{filename} doesnt exist.")
+            return
         elif os.path.getsize(filename) == 0:
-            input(f'{color_red}{filename} is empty. Fill it with username, email, ip, phone and/or websites.{color_reset}')
-            sys.exit()
+            print(f'{filename} is empty. Fill it with username, email, ip, phone and/or websites.')
+            return
         elif os.path.isfile(filename):
-   
             emails,dnsdomains,ips,users,phones,websites = read_text(filename)
             
-            inputfile = open(filename)
-
-# if xlsx input
+    # if xlsx input
     elif input_file_type == 'xlsx':
         if not os.path.exists(input_xlsx):
-            input(f"{color_red}{input_xlsx} doesnt exist.{color_reset}")
-            sys.exit()
+            print(f"{input_xlsx} doesnt exist.")
+            return
         elif os.path.getsize(input_xlsx) == 0:
-            input(f'{color_red}{input_xlsx} is empty. Fill it with username, email, ip, phone and/or websites.{color_reset}')
-            sys.exit()
+            print(f'{input_xlsx} is empty. Fill it with username, email, ip, phone and/or websites.')
+            return
         elif os.path.isfile(input_xlsx):
             data = read_xlsx(input_xlsx)
-            # data = read_xlsx_basic(input_xlsx)
             if args.convert:
-                file_exists = os.path.exists(input_xlsx)
-                if file_exists == True:
-                    
-                    print(f' converting {input_xlsx}')    # temp
-                    write_intel_basic(data, output_xlsx)
-                    
-                else:
-                    print(f'{color_red}{input_xlsx} does not exist{color_reset}')
-                    exit()
-                sys.exit()
-                
+                print(f' converting {input_xlsx}')
+                write_intel_basic(data, output_xlsx)
+                return
             if args.blurb:
                 write_blurb()
-                sys.exit()
-
+                return
             if args.locations:
-                data = []
-                # data = read_xlsx(input_xlsx)    # never finishes
-                data = read_xlsx_basic(input_xlsx)    # works
-                write_locations(data)   # works
-                # write_locations_basic(data, output_xlsx)    # works
-                sys.exit()
-
+                data = read_xlsx_basic(input_xlsx)
+                write_locations(data)
+                return
             data = read_xlsx(input_xlsx)
   
-    # Check if no arguments are entered
+    # If no modules selected, default to all
+    if not any([args.samples, args.blank, args.convert, args.blurb, args.locations]):
+        # Default behavior: run all major modules if items are present
+        if len(emails) > 0:  
+            print(f'Emails = {emails}')
+            main_email()
+            breachbase()
+            carrot_email()
+            cyberbackground_email()
+            epios_email()
+            ghunt()
+            google_calendar()
+            have_i_been_pwned()
+            lookups_io_email()
+            holehe_email()
+            osintIndustries_email()
+            thatsthememail()
+            truepeople_email()
+
+        if len(ips) > 0:     
+            print(f'IPs = {ips}')
+            arinip()
+            geoiptool()
+            ipinfo()
+            main_ip()
+            resolverRS()
+            whoisip()
+            whatismyip()
+            
+        if len(phones) > 0:
+            print(f'phones = {phones}')
+            main_phone()
+            familytreephone()
+            thatsthemphone()
+            reversephonecheck()
+            validnumber()
+            whitepagesphone()
+            whocalld()
+            
+        if args.test:  
+            print(f' using test module')
+            osint_rocks()
+
+        if len(users) > 0:  
+            print(f'users = {users}')    
+            main_user()
+            about()
+            allmylinks()
+            bitbucket()
+            blogspot_users()
+            bsky()
+            cashapp()
+            disqus()
+            ebay()
+            facebook()
+            familytree()
+            flickr()
+            freelancer()
+            garmin()
+            github()
+            go()
+            gravatar()
+            ham_radio()
+            heylink()
+            imageshack()
+            instagram()
+            instantusername()
+            instructables()
+            inteltechniques()
+            gab()
+            keybase()
+            kick()
+            # linkedin() # auth issue?
+            mastadon()
+            medium()
+            myshopify()
+            myspace_users()
+            osint_rocks()
+            paypal()
+            patreon()
+            pinterest()
+            poshmark()
+            reddit()
+            rumble()
+            roblox()
+            sherlock()
+            slack()
+            snapchat()
+            spotify()
+            threads()
+            tiktok()
+            tinder()
+            truthSocial()
+            tumblr()
+            twitch()
+            twitter()
+            venmo()
+            vimeo()
+            whatnot()
+            whatsmyname()
+            wordpress()
+            wordpress_profiles()
+            youtube()
+
+        if len(websites) > 0:          
+            print(f'websites = {websites}')    
+            centralops()
+            main_website()
+            robtex()
+            titles()
+            viewdnsdomain()
+            whoiswebsite()
+            titles()
+        
+        write_intel(data)
+
+def main():
+    parser = argparse.ArgumentParser(description=description2)
+    parser.add_argument('-I', '--input', help='', required=False)
+    parser.add_argument('-O', '--output', help='', required=False)
+    parser.add_argument('-c','--convert', help='convert from old headers', required=False, action='store_true')
+    parser.add_argument('-b','--blurb', help='write ossint blurb', required=False, action='store_true')
+    parser.add_argument('-B','--blank', help='create blank intel sheet', required=False, action='store_true')
+    parser.add_argument('-l','--locations', help='convert intel 2 locations format', required=False, action='store_true')
+    parser.add_argument('-s','--samples', help='print sample inputs', required=False, action='store_true')
+    parser.add_argument('-S','--search', help='search for OSINT', required=False, action='store_true')    
+    parser.add_argument('-t','--test', help='testing individual modules', required=False, action='store_true')
+
+    args = parser.parse_args()
+
+    # If no arguments provided, launch GUI
     if len(sys.argv) == 1:
-        print(f"{color_yellow}You didn't select any options so I'll run the major options{color_reset}")
-        print(f'{color_yellow}try -h for a listing of all menu options{color_reset}')
-        args.emailmodules = True
-        args.ips = True
-        args.phonestuff = True
-        args.usersmodules = True
-        args.websites = True
-   
+        launch_gui()
+        return 0
 
-        
-        
-    if args.emailmodules and len(emails) > 0:  
-        print(f'Emails = {emails}') # temp
-        main_email()    # 
-        breachbase()
-        carrot_email()
-        cyberbackground_email() # beta
-        epios_email()   # costs $$
-        # digitalfootprintcheckemail() # rate limited by day
-        ghunt()  # this is overwriting data
-        google_calendar()     #
-        have_i_been_pwned()    #
-        lookups_io_email()
-        # hibp_email() # test
-        holehe_email()    #
-        osintIndustries_email()    #
-        thatsthememail()    #
-        truepeople_email()  # nasty captcha
+    cls()
+    print_logo()
+    
+    # Run the core logic
+    run_core_logic(args)
 
-        
-    if args.ips and len(ips) > 0:  
-        print(f'IPs = {ips}')
-        arinip()    # alpha
-        geoiptool()   # no content but is does only list 200's
-        ipinfo()    # 
-        main_ip()
-        resolverRS()    #? 
-        # thatsthemip() # broken
-        whoisip()    #
-        whatismyip()    #
-        
-    ### phone modules
-    if args.phonestuff and len(phones) > 0:
-        print(f'phones = {phones}')
-        main_phone()
-        familytreephone()    #
-        thatsthemphone()   #
-        reversephonecheck()    #
-        validnumber()    #
-        whitepagesphone()    #
-        whocalld()    # combined with spydialer
-        
-    if args.test:  
-        print(f' using test module')
-        osint_rocks()
-
-    if args.usersmodules and len(users) > 0:  
-        print(f'users = {users}')    
-        main_user()
-        about()    #
-        allmylinks()    #
-        bitbucket()    #
-        blogspot_users()    #
-        bsky()
-        cashapp()
-        # dailymotion()   # protected
-        disqus()    # 
-        ebay()  # Security Measure
-        # etsy()  # protected by captcha puzzle
-        facebook()     # some false positives
-        familytree()    #
-        # fiverr()    # occasional captcha
-        flickr()   # add photo
-        freelancer()    #
-        # friendfinder()  # protected
-        garmin()    #
-        github()    #
-        go()
-        gravatar()  #
-        ham_radio() # manual but works
-        heylink()   # 
-        imageshack()    #
-        instagram()    #
-        instantusername() # manual
-        instructables()     #
-        inteltechniques()   # manual
-        gab()   # 
-        keybase()
-        kick()  # 
-        # kik()    # protected
-        linkedin()    # cookie test
-        # massageanywhere()   # broken ssl query
-        mastadon()    #
-        medium()
-        # myfitnesspal()    # cloudflare
-        myshopify()    #
-        myspace_users()    #
-        osint_rocks()
-        paypal()  #
-        patreon()    #
-        pinterest() #
-        poshmark()    #    
-        # public()    # 
-        reddit()
-        rumble()
-        roblox()
-        sherlock()    #
-        slack()
-        snapchat()    # must manually verify
-        spotify()    #
-        # telegram()  # always answers yes
-        threads()    #
-        tiktok()    #
-        tinder() # add DOB, schools
-        # tripadvisor()   # protected with puzzle
-        truthSocial()   # false positives
-        tumblr()
-        twitch()    # alpha
-        twitter()   # needs auth
-        venmo()
-        vimeo()
-        whatnot()
-        whatsmyname()    #
-        wordpress()    #
-        wordpress_profiles()    #  
-        youtube()    #
-        
-
-    if args.websitetitle and len(websites) > 0:  
-        print(f'websites = {websites}')   
-        main_website()
-        titles()
-        
-    if args.websites and len(websites) > 0:  
-        print(f'websites = {websites}')    
-        centralops()
-        main_website()
-        robtex()
-        titles()
-        viewdnsdomain()
-        whoiswebsite()
-
-    write_intel(data)
-
-    # set linux ownership    
-    if sys.platform == 'win32' or sys.platform == 'win64':
-        pass
-    else:
-        call(["chown %s.%s *.xlsx" % (tech.lower(), tech.lower())], shell=True)
-
-    # workbook.close()
     if not args.blurb:
-        input(f"See '{input_xlsx}' for output. Hit Enter to exit...")
+        input(f"See '{output_xlsx}' for output. Hit Enter to exit...")
 
     return 0
+
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<  Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<  Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -3593,11 +3648,13 @@ def read_xlsx(input_xlsx):
             dnsdomains.append(dnsdomain)
             
         # user
-        user = (row_data.get("user") or '').strip()
+        user = (row_data.get("user"))
 
-        if user and user.lower() not in [u.lower() for u in users]:
-            users.append(user)
-            
+        try:
+            if user.lower() not in [u.lower() for u in users]:
+            # if user and user.lower() not in [u.lower() for u in users]:
+                users.append(user)
+        except:pass
         # ip
         ip = (row_data.get("ip") or '').replace('\n', '').strip()
 
@@ -5444,7 +5501,7 @@ def write_blurb():
         read Intel.xlsx and write OSINT_.docx to describe what you found.
     '''
     fullname_column_index = ''
-    docx_file = "OSINT__DRAFT_V1.docx"
+    docx_file = output_xlsx
 
     message = (f'Writing blurb from {input_xlsx}')
     message_square(message, color_green)
@@ -6463,31 +6520,6 @@ def whoiswebsite():    # testsite= google.com
             data.append(row_data) 
 
         time.sleep(7)
-
-
-
-def usage():
-    '''
-        Prints out examples of syntax
-    '''
-    file = sys.argv[0].split('\\')[-1]
-    print(f'\nDescription2: {color_green}{description2}{color_reset}')
-    print(f'{file} Version: {version} by {author}')
-    print(f'\n    {color_yellow}insert your input into input.txt')
-    print(f'\nExample:')
-    print(f'    {file} -b -I Intel_test.xlsx')
-    print(f'    {file} -B -O Intel_.xlsx')    
-    print(f'    {file} -c -I Intel_test.xlsx    # alpha')
-    print(f'    {file} -E')
-    print(f'    {file} -i')
-    print(f'    {file} -l -O locations_.xlsx -I intel_test.xlsx # alpha')
-    print(f'    {file} -t')
-    print(f'    {file} -s')
-    print(f'    {file} -p')
-    print(f'    {file} -U')
-    print(f'    {file} -W')
-    print(f'    {file} -E -i -p -U -I input.txt')
-    print(f'    {file} -E -i -p -U -I Intel_test.xlsx')
 
 if __name__ == '__main__':
     main()
