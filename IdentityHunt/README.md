@@ -19,6 +19,7 @@ or
 double click identityhunt.exe
 ```
 
+## Modes
 
 Hunt: "Full OSINT search across username, email, IP, phone, and websites."
 
