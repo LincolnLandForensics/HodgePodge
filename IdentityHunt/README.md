@@ -1,14 +1,14 @@
 # identityhunt (identiyhunt.py or identityhunt.exe)
 OSINT: track people down by username, email, ip, phone and website. 
 
-## installation:
+## Installation:
 
 pip install -r requirements_identity_hunt.txt
 
-## directions:
+## Directions:
 insert emails, phone numbers, usernames into input.txt
 
-Usage:
+## Usage:
 
 default behavior is a GUI interface
 ```
@@ -19,7 +19,7 @@ or
 double click identityhunt.exe
 ```
 
-## Modes
+## Modes:
 
 Hunt: "Full OSINT search across username, email, IP, phone, and websites."
 
