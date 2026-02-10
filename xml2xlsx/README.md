@@ -15,6 +15,11 @@ Usage:
 python xml2xlsx.py
 ```
 
+![sample output](images/xml2xlsx_GUI.png)
+
+
+
+
 example output
 
 Reading XML files out of the xml folder
