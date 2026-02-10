@@ -12,6 +12,10 @@ Usage:
 ```
 python youtube_download.py
 ```
+
+![youtube_download.exe success message](images/Youtube_downloader_GUI.png)
+
+
 or the exe version
 ```
 youtube_download.exe
