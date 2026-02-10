@@ -5,15 +5,19 @@ import re
 import sys
 import random
 import string
-from faker import Faker
+from faker import Faker # pip install faker
 from argparse import ArgumentParser
 from datetime import datetime
-from openpyxl import Workbook
+from openpyxl import Workbook   # pip install openpyxl
 from openpyxl.styles import PatternFill
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+from tkinter.scrolledtext import ScrolledText
+import threading
 
 # Metadata
 Author = "LincolnLandForensics"
-version = "1.0.1"
+version = "1.0.3"
 description2 = 'Create fake data for research and testing. Never use live data in a test database!'
 # Global color variables
 color_red = "\033[31m"
@@ -21,7 +25,119 @@ color_yellow = "\033[33m"
 color_green = "\033[32m"
 color_reset = "\033[0m"
 
-# Main function
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      GUI Class      >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+class FakeGui:
+    def __init__(self, root):
+        self.root = root
+        script_name = os.path.basename(sys.argv[0])
+        self.root.title(f"{script_name} {version}")
+        self.root.geometry("700x550")
+        
+        # Set Vista theme
+        self.style = ttk.Style()
+        try:
+            self.style.theme_use('vista')
+        except:
+            pass # Fallback to default if vista is not available
+
+        self.setup_gui()
+        self.set_defaults()
+
+    def setup_gui(self):
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Title/Description
+        ttk.Label(main_frame, text=f"{description2}", font=("Helvetica", 10, "italic"), wraplength=650).pack(pady=5)
+
+        # Number of Identities
+        num_frame = ttk.LabelFrame(main_frame, text="Number of Identities", padding="5")
+        num_frame.pack(fill=tk.X, pady=5)
+        
+        self.num_var = tk.StringVar()
+        ttk.Entry(num_frame, textvariable=self.num_var).pack(fill=tk.X, padx=5)
+
+        # Output File
+        output_frame = ttk.LabelFrame(main_frame, text="Output Excel File", padding="5")
+        output_frame.pack(fill=tk.X, pady=5)
+        
+        self.output_var = tk.StringVar()
+        ttk.Entry(output_frame, textvariable=self.output_var).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        ttk.Button(output_frame, text="Browse", command=self.browse_output).pack(side=tk.RIGHT)
+
+        # Progress Bar
+        self.progress_var = tk.DoubleVar()
+        self.progress_bar = ttk.Progressbar(main_frame, variable=self.progress_var, maximum=100)
+        self.progress_bar.pack(fill=tk.X, pady=10)
+
+        # Status/Log Window
+        self.status_box = ScrolledText(main_frame, height=15, state='disabled')
+        self.status_box.pack(fill=tk.BOTH, expand=True, pady=5)
+
+        # Extract Button
+        self.btn_run = ttk.Button(main_frame, text="Fake it till you make it", command=self.start_processing)
+        self.btn_run.pack(pady=10)
+
+    def set_defaults(self):
+        self.num_var.set("100")
+        self.output_var.set("fake_identities.xlsx")
+
+    def browse_output(self):
+        file = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+        if file:
+            self.output_var.set(file)
+
+    def log(self, message):
+        self.status_box.config(state='normal')
+        self.status_box.insert(tk.END, message + "\n")
+        self.status_box.see(tk.END)
+        self.status_box.config(state='disabled')
+        self.root.update_idletasks()
+
+    def start_processing(self):
+        try:
+            total = int(self.num_var.get())
+        except ValueError:
+            messagebox.showerror("Error", "Number of identities must be an integer.")
+            return
+
+        total = check_number(total)
+        output_file = self.output_var.get()
+
+        self.btn_run.config(state='disabled')
+        self.progress_var.set(0)
+        self.status_box.config(state='normal')
+        self.status_box.delete(1.0, tk.END)
+        self.status_box.config(state='disabled')
+        
+        self.log(f"Starting generation of {total} records...")
+
+        # Start processing in a new thread
+        thread = threading.Thread(target=self.run_process, args=(output_file, total))
+        thread.daemon = True
+        thread.start()
+
+    def run_process(self, output_file, total):
+        try:
+            generate_fake_data(output_file, total, self.log, self.update_progress)
+            # self.log(f"Output File: {os.path.abspath(output_file)}")
+            self.log("\nDone.")
+        except Exception as e:
+            self.log(f"Critical Error: {e}")
+        finally:
+            self.btn_run.config(state='normal')
+
+    def update_progress(self, current, total):
+        if total > 0:
+            percent = (current / total) * 100
+            self.progress_var.set(percent)
+        else:
+            self.progress_var.set(100)
+
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu/Logic     >>>>>>>>>>>>>>>>>>>>>>>>>>
+
 def main():
     parser = ArgumentParser(description="Generate fake identities")
     parser.add_argument("-o", "--output", help="Output Excel file", required=False)
@@ -30,14 +146,16 @@ def main():
 
     args = parser.parse_args()
 
-    # global output_file
-    if not args.output: 
-        output_file = "FakeIdentities.xlsx"        
-    else:
-        output_file = args.output
+    # If no arguments are provided, launch GUI
+    if len(sys.argv) == 1:
+        root = tk.Tk()
+        gui = FakeGui(root)
+        root.mainloop()
+        return
 
-    total = args.number
-    total = check_number(total)
+    # CLI Mode
+    output_file = args.output if args.output else "FakeIdentities.xlsx"
+    total = check_number(args.number)
 
     if args.fakes:
         generate_fake_data(output_file, total)
@@ -84,7 +202,7 @@ def fake_user(first_name, middle_initial, last_name):
 
     
 # Generate fake data
-def generate_fake_data(output_file, total):
+def generate_fake_data(output_file, total, status_callback=None, progress_callback=None):
     # fake = Faker()
     fake = Faker('en_US')
     workbook = Workbook()
@@ -121,7 +239,8 @@ def generate_fake_data(output_file, total):
         cell.fill = fill
 
     # Generate fake data rows
-    for row in range(2, total + 2):
+    for i in range(1, total + 1):
+        row = i + 1
         ip = fake.ipv4()
         url = fake.url()
         fullname = fake.name()
@@ -183,9 +302,16 @@ def generate_fake_data(output_file, total):
         for col, value in enumerate(data, start=1):
             sheet.cell(row=row, column=col, value=value)
 
+        if status_callback and i % 10 == 0:
+            status_callback(f"Generated {i}/{total} identities...")
+        if progress_callback:
+            progress_callback(i, total)
+
     workbook.save(output_file)
 
-    print(f'\n{color_green}{total} fake identities created. \nFake data saved to {output_file}{color_reset}\n') 
+    msg = f'{total} fake identities created. Saved to {output_file}'
+    if status_callback: status_callback(msg)
+    print(f'\n{color_green}{msg}{color_reset}\n')
 import random
 
 def generate_fake_license_number():

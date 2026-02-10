@@ -11,10 +11,23 @@ python pip install -r requirements_fake-factory.txt
 
 Usage:
 ```
+python fake-factory.py
+
+or 
+
 python fake-factory.py -f
+
+or 
+
 python fake-factory.py -f -n 999999 -o fake_identities.xlsx
+
+
 		
 ```
+
+![GUI](images/fake-factory.png)
+
+
 
 sample script output	
 	
