@@ -36,7 +36,7 @@ requests.packages.urllib3.disable_warnings()
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Read input_translate.xlsx filled with another language and translate it to english"
-version = '1.1.5'
+version = '1.1.6'
 
 # global variables
 global auto_list
@@ -676,7 +676,7 @@ def translate_excel(input_xlsx, output_xlsx, source_language, log_callback=None,
 
             source_language = source_language_enhance(source_language)
 
-            msg = f'{row_count} {original_content}      {translation}  {source_language}  {note}'
+            msg = f'{row_count} {original_content}      {translation}  ({source_language})  {note}'
             if log_callback: log_callback(msg)
             print(f'\n{msg}')
 
