@@ -13,7 +13,9 @@ Usage:
 ```
 python fake-factory.py
 
-or 
+```
+
+```
 
 python fake-factory.py -f
 
@@ -25,7 +27,7 @@ python fake-factory.py -f -n 999999 -o fake_identities.xlsx
 		
 ```
 
-![GUI](images/fake-factory.png)
+![GUI](images/Fake-Identifies_GUI.png)
 
 
 
