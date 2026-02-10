@@ -8,8 +8,11 @@ import argparse
 import re
 import time
 from tkinter import *
-from tkinter import messagebox
-from pytube import YouTube
+from tkinter import messagebox, filedialog, scrolledtext
+import tkinter.ttk as ttk
+import threading
+
+from pytube import YouTube # pip install --upgrade yt-dlp pytube
 from pytube.exceptions import AgeRestrictedError
 
 import yt_dlp   # pip install yt-dlp
@@ -36,7 +39,7 @@ todaysDateTime = d.strftime("%Y-%m-%d_%H-%M-%S")
 
 author = 'LincolnLandForensics'
 description = "Download a list of Youtube videos from videos.txt, save list in xlsx file"
-version = '1.2.3'
+version = '1.2.5'
 
 # will be set in main()
 filename = None
@@ -57,9 +60,9 @@ def main():
 
     status = internet()
     if not status:
-        noInternetMsg()
+        # noInternetMsg() # GUI will handle this if run from GUI
         print('\nCONNECT TO THE INTERNET FIRST\n')
-        exit()
+        # If GUI is starting, we might want to let it show the error in the status window
     else:
         create_xlsx()
 
@@ -71,20 +74,153 @@ def main():
     parser.add_argument('--headless', action='store_true', help='disable GUI popups')
     parser.add_argument('--resolution', type=str, default="360p", help='video resolution to download (e.g., 360p, 720p)')
 
-    args = parser.parse_args()
+    # Check if any arguments were provided (other than the script name)
+    if len(sys.argv) > 1:
+        args = parser.parse_args()
+        if args.input:
+            filename = args.input
+        if args.output:
+            spreadsheet = args.output
+        
+        if not status:
+            noInternetMsg(headless=args.headless)
+            exit()
 
-    if args.input:
-        filename = args.input
-    if args.output:
-        spreadsheet = args.output
-
-    if args.youtube:
         youtube(args)
+        workbook.save(spreadsheet)
     else:
-        youtube(args)
+        # No arguments, launch GUI
+        run_gui()
 
-    workbook.save(spreadsheet)
     return 0
+
+# --------------------------------------------------------------------------
+# GUI Class
+# --------------------------------------------------------------------------
+class YouTubeDownloaderGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title(f"{author} - YouTube Download {version}")
+        self.root.geometry("600x500")
+        
+        # Use Vista theme
+        self.style = ttk.Style()
+        try:
+            self.style.theme_use('vista')
+        except Exception:
+            self.style.theme_use('clam')
+
+        self.input_file = StringVar(value='videos.txt')
+        self.processing = False
+
+        self.setup_ui()
+
+    def setup_ui(self):
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.pack(fill=BOTH, expand=True)
+
+        # Title and Description
+        ttk.Label(main_frame, text=f"YouTube Download {version}", font=("Helvetica", 16, "bold")).pack(pady=(0, 5))
+        ttk.Label(main_frame, text=description, wraplength=550).pack(pady=(0, 15))
+
+        # Input File Section
+        input_frame = ttk.Frame(main_frame)
+        input_frame.pack(fill=X, pady=5)
+        ttk.Label(input_frame, text="Input File:").pack(side=LEFT, padx=(0, 5))
+        self.input_entry = ttk.Entry(input_frame, textvariable=self.input_file)
+        self.input_entry.pack(side=LEFT, fill=X, expand=True, padx=5)
+        ttk.Button(input_frame, text="Browse", command=self.browse_input).pack(side=LEFT)
+
+        # Start Button
+        self.start_btn = ttk.Button(main_frame, text="Start Processing", command=self.start_processing)
+        self.start_btn.pack(pady=15)
+
+        # Progress Bar
+        self.progress = ttk.Progressbar(main_frame, orient=HORIZONTAL, mode='determinate')
+        self.progress.pack(fill=X, pady=(0, 10))
+
+        # Status Window
+        ttk.Label(main_frame, text="Status Output:").pack(anchor=W)
+        self.status_box = scrolledtext.ScrolledText(main_frame, height=12, state='disabled', font=("Consolas", 9))
+        self.status_box.pack(fill=BOTH, expand=True)
+
+    def browse_input(self):
+        filename_selected = filedialog.askopenfilename(initialdir=".", title="Select videos.txt",
+                                                        filetypes=(("Text files", "*.txt"), ("all files", "*.*")))
+        if filename_selected:
+            self.input_file.set(filename_selected)
+
+    def log(self, message):
+        self.status_box.config(state='normal')
+        self.status_box.insert(END, message + "\n")
+        self.status_box.see(END)
+        self.status_box.config(state='disabled')
+        # Also print to terminal as requested
+        print(message)
+
+    def update_progress(self, value):
+        self.progress['value'] = value
+        self.root.update_idletasks()
+
+    def start_processing(self):
+        if self.processing:
+            return
+        
+        self.processing = True
+        self.start_btn.config(state='disabled')
+        self.input_entry.config(state='disabled')
+        self.progress['value'] = 0
+        
+        # Start threading
+        thread = threading.Thread(target=self.worker_task, daemon=True)
+        thread.start()
+
+    def worker_task(self):
+        global filename, spreadsheet
+        filename = self.input_file.get()
+        
+        if not internet():
+            self.log("ERROR: No internet connection.")
+            self.root.after(0, self.finish_processing)
+            return
+
+        if not os.path.exists(filename):
+            self.log(f"ERROR: {filename} does not exist.")
+            self.root.after(0, self.finish_processing)
+            return
+
+        # Prepare arguments object for the existing youtube function
+        class Args:
+            def __init__(self, sleep=30, headless=True, resolution="360p"):
+                self.sleep = sleep
+                self.headless = headless
+                self.resolution = resolution
+
+        args = Args()
+        
+        try:
+            self.log(f"Starting process with input: {filename}")
+            self.log("TIP: If downloads fail, try: pip install --upgrade yt-dlp pytube")
+            # Run the existing logic but with GUI hooks if possible
+            youtube(args, gui=self)
+            
+            workbook.save(spreadsheet)
+            self.log(f"Processing complete.")
+            self.log(f"Output saved to: {spreadsheet}")
+        except Exception as e:
+            self.log(f"CRITICAL ERROR: {str(e)}")
+        finally:
+            self.root.after(0, self.finish_processing)
+
+    def finish_processing(self):
+        self.processing = False
+        self.start_btn.config(state='normal')
+        self.input_entry.config(state='normal')
+
+def run_gui():
+    root = Tk()
+    app = YouTubeDownloaderGUI(root)
+    root.mainloop()
 
 # --------------------------------------------------------------------------
 # Helpers
@@ -132,19 +268,20 @@ def create_xlsx():
         Sheet1.cell(row=1, column=idx, value=h)
 
 def finalMessage(headless=False):
+    msg = f"\nSaved to current folder\n\nSaved info to {spreadsheet}\n"
     if headless:
-        print(f"\nSaved to current folder\n\nSaved info to {spreadsheet}\n")
+        print(msg)
     else:
         try:
+            # Only show popup if actually in a GUI environment and not headless
             window = Tk()
-            window.geometry("1x1")
-            w = Label(window, text='Youtube Downloader', font="100")
-            w.pack()
-            print(f'\nSaved to current folder\n\nSaved info to {spreadsheet}\n')
+            window.withdraw() # Hide the main 1x1 window
             messagebox.showinfo('information',
                 f'\nDownloaded all Youtube videos from {filename}\n\nSaved to {spreadsheet}\n')
+            window.destroy()
+            print(msg)
         except Exception:
-            print(f"\nSaved to {spreadsheet} (GUI disabled)\n")
+            print(msg)
 
 def internet(host="youtube.com", port=443, timeout=3):
     try:
@@ -152,26 +289,34 @@ def internet(host="youtube.com", port=443, timeout=3):
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
         return True
     except socket.error as ex:
-        print(ex)
+        # print(ex)
         return False
 
-def noInternetMsg():
-    try:
-        window = Tk()
-        window.geometry("1x1")
-        Label(window, text='Youtube Downloader', font="100").pack()
-        messagebox.showwarning("Warning", "CONNECT TO THE INTERNET FIRST")
-    except Exception:
-        print("CONNECT TO THE INTERNET FIRST")
+def noInternetMsg(headless=False):
+    msg = "CONNECT TO THE INTERNET FIRST"
+    if headless:
+        print(msg)
+    else:
+        try:
+            window = Tk()
+            window.withdraw()
+            messagebox.showwarning("Warning", msg)
+            window.destroy()
+        except Exception:
+            print(msg)
 
-def noVideos():
-    try:
-        window = Tk()
-        window.geometry("1x1")
-        Label(window, text='Youtube Downloader', font="100").pack()
-        messagebox.showwarning("Warning", f"Missing youtube videos in {filename}")
-    except Exception:
-        print(f"Missing youtube videos in {filename}")
+def noVideos(headless=False):
+    msg = f"Missing youtube videos in {filename}"
+    if headless:
+        print(msg)
+    else:
+        try:
+            window = Tk()
+            window.withdraw()
+            messagebox.showwarning("Warning", msg)
+            window.destroy()
+        except Exception:
+            print(msg)
 
 def youtube_transcript(video_id):
     """Fetch transcript text, fallback if English not available."""
@@ -201,65 +346,92 @@ def youtube_transcript(video_id):
 # --------------------------------------------------------------------------
 # Main downloader
 # --------------------------------------------------------------------------
-def youtube(args):
+def youtube(args, gui=None):
     keywords_to_check = ["tax", "lambo", "drug dealer"]
 
     if not os.path.exists(filename):
-        print(f"\n{filename} does not exist\n")
-        noVideos()
-        exit()
+        msg = f"\n{filename} does not exist\n"
+        if gui: gui.log(msg)
+        else: print(msg)
+        noVideos(headless=True if gui else args.headless)
+        return
 
-    print(f'Downloading list of Youtube videos from {filename}. This can take a while...\n')
-    csv_file = open(filename)
+    msg = f'Downloading list of Youtube videos from {filename}. This can take a while...\n'
+    if gui: gui.log(msg)
+    else: print(msg)
 
+    try:
+        with open(filename, 'r') as csv_file:
+            lines = [line.strip() for line in csv_file if line.strip()]
+    except Exception as e:
+        if gui: gui.log(f"Error reading file: {e}")
+        return
+
+    total_lines = len(lines)
     count = 0
 
-    for each_line in csv_file:
+    for idx, each_line in enumerate(lines, 1):
         link = each_line.split(',')[0].strip()
         if "youtu" not in link.lower():
             continue
 
         count += 1
+        if gui:
+            gui.log(f"Processing {idx}/{total_lines}: {link}")
+            gui.update_progress((idx / total_lines) * 100)
 
         dateDownloaded = todaysDate
 
-        link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords = yt__dlp(link)
-        # title, description, views, author, publish_date, length, download_name, error, caption, tags = yt__dlp(link)   # test
+        # Call the existing metadata extraction and download
+        # Note: yt__dlp and pytube use the 'args' object for resolution
+        link, title, description_val, views, author_val, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords = yt__dlp(link)
+        
         if error != '':
-            link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords = pytube(link)
+            if gui: gui.log(f"  yt-dlp failed: {error}")
+            if gui: gui.log(f"  trying pytube...")
+            link, title, description_val, views, author_val, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords = pytube(link, args)
 
-        # Keyword search
-        # keywords = check_keywords_in_captions(caption, keywords_to_check)
+        if gui:
+            if error: gui.log(f"  Error: {error}")
+            else: gui.log(f"  Downloaded: {title}")
 
-        print(f'{link}  {title}')
-        time.sleep(args.sleep)
-        write_xlsx(link, title, description, views, author, publish_date, length,
+        if not gui:
+            print(f'{link}  {title}')
+        
+        write_xlsx(link, title, description_val, views, author_val, publish_date, length,
                    download_name, rating, thumbnail_url, dateDownloaded, error,
                    caption, video_id, owner, owner_id, owner_url, keywords)
+        
+        if idx < total_lines:
+            if gui: gui.log(f"  Sleeping for {args.sleep} seconds...")
+            time.sleep(args.sleep)
 
     if count == 0:
-        noVideos()
+        noVideos(headless=True if gui else args.headless)
     else:
-        finalMessage(headless=args.headless)
+        if gui:
+            gui.update_progress(100)
+            gui.log("Done.")
+        else:
+            finalMessage(headless=args.headless)
 
 
-def pytube(link):
-    (title, description, views, author, publish_date) = ('', '', '', '', '')
+def pytube(link, args):
+    (title, description_val, views, author_val, publish_date) = ('', '', '', '', '')
     (length, rating, thumbnail_url, owner, caption) = ('', '', '', '', '')
     (owner_id, owner_url, download_name, error) = ('', '', '', '')
     (video_id, keywords) = ('', '')
 
     dateDownloaded = todaysDateTime
 
-    
-    if "youtu" not in link.lower():
+    if "youtu" in link.lower():
         try:
             yt = YouTube(link)
             video_id = yt.video_id
             title = yt.title
             download_name = f'{title}.mp4'
-            author = yt.author
-            description = yt.description
+            author_val = yt.author
+            description_val = yt.description
             rating = yt.rating
             publish_date = yt.publish_date
             length = str(yt.length)
@@ -279,9 +451,8 @@ def pytube(link):
         except Exception as e:
             print(f"An error occurred while processing video {link}: {str(e)}")
             error = f"Error processing video {download_name}: {str(e)}"
-            title, description, views, author, publish_date, length, download_name, error, caption, tags = yt__dlp(link)   # test
 
-    return link, title, description, views, author, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords
+    return link, title, description_val, views, author_val, publish_date, length, download_name, rating, thumbnail_url, dateDownloaded, error, caption, video_id, owner, owner_id, owner_url, keywords
 
 
 def yt__dlp(link):
@@ -295,9 +466,10 @@ def yt__dlp(link):
 
     
     ydl_opts = {
-        'format': 'mp4',
+        'format': 'best[ext=mp4]/best',
         'outtmpl': '%(title)s.%(ext)s',
-        'quiet': True,
+        'quiet': False,
+        'no_warnings': False,
     }
 
     try:
@@ -321,7 +493,7 @@ def yt__dlp(link):
             keywords = ' '.join(tags)
 
     except Exception as e:
-        print(f"An error occurred while processing video {video_url}: {str(e)}")
+        print(f"An error occurred while processing video {link}: {str(e)}")
         # title = description = views = creator = release_date = length = display_id = caption = tags = ''
         error = str(e)
 
