@@ -2,6 +2,5 @@ bs4
 requests
 openpyxl
 python-docx
-colorama
 playwright>=1.42.0
 playwright-stealth>=1.0.6
