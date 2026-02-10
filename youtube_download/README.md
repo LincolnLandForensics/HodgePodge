@@ -20,5 +20,3 @@ or the exe version
 ```
 youtube_download.exe
 ```
-
-![youtube_download.exe success message](images/youtubeDownloadInfo.png)
