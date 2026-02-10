@@ -17,6 +17,9 @@ read exif data from images in the photos folder
 python exif_read.py
 ```
 
+![GUI](images/Exif_Data_GUI.png)	
+
+
 Use -I to specify a different input folder (default is photos)
 ```
 python exif_read.py -I photos

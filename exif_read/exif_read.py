@@ -10,6 +10,10 @@ import hashlib   # pip install hashlib
 import openpyxl   # pip install openpyx
 import argparse # for menu system
 from datetime import datetime
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+from tkinter.scrolledtext import ScrolledText
+import threading
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -50,7 +54,184 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
         color_purple = Fore.MAGENTA
         color_reset = Style.RESET_ALL
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      GUI Class      >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+class ExifGui:
+    def __init__(self, root):
+        self.root = root
+        script_name = os.path.basename(sys.argv[0])
+        self.root.title(f"{script_name} {version}")
+        self.root.geometry("700x550")
+        
+        # Set Vista theme
+        self.style = ttk.Style()
+        try:
+            self.style.theme_use('vista')
+        except:
+            pass # Fallback to default if vista is not available
+
+        self.setup_gui()
+        self.set_defaults()
+
+    def setup_gui(self):
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Title/Description
+        ttk.Label(main_frame, text=f"{description}", font=("Helvetica", 12, "bold")).pack(pady=5)
+
+        # Input Folder
+        input_frame = ttk.LabelFrame(main_frame, text="Input Folder", padding="5")
+        input_frame.pack(fill=tk.X, pady=5)
+        
+        self.input_var = tk.StringVar()
+        ttk.Entry(input_frame, textvariable=self.input_var).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        ttk.Button(input_frame, text="Browse", command=self.browse_input).pack(side=tk.RIGHT)
+
+        # Output File
+        output_frame = ttk.LabelFrame(main_frame, text="Output Excel File", padding="5")
+        output_frame.pack(fill=tk.X, pady=5)
+        
+        self.output_var = tk.StringVar()
+        ttk.Entry(output_frame, textvariable=self.output_var).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        ttk.Button(output_frame, text="Browse", command=self.browse_output).pack(side=tk.RIGHT)
+
+        # Progress Bar
+        self.progress_var = tk.DoubleVar()
+        self.progress_bar = ttk.Progressbar(main_frame, variable=self.progress_var, maximum=100)
+        self.progress_bar.pack(fill=tk.X, pady=10)
+
+        # Status/Log Window
+        self.status_box = ScrolledText(main_frame, height=15, state='disabled')
+        self.status_box.pack(fill=tk.BOTH, expand=True, pady=5)
+
+        # Extract Button
+        self.btn_extract = ttk.Button(main_frame, text="Extract MetaData", command=self.start_processing)
+        self.btn_extract.pack(pady=10)
+
+    def set_defaults(self):
+        self.input_var.set("photos")
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
+        self.output_var.set(f"exif_data_{timestamp}.xlsx")
+
+    def browse_input(self):
+        folder = filedialog.askdirectory()
+        if folder:
+            self.input_var.set(folder)
+
+    def browse_output(self):
+        file = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+        if file:
+            self.output_var.set(file)
+
+    def log(self, message):
+        self.status_box.config(state='normal')
+        self.status_box.insert(tk.END, message + "\n")
+        self.status_box.see(tk.END)
+        self.status_box.config(state='disabled')
+        self.root.update_idletasks()
+
+    def start_processing(self):
+        input_folder = self.input_var.get()
+        output_file = self.output_var.get()
+
+        if not os.path.exists(input_folder):
+            messagebox.showerror("Error", f"Input folder '{input_folder}' does not exist.")
+            return
+
+        self.btn_extract.config(state='disabled')
+        self.progress_var.set(0)
+        self.status_box.config(state='normal')
+        self.status_box.delete(1.0, tk.END)
+        self.status_box.config(state='disabled')
+        
+        self.log(f"Input Folder: {os.path.abspath(input_folder)}")
+
+        # Start processing in a new thread
+        thread = threading.Thread(target=self.run_process, args=(input_folder, output_file))
+        thread.daemon = True
+        thread.start()
+
+    def run_process(self, input_folder, output_file):
+        try:
+            process_exif(input_folder, output_file, self.log, self.update_progress)
+            self.log(f"Output File: {output_file}")
+            self.log("\nDone.")
+        except Exception as e:
+            self.log(f"Critical Error: {e}")
+        finally:
+            self.btn_extract.config(state='normal')
+
+    def update_progress(self, current, total):
+        if total > 0:
+            percent = (current / total) * 100
+            self.progress_var.set(percent)
+        else:
+            self.progress_var.set(100)
+
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu/Logic     >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+def process_exif(photos_folder, output_file, status_callback=None, progress_callback=None):
+    """
+    Core logic to extract EXIF data and save to Excel.
+    """
+    # Ensure the input folder exists
+    if not os.path.exists(photos_folder):
+        msg = f"Input folder {photos_folder} doesn't exist."
+        if status_callback: status_callback(msg)
+        msg_blurb_square(msg, color_red)
+        return False
+
+    # Create a new workbook and add basic formatting
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.title = "FileMetadata"
+
+    # Define headers
+    headers = [
+        'Name', 'DateCreated', 'DateTimeOriginal', 'FileCreateDate', 'FileModifyDate', 'Timezone',
+        'DeviceManufacturer', 'ExifToolVersion', 'FileSize', 'FileType', 'FileTypeExtension', 'LensMake',
+        'Software', 'HostComputer', 'LensInfo', 'LensModel', 'Model', 'NumberOfImages', 
+        'Altitude', 'Latitude', 'Longitude', 'Coordinate', 'Time', 'Type', 'Icon', 'Description', 'MD5'
+    ]
+    sheet.append(headers)
+
+    for col, header in enumerate(headers, start=1):
+        sheet.cell(row=1, column=col, value=header).font = openpyxl.styles.Font(bold=True)
+        sheet.column_dimensions[openpyxl.utils.get_column_letter(col)].width = 15
+
+    sheet.freeze_panes = 'B2'
+
+    files = [f for f in os.listdir(photos_folder) if os.path.splitext(f)[1].lower() in image_types]
+    total_files = len(files)
+    
+    msg = f'Analyzing {total_files} photos from {photos_folder} folder'
+    if status_callback: status_callback(msg)
+    msg_blurb_square(msg, color_green)
+
+    for i, filename in enumerate(files, 1):
+        file_path = os.path.join(photos_folder, filename)
+        try:
+            exif_data, Description = read_exif_data(file_path)
+            print(f"{color_green}{filename}{color_reset}")
+            if status_callback: status_callback(filename)
+            sheet.append([exif_data.get(header, "") for header in headers])
+        except Exception as e:
+            err_msg = f"Error processing {filename}: {e}"
+            print(f"{color_red}{err_msg}{color_reset}")
+            if status_callback: status_callback(err_msg)
+            exif_data = {'Name': os.path.basename(file_path)}
+            sheet.append([exif_data.get(header, "") for header in headers])
+        
+        if progress_callback:
+            progress_callback(i, total_files)
+
+    workbook.save(output_file)
+    msg = f"File metadata exported to {output_file}"
+    if status_callback: status_callback(msg)
+    msg_blurb_square(msg, color_green)
+    return True
 
     
 def main():
@@ -63,75 +244,19 @@ def main():
 
     args = parser.parse_args()
 
-    # Folder containing photos
-    photos_folder = 'photos'  # Change this to your folder path
+    # If no arguments are provided, launch GUI
+    if len(sys.argv) == 1:
+        root = tk.Tk()
+        gui = ExifGui(root)
+        root.mainloop()
+        return
+
+    # CLI Mode
+    photos_folder = args.input if args.input else 'photos'
     timestamp = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
     output_file = f'exif_data_{timestamp}.xlsx'
 
-    file = sys.argv[0].split('\\')[-1]
-
-    # Set input and output folders based on arguments, if provided
-    if args.input:
-        photos_folder = args.input
-
-    # Ensure the input folder exists
-    if not os.path.exists(photos_folder):
-
-        msg_blurb = (f"Input folder {photos_folder} doesn't exist.")
-        msg_blurb_square(msg_blurb, color_red) 
-        return 1
-
-    # Create a new workbook and add basic formatting
-    workbook = openpyxl.Workbook()
-    sheet = workbook.active
-    sheet.title = "FileMetadata"
-
-    # Define headers based on EXIF data headers
-    headers = [
-        'Name', 'DateCreated', 'DateTimeOriginal', 'FileCreateDate', 'FileModifyDate', 'Timezone',
-        'DeviceManufacturer', 'ExifToolVersion', 'FileSize', 'FileType', 'FileTypeExtension', 'LensMake',
-        'Software', 'HostComputer', 'LensInfo', 'LensModel', 'Model', 'NumberOfImages', 
-        'Altitude', 'Latitude', 'Longitude', 'Coordinate', 'Time', 'Type', 'Icon', 'Description', 'MD5'
-    ]
-    sheet.append(headers)
-
-    # Format headers as bold and set column widths
-    for col, header in enumerate(headers, start=1):
-        sheet.cell(row=1, column=col, value=header).font = openpyxl.styles.Font(bold=True)
-        sheet.column_dimensions[openpyxl.utils.get_column_letter(col)].width = 15
-
-    # Freeze the top row at cell B2
-    sheet.freeze_panes = 'B2'
-
-    # Check if the path exists
-    if not os.path.exists(photos_folder):
-        msg_blurb = (f"The '{photos_folder}' folder does not exist.")
-        msg_blurb_square(msg_blurb, color_red)
-        sys.exit(1)  # Exit the program with an error code
-    else:
-        msg_blurb = (f'photos analyzed from {photos_folder} folder')
-        msg_blurb_square(msg_blurb, color_green)
-
-    # Iterate over files in the photos folder
-    for filename in os.listdir(photos_folder):
-        base_name, extension = os.path.splitext(filename)
-        if extension.lower() in image_types:
-            file_path = os.path.join(photos_folder, filename)
-            try:
-                exif_data, Description = read_exif_data(file_path)
-                # Append the EXIF data to the sheet
-                print(f"{color_green}{filename}{color_reset}")
-                sheet.append([exif_data.get(header, "") for header in headers])
-            except Exception as e:
-                print(f"{color_red}Error processing {filename}: {e}{color_reset}")
-                exif_data = {'Name': os.path.basename(file_path)}
-                sheet.append([exif_data.get(header, "") for header in headers])
-
-    # Save the workbook
-    workbook.save(output_file)
-
-    msg_blurb = (f"File metadata exported to {output_file}")
-    msg_blurb_square(msg_blurb, color_green)
+    process_exif(photos_folder, output_file)
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
