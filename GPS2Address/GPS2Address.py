@@ -35,77 +35,281 @@ from math import radians, cos, sin  # test
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment
 
-
-
 import argparse  # for menu system
 from openpyxl import load_workbook, Workbook
 
 from geopy.geocoders import Nominatim   # pip install geopy
 geolocator = Nominatim(user_agent="GeoTraxer")
 
-# Colorize section
-global color_red
-global color_yellow
-global color_green
-global color_blue
-global color_purple
-global color_reset
-color_red = ''
-color_yellow = ''
-color_green = ''
-color_blue = ''
-color_purple = ''
-color_reset = ''
-
-if sys.version_info > (3, 7, 9) and os.name == "nt":
-    version_info = os.sys.getwindowsversion()
-    major_version = version_info.major
-    build_version = version_info.build
-
-    if major_version >= 10 and build_version >= 22000: # Windows 11 and above
-        import colorama
-        from colorama import Fore, Back, Style  
-        print(f'{Back.BLACK}') # make sure background is black
-        color_red = Fore.RED
-        color_yellow = Fore.YELLOW
-        color_green = Fore.GREEN
-        color_blue = Fore.BLUE
-        color_purple = Fore.MAGENTA
-        color_reset = Style.RESET_ALL
+# GUI Imports
+import tkinter as tk
+from tkinter import ttk, filedialog, scrolledtext
+import threading
+import queue
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.5.0'
+version = '1.6.0'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
+class GPS2AddressGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title(f"GPS2Address {version}")
+        self.root.geometry("750x650")
+        
+        # Set Vista theme
+        style = ttk.Style()
+        if 'vista' in style.theme_names():
+            style.theme_use('vista')
+        
+        self.queue = queue.Queue()
+        self.processing = False
+        
+        self.create_widgets()
+        self.setup_defaults()
+
+    def create_widgets(self):
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Title and Description
+        ttk.Label(main_frame, text=f"GPS2Address {version}", font=("Helvetica", 16, "bold")).pack(pady=(0, 5))
+        ttk.Label(main_frame, text=description2, wraplength=700).pack(pady=(0, 15))
+
+        # Radio Buttons Frame
+        radio_frame = ttk.LabelFrame(main_frame, text="Select Mode", padding="10")
+        radio_frame.pack(fill=tk.X, pady=(0, 15))
+
+        self.mode_var = tk.StringVar(value="read_basic")
+        modes = [
+            ("Blank", "blank"),
+            ("Convert", "convert"),
+            ("kml2xlsx (-k)", "kml"),
+            ("xlsx2kml (-K)", "kml2xlsx"),
+            ("read", "read_basic"),
+            ("Resolve 2 addresses", "read"),
+            ("split", "split")
+        ]
+
+        # Use grid for radio buttons to keep them organized
+        for i, (text, val) in enumerate(modes):
+            ttk.Radiobutton(radio_frame, text=text, value=val, variable=self.mode_var, command=self.on_mode_change).grid(row=i//4, column=i%4, sticky=tk.W, padx=10, pady=5)
+
+        # File Fields Frame
+        self.file_frame = ttk.LabelFrame(main_frame, text="File Configuration", padding="10")
+        self.file_frame.pack(fill=tk.X, pady=(0, 15))
+
+        # Input File
+        ttk.Label(self.file_frame, text="Input File:").grid(row=0, column=0, sticky=tk.W)
+        self.input_var = tk.StringVar()
+        ttk.Entry(self.file_frame, textvariable=self.input_var).grid(row=0, column=1, sticky=(tk.W, tk.E), padx=5)
+        ttk.Button(self.file_frame, text="Browse", command=self.browse_input).grid(row=0, column=2)
+
+        # Output File
+        ttk.Label(self.file_frame, text="Output File:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.output_var = tk.StringVar()
+        ttk.Entry(self.file_frame, textvariable=self.output_var).grid(row=1, column=1, sticky=(tk.W, tk.E), padx=5, pady=5)
+        ttk.Button(self.file_frame, text="Browse", command=self.browse_output).grid(row=1, column=2, pady=5)
+
+        self.file_frame.columnconfigure(1, weight=1)
+
+        # Case Number Field (Managed visibility)
+        self.case_frame = ttk.Frame(main_frame, padding="5")
+        self.case_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(self.case_frame, text="Case Number:").grid(row=0, column=0, sticky=tk.W)
+        self.case_var = tk.StringVar()
+        self.case_entry = ttk.Entry(self.case_frame, textvariable=self.case_var)
+        self.case_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=5)
+        self.case_frame.columnconfigure(1, weight=1)
+
+        # Progress Bar and Status Window
+        self.progress = ttk.Progressbar(main_frame, mode='indeterminate')
+        self.progress.pack(fill=tk.X, pady=(0, 10))
+
+        self.status_window = scrolledtext.ScrolledText(main_frame, height=12, state='disabled', bg='black', fg='lightgreen', font=("Consolas", 10))
+        self.status_window.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+
+        # Start Button
+        self.start_button = ttk.Button(main_frame, text="Start Processing", command=self.start_processing)
+        self.start_button.pack(pady=5)
+
+    def log(self, message):
+        self.status_window.configure(state='normal')
+        self.status_window.insert(tk.END, message + "\n")
+        self.status_window.see(tk.END)
+        self.status_window.configure(state='disabled')
+        print(message) # Still print to original terminal
+
+    def setup_defaults(self):
+        self.on_mode_change()
+
+    def on_mode_change(self):
+        mode = self.mode_var.get()
+        if mode == "blank":
+            self.input_var.set("")
+            self.output_var.set("Locations_blank.xlsx")
+        elif mode == "convert":
+            self.input_var.set("Intel_.xlsx")
+            self.output_var.set("")
+        elif mode == "kml":
+            self.input_var.set("Locations.kml")
+            self.output_var.set("Locations.xlsx")
+        elif mode == "kml2xlsx":
+            self.input_var.set("Locations.xlsx")
+            self.output_var.set("Locations.kml")
+        elif mode == "read_basic":
+            self.input_var.set("Locations.xlsx")
+            self.output_var.set("")
+        elif mode == "read":
+            self.input_var.set("Locations.xlsx")
+            self.output_var.set("")
+        elif mode == "split":
+            self.input_var.set("Locations.xlsx")
+            self.output_var.set("")
+
+        # Show/Hide Case Number field
+        if mode in ["read_basic", "read", "split"]:
+            self.case_frame.pack(fill=tk.X, pady=(0, 10), after=self.file_frame)
+        else:
+            self.case_frame.pack_forget()
+
+    def browse_input(self):
+        mode = self.mode_var.get()
+        if mode == "kml":
+            filetypes = [("KML files", "*.kml"), ("All files", "*.*")]
+        else:
+            filetypes = [("Excel files", "*.xlsx *.xls"), ("All files", "*.*")]
+        
+        filename = filedialog.askopenfilename(filetypes=filetypes)
+        if filename:
+            self.input_var.set(filename)
+            # Dynamic output update for kml2xlsx and xlsx2kml as per request
+            if mode == "kml":
+                self.output_var.set(filename.rsplit('.', 1)[0] + ".xlsx")
+            elif mode == "kml2xlsx":
+                self.output_var.set(filename.rsplit('.', 1)[0] + ".kml")
+
+    def browse_output(self):
+        mode = self.mode_var.get()
+        if mode == "kml2xlsx":
+            filetypes = [("KML files", "*.kml"), ("All files", "*.*")]
+        else:
+            filetypes = [("Excel files", "*.xlsx"), ("All files", "*.*")]
+        
+        filename = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=filetypes)
+        if filename:
+            self.output_var.set(filename)
+
+    def start_processing(self):
+        if self.processing:
+            return
+        
+        input_file = self.input_var.get()
+        output_file = self.output_var.get()
+        mode = self.mode_var.get()
+
+        if mode != "blank" and not input_file:
+            self.log("Error: Input file required for this mode.")
+            return
+
+        self.processing = True
+        self.start_button.configure(state='disabled')
+        self.progress.start(10)
+        self.status_window.configure(state='normal')
+        self.status_window.delete(1.0, tk.END)
+        self.status_window.configure(state='disabled')
+        
+        if input_file:
+            self.log(f"Input file: {input_file}")
+
+        # Start processing thread
+        thread = threading.Thread(target=self.run_process, args=(input_file, output_file, mode))
+        thread.daemon = True
+        thread.start()
+        
+        self.root.after(100, self.check_queue)
+
+    def run_process(self, input_file, output_file, mode):
+        try:
+            # Prepare arguments for the existing processing logic
+            class Args:
+                def __init__(self, input_f, output_f, m, case_num):
+                    self.input = input_f
+                    self.output = output_f
+                    self.case_number = case_num
+                    self.blank = (m == "blank")
+                    self.convert = (m == "convert")
+                    self.kml = (m == "kml")
+                    self.kml2xlsx = (m == "kml2xlsx")
+                    self.read = (m == "read")
+                    self.read_basic = (m == "read_basic")
+                    self.split = (m == "split")
+                    self.howto = False
+            
+            args = Args(input_file, output_file, mode, self.case_var.get())
+            
+            # Call the redirected main processing logic
+            final_output = run_gps_processing(args, gui_log=self.log)
+            
+            self.queue.put(("DONE", final_output))
+        except Exception as e:
+            self.queue.put(("ERROR", str(e)))
+
+    def check_queue(self):
+        try:
+            msg_type, data = self.queue.get_nowait()
+            if msg_type == "DONE":
+                self.log(f"Process Complete. Output: {data}")
+                self.processing = False
+                self.start_button.configure(state='normal')
+                self.progress.stop()
+            elif msg_type == "ERROR":
+                self.log(f"Error: {data}")
+                self.processing = False
+                self.start_button.configure(state='normal')
+                self.progress.stop()
+        except queue.Empty:
+            self.root.after(100, self.check_queue)
+
 def main():
-    
+    if len(sys.argv) > 1:
+        # CLI Mode
+        parser = argparse.ArgumentParser(description=description2)
+        parser.add_argument('-I', '--input', help='', required=False)
+        parser.add_argument('-O', '--output', help='', required=False)
+        parser.add_argument('-H','--howto', help='help module', required=False, action='store_true')
+        parser.add_argument('-b','--blank', help='create blank sheet', required=False, action='store_true')
+        parser.add_argument('-c','--convert', help='convert intel sheet to locations', required=False, action='store_true')
+        parser.add_argument('-k', '--kml', help='xlsx to kml with nothing else', required=False, action='store_true')
+        parser.add_argument('-K', '--kml2xlsx', help='kml to xlsx', required=False, action='store_true')
+        parser.add_argument('-R', '--read', help='read xlsx', required=False, action='store_true')
+        parser.add_argument('-r', '--read_basic', help='read basic xlsx', required=False, action='store_true')
+        parser.add_argument('-s', '--split', help='split xlsx to 10000 lines per sheet for Google Earth', required=False, action='store_true')
+        parser.add_argument('-C', '--case', help='case number', required=False)
+
+        args = parser.parse_args()
+        # Add case_number to args if not present for run_gps_processing
+        if not hasattr(args, 'case_number'):
+            args.case_number = args.case
+        run_gps_processing(args)
+    else:
+        # GUI Mode
+        root = tk.Tk()
+        app = GPS2AddressGUI(root)
+        root.mainloop()
+
+def run_gps_processing(args, gui_log=None):
     global row
-    row = 0  # defines arguments
+    row = 0
     # Row = 1  # defines arguments   # if you want to add headers 
-    parser = argparse.ArgumentParser(description=description2)
-    parser.add_argument('-I', '--input', help='', required=False)
-    parser.add_argument('-O', '--output', help='', required=False)
-    parser.add_argument('-H','--howto', help='help module', required=False, action='store_true')
-    parser.add_argument('-c', '--create', help='create blank input sheet', required=False, action='store_true')
-    parser.add_argument('-i', '--intel', help='convert intel sheet to locations', required=False, action='store_true')
-    parser.add_argument('-k', '--kml', help='xlsx to kml with nothing else', required=False, action='store_true')
-    parser.add_argument('-K', '--kml2xlsx', help='kml to xlsx', required=False, action='store_true')
-    parser.add_argument('-R', '--read', help='read xlsx', required=False, action='store_true')
-    parser.add_argument('-r', '--read_basic', help='read basic xlsx', required=False, action='store_true')
-    parser.add_argument('-s', '--split', help='split xlsx to 10000 lines per sheet for Google Earth', required=False, action='store_true')
-
-
-    args = parser.parse_args()
-
-    if args.howto:  # this section might be redundant
-        parser.print_help()
+    
+    if args.howto:
         usage()
-        return 0
-        sys.exit()
+        return "Help displayed"
 
     # global input_xlsx
     global output_xlsx
@@ -120,6 +324,7 @@ def main():
     elif args.input.lower().endswith('.kml'):
         # input_xlsx = args.input
         input_kml = args.input
+        input_xlsx = "" # Ensure input_xlsx is not set to a KML file
     else:
         input_xlsx = args.input
 
@@ -131,8 +336,10 @@ def main():
         elif args.input.lower().endswith('.kml'):
             datatype = args.input
         elif args.input.lower().endswith('.xls'):
-            print(f'Convert {args.input} to .xlsx format first')
-            exit(1)  # Exit with a nonzero status to indicate an error
+            error_msg = f'Convert {args.input} to .xlsx format first'
+            if gui_log: gui_log(error_msg)
+            else: print(error_msg)
+            return error_msg
 
 
     else:
@@ -151,10 +358,11 @@ def main():
     else:
         output_xlsx = args.output
 
-    if args.create:
+    if args.blank:
         data = []
         msg_blurb = (f'Writing to {output_xlsx}')
-        msg_blurb_square(msg_blurb, color_green)
+        if gui_log: gui_log(msg_blurb)
+        msg_blurb_square(msg_blurb)
         write_locations(data)
 
     elif args.kml:
@@ -162,10 +370,11 @@ def main():
         file_exists = os.path.exists(input_xlsx)
         if file_exists == True:
             msg_blurb = (f'Reading {input_xlsx}')
-            msg_blurb_square(msg_blurb, color_green)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
 
             # data = read_xlsx(input_xlsx)
-            (data, coordinates) = read_locations(input_xlsx)
+            (data, coordinates) = read_locations(input_xlsx, case_number_gui=args.case_number)
 
             # create kml file
             write_locations(data)   # ??
@@ -173,23 +382,29 @@ def main():
             travel_path_kml(coordinates)
             
             workbook.close()
-            # print(f'{color_green}Writing to {output_xlsx} {color_reset}')
+            # print(f'Writing to {output_xlsx} ')
             msg_blurb = (f'Writing to {output_kml}')
-            msg_blurb_square(msg_blurb, color_blue)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
 
-            print(f'''\n\n{color_yellow}
+            output_message = f'''\n\n
             visit https://earth.google.com/
             <file><Import KML> select gps.kml <open>
-            {color_reset}\n''')
+            \n'''
+            if gui_log: gui_log(output_message)
+            else: print(output_message)
         else:
-            print(f'{color_red}{input_xlsx} does not exist{color_reset}')
-            exit()
+            error_msg = f'{input_xlsx} does not exist'
+            if gui_log: gui_log(error_msg)
+            else: print(error_msg)
+            return error_msg
     elif args.kml2xlsx:
         data = []
         file_exists = os.path.exists(input_kml)
         if file_exists == True:
             msg_blurb = (f'Reading {input_kml}')
-            msg_blurb_square(msg_blurb, color_green)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
 
             # (data, coordinates) = kml_to_excel(input_kml, output_xlsx)
             (data, coordinates) = kml_to_excel(data)
@@ -201,64 +416,76 @@ def main():
             
             workbook.close()
             msg_blurb = (f'Writing to {output_xlsx}')
-            msg_blurb_square(msg_blurb, color_blue)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
 
-            # print(f'''\n\n{color_yellow}
+            # print(f'''\n\n
             # visit https://earth.google.com/
             # <file><Import KML> select gps.kml <open>
-            # {color_reset}\n''')
+            # \n''')
         else:
-            print(f'{color_red}{input_kml} does not exist{color_reset}')
-            exit()
+            error_msg = f'{input_kml} does not exist'
+            if gui_log: gui_log(error_msg)
+            else: print(error_msg)
+            return error_msg
 
-    elif args.intel:
+    elif args.convert:
         data = []
         file_exists = os.path.exists(input_xlsx)
         if file_exists == True:
             msg_blurb = (f'Reading {input_xlsx}')
-            msg_blurb_square(msg_blurb, color_green)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
 
             data = read_intel(input_xlsx)
             # write_kml(data)
             write_locations(data)
             msg_blurb = (f'Writing to {output_xlsx}')
-            msg_blurb_square(msg_blurb, color_green)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
 
         else:
-            msg_blurb = (f'{input_xlsx} does not exist')
-            msg_blurb_square(msg_blurb, color_red)
-            # print(f'{color_red}{input_xlsx} does not exist{color_reset}')
-            exit()
+            error_msg = (f'{input_xlsx} does not exist')
+            if gui_log: gui_log(error_msg)
+            msg_blurb_square(error_msg)
+            return error_msg
             
     elif args.read:
         data = []
         file_exists = os.path.exists(input_xlsx)
         if file_exists == True:
             msg_blurb = (f'Reading {input_xlsx}')
-            msg_blurb_square(msg_blurb, color_green)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
             
             # data = read_xlsx(input_xlsx)
-            (data, coordinates) = read_locations(input_xlsx)
+            (data, coordinates) = read_locations(input_xlsx, case_number_gui=args.case_number)
             data = read_gps(data)
             write_locations(data)
             write_kml(data)
             row_count = len(data)
-            print(f'{row_count} rows detected')
+            if gui_log: gui_log(f'{row_count} rows detected')
+            else: print(f'{row_count} rows detected')
             if row_count > 10000:
                 write_csv(data)
 
             travel_path_kml(coordinates)
             workbook.close()
             msg_blurb = (f'Writing to {output_xlsx}')
-            msg_blurb_square(msg_blurb, color_green)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
 
-            print(f'''\n\n{color_yellow}
+            output_message = f'''\n\n
             visit https://earth.google.com/
             <file><Import KML> select gps.kml <open>
-            {color_reset}\n''')
+            \n'''
+            if gui_log: gui_log(output_message)
+            else: print(output_message)
         else:
-            print(f'{color_red}{input_xlsx} does not exist{color_reset}')
-            exit()
+            error_msg = f'{input_xlsx} does not exist'
+            if gui_log: gui_log(error_msg)
+            else: print(error_msg)
+            return error_msg
 
     elif args.split:
         data = []
@@ -267,21 +494,26 @@ def main():
             base_output_name = input_xlsx.replace('.xlsx', '')
             
             msg_blurb = (f'Reading {input_xlsx}')
-            msg_blurb_square(msg_blurb, color_green)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
             
             # data = read_xlsx(input_xlsx)
-            (data, coordinates) = read_locations(input_xlsx)
+            (data, coordinates) = read_locations(input_xlsx, case_number_gui=args.case_number)
             row_count = len(data)
-            print(f'{row_count} rows detected')            
+            if gui_log: gui_log(f'{row_count} rows detected')
+            else: print(f'{row_count} rows detected')            
             
             split_xlsx(data, base_output_name, chunk_size=10000)
 
             msg_blurb = (f'Writing to {output_xlsx}')
-            msg_blurb_square(msg_blurb, color_green)
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
 
         else:
-            print(f'{color_red}{input_xlsx} does not exist{color_reset}')
-            exit()
+            error_msg = f'{input_xlsx} does not exist'
+            if gui_log: gui_log(error_msg)
+            else: print(error_msg)
+            return error_msg
 
         
     elif args.read_basic:
@@ -290,40 +522,48 @@ def main():
         file_exists = os.path.exists(input_xlsx)
         if file_exists == True:
             msg_blurb = (f'Reading basic {input_xlsx} no kml')
-            msg_blurb_square(msg_blurb, color_green)
-            if input_kml.lower().endswith('.kml'):
+            if gui_log: gui_log(msg_blurb)
+            msg_blurb_square(msg_blurb)
+            if input_kml and input_kml.lower().endswith('.kml'): # Check if input_kml is set and ends with .kml
                 data = kml_to_xlsx(input_kml, output_xlsx)
                 write_locations(data)
             else:    
                 # data = read_xlsx(input_xlsx)
-                (data, coordinates) = read_locations(input_xlsx)
+                (data, coordinates) = read_locations(input_xlsx, case_number_gui=args.case_number)
                 # print(f'{coordinates}') # temp
                 # data = read_gps(data)
                 write_locations(data)
                 write_kml(data)
                 row_count = len(data)
-                print(f'{row_count} rows detected')
+                if gui_log: gui_log(f'{row_count} rows detected')
+                else: print(f'{row_count} rows detected')
                 if row_count > 10000:
                     write_csv(data)                
                 
                 travel_path_kml(coordinates)
                 workbook.close()
                 msg_blurb = (f'Writing to {output_xlsx}')
-                msg_blurb_square(msg_blurb, color_green)
+                if gui_log: gui_log(msg_blurb)
+                msg_blurb_square(msg_blurb)
 
-                print(f'''\n\n{color_yellow}
+                output_message = f'''\n\n
                 visit https://earth.google.com/
                 <file><Import KML> select gps.kml <open>
-                {color_reset}\n''')
+                \n'''
+                if gui_log: gui_log(output_message)
+                else: print(output_message)
         else:
-            print(f'{color_red}{input_xlsx} does not exist{color_reset}')
-            exit()
+            error_msg = f'{input_xlsx} does not exist'
+            if gui_log: gui_log(error_msg)
+            else: print(error_msg)
+            return error_msg
 
 
     else:
         usage()
+        return "No mode selected"
     
-    return 0
+    return output_xlsx if not args.kml else output_kml
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -703,7 +943,7 @@ def travel_path_kml(coordinates):
     kml2.save(output_file)
 
     msg_blurb = (f'extra travel_path KML file {output_file} created successfully!')
-    msg_blurb_square(msg_blurb, color_blue) 
+    msg_blurb_square(msg_blurb) 
        
 def kml_to_xlsx(kml_file, xlsx_file):
     data = []
@@ -796,16 +1036,16 @@ def long_lat_flip(latitude, longitude, coordinate, Altitude):
                 coordinate = f'{longitude},{latitude},{Altitude}' 
     return (latitude, longitude, coordinate, Altitude)
  
-def msg_blurb_square(msg_blurb, color):
+def msg_blurb_square(msg_blurb):
     horizontal_line = f"+{'-' * (len(msg_blurb) + 2)}+"
     empty_line = f"| {' ' * (len(msg_blurb))} |"
 
-    print(color + horizontal_line)
+    print(horizontal_line)
     print(empty_line)
     print(f"| {msg_blurb} |")
     print(empty_line)
     print(horizontal_line)
-    print(f'{color_reset}')
+    print(f'')
 
 def radius_azimuth(kml, no, description, latitude, longitude, Azimuth, Radius, Altitude, point_icon):
     try:
@@ -1030,12 +1270,12 @@ def read_gps(data):
 
                         location = geolocator.reverse((latitude, longitude), language='en') #lat/long
                     except Exception as e:
-                        print(f"{color_red}Error : {str(e)}{color_reset}") 
+                        print(f"Error : {str(e)}") 
                     try:
                         fulladdress = location.address
 
                     except Exception as e:
-                        print(f"{color_red}Error : {str(e)}{color_reset}") 
+                        print(f"Error : {str(e)}") 
 
                     if fulladdress == 'Soul Buoy':        
                         fulladdress = ''
@@ -1066,7 +1306,7 @@ def read_gps(data):
                 fulladdress = location.address
 
             except Exception as e:
-                print(f"{color_red}Error: {str(e)}{color_reset}")
+                print(f"Error: {str(e)}")
 
             if fulladdress == 'Soul Buoy':        
                 fulladdress = ''
@@ -1102,10 +1342,10 @@ def read_gps(data):
                 else:
                     print(f"Unable to find coordinates for address: {PlusCode}")
             except Exception as e:
-                    print(f"{color_red}Error : {str(e)}{color_reset} PlusCode = <{PlusCode}>")  
+                    print(f"Error : {str(e)} PlusCode = <{PlusCode}>")  
 
         else:
-            print(f'{color_red}none of the above{color_reset}')
+            print(f'none of the above')
 
 # parse fulladdress
         if len(fulladdress) > 5 and skip != 'skip' and "," in fulladdress:
@@ -1167,7 +1407,7 @@ def read_gps(data):
                     if business == '' and address_parts[1].isdigit():
                         business = address_parts[0]
                 except Exception as e:
-                    print(f"{color_red}Error : {str(e)}{color_reset} Business = <{business}>")  
+                    print(f"Error : {str(e)} Business = <{business}>")  
 
 
                 try:
@@ -1176,7 +1416,7 @@ def read_gps(data):
                     elif business.endswith(" Street") or business.endswith(" Road") or business.endswith(" Tollway") or business.endswith(" Avenue"): 
                         business = ''
                 except Exception as e:
-                    print(f"{color_red}Error : {str(e)}{color_reset} Business2 = <{business}>")  
+                    print(f"Error : {str(e)} Business2 = <{business}>")  
 
 
                 if address_parts[0].isdigit():
@@ -1189,11 +1429,11 @@ def read_gps(data):
                 try:        
                     number = number if number.isdigit() else ''
                 except Exception as e:
-                    print(f"{color_red}Error : {str(e)}{color_reset} number = <{number}>")  
+                    print(f"Error : {str(e)} number = <{number}>")  
 
 
             except Exception as e:
-                print(f"{color_red}Error : {str(e)}{color_reset} Business = <{business}> Full address =<{address_parts}>")  
+                print(f"Error : {str(e)} Business = <{business}> Full address =<{address_parts}>")  
 
 
         if type_data == "":
@@ -1215,6 +1455,8 @@ def read_gps(data):
             elif type_data == "Searched Items":
                 Icon = "Searched"
 
+        if business is None:
+            business = ''
 
 # write rows to data
         row_data["Latitude"] = latitude
@@ -1267,7 +1509,7 @@ def read_intel(input_xlsx):
         data.append(row_data)
 
     if not data:
-        print(f"{color_red}No data found in the Excel file.{color_reset}")
+        print(f"No data found in the Excel file.")
         return None
 
     for row_index, row_data in enumerate(data):
@@ -1281,7 +1523,9 @@ def read_intel(input_xlsx):
         (Radius) = ('')
 # Time
         Time = row_data.get("Time", "")
-        
+        if Time is None:
+            Time = '' 
+            
 # Latitude
         latitude = row_data.get("Latitude", "")
 
@@ -1392,7 +1636,7 @@ def read_intel(input_xlsx):
      
     return data
 
-def read_locations(input_xlsx):
+def read_locations(input_xlsx, case_number_gui=None):
 
     """Read data from an xlsx file and return as a list of dictionaries.
     Read XLSX Function: The read_xlsx() function reads data from the input 
@@ -1427,7 +1671,7 @@ def read_locations(input_xlsx):
         data.append(row_data)
 
     if not data:
-        print(f"{color_red}No data found in the Excel file.{color_reset}")
+        print(f"No data found in the Excel file.")
         return None
 
 # active sheet (current sheet)
@@ -1435,7 +1679,10 @@ def read_locations(input_xlsx):
     active_sheet_title = active_sheet.title   
 
 
-    case_prompt = case_number_prompt()
+    if case_number_gui:
+        case_prompt = case_number_gui
+    else:
+        case_prompt = case_number_prompt()
 
     cnt = 0
     for row_index, row_data in enumerate(data):
@@ -1480,10 +1727,13 @@ def read_locations(input_xlsx):
 
 # Time
         Time = row_data.get("Time", "")
-
+        if Time is None:
+            Time = ''
+            
         if Time == '':
             Time = row_data.get("Vicinity Exit Date/Time", "")
-
+            if Time is None:
+                Time = ''
         if Time == '':
             Time = row_data.get("Timestamp Date/Time - UTC+00:00 (M/d/yyyy)", "")   # Find my locations (Axiom)
             Timezone = 'GMT'
@@ -1559,14 +1809,14 @@ def read_locations(input_xlsx):
         if capture_time is None:
             capture_time = ''     
 
-        if Time == '':
-            if capture_time != '':
-                Time = capture_time
-
 # Capture Date
         capture_date  = row_data.get("Capture Date", "") 
         if capture_date is None:
-            capture_date = ''     
+            capture_date = ''  
+
+        if Time == '':
+            if capture_time != '' and capture_time is not None:
+                Time = (f'{capture_date} {capture_time}')
 
         if Time == '':
             if capture_date != '':
@@ -1593,7 +1843,14 @@ def read_locations(input_xlsx):
         if Time == '':
             Time  = row_data.get("Start Date/Time - UTC+00:00 (M/d/yyyy)", "") 
             if Time is None:
-                Time = ''               
+                Time = ''    
+        if Time == '':
+            Time  = row_data.get("Time(Local)", "") 
+            if Time is None:
+                Time = ''  
+
+
+                
 # GPS tracker
         if Time == '':
             Time  = row_data.get("report_time (GMT)", "") 
@@ -1631,7 +1888,6 @@ def read_locations(input_xlsx):
         if Time == "" and time2 != "":
             Time = time2
             timezone = "UTC"
-            
 
 # convert time
         # output_format = "%m/%d/%Y %H:%M:%S"  # Changed to military time
@@ -1642,10 +1898,10 @@ def read_locations(input_xlsx):
         # pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
         pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'  # ISO 8601 ? military time
 
-        if time_orig == '' and Time != '': # copy the original time
+        if time_orig == '' and Time != '': #  and Time is not None: # copy the original time
             time_orig = Time
 
-        if Time != '':
+        if Time != '' and Time is not None:
             Time = Time or ''
             try:
                 (Time, time_orig, timezone) = convert_timestamp(Time, time_orig, timezone)
@@ -1691,6 +1947,8 @@ def read_locations(input_xlsx):
 
         if Altitude == '':
             Altitude = row_data.get("Altitude (meters)", "")
+        if Altitude is None or Altitude == 'None':
+            Altitude = '' 
 
 # gps
         latitude = row_data.get("Latitude", "")
@@ -1858,12 +2116,14 @@ def read_locations(input_xlsx):
 
 
 # coordinate        
-
-
-       
         if latitude != '' and longitude != '' and Altitude != '':
             coordinate = (f'{latitude},{longitude},{Altitude}')
             # coordinate = (f'{longitude},{latitude},{Altitude}')
+        elif row_data.get("Coordinate(Lat. Long.)") != None: # 
+            coordinate = row_data.get("Coordinate(Lat. Long.)", "")
+            
+            if " " in coordinate:
+                coordinate = coordinate.replace('  ', ',')
         elif latitude != '' and longitude != '':
             coordinate = (f'{latitude},{longitude}')
             # coordinate = (f'{longitude},{latitude}')
@@ -1874,6 +2134,7 @@ def read_locations(input_xlsx):
         elif row_data.get("Position") != None:  # task
             coordinate = row_data.get("Position", "")
             coordinate = coordinate.replace('(', '').replace(')', '')           
+
             
         elif row_data.get("Capture Location", ""):
             coordinate = row_data.get("Capture Location", "")
@@ -1881,12 +2142,14 @@ def read_locations(input_xlsx):
         elif row_data.get("Capture Location (Latitude,Longitude)") != None:
             coordinate = row_data.get("Capture Location (Latitude,Longitude)", "")
             # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
-        elif row_data.get("Coordinate(Lat., Long)") != None:
+        elif row_data.get("Coordinate(Lat., Long)") != None: 
             coordinate = row_data.get("Coordinate(Lat., Long)", "")
             # (latitude, longitude, coordinate, Altitude) = long_lat_flip(latitude, longitude, coordinate, Altitude)
         elif row_data.get("Position") != None:
             coordinate = row_data.get("Position", "")
             print(f'bobs your uncle mark')  # temp
+        # else:
+            # print(f'no buano Lat = {latitude} long = {longitude}')  # temp
         # if len(coordinate) > 6:
         coordinate = coordinate.replace('(', '').replace(')', '')
 
@@ -1965,6 +2228,7 @@ def read_locations(input_xlsx):
             if subgroup == '':
                 type_data = subgroup
             elif "Search" in original_file:
+            
                 type_data = "Searched"
                 if Icon == '':
                     Icon = "Searched" 
@@ -2009,6 +2273,9 @@ def read_locations(input_xlsx):
 
 # source
         source = row_data.get("Source", "")
+        if source is None:
+            source = '' 
+
 
         if type_data == 'Unknown' or type_data == 'Locations':  # cellebrite Journeys
             type_data = source
@@ -2546,9 +2813,14 @@ def split_xlsx(data, base_output_name="output_split", chunk_size=7000):
         # Save file
         filename = f"{base_output_name}_{chunk_index+1:03d}.xlsx"
         wb.save(filename)
-        print(f"{color_green}Saved: {filename}{color_reset}")
+        print(f"Saved: {filename}")
 
 def time_compare(time1, time2):
+    if time1 is None:
+        time1 = ''
+    if time2 is None:
+        time2 = ''    
+    
     time_format = "%Y-%m-%d %H:%M:%S"
 
     # Convert to datetime only if needed
@@ -2588,7 +2860,6 @@ def write_kml(data):
             # no = index_data
 
         Time = row_data.get("Time", "")
-        
 
         latitude = row_data.get("Latitude", "")
         longitude = row_data.get("Longitude", "")
@@ -2648,35 +2919,36 @@ def write_kml(data):
         
         if Time != '':
             (description) = (f'{description}\nTIME: {Time}')
-
+            if " 00:00:00" in description:
+                description = description.replace(' 00:00:00', '')
         if end_time != '':
             (description) = (f'{description}\nEnd Time: {end_time}')
 
-        if address != '':
+        if address != '' and address is not None:
             (description) = (f'{description}\n{address}')
 
         elif fulladdress != '':
             (description) = (f'{description}\nADDRESS: {fulladdress}')
 
-        if hwy != '':
+        if hwy != '' and hwy is not None:
             (description) = (f'{description}\nHWY NAME: {hwy}')
             
-        if direction != '':
+        if direction != '' and direction is not None:
             (description) = (f'{description}\nDIRECTION: {direction}')
 
         # if source_file != '' and source_file != None:
             # (description) = (f'{description}\nSOURCE: {source_file}')
 
-        if tag != '':
+        if tag != '' and tag is not None:
             (description) = (f'{description}\nTAG: {tag}')    # test
 
         if type_data != '':
             (description) = (f'{description}\nTYPE: {type_data}')
 
-        if group_data != '':
+        if group_data != '' and group_data is not None:
             (description) = (f'{description} / {group_data}')
 
-        if subgroup != '' and subgroup != 'UNKNOWN':
+        if subgroup != '' and subgroup != 'UNKNOWN' and subgroup is not None:
             (description) = (f'{description} / {subgroup}')
 
         if business != '':
@@ -2688,16 +2960,16 @@ def write_kml(data):
             (description) = (f'{description}\nCASE: {case}')
         if Altitude != '' and Altitude != '0' :
             (description) = (f'{description}\nALTITUDE: {Altitude}')
-        if Azimuth != '' and Azimuth != '0' :
+        if Azimuth != '' and Azimuth != '0' and Azimuth is not None:
             (description) = (f'{description}\nAZIMUTH: {Azimuth}')
         if Radius != '' and Radius != '0' :
             (description) = (f'{description}\nRadius: {Radius}')
         original_file = original_file or ""
         if original_file != '':
             (description) = (f'{description}\nSOURCE: {original_file}')
-        if speed != '':
+        if speed != '' and speed is not None:
             (description) = (f'{description}\nSPEED: {speed}')
-        if parked != '':
+        if parked != '' and parked is not None:
             (description) = (f'{description}\nPARKED: {parked}')
 
 # row # in description
@@ -2739,7 +3011,7 @@ def write_kml(data):
                 point.style.labelstyle.color = simplekml.Color.yellow  # Set label text color
                 # point.style.labelstyle.scale = 1.2  # Adjust label scale if needed    # task
             except Exception as e:
-                print(f"{color_red}Error printing line: {str(e)}{color_reset}")
+                print(f"Error printing line: {str(e)}")
 
         if origin_latitude != '' and origin_longitude != '':
             point_start = kml.newpoint(
@@ -2766,7 +3038,7 @@ def write_kml(data):
     kml.save(output_kml)    # Save the KML document to the specified output file
 
     msg_blurb = (f'KML file {output_kml} created successfully!')
-    msg_blurb_square(msg_blurb, color_blue)
+    msg_blurb_square(msg_blurb)
 
 def write_csv(data):
 
@@ -2782,9 +3054,9 @@ def write_csv(data):
             writer.writeheader()
             for row in data:
                 writer.writerow(row)
-        print(f"{color_green}CSV output written to {output_csv}{color_reset}")
+        print(f"CSV output written to {output_csv}")
     except Exception as e:
-        print(f"{color_red}Error writing CSV: {str(e)}{color_reset}")
+        print(f"Error writing CSV: {str(e)}")
 
 def write_locations(data):
     '''
@@ -2802,7 +3074,7 @@ def write_locations(data):
     try:
         worksheet.title = active_sheet_title
     except Exception as e:
-        print(f"{color_red}Error : {str(e)}{color_reset}")
+        print(f"Error : {str(e)}")
 
     # worksheet.title = 'Locations'
     # header_format = {'bold': True, 'border': True}
@@ -2917,7 +3189,7 @@ def write_locations(data):
             try:
                 worksheet.cell(row=row_index+2, column=col_index+1).value = cell_data
             except Exception as e:
-                print(f"{color_red}Error printing line: {str(e)}{color_reset}")
+                print(f"Error printing line: {str(e)}")
 
 
     # Create a new worksheet for color codes
@@ -3172,27 +3444,27 @@ def usage():
     working examples of syntax
     '''
     file = sys.argv[0].split('\\')[-1]
-    print(f'\nDescription: {color_green}{description2}{color_reset}')
+    print(f'\nDescription: {description2}')
     print(f'{file} Version: {version} by {author}')
-    print(f'\n    {color_yellow}insert your input into locations.xlsx')
+    print(f'\n    insert your input into locations.xlsx')
     print(f'\nExample:')
-    print(f'    {file} -c -O input_blank.xlsx') 
+    print(f'    {file} -b -O input_blank.xlsx') 
     print(f'    {file} -k -I locations.xlsx  # xlsx 2 kml with no internet processing')     
     print(f'    {file} -K -I Locations.kml  # kml 2 xlsx with no internet processing')     
 
     print(f'    {file} -r -I locations.xlsx -O Locations_.xlsx')
     print(f'    {file} -R')
     print(f'    {file} -R -I locations.xlsx -O Locations_.xlsx') 
-    print(f'    {file} -R -I locations_FTK.xlsx -O Locations_.xlsx') 
-    print(f'    {file} -R -I Flock.xlsx -O Locations_Flock.xlsx')   
-    print(f'    {file} -R -I Journeys.xlsx -O Locations_Journeys.xlsx   # beta')  
-    print(f'    {file} -R -I MediaLocations_.xlsx')  
-    print(f'    {file} -R -I PointsOfInterest.xlsx -O Locations_PointsOfInterest.xlsx') 
-    print(f'    {file} -R -I Tolls.xlsx -O Locations_Tolls.xlsx')    
+    # print(f'    {file} -R -I locations_FTK.xlsx -O Locations_.xlsx') 
+    # print(f'    {file} -R -I Flock.xlsx -O Locations_Flock.xlsx')   
+    # print(f'    {file} -R -I Journeys.xlsx -O Locations_Journeys.xlsx   # beta')  
+    # print(f'    {file} -R -I MediaLocations_.xlsx')  
+    # print(f'    {file} -R -I PointsOfInterest.xlsx -O Locations_PointsOfInterest.xlsx') 
+    # print(f'    {file} -R -I Tolls.xlsx -O Locations_Tolls.xlsx')    
     print(f'    {file} -s -I locations.xlsx')  
-    print(f'    {file} -i -I intel_.xlsx -O Locations_Intel_.xlsx')  
-    print(f'    {file} -i -I intel_SearchedItems_.xlsx')  
-    print(f'    {file} -i -I intel_Chats_.xlsx')  
+    print(f'    {file} -c -I intel_.xlsx -O Locations_Intel_.xlsx')  
+    # print(f'    {file} -c -I intel_SearchedItems_.xlsx')  
+    # print(f'    {file} -c -I intel_Chats_.xlsx')  
 
     
 if __name__ == '__main__':
