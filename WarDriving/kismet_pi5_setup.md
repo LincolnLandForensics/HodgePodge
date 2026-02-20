@@ -1,4 +1,4 @@
-Kismet Auto-Start Wi-Fi + Bluetooth + GPS + Wigle Logging on Kali (Raspberry Pi 5)
+## Kismet Auto-Start Wi-Fi + Bluetooth + GPS + Wigle Logging on Kali (Raspberry Pi 5)
 
 This document describes the one-time manual setup required to deploy a Raspberry Pi 5 running Kali Linux as an autonomous Kismet sensor. The configuration includes:
 
@@ -16,20 +16,20 @@ Field-friendly log directory structure
 
 Drop-in configuration files
 
-1. Install Kismet + Plugins
+## 1. Install Kismet + Plugins
 
 ```
 sudo apt update
 sudo apt install kismet kismet-plugins
 ```
 
-1.1 Create kismet user
+## 1.1 Create kismet user
 
 ```
 sudo useradd -r -g kismet -s /usr/sbin/nologin kismet
 ```
 
-2. Prepare Log Directory
+## 2. Prepare Log Directory
 
 ```
 sudo mkdir -p /var/log/kismet
@@ -38,13 +38,13 @@ sudo chown kismet:kismet /var/log/kismet
 
 Kismet will write all logs here, including Wigle CSVs.
 
-3. Configure Wi-Fi Capture (wlan1)
+## 3. Configure Wi-Fi Capture (wlan1)
 
 Your Panda PAU0F AXE3000 will enumerate as wlan1.
 
 Kismet handles monitor mode automatically; no manual airmon-ng steps are required.
 
-4. Configure Bluetooth Capture (hci0)
+## 4. Configure Bluetooth Capture (hci0)
 
 Enable Bluetooth:
 
@@ -54,7 +54,7 @@ sudo systemctl start bluetooth
 sudo hciconfig hci0 up
 ```
 
-5. Configure GPSD (GPS on /dev/ttyACM0)
+## 5. Configure GPSD (GPS on /dev/ttyACM0)
 
 Install GPSD:
 
@@ -79,7 +79,7 @@ cgps
 
 If coordinates update, Kismet will automatically tag devices with GPS.
 
-6. Install Drop-In Kismet Config Files
+## 6. Install Drop-In Kismet Config Files
 
 
 ```
@@ -118,11 +118,11 @@ sudo nano /etc/kismet/kismet_logging.conf
 
 	log_prefix=kismet-$(date +%Y%m%d-%H%M%S)
 
-7. Create Systemd Service for Auto‑Start and Dedicated User
+## 7. Create Systemd Service for Auto‑Start and Dedicated User
 
 
 
-Create systemd service file
+### Create systemd service file
 
 ```
 sudo nano /etc/systemd/system/kismet.service
@@ -130,21 +130,26 @@ sudo nano /etc/systemd/system/kismet.service
 
 Paste:
 
-\[Unit]
+[Unit]
+
 Description=Kismet Wireless Scanner
 After=network.target bluetooth.target gpsd.service
 
-\[Service]
+[Service]
+
 User=kismet
 Group=kismet
 ExecStart=/usr/bin/kismet
 WorkingDirectory=/var/log/kismet
 Restart=always
 
-\[Install]
+[Install]
+
 WantedBy=multi-user.target
 
-Enable and start service
+
+
+## Enable and start service
 
 ```
 sudo systemctl daemon-reload
