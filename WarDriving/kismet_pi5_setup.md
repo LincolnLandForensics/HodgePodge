@@ -26,7 +26,7 @@ sudo apt install kismet kismet-plugins
 1.1 Create kismet user
 
 ```
-sudo useradd -r -s /usr/sbin/nologin kismet
+sudo useradd -r -g kismet -s /usr/sbin/nologin kismet
 sudo mkdir -p /var/log/kismet
 sudo chown kismet:kismet /var/log/kismet
 ```
