@@ -99,7 +99,7 @@ sudo nano /etc/kismet/kismet.conf
 
 	log_prefix=/var/log/kismet/kismet
 
-
+	gps=gpsdP:host=localhost,port=2947
 
 ```
 sudo nano /etc/kismet/kismet_logging.conf
