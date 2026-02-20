@@ -23,7 +23,13 @@ sudo apt update
 sudo apt install kismet kismet-plugins
 ```
 
+1.1 Create kismet user
 
+```
+sudo useradd -r -s /usr/sbin/nologin kismet
+sudo mkdir -p /var/log/kismet
+sudo chown kismet:kismet /var/log/kismet
+```
 
 2. Prepare Log Directory
 
@@ -107,13 +113,7 @@ log\_prefix=kismet-$(date +%Y%m%d-%H%M%S)
 
 7. Create Systemd Service for Auto‑Start and Dedicated User
 
-Create kismet user
 
-```
-sudo useradd -r -s /usr/sbin/nologin kismet
-sudo mkdir -p /var/log/kismet
-sudo chown kismet:kismet /var/log/kismet
-```
 
 Create systemd service file
 
