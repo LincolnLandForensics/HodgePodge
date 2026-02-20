@@ -81,33 +81,37 @@ If coordinates update, Kismet will automatically tag devices with GPS.
 
 6. Install Drop-In Kismet Config Files
 
-/etc/kismet/kismet.conf
 
-# Wi-Fi capture source (Panda PAU0F AXE3000)
+```
+nano /etc/kismet/kismet.conf
+```
 
-source=wlan1:name=wifi0
 
-# Bluetooth capture source (internal Pi 5 Bluetooth)
+	# Wi-Fi capture source (Panda PAU0F AXE3000)
 
-source=bluetooth:hci0
+	source=wlan1:name=wifi0
 
-# Log directory
+	# Bluetooth capture source (internal Pi 5 Bluetooth)
 
-log\_prefix=/var/log/kismet/kismet
+	source=bluetooth:hci0
 
-/etc/kismet/kismet\_logging.conf
+	# Log directory
 
-# Core Kismet logs
+	log\_prefix=/var/log/kismet/kismet
 
-log\_types=pcapng,netxml,nettxt
+	/etc/kismet/kismet\_logging.conf
 
-# Wigle-compatible CSV export
+	# Core Kismet logs
 
-log\_types+=wiglecsv
+	log\_types=pcapng,netxml,nettxt
 
-# Timestamped filenames for chain-of-custody clarity
+	# Wigle-compatible CSV export
 
-log\_prefix=kismet-$(date +%Y%m%d-%H%M%S)
+	log\_types+=wiglecsv
+
+	# Timestamped filenames for chain-of-custody clarity
+
+	log\_prefix=kismet-$(date +%Y%m%d-%H%M%S)
 
 7. Create Systemd Service for Auto‑Start and Dedicated User
 
