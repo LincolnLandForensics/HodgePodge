@@ -97,7 +97,7 @@ sudo nano /etc/kismet/kismet.conf
 
 	# Log directory
 
-	log_prefix=/var/log/kismet/kismet
+	log_prefix=/var/log/kismet/
 
 	gps=gpsdP:host=localhost,port=2947
 
@@ -244,6 +244,25 @@ Kismet logs:
 ```
 ls /var/log/kismet/
 ```
+
+## manually start kismet
+
+
+```
+kismet -c wlan1
+```
+
+
+```
+https://localhost:2501
+```
+
+
+
+
+
+
+
 
 
 
