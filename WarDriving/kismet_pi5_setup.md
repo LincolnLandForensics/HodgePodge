@@ -97,21 +97,26 @@ nano /etc/kismet/kismet.conf
 
 	# Log directory
 
-	log\_prefix=/var/log/kismet/kismet
+	log_prefix=/var/log/kismet/kismet
 
-	/etc/kismet/kismet\_logging.conf
+
+
+```
+nano /etc/kismet/kismet\_logging.conf
+```
+
 
 	# Core Kismet logs
 
-	log\_types=pcapng,netxml,nettxt
+	log_types=pcapng,netxml,nettxt
 
 	# Wigle-compatible CSV export
 
-	log\_types+=wiglecsv
+	log_types+=wiglecsv
 
 	# Timestamped filenames for chain-of-custody clarity
 
-	log\_prefix=kismet-$(date +%Y%m%d-%H%M%S)
+	log_prefix=kismet-$(date +%Y%m%d-%H%M%S)
 
 7. Create Systemd Service for Auto‑Start and Dedicated User
 
