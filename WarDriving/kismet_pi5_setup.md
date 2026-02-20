@@ -83,7 +83,7 @@ If coordinates update, Kismet will automatically tag devices with GPS.
 
 
 ```
-nano /etc/kismet/kismet.conf
+sudo nano /etc/kismet/kismet.conf
 ```
 
 
@@ -102,7 +102,7 @@ nano /etc/kismet/kismet.conf
 
 
 ```
-nano /etc/kismet/kismet\_logging.conf
+sudo nano /etc/kismet/kismet_logging.conf
 ```
 
 
