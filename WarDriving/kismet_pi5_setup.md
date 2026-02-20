@@ -27,8 +27,6 @@ sudo apt install kismet kismet-plugins
 
 ```
 sudo useradd -r -g kismet -s /usr/sbin/nologin kismet
-sudo mkdir -p /var/log/kismet
-sudo chown kismet:kismet /var/log/kismet
 ```
 
 2. Prepare Log Directory
