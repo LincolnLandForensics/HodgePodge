@@ -132,10 +132,12 @@ Paste:
 
 [Unit]
 
+
 Description=Kismet Wireless Scanner
 After=network.target bluetooth.target gpsd.service
 
 [Service]
+
 
 User=kismet
 Group=kismet
@@ -144,6 +146,7 @@ WorkingDirectory=/var/log/kismet
 Restart=always
 
 [Install]
+
 
 WantedBy=multi-user.target
 
