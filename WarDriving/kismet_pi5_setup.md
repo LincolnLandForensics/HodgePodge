@@ -27,6 +27,11 @@ sudo apt install kismet kismet-plugins
 
 ```
 sudo useradd -r -g kismet -s /usr/sbin/nologin kismet
+sudo usermod -aG netdev/plugdev,dialout kismet
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/kismet_cap_linux_wifi
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/kismet_cap_linux_bluetooth
+sudo usermod -aG dialout kismet
+
 ```
 
 ## 2. Prepare Log Directory
@@ -144,11 +149,15 @@ User=kismet
 
 Group=kismet
 
-ExecStart=/usr/bin/kismet
+Type=simple
+
+ExecStart=/usr/bin/kismet -c wlan1
 
 WorkingDirectory=/var/log/kismet
 
-Restart=always
+Restart=on-failure
+
+RestartSec=5
 
 [Install]
 
