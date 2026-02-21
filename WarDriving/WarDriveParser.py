@@ -29,7 +29,7 @@ from requests.auth import HTTPBasicAuth
 
 author = 'LincolnLandForensics'
 description = "Convert wigle .gz or .csv exports to gps2address.py locations format or convert HackRf logs. Convert MAC to company name."
-version = '1.2.3'
+version = '1.2.4'
 
 
 global USERNAME
@@ -1032,11 +1032,16 @@ def process_wigle_file(filename, data):
         message = (f"Error: File {filename} not found or is not a valid file.")
         message_square(message, color_red)        
         return
-    
-    if not filename.startswith('WigleWifi') or not filename.endswith('.csv'):
-        message = (f"Invalid file: Filename must start with 'WigleWifi' and end with '.csv'")
-        message_square(message, color_red)        
+
+    valid_prefix = filename.startswith(("WigleWifi", "Kismet"))
+    valid_suffix = filename.endswith((".csv", ".wiglecsv"))
+
+    if not (valid_prefix and valid_suffix):
+        # Skip this file
+        message = "Invalid file: Must start with WigleWifi/Kismet and end with .csv/.wiglecsv"
+        message_square(message, color_red)
         return
+
     else:
         
         output_xlsx = (f'{filename}.xlsx')
@@ -1044,16 +1049,18 @@ def process_wigle_file(filename, data):
         # csv_file = open(filename)
         csv_file = open(filename, "r", encoding="utf-8")
 
-        
+
         
         source_file = filename
+        
+        print(f'reading {source_file}')        
         row_count = 0
         for row in csv_file:
             row = row.split(',')
             row_data = {}
             description, group, subgroup, type_data, Name, Type = '', '', '', '', '', ''
             Tag, CompanyName, country, source, Icon = '', '', '', 'Wigle', ''
-       
+            Coordinate = ''
             try:
                 MAC = row[0] if len(row) > 0 else ''
                 SSID = row[1] if len(row) > 1 else ''
@@ -1073,7 +1080,7 @@ def process_wigle_file(filename, data):
                 
             except Exception as e:
                 print(f"Error processing line : {e}")
-
+            print(f'SSID = {SSID}') # temp
             if MfgrId != '':
                 CompanyName = MfgrId2Company(MfgrId)
             if latitude != '' and longitude != '':
@@ -1296,7 +1303,7 @@ def process_wigle_file(filename, data):
             print(f'Google Earth only likes up to 2000 labels (#). adjust the xlsx accordingly')
         output_xlsx = filename
         output_xlsx = output_xlsx.replace('.csv', '.xlsx')  # task  # it'sonly changing the local output_xlsx
-
+        output_xlsx = output_xlsx.replace('.wiglecsv', '.xlsx')  # task  # it'sonly changing the local output_xlsx
 
         write_xlsx(data,output_xlsx)
 
@@ -1963,7 +1970,7 @@ some devices have "quote,quote" in them and it breaks the csv parsing
 
 If you have 2000 or more items, delete the # (label) row before making the KML file 
 or google earth will be unusable. Leave just the Tagged labels.
-
+Google play store has a cool app called WifiAnalyzer
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      The End        >>>>>>>>>>>>>>>>>>>>>>>>>>

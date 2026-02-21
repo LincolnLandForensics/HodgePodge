@@ -286,3 +286,14 @@ Auto-start on boot
 
 Forensic-grade timestamped logs
 
+
+
+## 10. convert kismet to kml
+
+```
+kismetdb_to_kml --in kismet-20240220-1530-1.kismet --out kismet.kml
+```
+
+
+
+
