@@ -32,16 +32,24 @@ sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/kismet_cap_linux_wifi
 sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/kismet_cap_linux_bluetooth
 sudo usermod -aG dialout kismet
 
-```
+sudo groupadd kismet
+sudo usermod -aG netdev,plugdev,dialout kismet
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/kismet_cap_linux_wifi
 
-## 2. Prepare Log Directory
+sudo groupadd kismetshare
+sudo usermod -aG kismetshare kismet
+sudo usermod -aG kismetshare kali
+sudo usermod -aG kismetshare root
 
-```
+sudo mkdir -p /home/kismet
 sudo mkdir -p /var/log/kismet
-sudo chown kismet:kismet /var/log/kismet
-```
 
-Kismet will write all logs here, including Wigle CSVs.
+sudo chown -R kali:kismetshare /home/kismet
+sudo chown -R kali:kismetshare /var/log/kismet
+sudo chown -R kali:kismetshare /etc/kismet
+
+
+```
 
 ## 3. Configure Wi-Fi Capture (wlan1)
 
@@ -306,3 +314,15 @@ kismetdb_to_kml --in kismet-20240220-1530-1.kismet --out kismet.kml
 
 
 
+draft notes
+it wouldn't log into /var/log/kismet until I got the rights right
+
+## 11. Optional macchanger
+
+```
+sudo systemctl stop gpsd
+sudo gpsd /dev/ttyACM0 -F /var/run/gpsd.sock
+sudo apt install macchanger
+sudo macchanger -m 00:11:22:33:44:55 wlan1
+iw dev wlan1 info
+```
