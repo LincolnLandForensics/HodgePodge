@@ -119,17 +119,20 @@ sudo nano /etc/kismet/kismet_logging.conf
 ```
 
 
-	# Core Kismet logs
-
-	log_types=pcapng,netxml,nettxt
 
 	# Wigle-compatible CSV export
 
-	log_types+=wiglecsv
+	log_types=wiglecsv
+	or
+	log_types=kismet,wiglecsv
+
+	# disable Core Kismet logsvvvv
+
+	# log_types=pcapng,netxml,nettxt
 
 	# Timestamped filenames for chain-of-custody clarity
 
-	log_prefix=kismet-$(date +%Y%m%d-%H%M%S)
+	log_prefix=kismet-$(date +%Y%m%d-%H%M)
 
 ## 7. Create Systemd Service for Auto‑Start and Dedicated User
 
