@@ -38,11 +38,13 @@ import asyncio
 import threading
 from tkinter import ttk, filedialog, scrolledtext
 
+
+
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
-version = '3.3.5'
+version = '3.4.1'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -324,7 +326,12 @@ def run_core_logic(args):
 
     # default input
     if not args.input: 
-        input_file_type = 'txt'
+        if args.blurb:
+            input_file_type = 'xlsx'
+            input_xlsx = 'Intel_.xlsx'
+        else:
+            input_file_type = 'txt'
+            filename = 'input.txt'
     elif '.txt' in args.input:
         input_file_type = 'txt'
         filename = args.input
@@ -334,6 +341,7 @@ def run_core_logic(args):
         input_file_type = 'xlsx'
         input_xlsx = args.input
     else:
+        input_file_type = 'xlsx'
         input_xlsx = args.input 
    
     # output xlsx
@@ -3109,6 +3117,15 @@ def paypal(): # testuser = kevinrose
   
             data.append(row_data)
 
+
+def ping_url(url):
+    try:
+        r = requests.get(url, timeout=5)
+        return 200 <= r.status_code < 400
+    except requests.exceptions.RequestException:
+        return False
+
+
 def phone_dashes(phone):
     # Remove any non-digit characters from the phone number
     cleaned_number = ''.join(filter(str.isdigit, phone))
@@ -3628,6 +3645,7 @@ def read_xlsx(input_xlsx):
 
     # get data rows
     for row in ws.iter_rows(min_row=2, values_only=True):
+        if not any(row): continue
         row_data = {}   # test
         row_data = dict(zip(headers, row))
 
@@ -4058,7 +4076,14 @@ def request(url):
 
 def reversephonecheck():# testPhone= 
     print(f'\n\t<<<<< reversephonecheck phone numbers >>>>>')
-    
+    url = (f'https://www.reversephonecheck.com' )
+
+
+    # If the site is down, skip the module
+    if not ping_url(url):
+        print(f'{url} is down, skipping reversephonecheck module.')
+        return
+
     for phone in phones:
         row_data = {}
         (query) = (phone)
@@ -5002,7 +5027,7 @@ def twitch(): # testuser = kevinrose
     print(f'\n\t<<<<< twitch users >>>>>')
     for user in users:    
         row_data = {}
-        (query, ranking, fullname, note) = (user, '4 - tumblr', '', '')
+        (query, ranking, fullname, note) = (user, '4 - twitch.tv', '', '')
         (content, referer, osurl, titleurl, pagestatus) = ('','', '', '', '')
         (firstname, middlename, lastname) = ('','', '')
         user = user.rstrip()
@@ -5245,8 +5270,13 @@ def whitepagesphone():# testuser=    210-316-9435
 
 def whocalld():# testPhone=  DROP THE LEADING 1
     print(f'\n\t<<<<< whocalld phone numbers >>>>>')
+    url = ('https://whocalld.com' )
 
-    # https://whocalld.com/+17083728101
+    # If the site is down, skip the module
+    if not ping_url(url):
+        print(f'{url} is down, skipping reversephonecheck module.')
+        return
+
     for phone in phones:
         row_data = {}
         (query, note) = (phone, '')
@@ -5548,9 +5578,11 @@ def write_blurb():
     doc.add_paragraph(sentence)    
     # Loop through rows in the Excel file and write to Word document
     for row in sheet.iter_rows(min_row=2, values_only=True):
+        if not any(row): continue
         sentence = "\n".join(f"{column}: {value}" for column, value in zip(column_names, row) if column not in columns_to_skip and value is not None)
-        doc.add_paragraph(sentence)
-        doc.add_paragraph("")  # Add an empty line between rows
+        if sentence.strip():
+            doc.add_paragraph(sentence)
+            doc.add_paragraph("")  # Add an empty line between rows
 
 
     # Save the Word document
