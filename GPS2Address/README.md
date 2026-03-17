@@ -16,8 +16,15 @@ additional red lines for trips within a reasonable time. (travel_path_SAMPLE.kml
 
 Usage:
 ```
-python GPS2Address.py -r
+python GPS2Address.py
 ```
+
+
+![Case Example](images/GPS2Address_GUI1.png)
+
+
+
+
 insert your GPS or addresses into locations.xlsx
 
 Example:
