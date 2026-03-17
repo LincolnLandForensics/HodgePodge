@@ -51,7 +51,7 @@ import queue
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.6.0'
+version = '1.6.1'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -347,10 +347,13 @@ def run_gps_processing(args, gui_log=None):
      
     datatype = datatype.replace('.xlsx', '').replace('.kml', '')
 
-    if '\\' in datatype:
-        datatype = datatype.split('\\')[-1]
+    datatype = datatype.replace('\\', '/')
+    if '/' in datatype:
+        datatype = datatype.split('/')[-1]
 
-    output_kml = (f'GPS_{datatype}.kml')
+    # output_kml = (f'GPS_{datatype}.kml')
+    output_kml = (f'{datatype}.kml')    
+    
 
     if not args.output: 
         output_xlsx = (f'Locations_{datatype}.xlsx') 
@@ -1681,8 +1684,8 @@ def read_locations(input_xlsx, case_number_gui=None):
 
     if case_number_gui:
         case_prompt = case_number_gui
-    else:
-        case_prompt = case_number_prompt()
+    # else:
+        # case_prompt = case_number_prompt()
 
     cnt = 0
     for row_index, row_data in enumerate(data):
@@ -2538,11 +2541,16 @@ def read_locations(input_xlsx, case_number_gui=None):
 
 
 # case    
-        if case == '':
+        if not case:
+
+        # if case == '' or case is None:
             case = row_data.get("case", "") 
-        if case == '':
+            print(f'____2222222222222_____case = {case_prompt}  case = {case}')   # temp this works
+        if not case:
+        # if case == '':
+        
             case = case_prompt
-  
+            print(f'_____4____case_prompt = {case_prompt} case = {case}')   # temp The print statement doesn't work
 
 # location
         location  = row_data.get("Location", "") 
@@ -3484,6 +3492,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+Gui CASE input doesn't populate
 make Google earch use a time bar slider 
 <TimeStamp>
   <when>2025-11-12T11:44:00Z</when>
