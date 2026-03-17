@@ -524,7 +524,7 @@ def run_gps_processing(args, gui_log=None):
         data = []
         file_exists = os.path.exists(input_xlsx)
         if file_exists == True:
-            msg_blurb = (f'Reading basic {input_xlsx} no kml')
+            msg_blurb = (f'Reading basic {input_xlsx}')
             if gui_log: gui_log(msg_blurb)
             msg_blurb_square(msg_blurb)
             if input_kml and input_kml.lower().endswith('.kml'): # Check if input_kml is set and ends with .kml
