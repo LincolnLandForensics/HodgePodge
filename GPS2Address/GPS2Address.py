@@ -425,7 +425,7 @@ def run_gps_processing(args, gui_log=None):
     elif args.kml2xlsx:
         data = []
         file_exists = os.path.exists(input_kml)
-        print(f'bobs your uncle')   # temp
+        print(f'bobs your uncle2. input_kml = {input_kml}')   # temp
         if file_exists == True:
             msg_blurb = (f'Reading {input_kml}')
             if gui_log: gui_log(msg_blurb)
