@@ -51,7 +51,7 @@ import queue
 
 author = 'LincolnLandForensics'
 description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.6.1'
+version = '1.6.3'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -59,7 +59,7 @@ class GPS2AddressGUI:
     def __init__(self, root):
         self.root = root
         self.root.title(f"GPS2Address {version}")
-        self.root.geometry("750x650")
+        self.root.geometry("750x700")
         
         # Set Vista theme
         style = ttk.Style()
@@ -85,11 +85,13 @@ class GPS2AddressGUI:
         radio_frame.pack(fill=tk.X, pady=(0, 15))
 
         self.mode_var = tk.StringVar(value="read_basic")
+        # rem these out to remove them from the menu
         modes = [
             ("Blank", "blank"),
             ("Convert", "convert"),
-            ("kml2xlsx (-k)", "kml"),
-            ("xlsx2kml (-K)", "kml2xlsx"),
+            # ("kml2xlsx (-k)", "kml"),
+            ("kml2xlsx (-K)", "kml2xlsx"),    
+            # ("xlsx2kml (-K)", "xlsx2kml"),
             ("read", "read_basic"),
             ("Resolve 2 addresses", "read"),
             ("split", "split")
@@ -125,6 +127,15 @@ class GPS2AddressGUI:
         self.case_entry = ttk.Entry(self.case_frame, textvariable=self.case_var)
         self.case_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=5)
         self.case_frame.columnconfigure(1, weight=1)
+
+        # Travel Path Color Field (Managed visibility)
+        self.color_frame = ttk.Frame(main_frame, padding="5")
+        self.color_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(self.color_frame, text="Travel Path Color:").grid(row=0, column=0, sticky=tk.W)
+        self.color_var = tk.StringVar(value="red")
+        colors = ["red", "yellow", "green", "blue", "cyan", "magenta", "black", "white"]
+        self.color_dropdown = ttk.OptionMenu(self.color_frame, self.color_var, "red", *colors)
+        self.color_dropdown.grid(row=0, column=1, sticky=tk.W, padx=5)
 
         # Progress Bar and Status Window
         self.progress = ttk.Progressbar(main_frame, mode='indeterminate')
@@ -171,11 +182,16 @@ class GPS2AddressGUI:
             self.input_var.set("Locations.xlsx")
             self.output_var.set("")
 
-        # Show/Hide Case Number field
+        # Show/Hide Case Number and Color fields
         if mode in ["read_basic", "read", "split"]:
             self.case_frame.pack(fill=tk.X, pady=(0, 10), after=self.file_frame)
+            if mode in ["read_basic", "read"]:
+                self.color_frame.pack(fill=tk.X, pady=(0, 10), after=self.case_frame)
+            else:
+                self.color_frame.pack_forget()
         else:
             self.case_frame.pack_forget()
+            self.color_frame.pack_forget()
 
     def browse_input(self):
         mode = self.mode_var.get()
@@ -237,10 +253,11 @@ class GPS2AddressGUI:
         try:
             # Prepare arguments for the existing processing logic
             class Args:
-                def __init__(self, input_f, output_f, m, case_num):
+                def __init__(self, input_f, output_f, m, case_num, color):
                     self.input = input_f
                     self.output = output_f
                     self.case_number = case_num
+                    self.travel_path_color = color
                     self.blank = (m == "blank")
                     self.convert = (m == "convert")
                     self.kml = (m == "kml")
@@ -250,7 +267,7 @@ class GPS2AddressGUI:
                     self.split = (m == "split")
                     self.howto = False
             
-            args = Args(input_file, output_file, mode, self.case_var.get())
+            args = Args(input_file, output_file, mode, self.case_var.get(), self.color_var.get())
             
             # Call the redirected main processing logic
             final_output = run_gps_processing(args, gui_log=self.log)
@@ -264,6 +281,7 @@ class GPS2AddressGUI:
             msg_type, data = self.queue.get_nowait()
             if msg_type == "DONE":
                 self.log(f"Process Complete. Output: {data}")
+                # self.log(f"test https://northloopconsulting.com/blog/fetch-v52")
                 self.processing = False
                 self.start_button.configure(state='normal')
                 self.progress.stop()
@@ -290,6 +308,7 @@ def main():
         parser.add_argument('-r', '--read_basic', help='read basic xlsx', required=False, action='store_true')
         parser.add_argument('-s', '--split', help='split xlsx to 10000 lines per sheet for Google Earth', required=False, action='store_true')
         parser.add_argument('-C', '--case', help='case number', required=False)
+        parser.add_argument('-p', '--travel_path_color', help='travel path color (default: red)', required=False, default='red', choices=['black', 'white', 'red', 'green', 'yellow', 'cyan', 'magenta', 'blue'])
 
         args = parser.parse_args()
         # Add case_number to args if not present for run_gps_processing
@@ -316,7 +335,6 @@ def run_gps_processing(args, gui_log=None):
     global output_kml
 
     global input_kml
-    # input_kml = 'Locations.kml'
     input_kml = ''
     
     if not args.input: 
@@ -370,19 +388,22 @@ def run_gps_processing(args, gui_log=None):
 
     elif args.kml:
         data = []
-        file_exists = os.path.exists(input_xlsx)
-        if file_exists == True:
-            msg_blurb = (f'Reading {input_xlsx}')
+        file_exists = os.path.exists(input_kml)
+        
+        print(f'{input_kml} file_exists = {file_exists}')   # temp
+        if 1 == 1:
+        # if file_exists == True:
+            msg_blurb = (f'Reading {input_kml}')
             if gui_log: gui_log(msg_blurb)
             msg_blurb_square(msg_blurb)
 
-            # data = read_xlsx(input_xlsx)
-            (data, coordinates) = read_locations(input_xlsx, case_number_gui=args.case_number)
+            # data = read_xlsx(input_kml)
+            (data, coordinates) = read_locations(input_kml, case_number_gui=args.case_number)
 
             # create kml file
             write_locations(data)   # ??
             write_kml(data)
-            travel_path_kml(coordinates)
+            travel_path_kml(coordinates, color_choice=getattr(args, 'travel_path_color', 'red'))
             
             workbook.close()
             # print(f'Writing to {output_xlsx} ')
@@ -404,6 +425,7 @@ def run_gps_processing(args, gui_log=None):
     elif args.kml2xlsx:
         data = []
         file_exists = os.path.exists(input_kml)
+        print(f'bobs your uncle')   # temp
         if file_exists == True:
             msg_blurb = (f'Reading {input_kml}')
             if gui_log: gui_log(msg_blurb)
@@ -415,7 +437,7 @@ def run_gps_processing(args, gui_log=None):
             # create kml file
             write_locations(data)   # ??
             # write_kml(data)
-            # travel_path_kml(coordinates)
+            # travel_path_kml(coordinates, color_choice=getattr(args, 'travel_path_color', 'red'))
             
             workbook.close()
             msg_blurb = (f'Writing to {output_xlsx}')
@@ -472,7 +494,7 @@ def run_gps_processing(args, gui_log=None):
             if row_count > 10000:
                 write_csv(data)
 
-            travel_path_kml(coordinates)
+            travel_path_kml(coordinates, color_choice=getattr(args, 'travel_path_color', 'red'))
             workbook.close()
             msg_blurb = (f'Writing to {output_xlsx}')
             if gui_log: gui_log(msg_blurb)
@@ -543,7 +565,7 @@ def run_gps_processing(args, gui_log=None):
                 if row_count > 10000:
                     write_csv(data)                
                 
-                travel_path_kml(coordinates)
+                travel_path_kml(coordinates, color_choice=getattr(args, 'travel_path_color', 'red'))
                 workbook.close()
                 msg_blurb = (f'Writing to {output_xlsx}')
                 if gui_log: gui_log(msg_blurb)
@@ -886,7 +908,7 @@ def kml_to_excel(data):
 def random_color():
     return simplekml.Color.rgb(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
     
-def travel_path_kml(coordinates):
+def travel_path_kml(coordinates, color_choice='red'):
     '''
     This reads latitude and longitude coordinates and generates a KML file with lines 
     connecting the points and no icons displayed.
@@ -900,9 +922,11 @@ def travel_path_kml(coordinates):
     # for coord in coordinates:
         # lat, long, timestamp = coord
         # print(f"Latitude: {lat}, Longitude: {long}, Timestamp: {timestamp}")
-        
+    
     for i in range(len(coordinates) - 1):
-        new_color = simplekml.Color.red    # test
+        new_color = getattr(simplekml.Color, color_choice.lower(), simplekml.Color.red)
+
+        
         # (new_color, linestring) = ('ff2f41ac', '')
         coord1 = coordinates[i]
         coord2 = coordinates[i + 1]
@@ -1684,7 +1708,8 @@ def read_locations(input_xlsx, case_number_gui=None):
 
     if case_number_gui:
         case_prompt = case_number_gui
-    # else:
+    else:
+        case_prompt = ''
         # case_prompt = case_number_prompt()
 
     cnt = 0
@@ -2545,12 +2570,8 @@ def read_locations(input_xlsx, case_number_gui=None):
 
         # if case == '' or case is None:
             case = row_data.get("case", "") 
-            print(f'____2222222222222_____case = {case_prompt}  case = {case}')   # temp this works
         if not case:
-        # if case == '':
-        
             case = case_prompt
-            print(f'_____4____case_prompt = {case_prompt} case = {case}')   # temp The print statement doesn't work
 
 # location
         location  = row_data.get("Location", "") 
@@ -3492,6 +3513,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+add a way to select travelpath color instead of the default blue. (pulldown windows)
 Gui CASE input doesn't populate
 make Google earch use a time bar slider 
 <TimeStamp>
