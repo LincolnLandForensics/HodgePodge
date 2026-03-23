@@ -50,8 +50,8 @@ import queue
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description2 = "convert GPS coordinates to addresses or visa versa & create a KML file"
-version = '1.6.3'
+description2 = "Convert GPS coordinates to addresses or visa versa & create a KML file"
+version = '1.6.4'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 # @cache
@@ -77,7 +77,7 @@ class GPS2AddressGUI:
         main_frame.pack(fill=tk.BOTH, expand=True)
 
         # Title and Description
-        ttk.Label(main_frame, text=f"GPS2Address {version}", font=("Helvetica", 16, "bold")).pack(pady=(0, 5))
+        # ttk.Label(main_frame, text=f"GPS2Address {version}", font=("Helvetica", 16, "bold")).pack(pady=(0, 5))
         ttk.Label(main_frame, text=description2, wraplength=700).pack(pady=(0, 15))
 
         # Radio Buttons Frame
@@ -1306,7 +1306,8 @@ def read_gps(data):
 
                     if fulladdress == 'Soul Buoy':        
                         fulladdress = ''
-  
+                    elif fulladdress is None:
+                        fulladdress = ''  
 
                     time.sleep(8)   ## Sleep x seconds
 
@@ -1337,6 +1338,8 @@ def read_gps(data):
 
             if fulladdress == 'Soul Buoy':        
                 fulladdress = ''
+            elif fulladdress is None:
+                fulladdress = ''                 
                 skip == 'skip'
 
 # coordinate        
@@ -1366,6 +1369,9 @@ def read_gps(data):
                     # latitude, longitude = location.latitude, location.longitude
                     print(f'PlusCode {PlusCode} = {latitude}, {longitude}')
                     fulladdress = location.address
+                    if fulladdress is None:
+                        fulladdress = ''                    
+                    
                 else:
                     print(f"Unable to find coordinates for address: {PlusCode}")
             except Exception as e:
@@ -2952,11 +2958,14 @@ def write_kml(data):
                 description = description.replace(' 00:00:00', '')
         if end_time != '':
             (description) = (f'{description}\nEnd Time: {end_time}')
+        
+        if fulladdress is None:
+            fulladdress = ''
 
         if address != '' and address is not None:
             (description) = (f'{description}\n{address}')
 
-        elif fulladdress != '':
+        if len(fulladdress) > 6:
             (description) = (f'{description}\nADDRESS: {fulladdress}')
 
         if hwy != '' and hwy is not None:
@@ -3002,7 +3011,7 @@ def write_kml(data):
             (description) = (f'{description}\nPARKED: {parked}')
 
 # row # in description
-        (description) = (f'{description}\nROW#: {row_index + 2}') # test
+        # (description) = (f'{description}\nROW#: {row_index + 2}') # test
 
 
         # converts timestamp to ISO standard for point_start.timestamp.when = Time (Time Slider)
