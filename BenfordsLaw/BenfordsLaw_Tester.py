@@ -31,7 +31,7 @@ from scipy.stats import chisquare   # pip install scipy
 
 author = 'LincolnLandForensics'
 description = "This script models Benford’s Law by generating and comparing authentic versus manipulated financial data. It outputs frequency distributions to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud."
-version = '1.1.2'
+version = '1.1.3'
 
 # Informational blurb for More button
 Blurb = """
@@ -360,7 +360,9 @@ def benfords(input_file, output_file=None):
 
     # Chi-Square Test
     observed_counts = df.set_index('Digit').reindex(range(1, 10), fill_value=0)['Freq']
-    expected_counts = benford_dist['Expected'] * len(excel_first_digit)
+    expected_counts = benford_dist['Expected'] * observed_counts.sum()
+    if expected_counts.sum() > 0:
+        expected_counts = expected_counts * (observed_counts.sum() / expected_counts.sum())
     chi2_stat, p_value = chisquare(f_obs=observed_counts, f_exp=expected_counts)
 
     # MAD Test
@@ -422,7 +424,9 @@ def benfords_gui(input_file, output_file, column):
         
         # Chi-Square Test
         observed_counts = df.set_index('Digit').reindex(range(1, 10), fill_value=0)['Freq']
-        expected_counts = benford_dist['Expected'] * len(excel_first_digit)
+        expected_counts = benford_dist['Expected'] * observed_counts.sum()
+        if expected_counts.sum() > 0:
+            expected_counts = expected_counts * (observed_counts.sum() / expected_counts.sum())
         chi2_stat, p_value = chisquare(f_obs=observed_counts, f_exp=expected_counts)
         
         # MAD Test
@@ -522,7 +526,13 @@ def digit_df(digits, label):
 
 # 🔍 First-digit extraction
 def get_first_digit(arr):
-    return [int(str(int(np.floor(x)))[0]) for x in arr if x > 0]
+    digits = []
+    for x in arr:
+        if x > 0:
+            s = str(float(x)).replace('.', '').lstrip('0')
+            if s and s[0].isdigit():
+                digits.append(int(s[0]))
+    return digits
 
 
 
