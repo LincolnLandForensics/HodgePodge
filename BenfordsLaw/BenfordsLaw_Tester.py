@@ -31,7 +31,9 @@ from scipy.stats import chisquare   # pip install scipy
 
 author = 'LincolnLandForensics'
 description = "This script models Benford’s Law by generating and comparing authentic versus manipulated financial data. It outputs frequency distributions to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud."
-version = '1.1.3'
+version = '1.1.5'
+
+figure_counter = 0
 
 # Informational blurb for More button
 Blurb = """
@@ -336,6 +338,19 @@ def benfords(input_file, output_file=None):
 
     wb = load_workbook(input_file, data_only=True)
     ws = wb.active
+    
+    filename = os.path.basename(input_file)
+    sheet_name = ws.title
+    column_name = ws[f"{column_pick}1"].value
+    if not column_name:
+        column_name = "Unknown"
+        
+    global figure_counter
+    figure_counter += 1
+    
+    console_msg = f"Figure {figure_counter}: {filename} - {column_name} (Column {column_pick})"
+    print(console_msg)
+    
     column_data = [cell.value for cell in ws[column_pick] if isinstance(cell.value, (int, float))]
 
     if not column_data:
@@ -374,7 +389,7 @@ def benfords(input_file, output_file=None):
     ax.plot(benford_dist['Digit'], benford_dist['Expected'],
             color='blue', linewidth=2, label="Benford's Law")
 
-    ax.set_title(f"Benford's Law Analysis: {input_file}", fontsize=16, weight='bold')
+    ax.set_title(f"Benford's Law Analysis: {filename}\nSheet: {sheet_name} | Column: {column_pick} ({column_name})", fontsize=14, weight='bold')
     ax.set_xlabel('First Digit', fontsize=14)
     ax.set_ylabel('Proportion', fontsize=14)
     ax.set_xticks(range(1, 10))
@@ -382,7 +397,7 @@ def benfords(input_file, output_file=None):
     plt.grid(True, which='major', linestyle='--', alpha=0.4)
 
     # Add Chi-Square and MAD results below the chart
-    stats_text = f"Chi-Square: {chi2_stat:.2f} (p={p_value:.4f})   |   MAD: {mad:.4f}"
+    stats_text = f"Chi-Square: {chi2_stat:.2f}   |   MAD: {mad:.4f}"
     fig.text(0.5, 0.01, stats_text,
              ha='center', va='bottom',
              fontsize=12,
@@ -397,6 +412,20 @@ def benfords_gui(input_file, output_file, column):
     try:
         wb = load_workbook(input_file, data_only=True)
         ws = wb.active
+        
+        filename = os.path.basename(input_file)
+        sheet_name = ws.title
+        column_name = ws[f"{column}1"].value
+        if not column_name:
+            column_name = "Unknown"
+            
+        global figure_counter
+        figure_counter += 1
+        
+        console_msg = f"Figure {figure_counter}: {filename} - {column_name} (Column {column})"
+        root.after(0, log_message, console_msg)
+        print(console_msg)
+        
         column_data = [cell.value for cell in ws[column] if isinstance(cell.value, (int, float))]
         
         if not column_data:
@@ -432,7 +461,7 @@ def benfords_gui(input_file, output_file, column):
         # MAD Test
         mad = np.mean(np.abs(df['Prop'] - df['Expected']))
         
-        root.after(0, log_message, f"Chi-Square: {chi2_stat:.2f} (p={p_value:.4f})")
+        root.after(0, log_message, f"Chi-Square: {chi2_stat:.2f}")
         root.after(0, log_message, f"MAD: {mad:.4f}")
         root.after(0, log_message, f"Saving results to {output_file}...")
         
@@ -464,11 +493,18 @@ def benfords_gui(input_file, output_file, column):
         output_ws.cell(row=stats_row+1, column=1, value="Chi-Square Statistic:")
         output_ws.cell(row=stats_row+1, column=2, value=f"{chi2_stat:.2f}")
         
-        output_ws.cell(row=stats_row+2, column=1, value="P-Value:")
-        output_ws.cell(row=stats_row+2, column=2, value=f"{p_value:.4f}")
+        output_ws.cell(row=stats_row+2, column=1, value="MAD (Mean Absolute Deviation):")
+        output_ws.cell(row=stats_row+2, column=2, value=f"{mad:.4f}")
         
-        output_ws.cell(row=stats_row+3, column=1, value="MAD (Mean Absolute Deviation):")
-        output_ws.cell(row=stats_row+3, column=2, value=f"{mad:.4f}")
+        metadata_row = stats_row + 4
+        output_ws.cell(row=metadata_row, column=1, value="Data Source:")
+        output_ws.cell(row=metadata_row, column=1).font = output_ws.cell(row=metadata_row, column=1).font.copy(bold=True)
+        output_ws.cell(row=metadata_row+1, column=1, value="File Name:")
+        output_ws.cell(row=metadata_row+1, column=2, value=filename)
+        output_ws.cell(row=metadata_row+2, column=1, value="Sheet Name:")
+        output_ws.cell(row=metadata_row+2, column=2, value=sheet_name)
+        output_ws.cell(row=metadata_row+3, column=1, value="Column:")
+        output_ws.cell(row=metadata_row+3, column=2, value=f"{column} ({column_name})")
         
         # Adjust column widths
         for col in output_ws.columns:
@@ -492,7 +528,7 @@ def benfords_gui(input_file, output_file, column):
         ax.plot(benford_dist['Digit'], benford_dist['Expected'],
                 color='blue', linewidth=2, label="Benford's Law")
         
-        ax.set_title(f"Benford's Law Analysis: {os.path.basename(input_file)}", fontsize=16, weight='bold')
+        ax.set_title(f"Benford's Law Analysis: {filename}\nSheet: {sheet_name} | Column: {column} ({column_name})", fontsize=14, weight='bold')
         ax.set_xlabel('First Digit', fontsize=14)
         ax.set_ylabel('Proportion', fontsize=14)
         ax.set_xticks(range(1, 10))
@@ -500,7 +536,7 @@ def benfords_gui(input_file, output_file, column):
         plt.grid(True, which='major', linestyle='--', alpha=0.4)
         
         # Add Chi-Square and MAD results below the chart
-        stats_text = f"Chi-Square: {chi2_stat:.2f} (p={p_value:.4f})   |   MAD: {mad:.4f}"
+        stats_text = f"Chi-Square: {chi2_stat:.2f}   |   MAD: {mad:.4f}"
         fig.text(0.5, 0.01, stats_text,
                  ha='center', va='bottom',
                  fontsize=12,
