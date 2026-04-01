@@ -9,7 +9,7 @@ Installation:
 python pip install -r requirements_benfords.txt
 ```
 
-Usage:\
+Usage:
 
 ```
 python BenfordsLaw_Tester.py
