@@ -56,8 +56,6 @@ groupings—to test for independence or goodness-of-fit.
 The bigger the number, the less likely it is that the differences occurred by chance, 
 and the more likely it is that something meaningful is happening in the data.
 
-Chi-Square Test ➤ Stat: 1114.61
-
 ## Mean Absolute Deviation (MAD)
 MAD measures how far the observed digit proportions deviate from Benford’s expected distribution — on average. 
 It’s a simple yet powerful way to quantify irregularities: the higher the MAD, the more the data strays 
