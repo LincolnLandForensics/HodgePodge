@@ -31,7 +31,7 @@ from scipy.stats import chisquare   # pip install scipy
 
 author = 'LincolnLandForensics'
 description = "This script models Benford’s Law by generating and comparing authentic versus manipulated financial data. It outputs frequency distributions to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud."
-version = '1.1.5'
+version = '1.1.6'
 
 figure_counter = 0
 
@@ -409,20 +409,21 @@ def benfords(input_file, output_file=None):
 
 def benfords_gui(input_file, output_file, column):
     """Benford's Law analysis for GUI mode with Excel output."""
+    column_letter = column
     try:
         wb = load_workbook(input_file, data_only=True)
         ws = wb.active
         
         filename = os.path.basename(input_file)
         sheet_name = ws.title
-        column_name = ws[f"{column}1"].value
+        column_name = ws[f"{column_letter}1"].value
         if not column_name:
             column_name = "Unknown"
             
         global figure_counter
         figure_counter += 1
         
-        console_msg = f"Figure {figure_counter}: {filename} - {column_name} (Column {column})"
+        console_msg = f"Figure {figure_counter}: {filename} - {column_name} (Column {column_letter})"
         root.after(0, log_message, console_msg)
         print(console_msg)
         
@@ -504,7 +505,7 @@ def benfords_gui(input_file, output_file, column):
         output_ws.cell(row=metadata_row+2, column=1, value="Sheet Name:")
         output_ws.cell(row=metadata_row+2, column=2, value=sheet_name)
         output_ws.cell(row=metadata_row+3, column=1, value="Column:")
-        output_ws.cell(row=metadata_row+3, column=2, value=f"{column} ({column_name})")
+        output_ws.cell(row=metadata_row+3, column=2, value=f"{column_letter} ({column_name})")  # test
         
         # Adjust column widths
         for col in output_ws.columns:
@@ -528,7 +529,7 @@ def benfords_gui(input_file, output_file, column):
         ax.plot(benford_dist['Digit'], benford_dist['Expected'],
                 color='blue', linewidth=2, label="Benford's Law")
         
-        ax.set_title(f"Benford's Law Analysis: {filename}\nSheet: {sheet_name} | Column: {column} ({column_name})", fontsize=14, weight='bold')
+        ax.set_title(f"Benford's Law Analysis: {filename}\nSheet: {sheet_name} | Column: {column_letter} ({column_name})", fontsize=14, weight='bold')
         ax.set_xlabel('First Digit', fontsize=14)
         ax.set_ylabel('Proportion', fontsize=14)
         ax.set_xticks(range(1, 10))
