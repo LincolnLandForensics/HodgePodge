@@ -1,6 +1,6 @@
 
 ## BenfordsLaw_Tester.py 
-This script models Benford’s Law. It outputs frequency distributions of the first digit to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud."
+This script models Benford’s Law. It outputs frequency distributions of the first digit to Excel for forensic analysis, helping identify statistical anomalies suggestive of fraud.
 
 
 
