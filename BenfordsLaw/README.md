@@ -10,7 +10,7 @@ python pip install -r requirements_benfords.txt
 ```
 
 Usage:\
-analyze numbers
+
 ```
 python BenfordsLaw_Tester.py
 
