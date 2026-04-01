@@ -28,21 +28,10 @@ help menu
 python BenfordsLaw_Tester.py -h
 ```
 
-Example:
-
-    BenfordsLaw_Tester.py -b
-	
-    BenfordsLaw_Tester.py -b -I benfordsLaw_tester.xlsx
-
-    BenfordsLaw_Tester.py -b -I benfordsLaw_tester.xlsx -c b
-		
-Note:
-this currently reads column A in the first sheet use -c to specify a differnt column.
-
 	
 ![sample output](images/BenfordsLaw_Enron.png)	
 	
-## Benford's Law (Blue line)
+## Benford's Law
 Benford's Law, also known as the First-Digit Law, is a statistical principle that predicts 
 the frequency distribution of leading digits in naturally occurring datasets. 
 
