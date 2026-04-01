@@ -16,7 +16,7 @@ python BenfordsLaw_Tester.py
 
 or 
 
-python BenfordsLaw_Tester.py -c -I benfordsLaw_tester.xlsx
+python BenfordsLaw_Tester.py -b -c E -I benfordsLaw_tester.xlsx
 ```
 
 
