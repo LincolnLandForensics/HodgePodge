@@ -42,7 +42,7 @@ According to this law:
 • 	Higher digits occur less frequently, with 9 appearing as the first digit less than 5% of the time.
 
 This counterintuitive pattern holds true across many datasets—such as financial records, 
-population numbers, and scientific measurements—especially when the data spans several orders of magnitude.
+population numbers, and scientific measurements, especially when the data spans several orders of magnitude.
 
 Benford's Law is widely used in fraud detection, particularly in accounting and forensic analysis. 
 Deviations from the expected distribution can signal manipulation or anomalies in the data.
