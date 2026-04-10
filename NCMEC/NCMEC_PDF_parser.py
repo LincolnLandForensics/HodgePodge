@@ -1,4 +1,4 @@
- #!/usr/bin/env python3
+#!/usr/bin/env python3
 # coding: utf-8
 '''
 Dump all of your NCMEC .zip, .pdf, or .txt files into the NCMEC folder.
@@ -239,7 +239,7 @@ def process_pdfs_and_unzip(input_folder, output_folder, log_func=print, progress
 
     global pdfs_parsed
     pdfs_parsed = 0
-            def extract_from_text(text):
+    def extract_from_text(text):
         nonlocal word_list, sentence_list, email_list, file_list, md5_list, ip_list, phone_list, user_list
         words = re.split(r'["<>\s]', text)
         word_list.extend(filter(None, words))
@@ -418,5 +418,3 @@ IP and MD5 don't have to be NCMEC specific
 
 """
 print(f"\nBob's your uncle\n")
-
-
