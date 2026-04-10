@@ -1,7 +1,7 @@
  #!/usr/bin/env python3
 # coding: utf-8
 '''
-Dump all of your NCMEC .zip or .pdf files into the NCMEC folder.
+Dump all of your NCMEC .zip, .pdf, or .txt files into the NCMEC folder.
 it will export the emails, ip's, md5's, phone numbers and users into _output folder
 
 Example:
@@ -32,8 +32,8 @@ from tkinter import ttk, filedialog, scrolledtext, messagebox
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "read .zip and .pdfs and extract out NCMEC intel"
-version = '1.1.0'
+description = "read .zip, .pdfs, and .txt files and extract out NCMEC intel"
+version = '1.1.2'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<    GUI    >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -44,7 +44,7 @@ class PDFParserGUI:
         self.root.geometry("600x520")
 
         # Label
-        lbl_intro = tk.Label(root, text="add NCMEC PDFs or Zips into a folder (Defaults to NCMEC folder)", font=("Arial", 10))
+        lbl_intro = tk.Label(root, text="add NCMEC PDFs, Zips, or text files into a folder (Defaults to NCMEC folder)", font=("Arial", 10))
         lbl_intro.pack(pady=10)
 
         # Input Folder
@@ -239,40 +239,40 @@ def process_pdfs_and_unzip(input_folder, output_folder, log_func=print, progress
 
     global pdfs_parsed
     pdfs_parsed = 0
-        
-    def process_pdf(file_path):
-
+            def extract_from_text(text):
         nonlocal word_list, sentence_list, email_list, file_list, md5_list, ip_list, phone_list, user_list
+        words = re.split(r'["<>\s]', text)
+        word_list.extend(filter(None, words))
 
+        sentences = text.split('\n')
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if sentence.startswith('Screen/User Name: '):
+                user_list.append(sentence.split(':', 1)[1].strip())
+            elif sentence.startswith('ESP User ID: '):
+                user_list.append(sentence.replace('ESP User ID: ', '').strip())
+            elif sentence.startswith('Filename:'):
+                file_list.append(sentence.replace('Filename:', '').strip())
+            elif sentence.startswith('IP Address: ') and ' (Login)' in sentence:
+                ip_list.append(sentence.replace('IP Address: ', '').split(' ')[0].strip())
+            elif sentence.startswith('Phone: +') and ' (Verified' in sentence:
+                phone_list.append(sentence.replace('Phone: +', '').split(' ')[0])
+            elif sentence.startswith('Mobile Phone: +') and 'Verified' in sentence:
+                phone_list.append(sentence.replace('Mobile Phone: +', '').split(' ')[0])
+            if sentence:
+                sentence_list.append(sentence)
+
+        email_list.extend(email_pattern.findall(text))
+        md5_list.extend(md5_pattern.findall(text))
+        ip_list.extend(ip_pattern.findall(text))
+
+    def process_pdf(file_path):
         try:
             text = ''
             with pdfplumber.open(file_path) as pdf:
                 for page in pdf.pages:
                     text = page.extract_text() or ""
-                    words = re.split(r'["<>\\s]', text)
-                    word_list.extend(filter(None, words))
-
-                    sentences = text.split('\n')
-                    for sentence in sentences:
-                        sentence = sentence.strip()
-                        if sentence.startswith('Screen/User Name: '):
-                            user_list.append(sentence.split(':', 1)[1].strip())
-                        elif sentence.startswith('ESP User ID: '):
-                            user_list.append(sentence.replace('ESP User ID: ', '').strip())
-                        elif sentence.startswith('Filename:'):
-                            file_list.append(sentence.replace('Filename:', '').strip())
-                        elif sentence.startswith('IP Address: ') and ' (Login)' in sentence:
-                            ip_list.append(sentence.replace('IP Address: ', '').split(' ')[0].strip())
-                        elif sentence.startswith('Phone: +') and ' (Verified' in sentence:
-                            phone_list.append(sentence.replace('Phone: +', '').split(' ')[0])
-                        elif sentence.startswith('Mobile Phone: +') and 'Verified' in sentence:
-                            phone_list.append(sentence.replace('Mobile Phone: +', '').split(' ')[0])
-                        if sentence:
-                            sentence_list.append(sentence)
-
-                    email_list.extend(email_pattern.findall(text))
-                    md5_list.extend(md5_pattern.findall(text))
-                    ip_list.extend(ip_pattern.findall(text))
+                    extract_from_text(text)
             # pdfs_parsed += 1
         except Exception as e:
             log_func(f"Error processing {file_path}: {str(e)}")
@@ -283,12 +283,22 @@ def process_pdfs_and_unzip(input_folder, output_folder, log_func=print, progress
         else:
             log_func(f"{file_path} needs to be OCR'd to read it.")  
 
+    def process_txt(file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                text = f.read()
+                extract_from_text(text)
+        except Exception as e:
+            log_func(f"Error processing {file_path}: {str(e)}")
+
 
     for root, _, files in os.walk(input_folder):
         for file in files:
             file_path = os.path.join(root, file)
-            if file.endswith('.pdf'):
+            if file.lower().endswith('.pdf'):
                 process_pdf(file_path)
+            elif file.lower().endswith('.txt'):
+                process_txt(file_path)
 
     unique_sorted = lambda x: sorted(set(x))
     email_list = cleanup_email(email_list)
