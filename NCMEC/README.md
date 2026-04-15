@@ -63,3 +63,33 @@ See text files in NCMEC\_output folder.
 1 phone numbers
 
 3 users
+
+
+
+## ICACCops_parser.py 
+
+Read a folder full of ICACCops files and export them to .xlsx
+
+## Usage:
+
+    python ICACCops_parser.py
+
+
+
+## Installation:
+```
+python pip install -r requirements_ICACCops_parser.txt
+```
+
+
+
+
+```
+python ICACCops_parser.py
+```
+
+![sample output](images/ICACCops_parser.png)
+
+
+
+
