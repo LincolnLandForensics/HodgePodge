@@ -429,7 +429,7 @@ def run_core_logic(args):
             
         if args.test:  
             print(f' using test module')
-            osint_rocks()
+            substack()
 
         if len(users) > 0:  
             print(f'users = {users}')    
@@ -444,7 +444,7 @@ def run_core_logic(args):
             ebay()
             facebook()
             familytree()
-            flickr()
+            flickr()  # errors 
             freelancer()
             garmin()
             github()
@@ -455,8 +455,8 @@ def run_core_logic(args):
             imageshack()
             instagram()
             instantusername()
-            instructables()
-            inteltechniques()
+            instructables() # # errors 
+            inteltechniques() 
             gab()
             keybase()
             kick()
@@ -476,7 +476,8 @@ def run_core_logic(args):
             sherlock()
             slack()
             snapchat()
-            spotify()
+            spotify()   # error
+            substack()
             threads()
             tiktok()
             tinder()
@@ -1442,13 +1443,19 @@ def flickr(): # testuser = kevinrose
         (note) = ('')
         user = user.rstrip()
         url = (f'https://www.flickr.com/people/{user}')
-        (content, referer, osurl, titleurl, pagestatus) = request(url)
+        try:
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))            
+            for eachline in content.split("\n"):
+                if "og:title" in eachline:
+                    fullname = eachline.strip().split("\"")[1]
+                elif "<meta content=" in eachline and "name=\"description\"" in eachline:
+                    note = eachline.split('"')[1]
+        except TypeError as error:
+            print(f'{error}')
+        pagestatus = str(pagestatus)
 
-        for eachline in content.split("\n"):
-            if "og:title" in eachline:
-                fullname = eachline.strip().split("\"")[1]
-            elif "<meta content=" in eachline and "name=\"description\"" in eachline:
-                note = eachline.split('"')[1]
+
         if '404' not in pagestatus and 'ail' not in pagestatus:
             if fullname.lower() == user.lower():
                 fullname = ''
@@ -1490,6 +1497,9 @@ def freelancer(): # testuser = kevinrose
 
             if '' in fullname:
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            if 'Sign Up Free' in fullname:
+                ranking = '9 - freelancer'
+            
             if 'Browser ' not in fullname:
                 print(f'{url}	{fullname}') 
                 row_data["query"] = query
@@ -2178,7 +2188,12 @@ def instructables(): # testuser = kevinrose
         (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
         user = user.rstrip()
         url = (f'https://www.instructables.com/member/{user}')
-        (content, referer, osurl, titleurl, pagestatus) = request(url)
+        try:
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))            
+        except TypeError as error:
+            print(f'{error}')            
+        pagestatus = str(pagestatus)    
         if '404' not in pagestatus:
             if "'" in titleurl:
                 titleurl = titleurl.split("'")[0]
@@ -2624,8 +2639,12 @@ def mastadon(): # testuser = kevinrose
         url = (f'https://mastodon.social/@{user}')
         note = (f'https://mastodon.social/api/v2/search?q={user}')
 
-        (content, referer, osurl, titleurl, pagestatus) = request(url)
-
+        try:
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))            
+        except TypeError as error:
+            print(f'{error}')
+            
         for eachline in content.split("\n"):
             if "og:title" in eachline:
                 fullname = eachline.strip().split("\"")[1].split(' (')[0]
@@ -2640,7 +2659,7 @@ def mastadon(): # testuser = kevinrose
                
         if ' ' in fullname:
             (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
-
+        pagestatus = str(pagestatus)
         if "uccess" in pagestatus and 'This resource could not be found' not in content:
             print(f'{url}	{fullname}') 
 
@@ -4436,7 +4455,13 @@ def spotify(): # testuser = kevinrose
         # (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
         user = user.rstrip()
         url = (f'https://open.spotify.com/user/{user}')
-        (content, referer, osurl, titleurl, pagestatus) = request(url)
+        try:
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
+        except TypeError as error:
+            print(f'{error}')
+        pagestatus = str(pagestatus)
+        
         if '404' not in pagestatus:
             titleurl = titleurl.replace(" on Spotify","").strip()
             fullname = titleurl
@@ -4448,6 +4473,61 @@ def spotify(): # testuser = kevinrose
             
             
             print(f'{url}	{fullname}') 
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["url"] = url
+            row_data["lastname"] = lastname
+            row_data["firstname"] = firstname
+            row_data["fullname"] = fullname
+            row_data["user"] = user
+         
+                        
+            data.append(row_data)
+
+def substack(): # testuser = kevinrose
+    print(f'\n\t<<<<< substack users >>>>>')
+    for user in users:    
+        row_data = {}
+        (query, ranking, content) = (user, '7 - substack', '')
+        (fullname, firstname, lastname, middlename) = ('', '', '', '')
+        # (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
+        user = user.rstrip()
+        # url = (f'https://{user}.substack.com')
+        url = (f'https://substack.com/@{user}?utm_source=about-page')        
+        
+        try:
+            (content, referer, osurl, titleurl, pagestatus) = request(url)
+        except TypeError as error:
+            print(f'{error}')        
+
+        
+        for eachline in content.split("<"):
+            if "og:title" in eachline:
+                fullname = eachline
+                # print(f'fullname = {fullname}') # temp
+                fullname = eachline.strip().split("\"")[1]
+                fullname = fullname.replace(" | Substack", "")
+            elif "og:description" in eachline:
+                note = eachline.strip().split("\"")[1]        
+        
+        
+        
+        if '404' not in pagestatus:
+            titleurl = titleurl.replace(" on Spotify","").strip()
+            fullname = titleurl
+            if ' ' in fullname:
+                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+                ranking = ('5 - substack')
+            else:
+                fullname = ''
+            lastname = lastname.replace('SUBSTACK', '')
+            if "’s Substack" in fullname:
+                try:
+                    fullname = fullname.split("’s Substack")[0]
+                except:
+                    pass
+            
+            print(f'{url}	{fullname}') 
 
             row_data["query"] = query
             row_data["ranking"] = ranking
@@ -4455,19 +4535,11 @@ def spotify(): # testuser = kevinrose
             row_data["lastname"] = lastname
             row_data["firstname"] = firstname
             row_data["fullname"] = fullname
-
-            
-            # row_data["phone"] = phone
-            # row_data["note"] = note
-            
-            # row_data["city"] = city
-            # row_data["country"] = country
-            # row_data["fulladdress"] = fulladdress
-            # row_data["titleurl"] = titleurl            
-            # row_data["pagestatus"] = pagestatus            
-                        
+            row_data["user"] = user
+            row_data["note"] = note            
+      
             data.append(row_data)
-
+            
   
 def thatsthememail():   # testEmail= smooth8101@yahoo.com 
     print(f'\n\t<<<<< thatsthem emails >>>>>')
@@ -6365,6 +6437,9 @@ def venmo(): # testuser = kevinrose
         
         titleurl = titleurl.replace('Venmo | ','')
         fullname = titleurl.strip()
+        try:
+            fullname = fullname.split(' | ')[0]
+        except:pass
         if ' ' in fullname:
             (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
             
@@ -6568,6 +6643,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+
 https://socialeye.net/  $$
 hackcheck.io
 deflock.me
