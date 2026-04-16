@@ -9,6 +9,7 @@ import sys
 import argparse  # for menu system
 import openpyxl
 from openpyxl import Workbook
+from openpyxl.styles import PatternFill
 import tkinter as tk
 from tkinter import filedialog, scrolledtext, ttk
 import threading
@@ -24,8 +25,8 @@ text_status = None
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "Read a folder full of ICACCops files and export them to .xlsx"
-version = '1.0.2'
+description = "Read a folder full of ICACCops .txt log files and export them to .xlsx"
+version = '1.0.3'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -39,7 +40,7 @@ def main():
     Row = 1
 
     DEFAULT_INPUT = r"C:\Forensics\scripts\python\ICACCops"
-    DEFAULT_OUTPUT = "ICACCops.xlsx"
+    DEFAULT_OUTPUT = "ICACCopsLookup_.xlsx"
 
     if len(sys.argv) == 1:
         launch_gui()
@@ -72,111 +73,6 @@ def main():
 # <<<<<<<<<<<<<<<<<<<<<<<<<<   Sub-Routines   >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
-def read_xlsx(data, input_xlsx):
-
-    """Read data from an xlsx file and return as a list of dictionaries.
-    Read XLSX Function: The read_xlsx() function reads data from the input 
-    Excel file using the openpyxl library. It extracts headers from the 
-    first row and then iterates through the data rows.    
-    """
-    
-    wb = openpyxl.load_workbook(input_xlsx)
-    ws = wb.active
-    data = []
-    datatype = input_xlsx
-    datatype = datatype.replace('.xlsx', '')
-    Source = input_xlsx
-    # get header values from first row
-    global headers
-    headers = []
-    for cell in ws[1]:
-        headers.append(cell.value)
-
-    # get data rows
-    for row in ws.iter_rows(min_row=5, values_only=True):
-        row_data = {}
-        for header, value in zip(headers, row):
-            row_data[header] = value
-        data.append(row_data)
-
-    if not data:
-        msg_blurb = (f'No data found in the Excel file: {input_xlsx}')
-        msg_blurb_square(msg_blurb, color_red)
-    
-        exit()
-        return None
-
-# active sheet (current sheet)
-    active_sheet = wb.active
-    global active_sheet_title
-    active_sheet_title = active_sheet.title    
-
-
-    for row_index, row_data in enumerate(data):
-        (FOI, Index, Filename, SHA1base16, SHA1base32, MD5) = ('', '', '', '', '', '')
-        (Time, IP, TorrentInfoHash) = ('', '', '')
-
-# FOI
-        FOI = row_data.get("FOI")
-        if FOI is None:
-            FOI = ''          
-
-# Index
-        Index = row_data.get("Index")
-        if Index is None:
-            Index = ''  
-
-# Filename
-        Filename = row_data.get("Filename")
-        if Filename is None:
-            Filename = ''  
-
-# SHA1base16
-        SHA1base16 = row_data.get("SHA1base16")
-        if SHA1base16 is None:
-            SHA1base16 = ''         
-
-# SHA1base32
-        SHA1base32 = row_data.get("SHA1base32")
-        if SHA1base32 is None:
-            SHA1base32 = ''   
-            
-# MD5
-        MD5 = row_data.get("MD5")
-        if MD5 is None:
-            MD5 = '' 
-
-# Time
-        Time = row_data.get("Time")
-        if Time is None:
-            Time = ''   
-
-# IP
-        IP = row_data.get("IP")
-        
-        
-        if IP is None:
-            IP = '' 
-
-# TorrentInfoHash
-        TorrentInfoHash = row_data.get("TorrentInfoHash")
-        if TorrentInfoHash is None:
-            TorrentInfoHash = ''              
-
-                
-# write rows to data
-        row_data["FOI"] = FOI        
-        row_data["Index"] = Index  
-        row_data["Filename"] = Filename
-        row_data["SHA1base16"] = SHA1base16    
-        row_data["SHA1base32"] = SHA1base32   
-        row_data["MD5"] = MD5  
-        row_data["Time"] = Time          
-        row_data["IP"] = IP 
-        row_data["TorrentInfoHash"] = TorrentInfoHash
-        row_data["Source"] = Source
-        data.append(row_data)
-    return data
 
 
 def log_to_gui(msg):
@@ -197,7 +93,7 @@ def launch_gui():
     global entry_input, entry_output, root
 
     DEFAULT_INPUT = r"C:\Forensics\scripts\python\ICACCops"
-    DEFAULT_OUTPUT = "ICACCops.xlsx"
+    DEFAULT_OUTPUT = "ICACCopsLookup_.xlsx"
 
     gui_active = True
     root = tk.Tk()
@@ -322,12 +218,9 @@ def parse_folder(input_folder):
 
         ext = filename.lower().split('.')[-1]
 
-        if ext == "xlsx":
-            data = read_xlsx(data, Source)
 
-        elif ext == "txt":
+        if ext == "txt":
             data = read_txt(data, Source)
-
         else:
             # Optional: log or ignore unsupported files
             print(f"Skipping unsupported file: {filename}")
@@ -341,7 +234,7 @@ def read_txt(data, Source):
     SourceTemp = os.path.basename(Source)
     
     txt_file = open(Source)
-    TorrentInfoHash, IP = '', ''
+    TorrentInfoHash, IP, Port = '', '', ''
     print(f'testing {Source}')
     
     pattern1 = re.compile(
@@ -395,7 +288,7 @@ def read_txt(data, Source):
     for line in txt_file:
         Text = line
         FOI, Index, Filename, SHA1base16, SHA1base32, MD5 = '', '', '', '', '', ''
-        Time, Bytes = '', ''
+        Time, Bytes, Temp = '', '', ''
         row_data = {}
         print(f'{line}')
         if 'Torrent info hash (hexadecimal): ' in line:
@@ -409,7 +302,10 @@ def read_txt(data, Source):
         elif 'Remote client located at IP address ' in line:
             try:
                 IP = line.split('Remote client located at IP address ')[1].replace(', port ',':')
-                
+                if ':' in IP:
+                    PortTemp = IP.split(':')
+                    IP = PortTemp[0]
+                    Port = PortTemp[1]
             except:pass
         elif pattern1.search(line):
             m = pattern1.search(line)
@@ -427,6 +323,7 @@ def read_txt(data, Source):
             row_data["MD5"] = MD5
             row_data["Source"] = SourceTemp
             row_data["Text"] = Text
+            row_data["Temp"] = 'pattern1'
             data.append(row_data.copy())
 
         elif pattern2.search(line):
@@ -435,14 +332,16 @@ def read_txt(data, Source):
             Time = m.group("Time")
             Index = m.group("Index")
             Filename = m.group("Filename")
-
+            Filename = os.path.basename(Filename)
+            row_data["Filename"] = Filename
             row_data["Time"] = Time
             row_data["Index"] = Index
-            row_data["Filename"] = Filename
-            row_data["IP"] = IP            
+            row_data["IP"] = IP  
+            row_data["Port"] = Port  
             row_data["Source"] = SourceTemp
             row_data["TorrentInfoHash"] = TorrentInfoHash            
             row_data["Text"] = Text
+            row_data["Temp"] = 'pattern2'
             data.append(row_data.copy())
 
         elif pattern3.search(line):
@@ -451,14 +350,17 @@ def read_txt(data, Source):
             Index = m.group("Index")
             Bytes = m.group("Bytes")
             Filename = m.group("Filename")
-
+            Filename = os.path.basename(Filename)
+            row_data["Filename"] = Filename
             row_data["Index"] = Index
             row_data["Bytes"] = Bytes
-            row_data["Filename"] = Filename
-            row_data["IP"] = IP            
+            row_data["IP"] = IP  
+            row_data["Port"] = Port             
             row_data["Source"] = SourceTemp
             row_data["TorrentInfoHash"] = TorrentInfoHash
             row_data["Text"] = Text
+            row_data["Temp"] = 'pattern3'
+            
             data.append(row_data.copy())
 
         elif pattern4.search(line):
@@ -469,11 +371,12 @@ def read_txt(data, Source):
 
             row_data["Index"] = Index
             row_data["SHA1base16"] = SHA1
-            row_data["IP"] = IP            
+            row_data["IP"] = IP   
+            row_data["Port"] = Port             
             row_data["Source"] = SourceTemp
             row_data["TorrentInfoHash"] = TorrentInfoHash
             row_data["Text"] = Text
-
+            row_data["Temp"] = 'pattern4'
             data.append(row_data.copy())
 
         elif pattern5.search(line):
@@ -486,11 +389,12 @@ def read_txt(data, Source):
             row_data["Time"] = Time
             row_data["Index"] = Index
             row_data["SHA1base16"] = SHA1
-            row_data["IP"] = IP            
+            row_data["IP"] = IP   
+            row_data["Port"] = Port             
             row_data["Source"] = SourceTemp
             row_data["TorrentInfoHash"] = TorrentInfoHash
             row_data["Text"] = Text
-
+            row_data["Temp"] = 'pattern5'
             data.append(row_data.copy())
 
         elif pattern6.search(line):
@@ -501,11 +405,12 @@ def read_txt(data, Source):
 
             row_data["Index"] = Index
             row_data["Bytes"] = Bytes
-            row_data["IP"] = IP            
+            row_data["IP"] = IP 
+            row_data["Port"] = Port             
             row_data["Source"] = SourceTemp
             row_data["TorrentInfoHash"] = TorrentInfoHash
             row_data["Text"] = Text
-
+            row_data["Temp"] = 'pattern6'
             data.append(row_data.copy())
 
 
@@ -521,11 +426,12 @@ def read_txt(data, Source):
 
                 row_data["Time"] = Time
                 row_data["Index"] = Index
-                row_data["IP"] = IP            
+                row_data["IP"] = IP 
+                row_data["Port"] = Port                 
                 row_data["Source"] = SourceTemp
                 row_data["TorrentInfoHash"] = TorrentInfoHash
                 row_data["Text"] = Text
-
+                row_data["Temp"] = 'pattern7'
                 data.append(row_data.copy())
 
 
@@ -533,58 +439,14 @@ def read_txt(data, Source):
                 # your logic here
 
                 row_data["Time"] = Time
-                row_data["IP"] = IP            
+                row_data["IP"] = IP  
+                row_data["Port"] = Port                 
                 row_data["Source"] = SourceTemp
                 row_data["TorrentInfoHash"] = TorrentInfoHash
                 row_data["Text"] = Text
-
+                row_data["Temp"] = 'MatchList1'
                 data.append(row_data.copy())
-
-
-
-
-
-        # elif ' has name: ' in line:
-            # try:
-                # Filename = line.split(' has name: ')[1]
-            # except:pass 
-            # row_data["Filename"] = Filename
-            # row_data["IP"] = IP
-            # row_data["TorrentInfoHash"] = TorrentInfoHash
-            # row_data["Source"] = SourceTemp
-            # row_data["Text"] = Text
-            # data.append(row_data)            
-            
-        # elif ' SHA1 hash: ' in line:
-            # try:
-                # SHA1base16 = line.split(' SHA1 hash: ')[1]
-            # except:pass            
-            # row_data["SHA1base16"] = SHA1base16    
-            # row_data["IP"] = IP
-            # row_data["TorrentInfoHash"] = TorrentInfoHash
-            # row_data["Source"] = SourceTemp
-            # row_data["Text"] = Text
-            # data.append(row_data)
-        # elif ' is named ' in line and ' in the torrent' in line:
-            # try:
-                # Filename = line.split('\"')[1]
-                # SHA1base16 = line.split(' SHA1 hash: ')[1]
-                # linetemp1 = line.split(' - File index ')
-                # Time = linetemp1[0]
-                # Index = linetemp1[1]
-            # except:pass    
-
-            # row_data["Index"] = Index 
-            # row_data["Filename"] = Filename 
-            # row_data["SHA1base16"] = SHA1base16 
-            # row_data["Time"] = Time
-            # row_data["IP"] = IP
-            # row_data["TorrentInfoHash"] = TorrentInfoHash
-            # row_data["Source"] = SourceTemp            
-            # row_data["Text"] = Text
-            # data.append(row_data)            
-       
-            
+  
     return data
 
 def write_xlsx(data):
@@ -595,17 +457,18 @@ def write_xlsx(data):
 
     worksheet.title = 'ICACCops_TOI'
     header_format = {'bold': True, 'border': True}
-    worksheet.freeze_panes = 'B2'  # Freeze cells
-    worksheet.selection = 'B2'
+    worksheet.freeze_panes = 'C2'  # Freeze cells
+    worksheet.selection = 'C2'
 
-    headers = ["FOI", "Index", "Filename", "SHA1base16", "SHA1base32", "MD5", "Time", "IP", "TorrentInfoHash"
-    , "Source", "Bytes", "Text"]
+    headers = ["FOI", "Index", "Filename", "SHA1base16", "SHA1base32", "MD5"
+    , "Time", "IP", "Port", "TorrentInfoHash", "Source", "Bytes", "Text"
+    # , "Temp"
+    ]
 
 
     for col_index, header in enumerate(headers, start=1):
         cell = worksheet.cell(row=1, column=col_index)
         cell.value = header
-
 
     # Excel column width
     worksheet.column_dimensions['A'].width = 4 # 
@@ -615,11 +478,13 @@ def write_xlsx(data):
     worksheet.column_dimensions['E'].width = 40 # 
     worksheet.column_dimensions['F'].width = 20 #   
     worksheet.column_dimensions['G'].width = 20 #   
-    worksheet.column_dimensions['H'].width = 20 #   
-    worksheet.column_dimensions['I'].width = 40 #   
-    worksheet.column_dimensions['J'].width = 15 #   
-    worksheet.column_dimensions['K'].width = 12 #   
-    worksheet.column_dimensions['L'].width = 65 #   
+    worksheet.column_dimensions['H'].width = 16 #
+    worksheet.column_dimensions['I'].width = 6 #    
+    worksheet.column_dimensions['J'].width = 40 #   
+    worksheet.column_dimensions['K'].width = 15 #   
+    worksheet.column_dimensions['L'].width = 12 #   
+    worksheet.column_dimensions['M'].width = 65 #   
+    worksheet.column_dimensions['N'].width = 11 #   
 
 
     for row_index, row_data in enumerate(data):
@@ -631,9 +496,6 @@ def write_xlsx(data):
                 worksheet.cell(row=row_index+2, column=col_index+1).value = cell_data
             except Exception as e:
                 print(f"{color_red}Error printing line: {str(e)}{color_reset}")
-
-    msg_blurb = (f'Writing to {spreadsheet}')
-    msg_blurb_square(msg_blurb, color_green)
 
     workbook.save(spreadsheet)
 
@@ -655,14 +517,14 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Revision History >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+1.0.0 - a functional copy
 
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+TBD
 
 
 """
