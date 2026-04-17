@@ -3635,9 +3635,13 @@ def read_text(filename):
         elif query.strip() == '':
             print(f'blank input found')
         else:
-            user = query
-            if query.lower() not in users:            # don't add duplicates
+            user = query.lower()
+            if user not in users:
                 users.append(user)
+
+            # user = query
+            # if query.lower() not in users:            # don't add duplicates
+                # users.append(user)
 
     return emails,dnsdomains,ips,users,phones,websites
 
@@ -4489,7 +4493,7 @@ def substack(): # testuser = kevinrose
     for user in users:    
         row_data = {}
         (query, ranking, content) = (user, '7 - substack', '')
-        (fullname, firstname, lastname, middlename) = ('', '', '', '')
+        (fullname, firstname, lastname, middlename, note) = ('', '', '', '', '')
         # (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
         user = user.rstrip()
         # url = (f'https://{user}.substack.com')
@@ -5404,9 +5408,6 @@ def whocalld():# testPhone=  DROP THE LEADING 1
             row_data["country"] = country
             row_data["state"] = state
             row_data["zipcode"] = zipcode   
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl                
             data.append(row_data)
 
         else:
@@ -5417,6 +5418,22 @@ def whocalld():# testPhone=  DROP THE LEADING 1
             row_data["phone"] = phone
             row_data["state"] = state
             data.append(row_data)
+
+        if city != '':
+            ranking = '3 - zabasearch'
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["url"] = (f'https://www.zabasearch.com/phone/{phone}/')
+            row_data["note"] = note
+            row_data["fullname"] = fullname
+            row_data["phone"] = phone
+            # row_data["note"] = note
+            row_data["city"] = city
+            row_data["country"] = country
+            row_data["state"] = state
+            row_data["zipcode"] = zipcode   
+            data.append(row_data)
+
 
         time.sleep(2) 
 
@@ -6624,6 +6641,8 @@ def whoiswebsite():    # testsite= google.com
 
         time.sleep(7)
 
+
+
 if __name__ == '__main__':
     main()
 
@@ -6643,7 +6662,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<<Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
-
+geospy.ai $$
 https://socialeye.net/  $$
 hackcheck.io
 deflock.me
