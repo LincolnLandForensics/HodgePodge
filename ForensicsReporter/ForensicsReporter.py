@@ -5,17 +5,17 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
-divisionFull = "Criminal Investigation Division" # Criminal Investigation Division
+divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.4.7'
+version = '3.4.8'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -105,7 +105,7 @@ def main():
     # parser.add_argument('-d', '--details', help='manually enter details like exhibit number', required=False, action='store_true')
     parser.add_argument('-g', '--guidataentry', help='data entry GUI', required=False, action='store_true')
     parser.add_argument('-l', '--logparse', help='Berla, Cellebrite, FTK, tableau log parser', required=False, action='store_true')
-    parser.add_argument('-L', '--logs_parse', help='dump all your logs into Logs\ folder', required=False, action='store_true')
+    parser.add_argument('-L', '--logs_parse', help='dump all your logs into Logs folder', required=False, action='store_true')
     parser.add_argument('-r', '--report', help='write report', required=False, action='store_true')
     parser.add_argument('-s', '--sticker', help='write sticker', required=False, action='store_true')
 
@@ -204,12 +204,13 @@ def banner_print():
     """
         prints an ASCII banner
     """
-    art = """  
-  _   _   _   _   _   _   _   _   _     _   _   _   _   _   _   _   _  
- / \ / \ / \ / \ / \ / \ / \ / \ / \   / \ / \ / \ / \ / \ / \ / \ / \ 
-( F | o | r | e | n | s | i | c | s ) ( R | e | p | o | r | t | e | r )
- \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/   \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ 
+    art = r"""
+      _   _   _   _   _   _   _   _   _     _   _   _   _   _   _   _   _
+     / \ / \ / \ / \ / \ / \ / \ / \ / \   / \ / \ / \ / \ / \ / \ / \ / \
+    ( F | o | r | e | n | s | i | c | s ) ( R | e | p | o | r | t | e | r )
+     \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/   \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
     """
+
     print(f"{color_blue}{art}{color_reset}")
 
 def convert_timestamp(timestamp, time_orig=None, timezone=None):    # not in use?
@@ -823,6 +824,7 @@ def parse_log():
             (caseNumber, exhibit, subjectBusinessName, caseType, forensicExaminer, makeModel, seizureAddress, seizedBy, imagingType, exportLocation) = ufdx_parser(logFile)
             csv_file = tempNotes.split('\\n')
         else:
+         
             csv_file = open(logFile) 
         
         for each_line in csv_file:
@@ -1033,7 +1035,9 @@ def parse_log():
                 storageSerial = each_line.replace("Drive Serial Number:", "").strip()
             elif "Serial number:" in each_line and storageSerial == '': # Tableau imager 
                 storageSerial = each_line.replace("Drive Serial number:", "").replace("Serial number:", "").strip()
-
+            elif "Serial Number " in each_line and storageSerial == '': # GrayKey PDF
+                storageSerial = each_line.replace("Serial Number ", "").strip()
+                print(f'________________________ Serial Number  = {storageSerial}')  # temp
 
             elif "Unique Identifier:" in each_line: # MagnetAcquire image_info.txt
                 storageSerial = each_line.replace("Unique Identifier:", "").strip() 
@@ -1208,7 +1212,8 @@ def parse_log():
                 capacity = re.split("Capacity in bytes reported Pwr-ON: ", each_line, 0)
                 capacity = str(capacity[1]).strip()
                 if "(" in capacity:
-                    capacity = re.split("\(", each_line, 0)
+                    # capacity = re.split("\(", each_line, 0)
+                    capacity = re.split(r"\(", each_line, 0)    
                     capacity = str(capacity[1]).strip()
                     capcty = capacity.replace(")", "")
                     capacity = capcty.split('.')[0]
@@ -1251,7 +1256,8 @@ def parse_log():
                 capacity = re.split("Source data size: ", each_line, 0)
                 capacity = str(capacity[1]).strip()
                 if "(" in capacity:
-                    capacity = re.split("\(", each_line, 0)
+                    # capacity = re.split("\(", each_line, 0)
+                    capacity = re.split(r"\(", each_line, 0)
                     capacity = str(capacity[1]).strip()
                     capcty = capacity.replace(")", "")
                     capacity = capcty.split('.')[0]
@@ -1295,19 +1301,28 @@ def parse_log():
             elif "MD5 Acquisition Hash:" in each_line: # MagnetAcquire image_info.txt
                 imageMD5 = each_line.replace("MD5 Acquisition Hash:", "").strip()
                 status = "Imaged"
+
+            elif "MD5 hash stored in file:" in each_line: # SumuriReconImager.txt
+                imageMD5 = each_line.replace("MD5 hash stored in file:", "").strip()
+
+
             elif "MD5 hash calculated over data:" in each_line: # SumuriReconImager.txt
-                imageMD5 = each_line.replace("MD5 hash calculated over data:", "").strip()
+
+                verifyHash = each_line.replace("MD5 hash calculated over data:", "").strip()
+                if verifyHash in imageMD5:
+                    verifyHash = 'Y'
+                    status = "Imaged"
+                
 
             elif "MD5 Image Hash: " in each_line:    # Magnet Axiom
                 imageMD5 = each_line.replace("MD5 Image Hash: ", "")
 
-            elif "MD5 Verification Hash: " in each_line:    # Magnet Axiom
-                verifyHash = each_line.replace("MD5 Verification Hash: ", "")
+            elif re.fullmatch(r"PALADIN\s+\d+(\.\d+)*", each_line):
+                print(f'_________________________bobs your uncle {analysisTool}')   # temp
+                analysisTool = each_line
 
 
-            # elif "MD5 " in each_line:    # GrayKey_R5CR8147V0A.pdf
-                # imageMD5 = each_line.lstrip("MD5 ")
-                # print(f"{color_yellow}<<<<<<<<<<<   testing  >>>>>>>>>>>>>{color_reset}")    # task
+
 
             # imageSHA1
             elif "Disk SHA1: " in each_line:    # Tableau
@@ -1394,9 +1409,11 @@ def parse_log():
             elif "Imaging Start Time :" in each_line:   # Recon imager
                 imagingStarted = re.split("Imaging Start Time :", each_line, 0)
                 imagingStarted = str(imagingStarted[1]).strip()
-                # try:
-                    # imagingStarted = fix_date(imagingStarted)
-                # except:pass    
+
+            elif "Start Time :" in each_line:   # Paladin
+                imagingStarted = re.split("Start Time :", each_line, 0)
+                imagingStarted = str(imagingStarted[1]).strip()
+  
 
             elif "Date=" in each_line: #cellebrite *.ufd log file
                 imagingStarted = each_line.replace("Date=", "").strip()
@@ -1476,6 +1493,9 @@ def parse_log():
                 status = ('Imaged')
                 # imagingFinished = fix_date3(imagingFinished)
 
+            elif "End Time : " in each_line: # Recon imager
+                imagingFinished = re.split("End Time : ", each_line, 0)
+                imagingFinished = str(imagingFinished[1]).strip()
 
             # tempnotes
             elif "Description:" in each_line: # MagnetAcquire image_info.txt
@@ -1497,7 +1517,15 @@ def parse_log():
             elif "Live encryption state:" in each_line: # CellebritePA_FFS.txt  or ExtractionType=
                 tempNotes = ('%s %s' %(tempNotes, each_line.strip() ))
 
+            elif "Media size:" in each_line: # paladin
+                storageSize = each_line.replace("Media size:", "").strip()
+                if ' (' in storageSize:
+                    try:
+                        storageSize = storageSize.split(' (')[0]
+                    except:pass
 
+
+            imagingType = imagingType.strip().lower()   # test
                 
         # tempNotes save the input file name for bulk uploads. delete if it's input.txt
         tempNotes = ('%s %s' %(logFile, tempNotes)).strip()
@@ -1613,17 +1641,20 @@ def pdf_extract(filename):
         if makeModel_match:
             makeModel = makeModel_match.group(1).strip()
 
+
+        # OS
         os_match = re.search(r'OS Name (.*?)\n', tempNotes)    # cellebrite
+        # os_match2 = re.search(r'Software Version (.*?)\n', tempNotes)    # GrayKey
+        os_match3 = re.search(r'General OS Version (.*?)\n', tempNotes)    # cellebrite preliminary report
+
         if os_match:
             OS = os_match.group(1).strip()
-
-        os_match2 = re.search(r'Software Version (.*?)\n', tempNotes)    # GrayKey
-        if os_match2:
-            OS = os_match2.group(1).strip()
-
-        os_match3 = re.search(r'General OS Version (.*?)\n', tempNotes)    # cellebrite preliminary report
-        if os_match3:
+        # elif os_match2:
+            # OS = os_match2.group(1).strip()
+        elif os_match3:
             OS = os_match3.group(1).strip()
+
+
 
         caseType_match = re.search(r'Crime Type (.*?)\n', tempNotes)
         if caseType_match:
@@ -1634,25 +1665,39 @@ def pdf_extract(filename):
         exhibit_match = re.search(r'Evidence ID:(.*?)\n', tempNotes)    # graykey
         if exhibit_match:
             exhibit = exhibit_match.group(1).strip()
+# makeModel
 
         makeModel_match = re.search(r'Model:(.*?)\n', tempNotes)    # graykey
+        makeModel_match2 = re.search(r'General Detected Phone Model (.*?)\n', tempNotes)    # graykey
+        # makeModel_match3 = re.search(r'Model (.*?)\n', tempNotes)    # graykey
+        makeModel_match3 = re.search(r'Model\s+(.+)', tempNotes)    # graykey
+        
         if makeModel_match:
             makeModel = makeModel_match.group(1).strip()
 
-        makeModel_match2 = re.search(r'General Detected Phone Model (.*?)\n', tempNotes)    # graykey
-        if makeModel_match2:
+        elif makeModel_match2:
             makeModel = makeModel_match2.group(1).strip()
 
-        makeModel_match3 = re.search(r'Model (.*?)\n', tempNotes)    # graykey
-        if makeModel_match3 and makeModel:
-            makeModel = makeModel_match3.group(1).strip()
+        # elif makeModel_match3 and makeModel:
+        elif makeModel_match3:  # Graykey example: Model Pixel 10 Pro XL Pixel 10 Pro XL
+            raw = makeModel_match3.group(1).strip()
+            # Optional: collapse duplicate model names on the same line
+            parts = raw.split()
+            half = len(parts) // 2
+            if parts[:half] == parts[half:]:
+                makeModel = " ".join(parts[:half])
+            else:
+                makeModel = raw
 
-        serial_match = re.search(r'Serial Number:(.*?)\n', tempNotes)    # graykey
+
+        # serial_match
+        serial_match = re.search(r'(?<!Graykey )Serial Number[: ]+(\S+)', tempNotes)   # graykey
+        serial_match2 = re.search(r'General Serial (.*?)\n', tempNotes)    # Cellebrite preliminary report
+
         if serial_match:
             serial = serial_match.group(1).strip()
 
-        serial_match2 = re.search(r'General Serial (.*?)\n', tempNotes)    # Cellebrite preliminary report
-        if serial_match2:
+        elif serial_match2:
             serial = serial_match2.group(1).strip()
 
 
@@ -1672,17 +1717,34 @@ def pdf_extract(filename):
         if imei2_match:
             phoneIMEI2 = imei2_match.group(1).strip() 
 
-        imagingTool_match = re.search(r'GrayKey Software: OS Version:(.*?),', tempNotes)    # graykey
-        if imagingTool_match:
-            imagingTool = f"GrayKey {imagingTool_match.group(1).strip()}"
-
+        # imagingTool
+        # imagingTool_match = re.search(r'GrayKey Software: OS Version:(.*?),', tempNotes)    # graykey
         imagingTool_match2 = re.search(r'Application Version (.*?),', tempNotes)    # cellebrite
+        imagingTool_match3 = re.search(r'Graykey Software[: ]+(.+)', tempNotes)
         if imagingTool_match2:
             imagingTool = f"Cellebrite {imagingTool_match2.group(1).strip()}"
+        elif imagingTool_match3:
+            imagingTool = f"Graykey {imagingTool_match3.group(1).strip()}"
+        # elif imagingTool_match:
+            # imagingTool = f"GrayKey {imagingTool_match.group(1).strip()}"
+
+        imagingTool = imagingTool.replace('Graykey OS Version: ', 'Graykey ')
+
+
+
+
 
         imagingType_match = re.search(r'Extraction Method (.*?)\n', tempNotes)
         if imagingType_match:
             imagingType = imagingType_match.group(1).strip()
+
+        elif 'Partial BFU Filesystem' in tempNotes: # graykey
+            imagingType = 'Partial BFU Filesystem'
+
+
+
+
+        # imagingStarted
 
         imagingStarted_match = re.search(r'Report generation time:(.*?)\n', tempNotes)    # graykey
         if imagingStarted_match:
@@ -1692,9 +1754,19 @@ def pdf_extract(filename):
         if imagingStarted_match2:
             imagingStarted = imagingStarted_match2.group(1).strip()
 
-        imagingFinished_match = re.search(r'Extraction End Time (.*?)\n', tempNotes)    # cellebrite
-        if imagingFinished_match:
-            imagingFinished = imagingFinished_match.group(1).strip()
+
+        # imagingFinished
+        imagingFinished_match1 = re.search(r'Extraction End Time (.*?)\n', tempNotes)    # cellebrite
+        imagingFinished_match2 = re.search(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) UTC: Filesystem extraction complete',tempNotes)
+       
+        if imagingFinished_match1:
+            imagingFinished = imagingFinished_match1.group(1).strip()
+        elif imagingFinished_match2:
+            imagingFinished = imagingFinished_match2.group(1).strip()
+
+
+
+
 
         sha256_regex = r'\\b[A-Fa-f0-9]{64}\\b'
 
@@ -1702,22 +1774,44 @@ def pdf_extract(filename):
         if sha256_match:
             imageSHA256 = sha256_match
 
+        # phoneIMEI
         phoneIMEI_match = re.search(r'IMEI:(.*?)\n', tempNotes)    # graykey
+        phoneIMEI_match2 = re.search(r'General IMEI (.*?)\n', tempNotes)    # graykey
         if phoneIMEI_match:
             phoneIMEI = phoneIMEI_match.group(1).strip()
-
-        phoneIMEI_match2 = re.search(r'General IMEI (.*?)\n', tempNotes)    # graykey
-        if phoneIMEI_match2:
+        elif phoneIMEI_match2:
             phoneIMEI = phoneIMEI_match2.group(1).strip()
+
+        phoneNumber_match1 = re.search(r'Phone Number[: ]+(\S+)', tempNotes)    # graykey
+        if phoneNumber_match1:
+            phoneNumber = phoneNumber_match1.group(1).strip()
+
+        # imageMD5
+        imageMD5_match1 = re.search(r'MD5[: ]+([A-Fa-f0-9]{32})', tempNotes)
+        if imageMD5_match1:
+            imageMD5 = imageMD5_match1.group(1)
+
+
+        # imageSHA256
+        SHA256_match1 = re.search(r'SHA256[: ]+([A-Fa-f0-9]{64})', tempNotes)
+        if SHA256_match1:
+            imageSHA256 = SHA256_match1.group(1)
+            status = 'Imaged'
+
+        # evidenceDataSize
+
+        evidenceDataSize_match1 = re.search(r'Extraction size\s+([0-9.]+GB)', tempNotes)    # graykey
+        if evidenceDataSize_match1:
+            evidenceDataSize = evidenceDataSize_match1.group(1)
 
 
 
         # Add additional extraction logic here as needed for other fields
 
-    if 'GrayKey Progress Report' in OS:
+    if 'Graykey Progress Report' in OS:
         OS = '' # test
-        print(f'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')  # temp
 
+    # tempNotes = tempNotes
 
     # Return all extracted information as a tuple
     return (
@@ -2226,7 +2320,7 @@ Exhibit {exhibit}
             report = f"{report} The image was processed with {analysisTool}."
 
         if verifyHash.lower() == 'y':
-            report = f"{report}The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
+            report = f"{report} The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
 
 
         # Username and password to report
@@ -3213,6 +3307,7 @@ if __name__ == '__main__':
 # <<<<<<<<<<<<<<<<<<<<<<<<<< Future Wishlist  >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 """
+imagingType = imagingType.strip().lower()   # test
 should I change elif len(imageMD5) != 0 and exportLocation != '':
 to
 elif len(imageMD5) != 0 and exportLocation != '' and verifyHash.lower() == 'y':
