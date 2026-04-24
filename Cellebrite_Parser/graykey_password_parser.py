@@ -6,6 +6,7 @@ import re
 import sys
 import argparse
 import openpyxl
+from datetime import datetime
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 
@@ -13,12 +14,12 @@ from openpyxl.styles import Font, Alignment, PatternFill
 
 author = 'LincolnLandForensics'
 description = "convert graykey password file to xlsx"
-version = '1.4.2'
+version = '1.4.3'
 
 headers = [
     "URL", "Username", "Password", "Notes", "Case", "Exhibit", "protocol",
     "fileType", "Encryption", "Complexity", "Hash", "Pwd", "PWDUMPFormat", "Length",
-    "Email", "IP"
+    "Email", "IP", "Created", "Modified"
 ]
 
 
@@ -242,6 +243,55 @@ def complexinator(password):
 
     return "complex" if length_ok and complexity_criteria >= 3 else "weak"
 
+
+import re
+
+def convert_ISO8601_basic(time_str: str) -> str:
+    """
+    Convert timestamps like:
+        20250929194037.434012Z
+        20250220053502.8158187Z
+        20250929194037Z
+        20250929194037
+    into: YYYY-MM-DD HH:MM:SS
+    """
+
+    s = time_str.strip().rstrip("Z")
+
+    # Regex to split main timestamp and fractional seconds
+    m = re.match(r"^(\d{14})(?:\.(\d+))?$", s)
+    if not m:
+        raise ValueError(f"Malformed ISO8601 basic timestamp: {time_str}")
+
+    main = m.group(1)
+    frac = m.group(2)
+
+    # Normalize fractional seconds to microseconds (6 digits)
+    if frac:
+        if len(frac) > 6:
+            frac = frac[:6]          # truncate
+        else:
+            frac = frac.ljust(6, "0")  # pad
+        clean = f"{main}.{frac}"
+        fmt = "%Y%m%d%H%M%S.%f"
+    else:
+        clean = main
+        fmt = "%Y%m%d%H%M%S"
+
+    dt = datetime.strptime(clean, fmt)
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+def flip_if_reverse_dns(s: str) -> str:
+    parts = s.split('.')
+
+    # Detect reverse-DNS style
+    if len(parts) >= 3 and parts[0] in {"com", "net", "org", "edu", "gov", "io"}:
+        return '.'.join(reversed(parts))
+
+    return s
+
+
+
 def message_square(message):
     print(f"| {message} |")
 
@@ -253,8 +303,12 @@ def read_pwords(in_file, out_file, case_val, exhibit_val):
     # else:
         # message_square(f'Reading {in_file}')
 
+    email_pattern = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+
+
     data, uniq = [], set()
     fileType = in_file # Just use filename or full path
+    fileType = os.path.basename(fileType)
     pattern = re.compile(r'^\d{9}\.\d{6}$')
     known_bad_passwords = {
         'false', 'true', 'US', 'Secret', '0', '1', 'treeup', 'mobile', '""',
@@ -277,21 +331,50 @@ def read_pwords(in_file, out_file, case_val, exhibit_val):
                     "URL": '', "Username": '', "Password": '', "Notes": block.strip(),
                     "Case": case_val, "Exhibit": exhibit_val, "protocol": '', "fileType": fileType,
                     "Encryption": '', "Complexity": '', "Hash": '', "Pwd": '',
-                    "PWDUMPFormat": '', "Length": '', "Email": '', "IP": ''
+                    "PWDUMPFormat": '', "Length": '', "Email": '', "IP": '', "Created": '', "Modified": ''
                 }
     
                 for line in block.strip().splitlines():
                     line = line.strip()
                     if line.startswith("Account:"):
-                        entry["Username"] = line.split("Account:", 1)[1].strip()
+                        Username = line.split("Account:", 1)[1].strip()
+                        entry["Username"] = Username
+                        if email_pattern.match(Username):
+                            Email = Username
+                            entry["Email"] = Email
+                            
+                            entry["protocol"] = "SMTP"
+                    elif line.startswith("Creation Date: "):
+                        try:
+                            Created = line.split("Creation Date: ", 1)[1].strip()
+                            Created = convert_ISO8601_basic(Created)
+                            entry["Created"] = Created
+                        except Exception as e:
+                            print(f"Error: {e}")                        
+                                                
+                    elif line.startswith("Modification Date: "):
+                        try:
+                            Modified = line.split("Modification Date: ", 1)[1].strip() 
+                            Modified = convert_ISO8601_basic(Modified) 
+                            entry["Modified"] = Modified
+                        except Exception as e:
+                            print(f"Error: {e}")
+                        
                     elif line.startswith("srvr: "):
-                        entry["URL"] = line.split("srvr: ", 1)[1].strip()
+                        URL = line.split("srvr: ", 1)[1].strip()
+                        URL = flip_if_reverse_dns(URL)
+                        entry["URL"] = URL
+                        
                     elif line.startswith("ptcl: "):
                         protocol = line.split("ptcl: ", 1)[1].strip()
                         if protocol != "0":
                             entry["protocol"] = protocol
                     elif line.startswith("Service: "):
-                        entry["URL"] = line.split("Service: ", 1)[1].strip()
+                        URL = line.split("Service: ", 1)[1].strip()
+                        URL = flip_if_reverse_dns(URL)
+                        entry["URL"] = URL
+                        
+                        
                     elif line.startswith("Item value:"):
                         pwd = line.replace("Item value:", '').strip()
                         if pwd in known_bad_passwords or \
@@ -305,7 +388,13 @@ def read_pwords(in_file, out_file, case_val, exhibit_val):
                            pwd.endswith("~~") or \
                            "whatsapp.net" in pwd or \
                            len(pwd) > 33 or pattern.match(pwd):
-                            entry["Hash"] = pwd
+                            Hash = pwd
+                            if email_pattern.match(Hash):
+                                Email = Hash
+                                entry["Email"] = Email
+                                entry["Username"] = Email
+                                Hash = ''
+                            entry["Hash"] = Hash
                         else:
                             entry["Password"] = pwd
                     elif line.startswith("Username: "):
@@ -369,7 +458,7 @@ def write_xlsx(data, uniq_list, out_filename):
         elif header in ["URL", "Length", "Complexity"]:
             cell.fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 
-    col_widths = [20, 20, 20, 35, 7, 6, 10, 20, 8, 12, 4, 17, 5]
+    col_widths = [20, 20, 20, 35, 9, 6, 10, 20, 9, 12, 5, 17, 5, 8, 15, 15, 18, 18]
     for i, width in enumerate(col_widths):
         worksheet.column_dimensions[chr(65+i)].width = width
 
