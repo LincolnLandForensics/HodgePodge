@@ -17,9 +17,9 @@ description = "convert graykey password file to xlsx"
 version = '1.4.3'
 
 headers = [
-    "URL", "Username", "Password", "Notes", "Case", "Exhibit", "protocol",
-    "fileType", "Encryption", "Complexity", "Hash", "Pwd", "PWDUMPFormat", "Length",
-    "Email", "IP", "Created", "Modified"
+    "url", "user", "password", "note", "case", "exhibit", "protocol",
+    "filetype", "encryption", "complexity", "hash", "pwd", "pwdumpformat", "length",
+    "email", "ip", "created", "modified"
 ]
 
 
@@ -328,51 +328,51 @@ def read_pwords(in_file, out_file, case_val, exhibit_val):
     
             for block in entries:
                 entry = {
-                    "URL": '', "Username": '', "Password": '', "Notes": block.strip(),
-                    "Case": case_val, "Exhibit": exhibit_val, "protocol": '', "fileType": fileType,
-                    "Encryption": '', "Complexity": '', "Hash": '', "Pwd": '',
-                    "PWDUMPFormat": '', "Length": '', "Email": '', "IP": '', "Created": '', "Modified": ''
+                    "url": '', "user": '', "password": '', "note": block.strip(),
+                    "case": case_val, "exhibit": exhibit_val, "protocol": '', "filetype": fileType,
+                    "encryption": '', "complexity": '', "hash": '', "pwd": '',
+                    "pwdumpformat": '', "length": '', "email": '', "ip": '', "created": '', "modified": ''
                 }
     
                 for line in block.strip().splitlines():
                     line = line.strip()
                     if line.startswith("Account:"):
-                        Username = line.split("Account:", 1)[1].strip()
-                        entry["Username"] = Username
-                        if email_pattern.match(Username):
-                            Email = Username
-                            entry["Email"] = Email
+                        user = line.split("Account:", 1)[1].strip()
+                        entry["user"] = user
+                        if email_pattern.match(user):
+                            email = user
+                            entry["email"] = email
                             
                             entry["protocol"] = "SMTP"
                     elif line.startswith("Creation Date: "):
                         try:
-                            Created = line.split("Creation Date: ", 1)[1].strip()
-                            Created = convert_ISO8601_basic(Created)
-                            entry["Created"] = Created
+                            created = line.split("Creation Date: ", 1)[1].strip()
+                            created = convert_ISO8601_basic(created)
+                            entry["created"] = created
                         except Exception as e:
                             print(f"Error: {e}")                        
                                                 
                     elif line.startswith("Modification Date: "):
                         try:
-                            Modified = line.split("Modification Date: ", 1)[1].strip() 
-                            Modified = convert_ISO8601_basic(Modified) 
-                            entry["Modified"] = Modified
+                            modified = line.split("Modification Date: ", 1)[1].strip() 
+                            modified = convert_ISO8601_basic(modified) 
+                            entry["modified"] = modified
                         except Exception as e:
                             print(f"Error: {e}")
                         
                     elif line.startswith("srvr: "):
-                        URL = line.split("srvr: ", 1)[1].strip()
-                        URL = flip_if_reverse_dns(URL)
-                        entry["URL"] = URL
+                        url = line.split("srvr: ", 1)[1].strip()
+                        url = flip_if_reverse_dns(url)
+                        entry["url"] = url
                         
                     elif line.startswith("ptcl: "):
                         protocol = line.split("ptcl: ", 1)[1].strip()
                         if protocol != "0":
                             entry["protocol"] = protocol
                     elif line.startswith("Service: "):
-                        URL = line.split("Service: ", 1)[1].strip()
-                        URL = flip_if_reverse_dns(URL)
-                        entry["URL"] = URL
+                        url = line.split("Service: ", 1)[1].strip()
+                        url = flip_if_reverse_dns(url)
+                        entry["url"] = url
                         
                         
                     elif line.startswith("Item value:"):
@@ -388,50 +388,50 @@ def read_pwords(in_file, out_file, case_val, exhibit_val):
                            pwd.endswith("~~") or \
                            "whatsapp.net" in pwd or \
                            len(pwd) > 33 or pattern.match(pwd):
-                            Hash = pwd
-                            if email_pattern.match(Hash):
-                                Email = Hash
-                                entry["Email"] = Email
-                                entry["Username"] = Email
-                                Hash = ''
-                            entry["Hash"] = Hash
+                            hash_val = pwd
+                            if email_pattern.match(hash_val):
+                                email = hash_val
+                                entry["email"] = email
+                                entry["user"] = email
+                                hash_val = ''
+                            entry["hash"] = hash_val
                         else:
-                            entry["Password"] = pwd
+                            entry["password"] = pwd
                     elif line.startswith("Username: "):
-                        entry["Username"] = line.split("Username: ", 1)[1].strip().replace('N/A','')
+                        entry["user"] = line.split("Username: ", 1)[1].strip().replace('N/A','')
                     elif line.startswith("Email: "):
-                        entry["Email"] = line.split("Email: ", 1)[1].strip().replace('N/A','')
+                        entry["email"] = line.split("Email: ", 1)[1].strip().replace('N/A','')
                     elif line.startswith("Password: "):
-                        entry["Password"] = line.split("Password: ", 1)[1].strip().replace('N/A','')
+                        entry["password"] = line.split("Password: ", 1)[1].strip().replace('N/A','')
                     elif line.startswith("Origin: "):
-                        entry["URL"] = line.split("Origin: ", 1)[1].strip().replace('N/A','') 
-                        entry["fileType"] = "intel.veraxity.org"
+                        entry["url"] = line.split("Origin: ", 1)[1].strip().replace('N/A','') 
+                        entry["filetype"] = "intel.veraxity.org"
                     elif line.startswith("IP: "):
-                        entry["IP"] = line.split("IP: ", 1)[1].strip().replace('N/A','')
+                        entry["ip"] = line.split("IP: ", 1)[1].strip().replace('N/A','')
     
-                if entry["URL"] == "AirPort":
+                if entry["url"] == "AirPort":
                     entry["protocol"] = "AirPort"
-                elif "com.apple.airplay" in entry["URL"]:
+                elif "com.apple.airplay" in entry["url"]:
                     entry["protocol"] = "AirPlay"
-                elif entry["URL"] == "GuidedAccess":
-                    entry["URL"] = "_phone pin code ***"                
-                    entry["Username"] = "" 
+                elif entry["url"] == "GuidedAccess":
+                    entry["url"] = "_phone pin code ***"                
+                    entry["user"] = "" 
                     
-                if any(k in entry["Username"].lower() for k in ["apikey", "token", "sessionkey"]) or \
-                   entry["Username"].startswith('com.') or entry["Username"] in ["UUID", "secretKey", "acquiredPackages"]:
-                    entry["Hash"] = entry["Password"]
-                    entry["Password"] = ''
-                    entry["Username"] = ''
+                if any(k in entry["user"].lower() for k in ["apikey", "token", "sessionkey"]) or \
+                   entry["user"].startswith('com.') or entry["user"] in ["UUID", "secretKey", "acquiredPackages"]:
+                    entry["hash"] = entry["password"]
+                    entry["password"] = ''
+                    entry["user"] = ''
     
-                if entry["Password"]:
-                    entry["Length"] = len(entry["Password"])
-                    entry["Complexity"] = complexinator(entry["Password"])
-                    if entry["Password"] not in uniq:
-                        uniq.add(entry["Password"])
+                if entry["password"]:
+                    entry["length"] = len(entry["password"])
+                    entry["complexity"] = complexinator(entry["password"])
+                    if entry["password"] not in uniq:
+                        uniq.add(entry["password"])
     
                 data.append(entry)
     
-        data = sorted(data, key=lambda x: (x["Length"] if isinstance(x["Length"], int) else 100))
+        data = sorted(data, key=lambda x: (x["length"] if isinstance(x["length"], int) else 100))
         write_xlsx(data, sorted(uniq, key=len), out_file)
         
     except Exception as e:
@@ -453,9 +453,9 @@ def write_xlsx(data, uniq_list, out_filename):
     for col_index, header in enumerate(headers):
         cell = worksheet.cell(row=1, column=col_index + 1)
         cell.value = header
-        if header in ["Username", "Password", "Exhibit", "Case", "Notes"]:
+        if header in ["user", "password", "exhibit", "case", "note"]:
             cell.fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
-        elif header in ["URL", "Length", "Complexity"]:
+        elif header in ["url", "length", "complexity"]:
             cell.fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 
     col_widths = [20, 20, 20, 35, 9, 6, 10, 20, 9, 12, 5, 17, 5, 8, 15, 15, 18, 18]
