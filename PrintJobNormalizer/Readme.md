@@ -58,9 +58,9 @@ Windows, macOS, or Linux are supported.
 
 2\. Install required Python packages
 
-bash
-
+'''
 pip install filetype
+'''
 
 3\. Install ImageMagick
 
@@ -90,17 +90,17 @@ The script verifies ImageMagick on startup and exits with an error if missing.
 
 Ubuntu / Debian / WSL
 
-bash
-
+'''
 sudo apt update
 
 sudo apt install imagemagick
+'''
 
 macOS (Homebrew)
 
-bash
-
+'''
 brew install imagemagick
+'''
 
 Usage
 
@@ -122,9 +122,9 @@ You may change these in the GUI.
 
 2\. Run the script
 
-bash
-
-python3 print\_job\_normalizer.py
+'''
+python3 PrintJob2File.py
+'''
 
 3\. Use the GUI
 
