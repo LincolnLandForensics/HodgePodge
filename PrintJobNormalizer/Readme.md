@@ -48,34 +48,6 @@ Unknown → .bin
 
 
 
-✔ Tkinter GUI with:
-
-
-
-Folder selection
-
-
-
-Progress bar
-
-
-
-Threaded processing (no freezing)
-
-
-
-Live status window
-
-
-
-✔ Terminal logging (input + output filenames)
-
-
-
-✔ No pop ups — all output stays in the GUI and terminal
-
-
-
 Installation
 
 1\. Install Python 3.8+
