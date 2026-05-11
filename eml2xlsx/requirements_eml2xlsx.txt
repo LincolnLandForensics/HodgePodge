@@ -3,3 +3,4 @@ beautifulsoup4
 lxml
 python-dateutil
 colorama
+extract-msg

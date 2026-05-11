@@ -28,12 +28,12 @@ pip install -r requirements_eml2xlsx.txt
 
 🧪 Usage
 ```
-python eml2xlsx_gui.py
+python eml2xlsx.py
 ```
 
 - Select your input folder containing .eml, .mbox, .json, and/or .zip files
 - Choose an output filename (e.g., email.xlsx)
-- (Optional) Un-Check the DeDuplicate box to keep duplicate SHA256 hashes
+- (Optional) Check the DeDuplicate box to ed-duplicate SHA256 hashes
 - Click <Start Parsing> and monitor progress in the log window
 
 📁 Output Structure
@@ -44,7 +44,7 @@ Contacts Sheet
 - Extracted names, emails, and linkage to original files
 
 🛠️ Customization
-You can extend the parser by modifying eml_parser_core.py:
+You can extend the parser by modifying eml2xlsx.py:
 - Add tag classification logic
 - Include additional metadata fields
 - Export summary sheets or tag breakdowns
@@ -52,7 +52,7 @@ You can extend the parser by modifying eml_parser_core.py:
 🧯 Troubleshooting
 - ❌ Excel file not saving? Ensure the output path is writable
 - ❌ Contacts missing? Check SHA256 presence or uncheck deduplication button
-- ❌ ZIP extraction failed? Confirm archive integrity
+
 
 📜 License
 This project is licensed under the MIT License.
