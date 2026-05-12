@@ -44,7 +44,7 @@ from tkinter import ttk, filedialog, scrolledtext
 
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
-version = '3.4.1'
+version = '3.4.2'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -376,6 +376,7 @@ def run_core_logic(args):
         elif os.path.isfile(input_xlsx):
             data = read_xlsx(input_xlsx)
             if args.convert:
+                # print(f'data = {data}') # temp
                 print(f' converting {input_xlsx}')
                 write_intel_basic(data, output_xlsx)
                 return
@@ -449,7 +450,6 @@ def run_core_logic(args):
             garmin()
             github()
             go()
-            gravatar()
             ham_radio()
             heylink()
             imageshack()
@@ -460,7 +460,6 @@ def run_core_logic(args):
             gab()
             keybase()
             kick()
-            # linkedin() # auth issue?
             mastadon()
             medium()
             myshopify()
@@ -492,6 +491,10 @@ def run_core_logic(args):
             wordpress()
             wordpress_profiles()
             youtube()
+            
+            # gravatar()
+            
+            # linkedin() # auth issue?
 
         if len(websites) > 0:          
             print(f'websites = {websites}')    
@@ -1766,46 +1769,69 @@ def gravatar(): # testuser = kevinrose      https://en.gravatar.com/kevinrose
                     parsed_data = json.loads(content)
                 except TypeError as error:
                     print(f'{error}')
+                print(f'I got this far')    # temp
 
                 # print(f'parsed_data = {parsed_data}')   # temp
-                info = parsed_data['entry'][0]['photos'][0]['value']
-
+                try:
+                    info = parsed_data['entry'][0]['photos'][0]['value']
+                except:pass  
 
                 if 'familyName' in content:
-                    fullname = parsed_data['entry'][0]['name']['formatted']
+                    try:
+                        fullname = parsed_data['entry'][0]['name']['formatted']
+                    except:pass  
 
 
 
                 if 'preferredUsername' in content:
-                    user = parsed_data['entry'][0]['preferredUsername']
+                    try:
+                        user = parsed_data['entry'][0]['preferredUsername']
+                    except:pass  
 
                 if 'emails' in content:
-                    email = parsed_data['entry'][0]['emails'][0]['value']
+                    try:
+                        email = parsed_data['entry'][0]['emails'][0]['value']
+                    except:pass  
                     
                 if 'company' in content:
-                    business = parsed_data['entry'][0]['company']
-                    
+                    try:
+                        business = parsed_data['entry'][0]['company']
+                    except:pass  
+
 
                 if 'pronouns' in content:
-                    SEX = parsed_data['entry'][0]['pronouns']
+                    try:
+                        SEX = parsed_data['entry'][0]['pronouns']
+                    except:pass  
+                    
                     if 'she/her' in SEX:
                         SEX = 'F'
                     elif 'he/him' in SEX:
                         SEX = 'M'                    
 
                 if 'currentLocation' in content:
-                    city = parsed_data['entry'][0]['currentLocation']
+                    
+                    try:
+                        city = parsed_data['entry'][0]['currentLocation']
+                    except:pass  
+                    
                     if isinstance(city, str) and ', ' in city:
-                        parts = city.split(', ', 1)
-                        city, state = parts[0], parts[1]
-
+                        
+                        try:
+                            parts = city.split(', ', 1)
+                            city, state = parts[0], parts[1]
+                        except:pass
                     
                 if 'aboutMe' in content:
-                    note = parsed_data['entry'][0]['aboutMe'].replace('&amp', '&')
-
+                    try:
+                        note = parsed_data['entry'][0]['aboutMe'].replace('&amp', '&')
+                    except:pass  
 
                 if 'displayName' in content:
-                    fullname = parsed_data['entry'][0]['displayName']
+                    
+                    try:
+                        fullname = parsed_data['entry'][0]['displayName']
+                    except:pass  
                     fullname = fullname.replace('&amp', '&')
                     if fullname == user:
                         fullname = ''
@@ -3675,13 +3701,13 @@ def read_xlsx(input_xlsx):
     # dnsdomains = []
 
         # url
-        url = (row_data.get("url") or '').strip()
+        url = str(row_data.get("url") or '').strip()
 
         if url.lower() not in [u.lower() for u in websites]:
             websites.append(url)
 
         # dnsdomain
-        dnsdomain = (row_data.get("dnsdomain") or '').strip()
+        dnsdomain = str(row_data.get("dnsdomain") or '').strip()
 
         # Only append non-empty and non-duplicate values
         if dnsdomain and dnsdomain.lower() not in [d.lower() for d in dnsdomains]:
@@ -3696,22 +3722,22 @@ def read_xlsx(input_xlsx):
                 users.append(user)
         except:pass
         # ip
-        ip = (row_data.get("ip") or '').replace('\n', '').strip()
+        ip = str(row_data.get("ip") or '').replace('\n', '').strip()
 
         if ip and ip.lower() not in [i.lower() for i in ips]:
             ips.append(ip)
  
         # email
-        email = (row_data.get("email") or '').strip()
+        email = str(row_data.get("email") or '').strip()
 
         if '@' in email and email.lower() not in [e.lower() for e in emails]:
             emails.append(email)
             
         # phone
         try:    
-            phone = (row_data.get("phone") or '').strip()
+            phone = str(row_data.get("phone") or '').strip()
         except:
-            phone = (row_data.get("phone") or '')
+            phone = str(row_data.get("phone") or '')
             
         if phone:
             # Remove unwanted characters
@@ -3727,7 +3753,7 @@ def read_xlsx(input_xlsx):
             except:pass
 
         # business
-        business = (
+        business = str(
             row_data.get("business")
             or row_data.get("business/entity")
             or row_data.get("Business")
@@ -3735,10 +3761,10 @@ def read_xlsx(input_xlsx):
         ).strip()
 
         # owner
-        owner = (row_data.get("owner") or '').strip()
+        owner = str(row_data.get("owner") or '').strip()
 
         # AKA
-        AKA = (
+        AKA = str(
             row_data.get("AKA") or
             row_data.get("aka") or
             row_data.get("alias") or
@@ -3747,10 +3773,10 @@ def read_xlsx(input_xlsx):
 
 
         # city
-        city = (row_data.get("city") or '').strip().title()
+        city = str(row_data.get("city") or '').strip().title()
     
         # state
-        state = (row_data.get("state") or '').strip()
+        state = str(row_data.get("state") or '').strip()
 
         # DOB
         DOB = (
@@ -3760,27 +3786,27 @@ def read_xlsx(input_xlsx):
         )   # .strip()
 
         # associates
-        associates = (
+        associates = str(
             row_data.get("associates") or
             row_data.get("friend") or
             ''
         ).strip()
 
         # SEX
-        SEX = (row_data.get("SEX") or row_data.get("gender") or '').strip()
+        SEX = str(row_data.get("SEX") or row_data.get("gender") or '').strip()
         
         # firstname
-        firstname = (row_data.get("firstname") or '').strip().title()
+        firstname = str(row_data.get("firstname") or '').strip().title()
 
         # lastname
-        lastname = (row_data.get("lastname") or '').strip().upper()
+        lastname = str(row_data.get("lastname") or '').strip().upper()
 
 
         # middlename
         middlename = row_data.get("middlename", "")
 
         # fullname
-        fullname = (row_data.get("fullname") or '').strip()
+        fullname = str(row_data.get("fullname") or '').strip()
 
         if not fullname:
             if firstname and lastname and middlename:
@@ -5669,7 +5695,8 @@ def write_blurb():
     for row in sheet.iter_rows(min_row=2, values_only=True):
         if not any(row): continue
         sentence = "\n".join(f"{column}: {value}" for column, value in zip(column_names, row) if column not in columns_to_skip and value is not None)
-        if sentence.strip():
+        if sentence:
+        # if sentence.strip():
             doc.add_paragraph(sentence)
             doc.add_paragraph("")  # Add an empty line between rows
 
@@ -5680,8 +5707,6 @@ def write_blurb():
     message = (f'Data written to {docx_file}')
     message_square(message)
 
-
-    
 
 def write_intel(data):
     '''
