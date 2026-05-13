@@ -1,6 +1,6 @@
-openpyxl
-beautifulsoup4
-lxml
-python-dateutil
-colorama
 extract-msg
+beautifulsoup4
+python-dateutil
+openpyxl
+pypff
+lxml

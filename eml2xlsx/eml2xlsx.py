@@ -15,10 +15,17 @@ from bs4 import BeautifulSoup
 from dateutil import parser
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
-from tkinter import filedialog, scrolledtext
+from tkinter import filedialog, scrolledtext, messagebox
+
+try:
+    import pypff    # pip install libratom
+
+    PST_SUPPORT = True
+except ImportError:
+    PST_SUPPORT = False
 
 Version = "1.0.5"
-description = "Convert email (.eml, .msg, .mbox and .json) files to xlsx"
+description = "Convert email (.eml, .msg, .mbox, .ost, .pst and .json) files to xlsx"
 # --- CORE PARSING LOGIC ---
 
 def clean_date(date_str):
@@ -51,7 +58,9 @@ def sha256_hash(path):
 def sanitize(text):
     if not isinstance(text, str): return ''
     text = text.strip().strip('"')
-    return re.sub(r'[\x00-\x08\x0B-\x0C\x0E-\x1F]', '', text)
+    text = re.sub(r'[\x00-\x08\x0B-\x0C\x0E-\x1F]', '', text)
+    # Remove blank lines
+    return "\n".join([line for line in text.splitlines() if line.strip()])
 
 def decode_header_str(header_obj):
     if not header_obj: return ""
@@ -93,8 +102,6 @@ def extract_body(msg):
             body = payload
     
     if body:
-        # Remove excess blank lines (3 or more newlines become 2)
-        body = re.sub(r'\n\s*\n\s*\n+', '\n\n', body)
         return body.strip()
     return ''
 
@@ -157,8 +164,118 @@ def extract_contact(sender_raw):
         possible = s.split("<", 1)[1]
         if "@" in possible:
             email = possible.strip(" >")
-
+    email = (email or "").strip().lower()
     return (fullname, email)
+
+def process_pst_archive(path, case_id, source, contacts_unique, data, progress_display=None):
+    if not PST_SUPPORT:
+        if progress_display:
+            progress_display.insert("end", f"❌ Error: pypff module not found. PST parsing disabled.\n")
+        return
+
+    file_name = os.path.basename(path)
+    sha256 = sha256_hash(path)
+    
+    try:
+        pst = pypff.file()
+        # Ensure path is absolute and normalized for pypff
+        normalized_path = os.path.abspath(os.path.normpath(path))
+        pst.open(normalized_path)
+        root = pst.get_root_folder()
+        
+        def traverse_pst_folder(folder, current_path=""):
+            # Process messages
+            for msg in folder.sub_messages:
+                try:
+                    subject = sanitize(msg.subject or "")
+                    sender = sanitize(msg.sender_name or "")
+                    
+                    # Extract recipients from headers if possible
+                    recipient_str = ""
+                    headers_text = msg.transport_headers or ""
+                    if headers_text:
+                        try:
+                            from email.parser import Parser
+                            header_msg = Parser(policy=policy.default).parsestr(headers_text)
+                            recipient_str = sanitize(header_msg.get("To", ""))
+                        except:
+                            pass
+                    
+                    # Extract date
+                    date_obj = ""
+                    if msg.delivery_time:
+                        date_obj = str(msg.delivery_time)
+                        date_obj = clean_date(date_obj)
+                    
+                    # Extract body
+                    body = ""
+                    if msg.plain_text_body:
+                        body = sanitize(msg.plain_text_body.decode('utf-8', errors='replace'))
+                    elif msg.html_body:
+                        html_content = msg.html_body.decode('utf-8', errors='replace')
+                        body = sanitize(BeautifulSoup(html_content, 'lxml').get_text(separator='\n'))
+                    
+                    # Attachments
+                    attachments_list = []
+                    try:
+                        for i in range(msg.get_number_of_attachments()):
+                            try:
+                                att = msg.get_attachment(i)
+                                name = att.get_name() or att.get_item_name() or f"attachment_{i}"
+                                attachments_list.append(sanitize(name))
+                            except:
+                                pass
+                    except:
+                        pass
+                    attachments = "; ".join(attachments_list)
+                    
+                    tag, list_unsubscribe = detect_spam(body, sender)
+                    fullname, email = extract_contact(sender)
+                    fullname2, email2 = extract_contact(recipient_str)
+                    
+                    
+                    data.append({
+                        "Time": date_obj, "From": sender, "To": recipient_str, "Subject": subject,
+                        "Labels": f"Folder: {current_path}", "Body": body, "Attachments": attachments, "Tag": tag,
+                        "original_file": file_name, "Source": source, "case": case_id, "Precedence": "",
+                        "List-Unsubscribe": list_unsubscribe, "X-Mailer": "", "fullname": fullname, "email": email,
+                        "sha256": sha256_text(body) # Custom hash for body content
+                    })
+                    
+                    if email and email not in contacts_unique:
+                        ranking = "9 - contacts" if "Spam" in tag else "3 - contacts"
+                        contacts_unique[email] = {
+                            "query": email, "ranking": ranking, "fullname": fullname,
+                            "email": email, "note": recipient_str, "original_file": file_name,
+                            "Source": source, "Tag": tag, "case": case_id
+                        }
+                    elif email2 and email2 not in contacts_unique:
+                        ranking = "8 - contacts" if "Spam" in tag else "2 - contacts"
+                        contacts_unique[email2] = {
+                            "query": email2, "ranking": ranking, "fullname": fullname2,
+                            "email": email2, "note": recipient_str, "original_file": file_name,
+                            "Source": source, "Tag": tag, "case": case_id
+                        }                        
+                        
+                except Exception as e:
+                    print(f"Error parsing message in PST: {e}")
+
+            # Recurse subfolders
+            for sub_folder in folder.sub_folders:
+                traverse_pst_folder(sub_folder, f"{current_path}/{sub_folder.name}")
+
+        traverse_pst_folder(root)
+        pst.close()
+        print(f'[DONE] {file_name}')
+        
+    except Exception as e:
+        if progress_display:
+            progress_display.insert("end", f"Error parsing PST {file_name}: {e}\n")
+        print(f"Error parsing PST {file_name}: {e}")
+
+def sha256_text(text):
+    if not text: return ""
+    return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
 
 def process_eml_folder(file_paths, output_file=None, progress_display=None, case_id=""):
     data = []
@@ -278,7 +395,7 @@ def process_eml_folder(file_paths, output_file=None, progress_display=None, case
                         date_str = message.get('date', '')
                         date_obj = clean_date(date_str) if date_str else ''
                         
-                        body = extract_body(message)
+                        body = sanitize(extract_body(message))
                         precedence = message.get('precedence', '')
                         list_unsubscribe = message.get('List-Unsubscribe', '')
                         x_mailer = message.get('X-Mailer', '')
@@ -302,6 +419,8 @@ def process_eml_folder(file_paths, output_file=None, progress_display=None, case
                                 "email": email, "note": recipient, "original_file": file_name,
                                 "Source": source, "Tag": tag, "case": case_id
                             }
+                            
+                            
                 except Exception as e:
                     if progress_display:
                         progress_display.insert("end", f"Error parsing mbox {file_name}: {e}\n")
@@ -313,7 +432,7 @@ def process_eml_folder(file_paths, output_file=None, progress_display=None, case
                 for msg in messages_json.get("messages", []):
                     sender_email = msg.get("creator", {}).get("email", "")
                     fullname = msg.get("creator", {}).get("name", "")
-                    body = msg.get("text", "")
+                    body = sanitize(msg.get("text", ""))
                     date_obj = clean_date(msg.get("created_date", ""))
                     attachment_data = msg.get("attached_files", "")
                     if isinstance(attachment_data, list):
@@ -339,6 +458,9 @@ def process_eml_folder(file_paths, output_file=None, progress_display=None, case
                             "email": sender_email, "note": "", "original_file": file_name,
                             "Source": source, "Tag": tag, "case": case_id
                         }
+
+            elif file_name.lower().endswith((".pst", ".ost")):
+                process_pst_archive(path, case_id, source, contacts_unique, data, progress_display)
 
             elif file_name:
                 attachments = file_name

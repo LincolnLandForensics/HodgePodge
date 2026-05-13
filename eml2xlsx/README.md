@@ -1,6 +1,6 @@
 ## 🕵️ EML to XLSX Parser GUI
 
-A forensic-grade GUI tool for parsing .eml, .mbox, and .json email files into structured Excel workbooks. Designed for investigators, fraud analysts, and digital forensic workflows.
+A forensic-grade GUI tool for parsing .eml, .mbox, .ost, .pst and .json email files into structured Excel workbooks. Designed for investigators, fraud analysts, and digital forensic workflows.
 
 📦 Features
 - ✅ GUI interface built with Tkinter
