@@ -24,7 +24,7 @@ try:
 except ImportError:
     PST_SUPPORT = False
 
-Version = "1.0.5"
+Version = "1.1.5"
 description = "Convert email (.eml, .msg, .mbox, .ost, .pst and .json) files to xlsx"
 # --- CORE PARSING LOGIC ---
 
