@@ -1,11 +1,11 @@
 ## 🕵️ EML to XLSX Parser GUI
 
-A forensic-grade GUI tool for parsing .eml, .mbox, .ost, .pst and .json email files into structured Excel workbooks. Designed for investigators, fraud analysts, and digital forensic workflows.
+A forensic-grade GUI tool for parsing .eml, (.emlx), .mbox, .ost, .pst and .json email files into structured Excel workbooks. Designed for investigators, fraud analysts, and digital forensic workflows.
 
 📦 Features
 - ✅ GUI interface built with Tkinter
 - ✅ Recursively extracts ZIP archives
-- ✅ Parses .eml, .mbox, .json files
+- ✅ Parses .eml, .mbox, .ost, .pst and .json files
 - ✅ Optional deduplication by SHA256 hash
 - ✅ Exports to Excel with two sheets: Eml and Contacts
 
@@ -42,16 +42,6 @@ Eml Sheet
 - Time, From, To, Subject, Body, Attachments, Labels, Tags, Source, SHA256, and more
 Contacts Sheet
 - Extracted names, emails, and linkage to original files
-
-🛠️ Customization
-You can extend the parser by modifying eml2xlsx.py:
-- Add tag classification logic
-- Include additional metadata fields
-- Export summary sheets or tag breakdowns
-
-🧯 Troubleshooting
-- ❌ Excel file not saving? Ensure the output path is writable
-- ❌ Contacts missing? Check SHA256 presence or uncheck deduplication button
 
 
 📜 License
