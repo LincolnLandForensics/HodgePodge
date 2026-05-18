@@ -66,6 +66,61 @@ modified             2025-09-08 12:20:06
 ---
 
 
+# Hashinator
+
+Hashinator is a Python-based forensics utility that recursively scans a selected directory, calculates cryptographic hashes (MD5, SHA-1, SHA-256) for all files, and extracts basic file metadata. It then exports the findings into a cleanly formatted, easy-to-read Excel (`.xlsx`) workbook.
+
+It features a simple and intuitive GUI built with Tkinter, making it easy to select input directories and specify the output file location without using the command line.
+
+The column format matches the FTK Summary columns.
+
+## Features
+- **Recursive Directory Hashing:** Automatically traverses all subdirectories to find and process files.
+- **Multiple Hash Algorithms:** Calculates MD5, SHA-1, and SHA-256 hashes simultaneously.
+- **Metadata Extraction:** Captures file size, creation dates, and modification dates.
+- **Magic Bytes File Type Detection:** Inspects file headers to accurately determine the file type (bypassing simple extension checks).
+- **Excel Output:** Generates a formatted `.xlsx` report containing the results, complete with colored headers and customizable column widths.
+- **Multi-threaded:** Utilizes Python's `ThreadPoolExecutor` to process multiple files concurrently, speeding up the hashing process.
+- **GUI Interface:** Simple Tkinter UI with a progress indicator and status log.
+
+## Requirements
+
+Hashinator requires **Python 3.6+** to run. 
+
+The only external dependency is `openpyxl`, which is used to generate the Excel reports. All other modules used (`os`, `hashlib`, `tkinter`, `threading`, etc.) are included in the Python Standard Library.
+
+## Installation
+
+1. **Clone or download** this repository to your local machine.
+2. **Install the required dependencies** using `pip`. Navigate to the script's directory and run:
+   ```bash
+   pip install -r requirements_hashinator.txt
+   ```
+   *(Note: On some Linux distributions, you may also need to install Tkinter via your package manager, e.g., `sudo apt-get install python3-tk`)*
+
+## Usage
+
+You can launch Hashinator by simply running the script with Python:
+
+```bash
+python hashinator.py
+```
+
+### Using the Interface:
+1. **Input Folder:** Click "Browse" to select the folder containing the files you want to hash.
+2. **Output File:** Click "Browse" to choose where you want to save the `.xlsx` report and what you want to name it.
+3. **Start:** Click the "Start" button to begin the hashing process. The progress bar will become active, and the status text window will display real-time updates as files are processed.
+
+Once processing is complete, the status log will indicate that it's done, and you can open your newly created Excel file to review the hashes and file metadata.
+
+
+![Hashinator](Images/Hashinator.png)
+
+
+---
+
+
+
 ## pdf_password_remover.py
 
 PDF password remover (if you know it)
