@@ -170,7 +170,7 @@ def write_xlsx(data, output_xlsx, headers):
 # ----------------------------------------------------------------------
 # Core processing
 # ----------------------------------------------------------------------
-def process_folder(input_folder, output_file, status_callback=None):
+def process_folder(input_folder, output_file, do_hashing=True, status_callback=None):
     if status_callback:
         status_callback(f"Collecting files from: {input_folder}\n")
 
@@ -188,7 +188,6 @@ def process_folder(input_folder, output_file, status_callback=None):
         Name = os.path.basename(path)
         FileType = os.path.splitext(path)[1].lower()
         if FileType == '':
-            print(f'missing Filetype in {Name}')
             FileType = TypeFind(path)
         record = {
             "Path": path,
@@ -206,7 +205,10 @@ def process_folder(input_folder, output_file, status_callback=None):
         }
         try:
             created, modified, size = get_file_info(path)
-            md5, sha1, sha256 = hash_file(path)
+            if do_hashing:
+                md5, sha1, sha256 = hash_file(path)
+            else:
+                md5, sha1, sha256 = "", "", ""
 
             record["Created"] = created
             record["Modified"] = modified
@@ -254,6 +256,7 @@ entry_output = None
 text_status = None
 progress = None
 btn_start = None
+hash_files_var = None
 
 
 def gui_log(message):
@@ -282,7 +285,7 @@ def start_processing_thread():
 
     def worker():
         try:
-            process_folder(input_folder, output_file,
+            process_folder(input_folder, output_file, do_hashing=hash_files_var.get(),
                            status_callback=lambda m: root.after(0, gui_log, m))
         finally:
             root.after(0, processing_done)
@@ -292,7 +295,6 @@ def start_processing_thread():
 def TypeFind(file_path):
     FileType = ''
     Name = os.path.basename(file_path)
-    print(f'finding type for {Name}')
     
     magic_dict = {
         b'\xff\xd8\xff': '.jpg',
@@ -348,7 +350,7 @@ def processing_done():
 
 
 def launch_gui():
-    global gui_active, root, entry_input, entry_output, text_status, progress, btn_start
+    global gui_active, root, entry_input, entry_output, text_status, progress, btn_start, hash_files_var
 
     gui_active = True
     root = tk.Tk()
@@ -396,6 +398,11 @@ def launch_gui():
             entry_output.insert(0, file)
 
     tk.Button(frame_output, text="Browse", command=browse_output).pack(side=tk.LEFT)
+
+    # Options
+    hash_files_var = tk.BooleanVar(value=True)
+    chk_hash = tk.Checkbutton(root, text="Hash files", variable=hash_files_var)
+    chk_hash.pack(pady=5)
 
     # Start button
     btn_start = tk.Button(root, text="Start", command=start_processing_thread,
