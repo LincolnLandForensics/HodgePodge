@@ -25,6 +25,9 @@ HEADERS = ["Item", "Path", "FileType", "ExportID", "ItemPath", "OriginalPath"
 , "ParentItem", "HeadOfFamily", "OriginalMD5", "MD5", "OriginalSHA1", "SHA1"
 , "OriginalSHA256", "SHA256", "Name", "Size", "Created", "Modified"]
 
+HEADERS2 = ["Name", "Path", "FileType", "MD5", "SHA1", "SHA256", "Size", "Created", "Modified"]
+
+
 
 # ----------------------------------------------------------------------
 # Hashing + file info
@@ -86,33 +89,31 @@ def write_xlsx(data, output_xlsx, headers):
     # -----------------------------
     # Column width settings
     # -----------------------------
-    widths = {
-        "A": 6,  # Item
-        "B": 38,  # Path
-        "C": 9,  # FileType
-        "D": 9,  # ExportID
-        "E": 9,  # ItemPath
-        "F": 14,  # OriginalPath
-        "G": 11,  # ParentItem
-        "H": 14,  # HeadOfFamily
-        "I": 12,  # OriginalMD5
-        "J": 33,  # MD5
-        "K": 12,  # OriginalSHA1
-        "L": 42,  # SHA1
-        "M": 15,  # OriginalSHA256
-        "N": 66,  # SHA256
-        "O": 30,  # Name
-        "P": 6,  # Size
-        "Q": 27,  # Created
-        "R": 27,  # Modified        
+    header_widths = {
+        "Item": 6,
+        "Path": 38,
+        "FileType": 9,
+        "ExportID": 9,
+        "ItemPath": 9,
+        "OriginalPath": 14,
+        "ParentItem": 11,
+        "HeadOfFamily": 14,
+        "OriginalMD5": 12,
+        "MD5": 33,
+        "OriginalSHA1": 12,
+        "SHA1": 42,
+        "OriginalSHA256": 15,
+        "SHA256": 66,
+        "Name": 30,
+        "Size": 8,
+        "Created": 27,
+        "Modified": 27,
     }
 
-								
-
-
-
-    for col, width in widths.items():
-        ws.column_dimensions[col].width = width
+    for col_index, header in enumerate(headers, start=1):
+        if header in header_widths and col_index <= 26:
+            col_letter = chr(64 + col_index)
+            ws.column_dimensions[col_letter].width = header_widths[header]
 
     # -----------------------------
     # Write data rows (dynamic order)
@@ -170,7 +171,7 @@ def write_xlsx(data, output_xlsx, headers):
 # ----------------------------------------------------------------------
 # Core processing
 # ----------------------------------------------------------------------
-def process_folder(input_folder, output_file, do_hashing=True, status_callback=None):
+def process_folder(input_folder, output_file, do_hashing=True, use_simple_headers=False, status_callback=None):
     if status_callback:
         status_callback(f"Collecting files from: {input_folder}\n")
 
@@ -235,7 +236,8 @@ def process_folder(input_folder, output_file, do_hashing=True, status_callback=N
             if status_callback and processed % 50 == 0:
                 status_callback(f"Processed {processed}/{total} files...\n")
 
-    write_xlsx(data, output_file, HEADERS)
+    headers_to_use = HEADERS2 if use_simple_headers else HEADERS
+    write_xlsx(data, output_file, headers_to_use)
 
     if status_callback:
         status_callback(f"\nDone. Wrote: {output_file}\n")
@@ -257,6 +259,7 @@ text_status = None
 progress = None
 btn_start = None
 hash_files_var = None
+simpler_header_var = None
 
 
 def gui_log(message):
@@ -286,6 +289,7 @@ def start_processing_thread():
     def worker():
         try:
             process_folder(input_folder, output_file, do_hashing=hash_files_var.get(),
+                           use_simple_headers=simpler_header_var.get(),
                            status_callback=lambda m: root.after(0, gui_log, m))
         finally:
             root.after(0, processing_done)
@@ -350,7 +354,7 @@ def processing_done():
 
 
 def launch_gui():
-    global gui_active, root, entry_input, entry_output, text_status, progress, btn_start, hash_files_var
+    global gui_active, root, entry_input, entry_output, text_status, progress, btn_start, hash_files_var, simpler_header_var
 
     gui_active = True
     root = tk.Tk()
@@ -403,6 +407,10 @@ def launch_gui():
     hash_files_var = tk.BooleanVar(value=True)
     chk_hash = tk.Checkbutton(root, text="Hash files", variable=hash_files_var)
     chk_hash.pack(pady=5)
+
+    simpler_header_var = tk.BooleanVar(value=False)
+    chk_header = tk.Checkbutton(root, text="Simpler Header", variable=simpler_header_var)
+    chk_header.pack(pady=5)
 
     # Start button
     btn_start = tk.Button(root, text="Start", command=start_processing_thread,
