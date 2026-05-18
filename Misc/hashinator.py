@@ -14,7 +14,7 @@ from tkinter import ttk, filedialog, scrolledtext
 # ----------------------------------------------------------------------
 # Metadata
 # ----------------------------------------------------------------------
-version = "v1.1"
+version = "1.2"
 description = "Recursive file hasher (MD5 + SHA-1 + SHA-256) with XLSX output"
 
 DEFAULT_INPUT = "files"
@@ -96,11 +96,11 @@ def write_xlsx(data, output_xlsx, headers):
         "G": 11,  # ParentItem
         "H": 14,  # HeadOfFamily
         "I": 12,  # OriginalMD5
-        "J": 32,  # MD5
+        "J": 33,  # MD5
         "K": 12,  # OriginalSHA1
-        "L": 41,  # SHA1
+        "L": 42,  # SHA1
         "M": 15,  # OriginalSHA256
-        "N": 65,  # SHA256
+        "N": 66,  # SHA256
         "O": 30,  # Name
         "P": 6,  # Size
         "Q": 27,  # Created
