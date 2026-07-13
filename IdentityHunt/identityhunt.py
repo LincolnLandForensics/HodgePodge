@@ -39,7 +39,6 @@ import threading
 from tkinter import ttk, filedialog, scrolledtext
 
 
-
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
@@ -399,6 +398,7 @@ def run_core_logic(args):
             carrot_email()
             cyberbackground_email()
             epios_email()
+            etsy_email()
             ghunt()
             google_calendar()
             have_i_been_pwned()
@@ -427,22 +427,27 @@ def run_core_logic(args):
             validnumber()
             whitepagesphone()
             whocalld()
+            zabasearch()  # cloudflare
             
         if args.test:  
             print(f' using test module')
-            substack()
+            etsy_email()
 
         if len(users) > 0:  
             print(f'users = {users}')    
             main_user()
             about()
             allmylinks()
+            behance()
             bitbucket()
             blogspot_users()
             bsky()
             cashapp()
+            calendly()
             disqus()
             ebay()
+            etsy()
+            linktree()
             facebook()
             familytree()
             flickr()  # errors 
@@ -450,6 +455,8 @@ def run_core_logic(args):
             garmin()
             github()
             go()
+            goodread()
+            goodread2()
             ham_radio()
             heylink()
             imageshack()
@@ -475,6 +482,7 @@ def run_core_logic(args):
             sherlock()
             slack()
             snapchat()
+            sportstracker()
             spotify()   # error
             substack()
             threads()
@@ -576,7 +584,7 @@ def about(): # testuser = kevinrose
 
 
 
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
             print(f'{url}	{fullname}') 
 
             row_data["query"] = query
@@ -619,7 +627,7 @@ def allmylinks():   # https://allmylinks.com/terminator
         # if 1==1:
         if pagestatus == 200:
 
-            fullname = titleurl
+            fullname = str(titleurl)
             if ' (' in fullname:
                 fullname = fullname.split(' (')[0]
 
@@ -717,7 +725,77 @@ def arinip():    # testuser=    77.15.67.232
            
             data.append(row_data)
 
+def behance(): # testuser = kevinrose https://www.behance.net/kevinrose
+    print(f'\n\t<<<<< behance users >>>>>')
+    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
+    if playwright_ready() is False:
+        # print(f'pip install playwright playwright_stealth')
+        return (content, referer, osurl, titleurl, pagestatus)
 
+
+# https://www.behance.net/soulja  Robert Dabi - Designer in Nuremberg, Germany
+
+    for user in users:    
+        row_data = {}
+        (query, ranking) = (user, '6 - behance')
+        (firstname, lastname) = ('', '')
+        (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
+        user = user.rstrip()
+        url = (f'https://www.behance.net/{user}')
+        
+        # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
+        try:
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
+        except TypeError as error:
+            print(f'{error}') 
+
+
+        if str(pagestatus) != '404':
+
+            # grab display_name = fullname
+            titleurl = titleurl.replace("'s favorite items - behance",'')
+            titleurl = titleurl.replace(" :: Behance",'')
+            if ' - Designer in ' in titleurl:
+                titletemp = titleurl.split(' - Designer in ')
+                try:
+                    fullname = titletemp[0]
+                    city = titletemp[1]
+                except:
+                    fullname = str(titleurl)
+                
+            
+            
+            if ' ' in str(fullname):
+                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            else:
+                fullname = ''
+
+            if fullname == 'behance.com':
+                ranking = '9 - behance'
+                fullname = ''
+
+            if 1 == 1:
+            # if ranking == '4 - behance':
+                print(f'{url}	{fullname}') 
+
+                row_data["query"] = query
+                row_data["ranking"] = ranking
+                row_data["fullname"] = fullname
+                row_data["firstname"] = firstname            
+                row_data["lastname"] = lastname
+                row_data["url"] = url
+                row_data["user"] = user
+                row_data["city"] = city            
+                row_data["pagestatus"] = pagestatus    
+                row_data["content"] = content                
+                row_data["titleurl"] = titleurl         
+
+                data.append(row_data)
+
+        time.sleep(5) #will sleep for 5 seconds
+        
+        
 def bitbucket(): # testuser = rick
     print(f'\n\t<<<<< bitbucket users >>>>>')
     for user in users:    
@@ -742,7 +820,7 @@ def bitbucket(): # testuser = rick
         else:
             fullname = ''
 
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
             print(f'{url}	{fullname}') 
 
             row_data["query"] = query
@@ -846,6 +924,45 @@ def bsky(): # testuser = kevinrose
             data.append(row_data)  
 
 
+def calendly(): # testuser = kevinrose or jeff
+    print(f'\n\t<<<<< calendly users >>>>>')
+    for user in users:    
+        row_data = {}
+        (query, ranking) = (user, '9 - calendly')
+        (city, country, fullname, titleurl, pagestatus, content) = ('', '', '', '', '', '')
+        (note) = ('')
+        user = user.strip()
+        url = (f'https://calendly.com/{user}')
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
+
+        for eachline in content.split("  <"):
+            if "og:title" in eachline:
+                fullname = eachline.strip().split("\"")[1]
+                fullname = str(fullname).split(" (")[0]
+            elif "og:description" in eachline:
+                note = eachline.strip().split("\"")[1]
+                print(f'note = {note}')
+
+        if fullname != '':
+            ranking = '5 - calendly'
+            (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+
+            print(f'{url}	{fullname}') 
+
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["fullname"] = fullname
+            row_data["firstname"] = firstname
+            row_data["lastname"] = lastname
+            row_data["url"] = url
+            row_data["user"] = user  
+            row_data["note"] = note 
+            row_data["pagestatus"] = pagestatus 
+            # row_data["titleurl"] = titleurl 
+            data.append(row_data)   
+
+
+
 def carrot_email(): 
     print(f'\n\t<<<<< carrot2 emails >>>>>')
     
@@ -886,7 +1003,7 @@ def cashapp(): # testuser = kevinrose
         url = (f'https://cash.app/${user}')
         (content, referer, osurl, titleurl, pagestatus) = request(url)
 
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
             pattern = r'"display_name":"([^"]+)"'
             match = re.search(pattern, content)
             if match:
@@ -1115,6 +1232,7 @@ def discoverprofile():
 
 
 def disqus(): # testuser = kevinrose
+    # task: add City, State
     print(f'\n\t<<<<< discus users >>>>>')
 
     if playwright_ready() is False:
@@ -1191,7 +1309,7 @@ def ebay(): # testuser = kevinrose
         if pagestatus == 200:
 
             titleurl = titleurl.replace(' | eBay Stores', '')
-            fullname = titleurl
+            fullname = str(titleurl)
             if 'Security Measure | eBay' in fullname:
                 fullname = ''
                 ranking = '9 - ebay'
@@ -1239,7 +1357,7 @@ def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # pr
 
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '6 - etsy')
+        (query, ranking) = (user, '9 - etsy')
         (firstname, lastname) = ('', '')
         (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
         user = user.rstrip()
@@ -1247,16 +1365,17 @@ def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # pr
         
         # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
         try:
+            test = 'test'
             # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
+            # (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
         except TypeError as error:
             print(f'{error}') 
         if 1 == 1:
-        # if '404' not in pagestatus:
+        # if '404' not in str(pagestatus):
             # grab display_name = fullname
             titleurl = titleurl.replace("'s favorite items - Etsy",'')
 
-            fullname = titleurl
+            fullname = str(titleurl)
             
             if ' ' in fullname:
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
@@ -1287,6 +1406,160 @@ def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # pr
 
         time.sleep(5) #will sleep for 5 seconds
 
+
+
+def etsy_email():  # testemail = kevinrose@gmail.com
+    print(f'\n\t<<<<< etsy email >>>>>')
+
+    for email in emails:
+        row_data = {}
+        email = email.strip()
+        query = email.rstrip()
+        ranking = '7 - etsy'
+        fullname = firstname = middlename = lastname = ''
+        business = city = state = country = ''
+        user = ''
+        SEX = ''
+        info = ''
+        note = ''
+        misc = ''
+        associates = AKA = owner = president = ''
+        otherurls = ''
+        pagestatus = ''
+        titleurl = ''
+
+        # Build API URL
+        url = f'https://www.etsy.com/api/v3/ajax/public/users/by-identity-optional?identity={email}'
+
+        # Skip non-alpha emails (your original logic)
+        if not any(char.isalpha() for char in query):
+            continue
+
+        # Request
+        content, referer, osurl, titleurl, pagestatus = request(url)
+
+        # Bail out if Etsy returns "fail"
+        if 'ail' in pagestatus:
+            continue
+
+        # Parse JSON
+        try:
+            parsed_data = json.loads(content)
+        except Exception as error:
+            print(f'JSON error: {error}')
+            continue
+
+        # -----------------------------
+        # USERNAME EXTRACTION
+        # -----------------------------
+        # Old API (your sample JSON)
+        if not user:
+            try:
+                user = parsed_data.get('login_name', '')
+            except:
+                pass
+
+        # fullname
+        if not fullname:
+            try:
+                fullname = parsed_data.get('real_name', '')
+            except:
+                pass
+
+        # firstname
+        if not firstname:
+            try:
+                firstname = parsed_data.get('first_name', '')
+            except:
+                pass
+
+        # lastname
+        if not lastname:
+            try:
+                lastname = parsed_data.get('last_name', '')
+            except:
+                pass
+
+        # city
+        if not city:
+            try:
+                city = parsed_data.get('location', '')
+            except:
+                pass
+
+        # info
+        if not info:
+            try:
+                info = parsed_data.get('bio', '')
+            except:
+                pass
+ 
+        # SEX
+        if not SEX:
+            try:
+                SEX = parsed_data.get('gender', '')
+            except:
+                pass
+
+        try:
+            accounts = parsed_data['entry'][0]['accounts']
+            if len(accounts) > 0:
+                misc = accounts[0]['url']
+            if len(accounts) > 1:
+                associates = accounts[1]['url']
+            if len(accounts) > 2:
+                AKA = accounts[2]['url']
+            if len(accounts) > 3:
+                country = accounts[3]['url']
+            if len(accounts) > 4:
+                owner = accounts[4]['url']
+            if len(accounts) > 5:
+                president = accounts[5]['url']
+        except:
+            pass
+
+        # -----------------------------
+        # PROFILE URL (FIXED)
+        # -----------------------------
+        # profile_url = f'http://en.etsy.com/{user}' if user else ''
+        profile_url = f'https://www.etsy.com/people/{user}' if user else ''
+
+        print(f'{profile_url}\t{fullname}')
+
+        # Ranking bump
+        if fullname or otherurls or note:
+            ranking = '3 - etsy'
+
+        # -----------------------------
+        # BUILD ROW DATA
+        # -----------------------------
+        row_data["query"] = query
+        row_data["ranking"] = ranking
+        row_data["fullname"] = fullname
+        row_data["middlename"] = middlename
+        row_data["firstname"] = firstname
+        row_data["lastname"] = lastname
+        row_data["url"] = profile_url
+        row_data["email"] = email
+        row_data["business"] = business
+        row_data["city"] = city
+        row_data["state"] = state
+        row_data["country"] = country
+        row_data["user"] = user
+        row_data["SEX"] = SEX
+        row_data["info"] = info
+        row_data["misc"] = misc
+        row_data["note"] = note
+        row_data["titleurl"] = titleurl
+        row_data["associates"] = associates
+        row_data["owner"] = owner
+        row_data["president"] = president
+        row_data["AKA"] = AKA
+        row_data["content"] = content
+        data.append(row_data)
+
+
+
 def facebook(): # testuser = kevinrose
     print(f'\n\t<<<<< facebook users >>>>>')
 
@@ -1296,7 +1569,7 @@ def facebook(): # testuser = kevinrose
         
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '7 - Facebook')
+        (query, ranking) = (user, '9 - Facebook')
 
         (fullname,lastname,firstname) = ('','','')
         (content, referer, osurl, titleurl, pagestatus) = ('','','','','')
@@ -1309,7 +1582,7 @@ def facebook(): # testuser = kevinrose
         except TypeError as error:
             print(f'{error}') 
             
-        fullname = titleurl.strip()
+        fullname = str(titleurl).strip()
         if ' | Facebook' in titleurl:
             fullname = fullname.replace(' | Facebook', '')
             ranking = '4 - Facebook'
@@ -1320,8 +1593,8 @@ def facebook(): # testuser = kevinrose
         if ' ' in fullname:
             (fullname, firstname, middlename, lastname) = fullname_parse(fullname)        
 
-        if 1==1:
-        # if 'This content isn' not in content and 'Facebook' not in titleurl:
+        # if 1==1:
+        if fullname != '':
             print(f'{url}	{fullname}') 
             row_data["query"] = query
             row_data["ranking"] = ranking
@@ -1330,9 +1603,9 @@ def facebook(): # testuser = kevinrose
             row_data["lastname"] = lastname
             row_data["url"] = url
             row_data["user"] = user
-            # row_data["pagestatus"] = pagestatus    
-            # row_data["content"] = content                
-            # row_data["titleurl"] = titleurl 
+            row_data["pagestatus"] = pagestatus    
+            row_data["content"] = content                
+            row_data["titleurl"] = titleurl 
             data.append(row_data)        
 
 
@@ -1486,14 +1759,15 @@ def freelancer(): # testuser = kevinrose
         row_data = {}
         (query, ranking) = (user, '5 - freelancer')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
+        city = ''
         user = user.rstrip()
         url = (f'https://www.freelancer.com/u/{user}')
         (content, referer, osurl, titleurl, pagestatus) = request(url)
         titleurl = titleurl.replace(' Profile | Freelancer','')
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
            
             if ' ' in titleurl:
-                fullname = titleurl
+                fullname = str(titleurl)
             
             if fullname.lower() == user.lower():
                 fullname = ''
@@ -1502,6 +1776,8 @@ def freelancer(): # testuser = kevinrose
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
             if 'Sign Up Free' in fullname:
                 ranking = '9 - freelancer'
+                fullname = ''
+
             
             if 'Browser ' not in fullname:
                 print(f'{url}	{fullname}') 
@@ -1511,9 +1787,10 @@ def freelancer(): # testuser = kevinrose
                 row_data["firstname"] = firstname
                 row_data["lastname"] = lastname
                 row_data["url"] = url
+                row_data["city"] = city
                 row_data["user"] = user            
-                # row_data["titleurl"] = titleurl            
-                            
+                row_data["titleurl"] = titleurl            
+                row_data["pagestatus"] = pagestatus                             
                 data.append(row_data)  
 
 def friendfinder():    # testuser=  kevinrose   # java math problem
@@ -1591,7 +1868,7 @@ def garmin(): # testuser = kevinrose
 
         if 'twitter:card' not in content:
         
-            fullname = titleurl
+            fullname = str(titleurl)
             fullname = fullname.split(" (")[0]
             fullname = fullname.replace("Garmin Connect","").strip()
 
@@ -1641,7 +1918,7 @@ def geoiptool():
 
         if pagestatus == 200:
 
-            fullname = titleurl
+            fullname = str(titleurl)
             if ' (' in fullname:
                 fullname = fullname.split(' (')[0]
 
@@ -1693,7 +1970,7 @@ def github(): # testuser = kevinrose
 
         (content, referer, osurl, titleurl, pagestatus) = request(url)
         if "(" in titleurl:
-            fullname = titleurl.strip()
+            fullname = str(titleurl).strip()
             if "(" in fullname:
                 fullname = fullname.split("(")[1]
                 fullname = fullname.strip().split(")")[0]
@@ -1747,6 +2024,156 @@ def go():
         row_data["url"] = url
         row_data["note"] = 'gosearch.exe {user} --no-false-positives'
         data.append(row_data)     
+
+
+def goodread2():
+    from user_scanner.core.helpers import get_random_user_agent
+    from user_scanner.core.orchestrator import Result, make_request
+
+
+    print(f'\n\t<<<<< goodread users >>>>>')
+    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
+    if playwright_ready() is False:
+        # print(f'pip install playwright playwright_stealth')
+        return (content, referer, osurl, titleurl, pagestatus)
+
+
+    for user in users:    
+        row_data = {}
+        (query, ranking) = (user, '6 - goodread')
+        (firstname, lastname) = ('', '')
+        (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
+        user = user.rstrip()
+        url = (f'https://www.goodreads.com/{user}')
+            
+
+        headers = {
+            "User-Agent": get_random_user_agent(),
+        }
+
+        # Perform HTTP request
+        resp = make_request(
+            url,
+            headers=headers,
+            http2=True,
+            follow_redirects=True
+        )
+
+        final_url = str(resp.url)
+
+        # 404 → available
+        if resp.status_code == 404:
+            # return Result.available(url=final_url)
+            url = Result.available(url=final_url)
+            
+        # 200 → taken
+        elif resp.status_code == 200:
+            extra = {}
+
+            # Extract <title>
+            titleurl = re.search(
+                r'<title>(.*?)</title>',
+                resp.text,
+                re.IGNORECASE
+            )
+            # if title_match:
+                # titleurl = title_match.group(1).strip()
+
+            # Extract og:title
+            name_match = re.search(
+                r'<meta[^>]*property=["\']og:title["\'][^>]*content=["\']([^"\']+)["\']',
+                resp.text,
+                re.IGNORECASE
+            )
+            if name_match:
+                extracted = name_match.group(1).strip()
+                extracted = extracted.replace(' (', '')
+                fullname = extracted
+
+            # return Result.taken(extra=extra, url=final_url)
+
+            # Unexpected status
+            # return Result.error(f"Unexpected response status: {resp.status_code}")
+
+
+            if 1 == 1:
+            # if ranking == '4 - goodread':
+                print(f'{url}	{fullname}') 
+
+                row_data["query"] = query
+                row_data["ranking"] = ranking
+                row_data["fullname"] = fullname
+                row_data["firstname"] = firstname            
+                row_data["lastname"] = lastname
+                row_data["url"] = url
+                row_data["user"] = user
+                row_data["city"] = city            
+                row_data["pagestatus"] = pagestatus    
+                row_data["content"] = content                
+                row_data["titleurl"] = titleurl         
+
+                data.append(row_data)
+
+        time.sleep(5) #will sleep for 5 seconds
+
+
+def goodread(): # testuser = kevinrose https://www.goodread.net/kevinrose
+    print(f'\n\t<<<<< goodread users >>>>>')
+    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
+    if playwright_ready() is False:
+        # print(f'pip install playwright playwright_stealth')
+        return (content, referer, osurl, titleurl, pagestatus)
+
+
+    for user in users:    
+        row_data = {}
+        (query, ranking) = (user, '6 - goodread')
+        (firstname, lastname) = ('', '')
+        (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
+        user = user.rstrip()
+        url = (f'https://www.goodreads.com/{user}')
+        
+        # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
+        try:
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
+        except TypeError as error:
+            print(f'{error}') 
+        if '404' not in str(pagestatus):
+            # grab display_name = fullname
+            titleurl = titleurl.replace("'s favorite items - goodread",'')
+
+            fullname = str(titleurl)
+            
+            if ' ' in fullname:
+                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            else:
+                fullname = ''
+
+            if fullname == 'goodread.com':
+                ranking = '9 - goodread'
+                fullname = ''
+
+            if 1 == 1:
+            # if ranking == '4 - goodread':
+                print(f'{url}	{fullname}') 
+
+                row_data["query"] = query
+                row_data["ranking"] = ranking
+                row_data["fullname"] = fullname
+                row_data["firstname"] = firstname            
+                row_data["lastname"] = lastname
+                row_data["url"] = url
+                row_data["user"] = user
+                row_data["city"] = city            
+                row_data["pagestatus"] = pagestatus    
+                row_data["content"] = content                
+                row_data["titleurl"] = titleurl         
+
+                data.append(row_data)
+
+        time.sleep(5) #will sleep for 5 seconds
+
 
 def gravatar(): # testuser = kevinrose      https://en.gravatar.com/kevinrose
     print(f'\n\t<<<<< gravatar users >>>>>')
@@ -2016,7 +2443,7 @@ def heylink():  # kevin
         # if 1==1:
         if pagestatus == 200:
 
-            fullname = titleurl
+            fullname = str(titleurl)
             fullname = fullname.replace('HeyLink.me | ','')
 
 
@@ -2070,7 +2497,7 @@ def imageshack(): # testuser = ToddGilbert
             pass
 
         if 's Images' in titleurl:
-            # fullname = titleurl
+            # fullname = str(titleurl)
             print(f'{url}') 
 
             row_data["query"] = query
@@ -2122,7 +2549,7 @@ def instagram():    # testuser=    kevinrose     # add info
             pass
 
         if '@' in titleurl:
-            fullname = titleurl.split(" (")[0]
+            fullname = str(titleurl).split(" (")[0]
             if ' ' in fullname:
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
                 ranking = '3 - instagram'
@@ -2220,10 +2647,10 @@ def instructables(): # testuser = kevinrose
         except TypeError as error:
             print(f'{error}')            
         pagestatus = str(pagestatus)    
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
             if "'" in titleurl:
                 titleurl = titleurl.split("'")[0]
-            fullname = titleurl
+            fullname = str(titleurl)
             
             if ' ' in fullname:
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
@@ -2295,6 +2722,67 @@ def is_running_in_virtual_machine():
     return False
 
 
+
+def linktree(): # testuser = kevinrose https://linktr.ee/kevinrose
+    print(f'\n\t<<<<< linktree users >>>>>')
+    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
+    if playwright_ready() is False:
+        # print(f'pip install playwright playwright_stealth')
+        return (content, referer, osurl, titleurl, pagestatus)
+
+
+    for user in users:    
+        row_data = {}
+        (query, ranking) = (user, '6 - linktree')
+        (firstname, lastname) = ('', '')
+        (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
+        user = user.rstrip()
+        url = (f'https://linktr.ee/{user}')
+        
+        # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
+        try:
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
+        except TypeError as error:
+            print(f'{error}') 
+
+        if '404' not in str(pagestatus):
+            # grab display_name = fullname
+            titleurl = titleurl.replace("'s favorite items - linktree",'')
+
+            fullname = str(titleurl)
+            
+            if ' ' in fullname:
+                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            else:
+                fullname = ''
+
+            if fullname == 'linktree.com':
+                ranking = '9 - linktree'
+                fullname = ''
+            fullname = fullname.replace(' | Linktree', '')
+
+
+            if 1 == 1:
+            # if ranking == '4 - linktree':
+                print(f'{url}	{fullname}') 
+
+                row_data["query"] = query
+                row_data["ranking"] = ranking
+                row_data["fullname"] = fullname
+                row_data["firstname"] = firstname            
+                row_data["lastname"] = lastname
+                row_data["url"] = url
+                row_data["user"] = user
+                row_data["city"] = city            
+                row_data["pagestatus"] = pagestatus    
+                row_data["content"] = content                
+                row_data["titleurl"] = titleurl         
+
+                data.append(row_data)
+
+        time.sleep(5) #will sleep for 5 seconds
+
 def lookups_io_email():     # https://lookups.io/email/kevinrose@gmail.com
     if len(emails) > 0:
         row_data = {}
@@ -2327,7 +2815,8 @@ def gab():  # kevinrose
 
         if pagestatus == 200:
 
-            fullname = titleurl
+
+            fullname = str(titleurl)
             if ' (' in fullname:
                 fullname = fullname.split(' (')[0]
 
@@ -2430,7 +2919,7 @@ def keybase():    # testuser=    kevin
 
             content = content.strip()
             titleurl = titleurl.strip()
-            fullname = titleurl
+            fullname = str(titleurl)
             if " (" in fullname:
                 fullname = fullname.split(" (")[1].split(")")[0]
                 if 'Keybase' in fullname:
@@ -2579,7 +3068,7 @@ def kik(): # testuser = kevinrose
 
         if 1 == 1:
         # if pagestatus == 200:
-        # if '404' not in pagestatus:
+        # if '404' not in str(pagestatus):
             print(f'{url}	{fullname}')
 
             row_data["query"] = query
@@ -2621,7 +3110,7 @@ def linkedin(): # testuser = kevinrose
         except TypeError as error:
             print(f'{error}') 
 
-        fullname = titleurl.replace(' | LinkedIn','')
+        fullname = str(titleurl).replace(' | LinkedIn','')
 
         for eachline in content.split("\n"):
             if "og:description" in eachline:
@@ -2721,7 +3210,7 @@ def medium(): # testuser = kevinrose
             ranking = '4 - medium'
             titleurl = titleurl.replace('About – ', '').replace(' – Medium', '')
 
-            fullname = titleurl
+            fullname = str(titleurl)
             
             if ' ' in fullname:
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
@@ -2853,7 +3342,7 @@ def myspace_users():
         if pagestatus == 200:
         # if pagestatus == 200 and ('Your search did not return any results') not in content:
         # if 'Success' in pagestatus and ('Your search did not return any results') not in content:
-            fullname = titleurl
+            fullname = str(titleurl)
             if ' (' in fullname:
                 fullname = fullname.split(' (')[0]
 
@@ -2966,7 +3455,7 @@ def massageanywhere():    # testuser=   Misty0427
                 titleurl = titleurl.replace('MassageAnywhere.com Profile for ','')
                 if ' of ' in titleurl:
                     # titleurl = titleurl.split(' of ')
-                    fullname = titleurl.split(' of ')[0]
+                    fullname = str(titleurl).split(' of ')[0]
                     fulladdress = titleurl.split(' of ')[1]
 
                     if ' ' in fullname:
@@ -3049,7 +3538,7 @@ def patreon(): # testuser = kevinrose
         url = (f'https://www.patreon.com/{user}/creators')
         (content, referer, osurl, titleurl, pagestatus) = request(url)
 
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
             print(f'{url}{fullname}') 
 
             row_data["query"] = query
@@ -3080,7 +3569,7 @@ def paypal(): # testuser = kevinrose
         url = (f'https://www.paypal.com/paypalme/{user}')
         (content, referer, osurl, titleurl, pagestatus) = request(url)
         (note) = ('')
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
             for eachline in content.split("\n"):
                 if eachline == "": pass                                             # skip blank lines
                 else:
@@ -3101,7 +3590,7 @@ def paypal(): # testuser = kevinrose
         if ':' in note:
             titleurl = titleurl.replace('PayPal.Me','').strip() # task
             # print(f'titleurl = {titleurl}   hello world')   # temp   
-            # fullname = titleurl       
+            # fullname = str(titleurl)       
 
             # Extract variables using regex
             try:
@@ -3285,16 +3774,17 @@ def pinterest():    # testuser=    kevinrose     # add city
 
             if len(parts) > 1:
                 titleurl = parts[0]
-            fullname = titleurl
+            fullname = str(titleurl)
             if ' ' in fullname:
                 ranking = '4 - pinterest'
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
         except:
             pass
             
-        fullname = fullname.replace('User AVATAR', '')  # test
+        # fullname = fullname.replace('User AVATAR', '')  # test
         if pagestatus == 200:
-            if titleurl != 'None':
+            if ' ' in fullname:
+            # if titleurl != '':
                 print(f' {url}	   {fullname}	{note}')
                 
                 row_data["query"] = query
@@ -3306,9 +3796,9 @@ def pinterest():    # testuser=    kevinrose     # add city
                 row_data["middlename"] = middlename
                 row_data["lastname"] = lastname
                 row_data["note"] = note    
-                # row_data["pagestatus"] = pagestatus    
-                # row_data["content"] = content                
-                # row_data["titleurl"] = titleurl 
+                row_data["pagestatus"] = pagestatus    
+                row_data["content"] = content                
+                row_data["titleurl"] = titleurl 
                 
 
                 data.append(row_data)                
@@ -4186,7 +4676,7 @@ def reversephonecheck():# testPhone=
             state = phone_state_check(phone, state).replace('?', '')
 
 
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
         # if 1==1:    
 
             row_data["query"] = query
@@ -4264,7 +4754,7 @@ def rumble(): # testuser = kevinrose
         except TypeError as error:
             print(f'{error}') 
 
-        fullname = titleurl
+        fullname = str(titleurl)
         if 'umble' in fullname:
             fullname == ''
 
@@ -4352,7 +4842,10 @@ def sherlock():    # testuser=    kevinrose
     print(f'\n\t<<<<< Manually check Sherlock users >>>>>')
     
     for user in users:    
-        note = (f'cd C:\Forensics\scripts\python\git-repo\sherlock && python sherlock {user}')
+        note = (f'sherlock {user} --csv')
+        # note = (f'sherlock {user} -v --csv --print-all')
+
+        info = (f'https://sherlockproject.xyz/installation')
         row_data = {}
         (query, ranking) = (user, '9 - manual')
 
@@ -4362,6 +4855,8 @@ def sherlock():    # testuser=    kevinrose
             row_data["ranking"] = ranking
             # row_data["url"] = url
             row_data["note"] = note
+            row_data["info"] = info
+            
       
             data.append(row_data)
 
@@ -4452,7 +4947,7 @@ def snapchat(): # testuser = kevinrose
                 # fullname = ''
 
 
-        fullname = titleurl
+        fullname = str(titleurl)
         if '(' in fullname:
             fullname = fullname.split('(')[0].strip()
             ranking = ('5 - snapchat') 
@@ -4475,6 +4970,203 @@ def snapchat(): # testuser = kevinrose
             # row_data["titleurl"] = titleurl
             data.append(row_data)
 
+def sportstracker():  # testuser = kevinrose
+    print(f'\n\t<<<<< sports-tracker users >>>>>')
+
+    for user in users:
+        row_data = {}
+
+        query = user.rstrip()
+        ranking = '9 - sportstracker'
+        fullname = firstname = middlename = lastname = ''
+        business = city = state = country = ''
+        email = ''
+        SEX = ''
+        info = ''
+        note = ''
+        misc = ''
+        associates = AKA = owner = president = ''
+        otherurls = ''
+        pagestatus = ''
+        titleurl = ''
+
+        # API URL
+        url = f'https://api.sports-tracker.com/apiserver/v1/user/name/{query}'
+
+        # Skip non-alpha usernames
+        if not any(char.isalpha() for char in query):
+            continue
+
+        # Request
+        content, referer, osurl, titleurl, pagestatus = request(url)
+
+        if 'ail' in pagestatus:
+            continue
+
+        # Parse JSON
+        try:
+            parsed_data = json.loads(content)
+        except Exception as error:
+            print(f'JSON error: {error}')
+            continue
+
+        # Sports‑Tracker payload
+        try:
+            payload = parsed_data['payload']
+        except:
+            continue
+
+        # -----------------------------
+        # USERNAME
+        # -----------------------------
+        try:
+            user = payload.get('username', query)
+        except:
+            user = query
+
+        # -----------------------------
+        # FULL NAME
+        # -----------------------------
+        try:
+            fullname = payload.get('realName', '')
+        except:
+            fullname = ''
+
+        # -----------------------------
+        # SEX / GENDER
+        # -----------------------------
+        try:
+            gender = payload.get('gender', '')
+            if gender.upper() == 'MALE':
+                SEX = 'M'
+            elif gender.upper() == 'FEMALE':
+                SEX = 'F'
+            else:
+                SEX = ''
+        except:
+            SEX = ''
+
+        # -----------------------------
+        # NOTE (lastModified)
+        # -----------------------------
+        try:
+            note = str(payload.get('lastModified', ''))
+        except:
+            note = ''
+
+        # -----------------------------
+        # INFO (uuid)
+        # -----------------------------
+        try:
+            info = payload.get('uuid', '')
+        except:
+            info = ''
+
+        # -----------------------------
+        # NAME PARSING
+        # -----------------------------
+        if fullname and ' ' in fullname:
+            fullname, firstname, middlename, lastname = fullname_parse(fullname)
+
+        # -----------------------------
+        # PROFILE URL
+        # -----------------------------
+        profile_url = f'https://www.sports-tracker.com/user/{user}'
+
+        print(f'{profile_url}\t{fullname}')
+
+        # Ranking bump
+        if fullname or note:
+            ranking = '3 - sportstracker'
+
+            # -----------------------------
+            # BUILD ROW DATA
+            # -----------------------------
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["fullname"] = fullname
+            row_data["middlename"] = middlename
+            row_data["firstname"] = firstname
+            row_data["lastname"] = lastname
+            row_data["url"] = profile_url
+            row_data["email"] = email
+            row_data["business"] = business
+            row_data["city"] = city
+            row_data["state"] = state
+            row_data["country"] = country
+            row_data["user"] = user
+            row_data["SEX"] = SEX
+            row_data["info"] = info
+            row_data["misc"] = misc
+            row_data["note"] = note
+            row_data["titleurl"] = titleurl
+            row_data["associates"] = associates
+            row_data["owner"] = owner
+            row_data["president"] = president
+            row_data["AKA"] = AKA
+            row_data["pagestatus"] = pagestatus
+            data.append(row_data)
+
+
+
+def sportstrackerold(): # testuser = kevinrose https://www.sportstracker.net/kevinrose
+    print(f'\n\t<<<<< sportstracker users >>>>>')
+    (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
+    if playwright_ready() is False:
+        # print(f'pip install playwright playwright_stealth')
+        return (content, referer, osurl, titleurl, pagestatus)
+
+
+    for user in users:    
+        row_data = {}
+        (query, ranking) = (user, '6 - sportstracker')
+        (firstname, lastname) = ('', '')
+        (city, country, fullname, titleurl, pagestatus) = ('', '', '', '', '')
+        user = user.rstrip()
+        url = (f'https://api.sports-tracker.com/apiserver/v1/user/name/{user}')
+        
+        # (content, referer, osurl, titleurl, pagestatus) = request_url(url)
+        try:
+            # (content, referer, osurl, titleurl, pagestatus) = request(url)
+            (content, referer, osurl, titleurl, pagestatus) = asyncio.run(playwright_url(url))
+        except TypeError as error:
+            print(f'{error}') 
+        if 1 == 1:
+        # if '404' not in str(pagestatus):
+            # grab display_name = fullname
+            titleurl = titleurl.replace("'s favorite items - sportstracker",'')
+
+            fullname = str(titleurl)
+            
+            if ' ' in fullname:
+                (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
+            else:
+                fullname = ''
+
+            if fullname == 'sportstracker.com':
+                ranking = '9 - sportstracker'
+                fullname = ''
+
+            if 1 == 1:
+            # if ranking == '4 - sportstracker':
+                print(f'{url}	{fullname}') 
+
+                row_data["query"] = query
+                row_data["ranking"] = ranking
+                row_data["fullname"] = fullname
+                row_data["firstname"] = firstname            
+                row_data["lastname"] = lastname
+                row_data["url"] = url
+                row_data["user"] = user
+                row_data["city"] = city            
+                row_data["pagestatus"] = pagestatus    
+                row_data["content"] = content                
+                row_data["titleurl"] = titleurl         
+
+                data.append(row_data)
+
+        time.sleep(5) #will sleep for 5 seconds
+        
 
 def spotify(): # testuser = kevinrose
     print(f'\n\t<<<<< spotify users >>>>>')
@@ -4492,25 +5184,28 @@ def spotify(): # testuser = kevinrose
             print(f'{error}')
         pagestatus = str(pagestatus)
         
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
             titleurl = titleurl.replace(" on Spotify","").strip()
-            fullname = titleurl
+            fullname = str(titleurl)
             if ' ' in fullname:
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
                 ranking = ('5 - spotify')
             else:
                 fullname = ''
-            
+            fullname = fullname.replace('Spotify – Web Player', '')
             
             print(f'{url}	{fullname}') 
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["url"] = url
+            row_data["fullname"] = fullname
             row_data["lastname"] = lastname
             row_data["firstname"] = firstname
             row_data["fullname"] = fullname
             row_data["user"] = user
-         
+            row_data["pagestatus"] = pagestatus
+            row_data["titleurl"] = titleurl
+            row_data["content"] = content           
                         
             data.append(row_data)
 
@@ -4542,9 +5237,9 @@ def substack(): # testuser = kevinrose
         
         
         
-        if '404' not in pagestatus:
-            titleurl = titleurl.replace(" on Spotify","").strip()
-            fullname = titleurl
+        if '404' not in str(pagestatus):
+            titleurl = titleurl.replace(" | Substack","").strip()
+            fullname = str(titleurl)
             if ' ' in fullname:
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
                 ranking = ('5 - substack')
@@ -4556,19 +5251,20 @@ def substack(): # testuser = kevinrose
                     fullname = fullname.split("’s Substack")[0]
                 except:
                     pass
+            if 'Substack' not in fullname:
             
-            print(f'{url}	{fullname}') 
+                print(f'{url}	{fullname}') 
 
-            row_data["query"] = query
-            row_data["ranking"] = ranking
-            row_data["url"] = url
-            row_data["lastname"] = lastname
-            row_data["firstname"] = firstname
-            row_data["fullname"] = fullname
-            row_data["user"] = user
-            row_data["note"] = note            
-      
-            data.append(row_data)
+                row_data["query"] = query
+                row_data["ranking"] = ranking
+                row_data["url"] = url
+                row_data["lastname"] = lastname
+                row_data["firstname"] = firstname
+                row_data["fullname"] = fullname
+                row_data["user"] = user
+                row_data["note"] = note            
+                row_data["pagestatus"] = pagestatus
+                data.append(row_data)
             
   
 def thatsthememail():   # testEmail= smooth8101@yahoo.com 
@@ -4770,7 +5466,7 @@ def threads():    # testuser=    kevinrose     # add info
         except:
             pass
         
-        fullname = titleurl
+        fullname = str(titleurl)
         if ' (' in fullname:
             fullname = fullname.split(' (')[0]
         if ' ' in fullname:
@@ -4810,7 +5506,7 @@ def tiktok(): # testuser = kevinrose
         (content, referer, osurl, titleurl, pagestatus) = request(url)
         
         if 'uccess' in pagestatus:
-            fullname = titleurl
+            fullname = str(titleurl)
             fullname = fullname.split(' (')[0]
             if fullname == user:
                 fullname = ''
@@ -4832,8 +5528,8 @@ def tiktok(): # testuser = kevinrose
             row_data["lastname"] = lastname
             row_data["firstname"] = firstname
             row_data["fullname"] = fullname
-            # row_data["titleurl"] = titleurl
-            # row_data["pagestatus"] = pagestatus
+            row_data["titleurl"] = titleurl
+            row_data["pagestatus"] = pagestatus
             
                                    
             data.append(row_data)
@@ -5009,7 +5705,7 @@ def truthSocial(): # testuser = realdonaldtrump https://truthsocial.com/@realDon
         (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
         user = user.rstrip()
         url = (f'https://truthsocial.com/@{user}')
-        # (content, referer, osurl, titleurl, pagestatus) = request(url)
+        (content, referer, osurl, titleurl, pagestatus) = request(url)
         (fullname,lastname,firstname, email, name, country) = ('','','', '', '', '')
         pagestatus = ''
         # time.sleep(3) #will sleep for 3 seconds
@@ -5018,7 +5714,7 @@ def truthSocial(): # testuser = realdonaldtrump https://truthsocial.com/@realDon
                 pagestatus = '404'
             elif "og:title" in eachline:
                 titleurl = eachline.strip().split("\"")[1]
-                fullname = titleurl.split(" (")[0]
+                fullname = str(titleurl).split(" (")[0]
                 pagestatus = '200'
                 ranking = '9 - truthsocial'
                 if titleurl == 'Truth Social':
@@ -5067,6 +5763,7 @@ def tumblr(): # testuser = kevinrose
         (firstname, middlename, lastname) = ('','', '')
         user = user.rstrip()
         url = (f'https://www.tumblr.com/{user}')
+        # url = (f'https://{user}.tumblr.com/')
         try:
             # (content, referer, osurl, titleurl, pagestatus) = request(url)
             # (content, referer, osurl, titleurl, pagestatus) = playwright_url(url: str)
@@ -5205,7 +5902,7 @@ def twitter():    # testuser=    kevinrose     # add info
             titleurl = titleurl.replace(") on Twitter","")
             titleurl = titleurl.lower().replace(User.lower(),"")
             titleurl = titleurl.replace(" (","")
-            fullname = titleurl
+            fullname = str(titleurl)
             fullname = fullname.replace(" account suspended","")
             fullname = fullname.replace("twitter /","")
             titleurl = titleurl.lower().replace(fullname.lower(),"")
@@ -5227,7 +5924,6 @@ def twitter():    # testuser=    kevinrose     # add info
         row_data["lastname"] = lastname
         row_data["firstname"] = firstname
         row_data["fullname"] = fullname
-        # row_data["note"] = note
         row_data["titleurl"] = titleurl
         row_data["pagestatus"] = pagestatus
 
@@ -5275,7 +5971,7 @@ def vimeo():    # testuser=    kevinrose
                     note = eachline.strip().split("\"")[3]
             
             
-            fullname = titleurl
+            fullname = str(titleurl)
             if ' ' in fullname:
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)        
         
@@ -5324,10 +6020,10 @@ def whatnot(): # testuser = kevinrose
         url = (f'https://www.whatnot.com/user/{user}')
         
         # (content, referer, osurl, titleurl, pagestatus) = request(url)
-        (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
+        # (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
         
         
-        if '404' not in pagestatus:
+        if '404' not in str(pagestatus):
             titleurl = titleurl.replace("Just a moment...","").strip()
 
             print(f'{url}	{fullname}') 
@@ -5336,6 +6032,7 @@ def whatnot(): # testuser = kevinrose
             row_data["ranking"] = ranking
             row_data["url"] = url
             row_data["titleurl"] = titleurl
+            row_data["pagestatus"] = pagestatus
             data.append(row_data)
 
 
@@ -5443,21 +6140,6 @@ def whocalld():# testPhone=  DROP THE LEADING 1
             row_data["url"] = 'https://www.spydialer.com'
             row_data["phone"] = phone
             row_data["state"] = state
-            data.append(row_data)
-
-        if city != '':
-            ranking = '3 - zabasearch'
-            row_data["query"] = query
-            row_data["ranking"] = ranking
-            row_data["url"] = (f'https://www.zabasearch.com/phone/{phone}/')
-            row_data["note"] = note
-            row_data["fullname"] = fullname
-            row_data["phone"] = phone
-            # row_data["note"] = note
-            row_data["city"] = city
-            row_data["country"] = country
-            row_data["state"] = state
-            row_data["zipcode"] = zipcode   
             data.append(row_data)
 
 
@@ -5570,7 +6252,7 @@ def wordpress(): # testuser = kevinrose
     print(f'\n\t<<<<< wordpress users >>>>>')
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '9 - wordpress')
+        (query, ranking) = (user, '6 - wordpress')
 
 
         (Success, fullname, lastname, firstname, case, SEX) = ('','','','','','')
@@ -5584,15 +6266,15 @@ def wordpress(): # testuser = kevinrose
         (content, referer, osurl, titleurl, pagestatus) = request(url)
         
         try:
-            # (content, referer, osurl, titleurl, pagestatus) = request(url)
-            (content, referer, osurl, titleurl, pagestatus) = ('','','','','') # too many false positives
+            (content, referer, osurl, titleurl, pagestatus) = request(url)
+            # (content, referer, osurl, titleurl, pagestatus) = ('','','','','') # too many false positives
         except socket.error as ex:
             print(f'{ex}')
 
         if 'That page can' not in content:
         # if 'Do you want to register' not in content:
             titleUrl = titleurl.replace("'s Profile | WordPress.org","").strip()
-            fullname = titleurl
+            fullname = str(titleurl)
             fullname = fullname.split(" (")[0]
             print(f'{url}') 
 
@@ -5602,6 +6284,9 @@ def wordpress(): # testuser = kevinrose
             row_data["note"] = note
             row_data["user"] = user
             row_data["note"] = note
+            row_data["pagestatus"] = pagestatus
+            row_data["titleurl"] = titleurl
+            row_data["content"] = content            
             data.append(row_data)
 
 
@@ -5623,8 +6308,8 @@ def wordpress_profiles(): # testuser = kevinrose
             (content, referer, osurl, titleurl, pagestatus) = ('','','','','')
         except:
             pass
-        if '404' not in pagestatus:
-            fullname = titleurl
+        if '404' not in str(pagestatus):
+            fullname = str(titleurl)
             fullname = fullname.split(" (")[0]
             if fullname.lower() in titleurl.lower():
                 (fullname, titleurl) = ('', '')
@@ -5636,7 +6321,9 @@ def wordpress_profiles(): # testuser = kevinrose
             row_data["url"] = url
             row_data["fullname"] = fullname
             row_data["url"] = url
-
+            row_data["pagestatus"] = pagestatus
+            row_data["titleurl"] = titleurl
+            row_data["content"] = content             
             data.append(row_data)
 
 
@@ -6274,8 +6961,8 @@ def youtube(): # testuser = kevinrose
         url = (f'https://www.youtube.com/{user}')
         (content, referer, osurl, titleurl, pagestatus) = request(url)
         titleurl = titleurl.replace(' - YouTube','')
-        if '404' not in pagestatus:
-            fullname = titleurl
+        if '404' not in str(pagestatus):
+            fullname = str(titleurl)
             
             if fullname.lower() == user.lower():
                 fullname = ''
@@ -6478,14 +7165,14 @@ def venmo(): # testuser = kevinrose
         
         
         titleurl = titleurl.replace('Venmo | ','')
-        fullname = titleurl.strip()
+        fullname = str(titleurl).strip()
         try:
             fullname = fullname.split(' | ')[0]
         except:pass
         if ' ' in fullname:
             (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
             
-        # if '404' not in pagestatus:
+        # if '404' not in str(pagestatus):
         if pagestatus == 200:
             print(f'{url}   {fullname}')
             row_data["query"] = query
@@ -6666,7 +7353,35 @@ def whoiswebsite():    # testsite= google.com
 
         time.sleep(7)
 
+def zabasearch():# testPhone= 
+    print(f'\n\t<<<<< zabasearch phone numbers >>>>>')
 
+    # https://www.zabasearch.com/phone/9175776069/
+    for phone in phones:
+        row_data = {}
+        (query, ranking) = (phone, '9 - zabasearch')
+        (country, city, state, zipcode, case, note) = ('', '', '', '', '', '')
+        (content, referer, osurl, titleurl, pagestatus)  = ('', '', '', '', '')
+        (query) = (phone)
+ 
+        url = (f'https://www.zabasearch.com/phone/{phone}/')
+        
+        # (content, referer, osurl, titleurl, pagestatus) = request(url) 
+
+        if 1==1:
+            row_data["query"] = query
+            row_data["ranking"] = ranking
+            row_data["url"] = url
+            row_data["phone"] = phone            
+            row_data["note"] = note            
+            row_data["state"] = state    
+            row_data["city"] = city  
+            row_data["content"] = content
+            row_data["pagestatus"] = pagestatus            
+            row_data["referer"] = referer   
+            row_data["osurl"] = osurl   
+            row_data["titleurl"] = titleurl   
+            data.append(row_data)
 
 if __name__ == '__main__':
     main()
@@ -6741,6 +7456,285 @@ create a new identity_hunt with xlsx and requests instead of urllib2
 
 
 https://opengovus.com/search?q=kevinrose%2C+LLC
+
+
+https://api.allen-live.in/api/v1/user/identities/{email}
+https://public-api.wordpress.com/rest/v1.1/users/{email}/auth-options
+https://seguro.marca.com/ueregistro/v2/usuarios/comprobacion/{email}/2
+https://{user}.bdsmlr.com
+https://{user}.blogspot.com/
+https://{user}.livejournal.com
+    https://{user}.weebly.com/ # kevinrose  fullname
+https://35photo.pro/@{user}/
+https://500px.com/{user}
+https://7dach.ru/profile/{user}
+https://admireme.vip/{user}/
+https://albicla.com/{user}
+https://albicla.com/{user}/post/1
+https://ameblo.jp/{user}
+https://anonup.com/@{user}
+https://apclips.com/{user}
+https://apex.tracker.gg/apex/profile/origin/{user}/overview
+https://api.500px.com/graphql?query=query%28%24username%3AString%21%29%7BuserByUsername%28username%3A%24username%29%7Bid%20legacyId%20username%20displayName%20firstName%20lastName%20registeredAt%20userProfile%7Bfirstname%20lastname%20about%20country%20city%20state%7DsocialMedia%7Bwebsite%20twitter%20facebook%20instagram%7D%7D%7D&variables=%7B%22username%22%3A%22{user}%22%7D
+https://api.boosty.to/v1/blog/{user}
+https://api.cropty.io/v1/auth/{user}
+https://api.dailymotion.com/user/{user}?fields=id,username,screenname,description,avatar_720_url,cover_250_url,followers_total,following_total,videos_total,country,created_time,verified,url
+https://api.destream.net/siteapi/v2/live/details/{user}
+https://api.discogs.com/users/{user}
+https://api.fotka.com/v2/user/dataStatic?login={user}
+https://api.github.com/users/{user}
+https://api.imgur.com/account/v1/accounts/{user}?client_id=546c25a59c58ad7&include=trophies%2Cmedallions # kevinrose
+https://api.mojang.com/minecraft/profile/lookup/name/{user} # kevinrose
+https://api.niftygateway.com/user/profile-and-offchain-nifties-by-url/?profile_url={user} # kevinrose
+https://api.omg.lol/address/{user}/info
+https://api.picsart.com/users/show/{user}.json # kevinrose
+https://api.scratch.mit.edu/users/{user}
+https://api.sports-tracker.com/apiserver/v1/user/name/{user}
+https://api.stats.fm/api/v1/users/{user}
+https://api.tracker.gg/api/v2/apex/standard/profile/origin/{user}
+https://api.warframe.market/v2/user/{user}
+https://api.zhihu.com/books/people/{user}/publications?offset=0&limit=5 # kevinrose
+https://apiv2.fansly.com/api/v1/account?usernames={user}
+https://asciinema.org/~{user}
+https://atcoder.jp/api/users/exists/?userScreenName={user}
+https://atcoder.jp/users/{user}
+https://audiojungle.net/user/{user} # kevinrose
+https://bandcamp.com/{user} # kevinrose
+https://bentbox.co/{user}
+https://bit.ly/{user}
+https://bitbucket.org/{user}/
+https://boosty.to/{user}
+https://boot.dev/u/{user}
+https://bsky.app/profile/{user}.bsky.social
+    https://calendly.com/{user} # kevinrose
+https://calendly.com/api/booking/profiles/{user} # kevinrose
+https://client.warpcast.com/v2/user-by-username?username={user} # kevinrose
+https://codeberg.org/{user}
+https://codeberg.org/api/v1/users/{user}
+https://codeforces.com/api/user.info?handles={user}
+https://codeforces.com/profile/{user}
+https://coderlegion.com/user/{user}
+https://coderwall.com/{user}
+https://coderwall.com/{user}.json
+https://crates.io/api/v1/users/{user}
+https://crates.io/users/{user}
+https://cyber.harvard.edu/people/{user}
+https://daily.dev/{user} # kevinrose
+https://destream.net/live/{user}
+https://dev.to/{user}
+https://dev.to/api/users/by_username?url={user}
+https://discourse.jupyter.org/u/{user}
+https://discourse.jupyter.org/u/{user}.json
+https://discourse.mozilla.org/u/{user}
+https://discourse.mozilla.org/u/{user}.json
+https://discuss.hashicorp.com/u/{user}
+https://discuss.hashicorp.com/u/{user}.json
+https://discuss.kotlinlang.org/u/{user}
+https://discuss.kotlinlang.org/u/{user}.json
+https://discuss.python.org/u/{user}
+https://discuss.python.org/u/{user}.json
+https://disqus.com/api/3.0/users/details?user=username%3A{user}&attach=userFlaggedUser&api_key=E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2
+https://disqus.com/by/{user}/
+https://donatello.to/{user}
+https://dribbble.com/{user} # kevinrose
+https://dribbble.com/{user}/about
+https://en.gravatar.com/{user}.json # kevinrose
+https://en.liberapay.com/{user}
+https://en.wikipedia.org/w/api.php?action=query&format=json&list=users&ususers={user}&usprop=editcount|registration|gender&formatversion=2
+https://en.wikipedia.org/wiki/User:{user}   # kevinrose
+https://fansly.com/{user} # kevinrose
+https://forum.arduino.cc/u/{user}
+https://forum.arduino.cc/u/{user}.json
+https://forum.elixirforum.com/u/{user}
+https://forum.elixirforum.com/u/{user}.json
+https://forum.f-droid.org/u/{user}
+https://forum.f-droid.org/u/{user}.json
+https://forum.ghost.org/u/{user}
+https://forum.ghost.org/u/{user}.json
+https://forums.opera.com/api/user/{user}
+https://forums.opera.com/user/{user}
+https://fotka.com/profil/{user}
+https://foursquare.com/{user}
+https://freesound.org/people/{user}/
+https://gist.github.com/{user}
+https://gitea.com/{user}
+https://gitea.com/api/v1/users/{user}
+https://gitee.com/{user} # kevinrose
+https://gitee.com/api/v5/users/{user} # kevinrose
+https://gitlab.com/{user} # kevinrose
+https://gitlab.com/api/v4/users?username={user} # kevinrose
+https://gpodder.net/user/{user}/
+https://gravatar.com/{user}
+https://habr.com/ru/users/{user}/
+https://hamaha.net/{user}
+https://hamaha.net/{user}/tab:info
+https://hashnode.com/@{user}
+https://hub.docker.com/u/{user}
+https://hub.docker.com/v2/users/{user}/
+https://ifttt.com/p/{user} # kevinrose
+https://imgur.com/user/{user}
+https://independent.academia.edu/{user}
+https://issuu.com/{user}
+https://issuu.com/query?format=json&_=3210224608766&profileUsername={user}&action=issuu.user.get_anonymous
+https://itch.io/profile/{user}
+https://launchpad.net/~{user} # kevinrose
+https://learn.microsoft.com/api/profiles/{user}
+https://learn.microsoft.com/en-us/users/{user}/
+https://leetcode.com/u/{user}/
+https://lemmy.world/api/v3/user?username={user}
+https://lemmy.world/u/{user}
+https://lichess.org/@/{user} # kevinrose
+https://lichess.org/api/user/{user} # kevinrose
+https://linktr.ee/{user}
+https://medium.com/@{user}
+https://meta.discourse.org/u/{user}
+https://meta.discourse.org/u/{user}.json
+https://mix.com/{user}
+https://music.yandex.ru/handlers/library.jsx?owner={user}
+https://music.yandex.ru/users/{user}
+https://myspace.com/{user} # kevinrose
+https://namemc.com/profile/{user}
+https://naturalnews.com/author/{user}/
+https://news.ycombinator.com/user?id={user}
+https://niftygateway.com/profile/{user}
+https://odysee.com/@{user}
+https://ok.ru/{user}
+https://omg.lol/{user}
+https://osu.ppy.sh/users/{user}
+https://packagist.org/users/{user}/
+https://paragraph.com/@{user}
+https://paragraph.com/api/blogs/@{user}
+https://pastebin.com/u/{user}
+https://picsart.com/u/{user} # kevinrose
+https://play.google.com/store/apps/developer?id={user}
+https://pr0gramm.com/api/profile/info?name={user}
+https://pr0gramm.com/user/{user}
+https://pypi.org/user/{user}
+https://scratch.mit.edu/users/{user} # kevinrose
+https://soundcloud.com/{user} # kevinrose
+https://sourceforge.net/u/{user}/
+https://stats.fm/{user}
+https://steamcommunity.com/id/{user}/ # kevinrose
+https://t.me/{user}
+https://themeforest.net/user/{user}
+https://trello.com/{user} # kevinrose
+https://trello.com/1/Members/{user} # kevinrose
+https://twitch.tv/{user}
+https://ubuntu-mate.community/u/{user}
+https://ubuntu-mate.community/u/{user}.json
+https://uk.advfn.com/forum/profile/{user}
+https://users.rust-lang.org/u/{user}
+https://users.rust-lang.org/u/{user}.json
+https://vimeo.com/{user} # kevinrose
+https://vimeo.com/api/v2/{user}/info.json
+https://virgool.io/@{user}
+https://vk.com/{user} # kevinrose
+https://warframe.market/profile/{user}
+https://warpcast.com/{user}
+https://wiki.archlinux.org/api.php?action=query&format=json&list=users&ususers={user}&usprop=blockinfo|groups|editcount|registration|gender&formatversion=2
+https://wiki.archlinux.org/title/User:{user}
+https://www.7cups.com/@{user}
+https://www.adultism.com/profile/{user}
+https://www.adultism.com/profile/{user}/friends
+https://www.airliners.net/user/{user}/profile
+https://www.allthelyrics.com/forum/member.php?username={user}
+https://www.allthelyrics.com/forum/members/{user}.html
+https://www.americanthinker.com/author/{user}/
+https://www.babepedia.com/user/{user}
+https://www.bandlab.com/{user} # kevinrose
+https://www.bandlab.com/api/v1.3/users/{user} # kevinrose
+https://www.bdsmsingles.com/members/{user}/
+https://www.beatstars.com/{user} # kevinrose
+https://www.behance.net/{user} # kevinrose
+https://www.behance.net/{user}/appreciated
+https://www.bitchute.com/channel/{user}/
+https://www.boot.dev/u/{user}
+https://www.dailymotion.com/{user}
+https://www.defensivecarry.com/members/?username={user}
+https://www.discogs.com/user/{user} # kevinrose
+https://www.donationalerts.com/api/v1/user/{user}/donationpagesettings
+https://www.donationalerts.com/r/{user}
+https://www.etoro.com/api/logininfo/v1.1/users/{user} # kevinrose
+https://www.etoro.com/people/{user} # kevinrose
+https://www.figma.com/@{user}
+https://www.freepik.com/author/{user}
+    https://www.goodreads.com/{user} # kevinrose    
+https://www.instructables.com/member/{user}/
+https://www.kaggle.com/{user} # kevinrose
+https://www.last.fm/user/{user}
+https://www.linkedin.com/in/{user} # kevinrose
+https://www.minds.com/{user} # kevinrose
+https://www.minds.com/api/v3/register/validate?username={user} # kevinrose
+https://www.newamerica.org/our-people/{user}/
+https://www.npmjs.com/~{user}
+https://www.openstreetmap.org/user/{user}
+https://www.producthunt.com/@{user}
+https://www.reddit.com/user/{user}/
+https://www.reddit.com/user/{user}/about.json
+https://www.roblox.com/user.aspx?username={user}
+
+
+https://www.speedrun.com/api/v1/users/{user}
+https://www.speedrun.com/users/{user}
+https://www.sports-tracker.com/view_profile/{user}
+https://www.thefirearmsforum.com/members/?username={user}
+https://www.threads.net/@{user} # kevinrose
+https://www.threads.net/api/v1/users/web_profile_info/?username={user} # kevinrose
+https://www.tiktok.com/@{user} # kevinrose
+https://www.vinted.pt/member/general/search?search_text={user} # kevinrose
+https://www.weforum.org/people/{user}
+https://www.youtube.com/@{user} # kevinrose
+https://www.zhihu.com/people/{user}
+https://www.zomato.com/{user}/reviews
+https://youtube.com/@{user}
+https://zmarsa.com/uzytkownik/{user}
+
+
+gumroad  # kevinrose
+linktree    # kevinrose
+micorosoftlearn # kevinrose
+dockerhub # kevinrose
+huggingface # kevinrose
+codecademy # kevinrose
+protonmail # kevinrose
+roblox # kevinrose
+chess.com # kevinrose
+mixcloud # kevinrose
+duolingo # kevinrose
+amazon # kevinrose
+deviantart # kevinrose
+discord # kevinrose
+px500 # kevinrose
+blogger # kevinrose
+sportstracker # kevinrose
+bluesky # kevinrose
+
+11:  [Γ£ö] Xvideos (kevinrose@gmail.com): Registered
+20:  [Γ£ö] Nextdoor (kevinrose@gmail.com): Registered
+30:  [Γ£ö] Adobe (kevinrose@gmail.com): Registered
+34:  [Γ£ö] Zoho (kevinrose@gmail.com): Registered
+47:  [Γ£ö] Codecademy (kevinrose@gmail.com): Registered
+72:  [Γ£ö] Myfitnesspal (kevinrose@gmail.com): Registered
+Duolingo (kevinrose@gmail.com): Registered   photo       https://www.duolingo.com/2017-06-30/users?email=kevinrose@gmail.com
+103:  [Γ£ö] Spotify (kevinrose@gmail.com): Registered
+111:  [Γ£ö] Foxnews (kevinrose@gmail.com): Registered
+113:  [Γ£ö] Nytimes (kevinrose@gmail.com): Registered
+119:  [Γ£ö] Moz (kevinrose@gmail.com): Registered
+121:  [Γ£ö] Office365 (kevinrose@gmail.com): Registered
+122:  [Γ£ö] Anydo (kevinrose@gmail.com): Registered
+123:  [Γ£ö] Eventbrite (kevinrose@gmail.com): Registered
+141:  [Γ£ö] Walmart (kevinrose@gmail.com): Registered
+144:  [Γ£ö] Vivino (kevinrose@gmail.com): Registered
+152:  [Γ£ö] Pinterest (kevinrose@gmail.com): Registered
+154:  [Γ£ö] Instagram (kevinrose@gmail.com): Registered
+https://api.x.com/i/users/email_available.json?email=kevinrose@gmail.com
+
+155:  [Γ£ö] Facebook (kevinrose@gmail.com): Registered
+156:  [Γ£ö] Mastodon (kevinrose@gmail.com): Registered
+
+
+https://github.com/kaifcodec/user-scanner
+
 """
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     notes            >>>>>>>>>>>>>>>>>>>>>>>>>>

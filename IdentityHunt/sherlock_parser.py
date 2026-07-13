@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
+# coding: utf-8
+
 import sys
 import openpyxl
 from bs4 import BeautifulSoup
@@ -39,27 +41,65 @@ def parse_sherlock_output(path):
     user = ''
 
     for line in lines:
-        
-        (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
-        fullname, ranking, url, query = '', '', '', ''
-        if "Checking username " in line:
+        content, referer, osurl, titleurl, pagestatus = '', '', '', '', ''
+        fullname, ranking, url, query, note, info = '', '', '', '', '', ''
+
+        if path.endswith('.csv'):
+            if 'username,name,url_main' in line:
+                temp = ''
+            elif ',' in line:
+                user = ''
+                linetemp = line.split(',')
+                try:
+                    user = linetemp[0]
+                    ranking = linetemp[1]
+                    info = linetemp[2]                    
+                    url = linetemp[3]
+                    note = linetemp[4]
+                    pagestatus = linetemp[5]
+                except:pass
+                if 'Available' in note or 'Illegal' in note:
+                    ranking = (f'9 - {ranking}')
+                elif 'Claimed' in note:
+                    ranking = (f'6 - {ranking}')
+                elif 'Unknown' in note:
+                    ranking = (f'7 - {ranking}')
+                elif 'WAF' in note:
+                    ranking = (f'8 - {ranking}')                    
+                
+                row_data = {h: "" for h in headers_intel}
+                row_data["query"] = user
+                row_data["ranking"] = ranking
+                row_data["fullname"] = fullname
+                row_data["url"] = url
+                row_data["user"] = user
+                row_data["note"] = note
+                row_data["info"] = info                
+                row_data["titleurl"] = titleurl
+                row_data["pagestatus"] = pagestatus                
+
+                data.append(row_data)
+
+        elif "Checking username " in line:
             user = line.split("Checking username ")[1].replace(" on:", "").strip()
 
             print(f'user = {user}') #    test
 
-        elif ": " in line:
+        elif ":" in line:
             line = line.replace('[+] ', '7 - ')
-            
-            if ":" in line:
-                parts = line.split(': ')
 
+            if ": " in line:
+                parts = line.split(': ')
                 try:
                     ranking = parts[0].strip()
                     url = parts[1].strip()
                 except:
                     pass
-                # Print to screen
-                
+            elif line.startswith("http"):
+                url = line
+                ranking = '9'
+
+            if url != '':
                 (content, referer, osurl, titleurl, pagestatus) = request_url(url)
 
                 if titleurl != '':
@@ -80,6 +120,7 @@ def parse_sherlock_output(path):
                 row_data["fullname"] = fullname
                 row_data["url"] = url
                 row_data["user"] = user
+                row_data["note"] = note
 
                 # row_data["content"] = content
                 # row_data["referer"] = referer
@@ -111,8 +152,8 @@ def request_url(url):
         response = requests.get(url, verify=False, headers=headers_url)        
         response.raise_for_status()
         pagestatus  = response.status_code
-        content = response.content.decode()
-        content = BeautifulSoup(content, 'html.parser')
+        # content = response.content.decode()
+        # content = BeautifulSoup(content, 'html.parser')
         
 
 
