@@ -43,7 +43,7 @@ from tkinter import ttk, filedialog, scrolledtext
 
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
-version = '3.4.2'
+version = '3.5.4'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -397,6 +397,7 @@ def run_core_logic(args):
             breachbase()
             carrot_email()
             cyberbackground_email()
+            emailosint()
             epios_email()
             etsy_email()
             ghunt()
@@ -456,9 +457,10 @@ def run_core_logic(args):
             github()
             go()
             goodread()
-            goodread2()
+            # goodread2()   # read error
             ham_radio()
             heylink()
+            hodgepodge()    # test
             imageshack()
             instagram()
             instantusername()
@@ -788,7 +790,7 @@ def behance(): # testuser = kevinrose https://www.behance.net/kevinrose
                 row_data["user"] = user
                 row_data["city"] = city            
                 row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
+                # row_data["content"] = content                
                 row_data["titleurl"] = titleurl         
 
                 data.append(row_data)
@@ -1164,7 +1166,7 @@ def cyberbackground_email():# testEmail= kevinrose@gmail.com
         if 1==1:
             if ('results for') in content: 
                 note = 'results for'
-                ranking = '8 - cyberbackground'
+                ranking = '7 - cyberbackground'
 
                 print(f' {email}   {url}')
           
@@ -1177,7 +1179,7 @@ def cyberbackground_email():# testEmail= kevinrose@gmail.com
             row_data["url"] = url
             row_data["email"] = email
             row_data["note"] = note
-            row_data["content"] = content
+            # row_data["content"] = content
                         
             data.append(row_data)
 
@@ -1214,7 +1216,7 @@ def digitalfootprintcheckemail():    # testuser=    kevinrose@gmail.com
             row_data["url"] = url
             row_data["email"] = email  
             # row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
+            # row_data["content"] = content                
             # row_data["titleurl"] = titleurl        
             data.append(row_data)
         time.sleep(5) #will sleep for 5 seconds    
@@ -1222,7 +1224,7 @@ def digitalfootprintcheckemail():    # testuser=    kevinrose@gmail.com
 def discoverprofile(): 
     if len(users) > 0:
         row_data = {}
-        ranking = '8 - manual'
+        ranking = '7 - manual'
         url = ('https://discoverprofile.com/')
         # url = (f'https://discoverprofile.com/{user}')
 
@@ -1296,7 +1298,7 @@ def ebay(): # testuser = kevinrose
         
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '8 - ebay')
+        (query, ranking) = (user, '7 - ebay')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         (city, country, fullname, titleurl, pagestatus, note) = ('', '', '', '', '', '')
         user = user.rstrip()
@@ -1336,6 +1338,15 @@ def ebay(): # testuser = kevinrose
             data.append(row_data)
 
         time.sleep(5) #will sleep for 5 seconds
+
+def emailosint(): 
+    if len(emails) > 0:
+        row_data = {}
+        ranking ='7 - manual'
+        url = ('https://emailosint.org/')
+        row_data["ranking"] = ranking
+        row_data["url"] = url
+        data.append(row_data)
 
 def epios_email(): 
     if len(emails) > 0:
@@ -1399,7 +1410,7 @@ def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # pr
                 row_data["user"] = user
                 row_data["city"] = city            
                 row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
+                # row_data["content"] = content                
                 row_data["titleurl"] = titleurl         
 
                 data.append(row_data)
@@ -1555,7 +1566,7 @@ def etsy_email():  # testemail = kevinrose@gmail.com
         row_data["owner"] = owner
         row_data["president"] = president
         row_data["AKA"] = AKA
-        row_data["content"] = content
+        # row_data["content"] = content
         data.append(row_data)
 
 
@@ -1604,7 +1615,7 @@ def facebook(): # testuser = kevinrose
             row_data["url"] = url
             row_data["user"] = user
             row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
+            # row_data["content"] = content                
             row_data["titleurl"] = titleurl 
             data.append(row_data)        
 
@@ -1626,7 +1637,7 @@ def familytreephone():# DROP THE LEADING 1
     print(f'\n\t<<<<< familytree phone numbers >>>>>')
     for phone in phones:
         row_data = {}
-        (query, ranking) = (phone, '8 - familytree')
+        (query, ranking) = (phone, '7 - familytree')
 
         (country, city, state, zipcode, case, note) = ('', '', '', '', '', 'See FamilyTree link for Possible Relatives and Possible Associates')
         (fullname, content, referer, osurl, titleurl, pagestatus)  = ('', '', '', '', '', '')
@@ -1704,7 +1715,7 @@ def fiverr():    # testuser=    kevinrose
             row_data["fullname"] = fullname
             row_data["note"] = note
             row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
+            # row_data["content"] = content                
             row_data["titleurl"] = titleurl  
 
             data.append(row_data)
@@ -1831,7 +1842,7 @@ def friendfinder():    # testuser=  kevinrose   # java math problem
             row_data["DOB"] = DOB            
             row_data["SEX"] = SEX            
             row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
+            # row_data["content"] = content                
             row_data["titleurl"] = titleurl  
 
             data.append(row_data) 
@@ -1888,7 +1899,7 @@ def garmin(): # testuser = kevinrose
             # row_data["note"] = note            
             # row_data["DOB"] = DOB            
             # row_data["SEX"] = SEX            
-            row_data["content"] = content            
+            # row_data["content"] = content            
 
             data.append(row_data) 
 
@@ -2033,9 +2044,9 @@ def goodread2():
 
     print(f'\n\t<<<<< goodread users >>>>>')
     (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
-    if playwright_ready() is False:
+    # if playwright_ready() is False:
         # print(f'pip install playwright playwright_stealth')
-        return (content, referer, osurl, titleurl, pagestatus)
+        # return (content, referer, osurl, titleurl, pagestatus)
 
 
     for user in users:    
@@ -2109,7 +2120,7 @@ def goodread2():
                 row_data["user"] = user
                 row_data["city"] = city            
                 row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
+                # row_data["content"] = content                
                 row_data["titleurl"] = titleurl         
 
                 data.append(row_data)
@@ -2120,10 +2131,11 @@ def goodread2():
 def goodread(): # testuser = kevinrose https://www.goodread.net/kevinrose
     print(f'\n\t<<<<< goodread users >>>>>')
     (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '', '')
-    if playwright_ready() is False:
+    # if playwright_ready() is False:
         # print(f'pip install playwright playwright_stealth')
-        return (content, referer, osurl, titleurl, pagestatus)
-
+        # try:
+            # return (content, referer, osurl, titleurl, pagestatus)
+        # except:pass
 
     for user in users:    
         row_data = {}
@@ -2167,7 +2179,7 @@ def goodread(): # testuser = kevinrose https://www.goodread.net/kevinrose
                 row_data["user"] = user
                 row_data["city"] = city            
                 row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
+                # row_data["content"] = content                
                 row_data["titleurl"] = titleurl         
 
                 data.append(row_data)
@@ -2334,7 +2346,7 @@ def google_calendar():# testEmail= kevinrose@gmail.com
         if 'gmail.com' in email.lower():
             if ('you do not have the permission to view') in content: 
                 note = 'you do not have the permission to view'
-                ranking = '8 - calendar'
+                ranking = '7 - calendar'
 
                 print(f' {email}   {url}')
             elif ('Events shown in time zone') in content:
@@ -2387,7 +2399,7 @@ def have_i_been_pwned():
     if len(emails) > 0:
         # hibp-api-key = 'YOUR_API_KEY'
         row_data = {}
-        ranking = '8 - manual'
+        ranking ='7 - manual'
         url = ('https://haveibeenpwned.com')
         # url = ('https://haveibeenpwned.com/api/v3/breachedaccount/{email}')
         row_data["ranking"] = ranking
@@ -2467,6 +2479,524 @@ def heylink():  # kevin
             
             data.append(row_data)
             
+def hodgepodge():            
+    SITES = [
+        "http://dating.ru/{user}",
+        "http://en.gravatar.com/{user}",
+        "http://promodj.com/{user}",
+        "http://uid.me/{user}",
+        "https://{user}.blogspot.com/",
+        "https://{user}.booth.pm/",
+        "https://{user}.carbonmade.com",
+        "https://{user}.carrd.co/",
+        "https://{user}.contently.com/",
+        "https://{user}.crevado.com",
+        "https://{user}.empretienda.com.ar",
+        "https://{user}.exposure.co/",
+        "https://{user}.gitbook.io/",
+        "https://{user}.itch.io/",
+        "https://{user}.jimdosite.com",
+        "https://{user}.livejournal.com",
+        "https://{user}.mitiendanube.com/",
+        "https://{user}.newgrounds.com",
+        "https://{user}.omg.lol",
+        "https://{user}.rajce.idnes.cz/",
+        "https://{user}.smugmug.com",
+        "https://{user}.tistory.com/",
+        "https://{user}.tumblr.com",
+        "https://{user}.webnode.cz/",
+        "https://{user}.weebly.com/",
+        "https://{user}.wix.com",
+        "https://{user}.www.nn.ru/",
+        "https://2Dimensions.com/a/{user}",
+        "https://7dach.ru/profile/{user}",
+        "https://addons.wago.io/user/{user}",
+        "https://admireme.vip/{user}/",
+        "https://airbit.com/{user}",
+        "https://akniga.org/profile/{user}",
+        "https://ameblo.jp/{user}",
+        "https://apclips.com/{user}",
+        "https://apex.tracker.gg/apex/profile/origin/{user}/overview",
+        "https://api.boosty.to/v1/blog/{user}",
+        "https://api.cropty.io/v1/auth/{user}",
+        "https://api.dailymotion.com/user/{user}?fields=id,username,screenname,description,avatar_720_url,cover_250_url,followers_total,following_total,videos_total,country,created_time,verified,url",
+        "https://api.destream.net/siteapi/v2/live/details/{user}",
+        "https://api.discogs.com/users/{user}",
+        "https://api.mojang.com/minecraft/profile/lookup/name/{user}",
+        "https://api.mojang.com/users/profiles/minecraft/{user}",
+        "https://api.niftygateway.com/user/profile-and-offchain-nifties-by-url/?profile_url={user}",
+        "https://api.omg.lol/address/{user}/info",
+        "https://api.scratch.mit.edu/users/{user}",
+        "https://api.stats.fm/api/v1/users/{user}",
+        "https://api.tracker.gg/api/v2/apex/standard/profile/origin/{user}",
+        "https://api.warframe.market/v2/user/{user}",
+        "https://api.zhihu.com/books/people/{user}/publications?offset=0&limit=5",
+        "https://archiveofourown.org/users/{user}",
+        "https://asciinema.org/{user}",
+        "https://asciinema.org/~{user}",
+        "https://ask.fedoraproject.org/u/{user}",
+        "https://atcoder.jp/users/{user}",
+        "https://audiojungle.net/user/{user}",
+        "https://bandcamp.com/{user}",
+        "https://bezuzyteczna.pl/uzytkownicy/{user}",
+        "https://bit.ly/{user}",
+        "https://bitbucket.org/{user}/",
+        "https://blitztactics.com/{user}",
+        "https://blog.naver.com/{user}",
+        "https://boardgamegeek.com/user/{user}",
+        "https://boosty.to/{user}",
+        "https://bugcrowd.com/{user}",
+        "https://buymeacoff.ee/{user}",
+        "https://buzzfeed.com/{user}",
+        "https://caddy.community/u/{user}/summary",
+        "https://calendly.com/api/booking/profiles/{user}",
+        "https://career.habr.com/{user}",
+        "https://ch.tetr.io/u/{user}",
+        "https://chaos.social/@{user}",
+        "https://chaturbate.com/{user}",
+        "https://choice.community/u/{user}/summary",
+        "https://clapperapp.com/{user}",
+        "https://client.warpcast.com/v2/user-by-username?username={user}",
+        "https://codeberg.org/{user}",
+        "https://codeberg.org/api/v1/users/{user}",
+        "https://codeforces.com/api/user.info?handles={user}",
+        "https://codeforces.com/profile/{user}",
+        "https://codepen.io/{user}",
+        "https://coderlegion.com/user/{user}",
+        "https://coderwall.com/{user}.json",
+        "https://coderwall.com/{user}",
+        "https://codesandbox.io/u/{user}",
+        "https://codesnippets.fandom.com/wiki/User:{user}",
+        "https://coinvote.cc/profile/{user}",
+        "https://community.bitwarden.com/u/{user}/summary",
+        "https://community.brave.com/u/{user}/",
+        "https://community.cartalk.com/u/{user}/summary",
+        "https://community.cloudflare.com/u/{user}",
+        "https://community.cryptomator.org/u/{user}",
+        "https://community.eintracht.de/fans/{user}",
+        "https://community.icons8.com/u/{user}/summary",
+        "https://community.n8n.io/u/{user}/summary",
+        "https://community.native-instruments.com/profile/{user}",
+        "https://community.oracle.com/people/{user}",
+        "https://community.signalusers.org/u/{user}",
+        "https://community.windy.com/user/{user}",
+        "https://community.wolfram.com/web/{user}/home",
+        "https://cracked.ax/{user}",
+        "https://crates.io/api/v1/users/{user}",
+        "https://crates.io/users/{user}",
+        "https://crowdin.com/profile/{user}",
+        "https://ctan.org/author/{user}",
+        "https://cults3d.com/en/users/{user}/creations",
+        "https://cyber.harvard.edu/people/{user}",
+        "https://d3.ru/user/{user}/posts",
+        "https://dev.to/{user}",
+        "https://dev.to/api/users/by_username?url={user}",
+        "https://discourse.joplinapp.org/u/{user}",
+        "https://discourse.jupyter.org/u/{user}.json",
+        "https://discourse.jupyter.org/u/{user}",
+        "https://discourse.jupyter.org/u/{user}/summary",
+        "https://discourse.mozilla.org/u/{user}.json",
+        "https://discourse.mozilla.org/u/{user}",
+        "https://discourse.wicg.io/u/{user}/summary",
+        "https://discuss.elastic.co/u/{user}",
+        "https://discuss.hashicorp.com/u/{user}.json",
+        "https://discuss.hashicorp.com/u/{user}",
+        "https://discuss.kotlinlang.org/u/{user}.json",
+        "https://discuss.kotlinlang.org/u/{user}",
+        "https://discuss.python.org/u/{user}.json",
+        "https://discuss.python.org/u/{user}",
+        "https://discuss.python.org/u/{user}/summary",
+        "https://dmoj.ca/user/{user}",
+        "https://donatello.to/{user}",
+        "https://dribbble.com/{user}",
+        "https://dribbble.com/{user}/about",
+        "https://egpu.io/forums/profile/{user}/",
+        "https://en.liberapay.com/{user}",
+        "https://en.wikipedia.org/wiki/Special:CentralAuth/{user}?uselang=qqx",
+        "https://en.wikipedia.org/wiki/User:{user}  ",
+        "https://f3.cool/{user}/",
+        "https://fameswap.com/user/{user}",
+        "https://flipboard.com/@{user}",
+        "https://fortnitetracker.com/profile/all/{user}",
+        "https://forum.arduino.cc/u/{user}.json",
+        "https://forum.arduino.cc/u/{user}",
+        "https://forum.arduino.cc/u/{user}/summary",
+        "https://forum.cfx.re/u/{user}/summary",
+        "https://forum.dangerousthings.com/u/{user}",
+        "https://forum.elixirforum.com/u/{user}.json",
+        "https://forum.elixirforum.com/u/{user}",
+        "https://forum.f-droid.org/u/{user}.json",
+        "https://forum.f-droid.org/u/{user}",
+        "https://forum.ghost.org/u/{user}.json",
+        "https://forum.ghost.org/u/{user}",
+        "https://forum.hackersploit.org/u/{user}",
+        "https://forum.hackthebox.com/u/{user}",
+        "https://forum.ionicframework.com/u/{user}",
+        "https://forum.leasehackr.com/u/{user}/summary/",
+        "https://forum.rclone.org/u/{user}",
+        "https://forum.spells8.com/u/{user}",
+        "https://forum.sublimetext.com/u/{user}",
+        "https://forums.digitalspy.com/profile/{user}",
+        "https://forums.envato.com/u/{user}",
+        "https://forums.mmorpg.com/profile/{user}",
+        "https://forums.opera.com/api/user/{user}",
+        "https://forums.opera.com/user/{user}",
+        "https://forums.terraria.org/index.php?search/42798315/&c[users]={user}&o=relevance",
+        "https://fosstodon.org/@{user}",
+        "https://fotka.com/profil/{user}",
+        "https://foursquare.com/{user}",
+        "https://framapiaf.org/@{user}",
+        "https://freesound.org/people/{user}/",
+        "https://gallog.dcinside.com/{user}",
+        "https://gamefaqs.gamespot.com/community/{user}",
+        "https://genius.com/{user}",
+        "https://genius.com/artists/{user}",
+        "https://gitea.com/{user}",
+        "https://gitea.com/api/v1/users/{user}",
+        "https://gitee.com/{user}",
+        "https://gitee.com/api/v5/users/{user}",
+        "https://gitlab.com/{user}",
+        "https://gpodder.net/user/{user}/",
+        "https://habr.com/ru/users/{user}",
+        "https://habr.com/ru/users/{user}/",
+        "https://hackaday.io/{user}",
+        "https://hackenproof.com/hackers/{user}",
+        "https://hackerearth.com/@{user}",
+        "https://hackerone.com/{user}",
+        "https://hackerrank.com/{user}",
+        "https://hackmd.io/@{user}",
+        "https://help.nextcloud.com/u/{user}/summary",
+        "https://hive.blog/@{user}",
+        "https://hosted.weblate.org/user/{user}/",
+        "https://hub.docker.com/u/{user}/",
+        "https://hub.docker.com/v2/users/{user}/",
+        "https://hubpages.com/@{user}",
+        "https://huggingface.co/{user}",
+        "https://ifttt.com/p/{user}",
+        "https://ifunny.co/user/{user}",
+        "https://imgup.cz/{user}",
+        "https://imgur.com/user/{user}",
+        "https://independent.academia.edu/{user}",
+        "https://irc-galleria.net/user/{user}",
+        "https://irecommend.ru/users/{user}",
+        "https://issuu.com/{user}",
+        "https://issuu.com/query?format=json&_=3210224608766&profileUsername={user}&action=issuu.user.get_anonymous",
+        "https://itch.io/profile/{user}",
+        "https://jbzd.com.pl/uzytkownik/{user}",
+        "https://ko-fi.com/{user}",
+        "https://kwork.ru/user/{user}",
+        "https://laracasts.com/@{user}",
+        "https://last.fm/user/{user}",
+        "https://launchpad.net/~{user}",
+        "https://leetcode.com/{user}",
+        "https://leetcode.com/u/{user}/",
+        "https://lemmy.world/api/v3/user?username={user}",
+        "https://lemmy.world/u/{user}",
+        "https://letterboxd.com/{user}",
+        "https://lichess.org/@/{user}",
+        "https://lichess.org/api/user/{user}",
+        "https://linktr.ee/{user}",
+        "https://linuxfr.org/users/{user}",
+        "https://listed.to/@{user}",
+        "https://lobste.rs/u/{user}",
+        "https://lottiefiles.com/{user}",
+        "https://mamot.fr/@{user}",
+        "https://mastodon.social/@{user}",
+        "https://mastodon.xyz/@{user}",
+        "https://meta.discourse.org/u/{user}.json",
+        "https://meta.discourse.org/u/{user}",
+        "https://meta.wikimedia.org/wiki/Special:CentralAuth/{user}",
+        "https://mix.com/{user}",
+        "https://moikrug.ru/{user}",
+        "https://mstdn.io/@{user}",
+        "https://mstdn.social/@{user}",
+        "https://musescore.com/{user}",
+        "https://music.yandex.ru/handlers/library.jsx?owner={user}",
+        "https://music.yandex.ru/users/{user}",
+        "https://my.flightradar24.com/{user}",
+        "https://myanimelist.net/profile/{user}",
+        "https://namemc.com/profile/{user}",
+        "https://namu.wiki/w/%EC%82%AC%EC%9A%A9%EC%9E%90:{user}",
+        "https://nationstates.net/nation={user}",
+        "https://nationstates.net/region={user}",
+        "https://news.ycombinator.com/user?id={user}",
+        "https://nl.pepper.com/profile/{user}",
+        "https://notabug.org/{user}",
+        "https://note.com/{user}",
+        "https://nothing.community/u/{user}",
+        "https://nyaa.si/user/{user}",
+        "https://observablehq.com/@{user}",
+        "https://omg.lol/{user}",
+        "https://opencollective.com/{user}",
+        "https://opengameart.org/users/{user}",
+        "https://opengovus.com/search?q={user}%2C+LLC",
+        "https://opensource.com/users/{user}",
+        "https://osu.ppy.sh/users/{user}",
+        "https://packagist.org/users/{user}/",
+        "https://paragraph.com/@{user}",
+        "https://paragraph.com/api/blogs/@{user}",
+        "https://pastebin.com/u/{user}",
+        "https://pentesterlab.com/profile/{user}",
+        "https://pikabu.ru/@{user}",
+        "https://pixelfed.social/{user}/",
+        "https://platzi.com/p/{user}/",
+        "https://play.google.com/store/apps/developer?id={user}",
+        "https://playerdb.co/api/player/minecraft/{user}",
+        "https://playstrategy.org/@/{user}",
+        "https://plugins.gradle.org/u/{user}",
+        "https://pokemonshowdown.com/users/{user}",
+        "https://polymart.org/user/{user}",
+        "https://pornhub.com/users/{user}",
+        "https://pr0gramm.com/api/profile/info?name={user}",
+        "https://profil.chatujme.cz/{user}",
+        "https://prog.hu/azonosito/info/{user}",
+        "https://programming.dev/u/{user}",
+        "https://pronouns.page/@{user}",
+        "https://psnprofiles.com/{user}",
+        "https://rateyourmusic.com/~{user}",
+        "https://replit.com/@{user}",
+        "https://robertsspaceindustries.com/citizens/{user}",
+        "https://ruby-forum.com/u/{user}/summary",
+        "https://rubygems.org/profiles/{user}",
+        "https://rumble.com/user/{user}",
+        "https://satsis.info/user/{user}",
+        "https://scholar.harvard.edu/{user}",
+        "https://scratch.mit.edu/users/{user}",
+        "https://seoforum.com/@{user}",
+        "https://sessionize.com/{user}",
+        "https://sketchfab.com/{user}",
+        "https://slashdot.org/~{user}",
+        "https://slides.com/{user}",
+        "https://social.tchncs.de/@{user}",
+        "https://soundcloud.com/{user}",
+        "https://sourceforge.net/u/{user}",
+        "https://sourceforge.net/u/{user}/",
+        "https://spacehey.com/{user}",
+        "https://speakerdeck.com/{user}",
+        "https://speedrun.com/users/{user}",
+        "https://spletnik.ru/user/{user}",
+        "https://splits.io/users/{user}",
+        "https://stats.fm/{user}",
+        "https://status.cafe/users/{user}",
+        "https://steemit.com/@{user}",
+        "https://swapd.co/u/{user}",
+        "https://tagged.com/profile.html?uid={user}",
+        "https://tellonym.me/{user}",
+        "https://tenor.com/users/{user}",
+        "https://themeforest.net/user/{user}",
+        "https://topmate.io/{user}",
+        "https://traewelling.de/@{user}",
+        "https://traktrain.com/{user}",
+        "https://translate.jellyfin.org/user/{user}/",
+        "https://trashbox.ru/users/{user}",
+        "https://tuna.voicemod.net/user/{user}",
+        "https://tweakers.net/gallery/{user}",
+        "https://twitchtracker.com/{user}",
+        "https://ubuntu-mate.community/u/{user}.json",
+        "https://ubuntu-mate.community/u/{user}",
+        "https://uk.advfn.com/forum/profile/{user}",
+        "https://ultimate-guitar.com/u/{user}",
+        "https://unsplash.com/@{user}",
+        "https://untappd.com/user/{user}",
+        "https://users.rust-lang.org/u/{user}.json",
+        "https://users.rust-lang.org/u/{user}",
+        "https://valorantforums.com/u/{user}",
+        "https://velog.io/@{user}/posts",
+        "https://vero.co/{user}",
+        "https://vimeo.com/api/v2/{user}/info.json",
+        "https://virgool.io/@{user}",
+        "https://VJudge.net/user/{user}",
+        "https://vk.com/{user}",
+        "https://vsco.co/{user}",
+        "https://wakatime.com/@{user}",
+        "https://warframe.market/profile/{user}",
+        "https://wiki.archlinux.org/title/User:{user}",
+        "https://wowhead.com/user={user}",
+        "https://write.as/{user}",
+        "https://www.1337x.to/user/{user}/",
+        "https://www.7cups.com/@{user}",
+        "https://www.9gag.com/u/{user}",
+        "https://www.adultism.com/profile/{user}",
+        "https://www.adultism.com/profile/{user}/friends",
+        "https://www.airliners.net/user/{user}/profile",
+        "https://www.americanthinker.com/author/{user}/",
+        "https://www.artstation.com/{user}",
+        "https://www.autofrage.net/nutzer/{user}",
+        "https://www.babepedia.com/user/{user}",
+        "https://www.baby.ru/u/{user}",
+        "https://www.babyblog.ru/user/{user}",
+        "https://www.bandcamp.com/{user}",
+        "https://www.bandlab.com/api/v1.3/users/{user}",
+        "https://www.bazar.cz/{user}/",
+        "https://www.behance.net/{user}/appreciated",
+        "https://www.biggerpockets.com/users/{user}",
+        "https://www.blipfoto.com/{user}",
+        "https://www.bookcrossing.com/mybookshelf/{user}/",
+        "https://www.buymeacoffee.com/{user}",
+        "https://www.cgtrader.com/{user}",
+        "https://www.championat.com/user/{user}",
+        "https://www.chess.com/member/{user}",
+        "https://www.chollometro.com/profile/{user}",
+        "https://www.clozemaster.com/players/{user}",
+        "https://www.clubhouse.com/@{user}",
+        "https://www.cnet.com/profiles/{user}/",
+        "https://www.codewars.com/users/{user}",
+        "https://www.colourlovers.com/lover/{user}",
+        "https://www.coroflot.com/{user}",
+        "https://www.couchsurfing.com/people/{user}",
+        "https://www.cracked.com/members/{user}/",
+        "https://www.credly.com/users/{user}",
+        "https://www.curseforge.com/members/{user}/projects",
+        "https://www.dealabs.com/profile/{user}",
+        "https://www.defensivecarry.com/members/?username={user}",
+        "https://www.discogs.com/user/{user}",
+        # "https://www.donationalerts.com/api/v1/user/{user}/donationpagesettings",
+        "https://www.donationalerts.com/r/{user}",
+        "https://www.drive2.ru/users/{user}",
+        "https://www.erome.com/{user}",
+        "https://www.exophase.com/user/{user}/",
+        "https://www.eyeem.com/u/{user}",
+        "https://www.fandom.com/u/{user}",
+        "https://www.fanpop.com/fans/{user}",
+        "https://www.figma.com/@{user}",
+        "https://www.finanzfrage.net/nutzer/{user}",
+        "https://www.fixya.com/users/{user}",
+        "https://www.fl.ru/users/{user}",
+        "https://www.freecodecamp.org/{user}",
+        "https://www.freepik.com/author/{user}",
+        "https://www.furaffinity.net/user/{user}",
+        "https://www.gamespot.com/profile/{user}/",
+        "https://www.geocaching.com/p/default.aspx?u={user}",
+        "https://www.gesundheitsfrage.net/nutzer/{user}",
+        "https://www.getmyuni.com/user/{user}",
+        "https://www.giantbomb.com/profile/{user}/",
+        "https://www.grailed.com/{user}",
+        "https://www.gumroad.com/{user}",
+        "https://www.gutefrage.net/nutzer/{user}",
+        "https://www.hackster.io/{user}",
+        "https://www.hotukdeals.com/profile/{user}",
+        "https://www.iconfinder.com/{user}",
+        "https://www.ifttt.com/p/{user}",
+        "https://www.imagefap.com/profile/{user}",
+        "https://www.imood.com/users/{user}",
+        "https://www.instapaper.com/p/{user}",
+        "https://www.instructables.com/member/{user}/",
+        "https://www.interpals.net/{user}",
+        "https://www.jeuxvideo.com/profil/{user}",
+        "https://www.kaggle.com/{user}",
+        "https://www.kongregate.com/accounts/{user}",
+        "https://www.last.fm/user/{user}",
+        "https://www.librarything.com/profile/{user}",
+        "https://www.linux.org.ru/people/{user}/profile",
+        "https://www.livelib.ru/reader/{user}",
+        "https://www.mapmytracks.com/{user}",
+        "https://www.memrise.com/user/{user}/",
+        "https://www.mercadolivre.com.br/perfil/{user}",
+        "https://www.mixcloud.com/{user}/",
+        "https://www.motorradfrage.net/nutzer/{user}",
+        "https://www.mydealz.de/profile/{user}",
+        "https://www.mydramalist.com/profile/{user}",
+        "https://www.myminifactory.com/users/{user}",
+        "https://www.nairaland.com/{user}",
+        "https://www.needrom.com/author/{user}/",
+        "https://www.newamerica.org/our-people/{user}/",
+        "https://www.nintendolife.com/users/{user}",
+        "https://www.nitrotype.com/racer/{user}",
+        "https://www.npmjs.com/~{user}",
+        "https://www.openstreetmap.org/user/{user}",
+        "https://www.pepper.pl/profile/{user}",
+        "https://www.pepperdeals.com/profile/{user}",
+        "https://www.pepperdeals.se/profile/{user}",
+        "https://www.periscope.tv/{user}/",
+        "https://www.pinkbike.com/u/{user}/",
+        "https://www.polygon.com/users/{user}",
+        "https://www.preisjaeger.at/profile/{user}",
+        "https://www.producthunt.com/@{user}",
+        "https://www.promodescuentos.com/profile/{user}",
+        "https://www.redbubble.com/people/{user}",
+        "https://www.reisefrage.net/nutzer/{user}",
+        "https://www.reverbnation.com/{user}",
+        "https://www.rusfootball.info/user/{user}/",
+        "https://www.sbazar.cz/{user}",
+        "https://www.scribd.com/{user}",
+        "https://www.shitpostbot.com/user/{user}",
+        "https://www.shpock.com/shop/{user}/items",
+        "https://www.slant.co/users/{user}",
+        "https://www.smule.com/{user}",
+        "https://www.speedrun.com/api/v1/users/{user}",
+        "https://www.speedrun.com/users/{user}",
+        "https://www.sporcle.com/user/{user}/people",
+        "https://www.sportlerfrage.net/nutzer/{user}",
+        "https://www.sports.ru/profile/{user}/",
+        "https://www.strava.com/athletes/{user}",
+        "https://www.thefirearmsforum.com/members/?username={user}",
+        "https://www.themoviedb.org/u/{user}",
+        "https://www.threads.net/api/v1/users/web_profile_info/?username={user}",
+        "https://www.toster.ru/user/{user}/answers",
+        "https://www.tradingview.com/u/{user}",
+        "https://www.vinted.pt/member/general/search?search_text={user}",
+        "https://www.vlr.gg/user/{user}",
+        "https://www.warriorforum.com/members/{user}.html",
+        "https://www.wattpad.com/user/{user}",
+        "https://www.weforum.org/people/{user}",
+        "https://www.wordnik.com/users/{user}",
+        "https://www.wykop.pl/ludzie/{user}",
+        "https://www.zhihu.com/people/{user}",
+        "https://www.znanylekarz.pl/{user}",
+        "https://www.zomato.com/{user}/reviews",
+        "https://xboxgamertag.com/search/{user}",
+        "https://youpic.com/photographer/{user}/",
+        "https://zmarsa.com/uzytkownik/{user}",
+        ]
+
+    print("\n\t<<<<< hodgepodge of user sites >>>>>")
+
+    for username in users:
+        row_data = {}
+        query = username
+        ranking = "8"
+        case = 'test'
+        for template in SITES:
+            url = template.format(user=username)
+
+            try:
+                content, referer, osurl, titleurl, pagestatus = request(url)
+            except Exception:
+                continue
+            pagestatus = str(pagestatus)
+            
+            if pagestatus and "success" in str(pagestatus).lower():
+                print(url)
+                m = re.search(r'//(?:[A-Za-z0-9_-]+\.)*([A-Za-z0-9_-]+)\.(?:com|org|net)', url, re.IGNORECASE)
+                
+                if m:
+                    ranking = f'8 - {m.group(1)}'
+                else:
+                    # Match domain minus last part (e.g., carrd.co → carrd)
+                    m2 = re.search(
+                        r'//(?:[A-Za-z0-9_-]+\.)*([A-Za-z0-9_-]+)\.[A-Za-z]{2,6}(?:/|$)',
+                        url,
+                        re.IGNORECASE
+                    )
+
+                    if m2:
+                        ranking = f'8 - {m2.group(1)}'
+                    else:
+                        ranking = '8'
+
+                row_data = {
+                    "query": query,
+                    "ranking": ranking,
+                    "user": username,
+                    "url": url,
+                    "titleurl": titleurl,
+                    # "case": case,                    
+                    "pagestatus": pagestatus
+
+                }
+
+                data.append(row_data) 
+        time.sleep(2) #will sleep for 2 seconds        
             
 def holehe_email(): # testEmail= kevinrose@gmail.com
     print(f'\n\t<<<<< holehe emails >>>>>')    # temp
@@ -2488,7 +3018,10 @@ def imageshack(): # testuser = ToddGilbert
     for user in users:    
         row_data = {}
         (query, ranking) = (user, '4 - imageshack')
-        user = user.rstrip()
+        try:
+            user = user.strip()
+        except:
+            pass        
         url = (f'https://imageshack.com/user/{user}')
 
         try:
@@ -2776,7 +3309,7 @@ def linktree(): # testuser = kevinrose https://linktr.ee/kevinrose
                 row_data["user"] = user
                 row_data["city"] = city            
                 row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
+                # row_data["content"] = content                
                 row_data["titleurl"] = titleurl         
 
                 data.append(row_data)
@@ -2786,7 +3319,7 @@ def linktree(): # testuser = kevinrose https://linktr.ee/kevinrose
 def lookups_io_email():     # https://lookups.io/email/kevinrose@gmail.com
     if len(emails) > 0:
         row_data = {}
-        ranking = '8 - manual'
+        ranking ='7 - manual'
         url = ('https://lookups.io')
         row_data["ranking"] = ranking
         row_data["url"] = url
@@ -3082,7 +3615,7 @@ def kik(): # testuser = kevinrose
             row_data["firstname"] = firstname
             row_data["lastname"] = lastname
             row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
+            # row_data["content"] = content                
             row_data["titleurl"] = titleurl 
             data.append(row_data)
 
@@ -3260,7 +3793,7 @@ def myfitnesspal(): # testuser = kevinrose protected by cloudflare
             row_data["user"] = user
             row_data["url"] = url
             row_data["pagestatus"] = pagestatus    
-            row_data["content"] = content                
+            # row_data["content"] = content                
             row_data["titleurl"] = titleurl 
             data.append(row_data)
 
@@ -3477,7 +4010,7 @@ def massageanywhere():    # testuser=   Misty0427
             # row_data["note"] = note
             
             # row_data["city"] = city
-            row_data["content"] = content
+            # row_data["content"] = content
             row_data["fulladdress"] = fulladdress
             row_data["titleurl"] = titleurl            
             row_data["pagestatus"] = pagestatus            
@@ -3797,7 +4330,7 @@ def pinterest():    # testuser=    kevinrose     # add city
                 row_data["lastname"] = lastname
                 row_data["note"] = note    
                 row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
+                # row_data["content"] = content                
                 row_data["titleurl"] = titleurl 
                 
 
@@ -3898,7 +4431,7 @@ def poshmark():    # testuser=    kevinrose
     print(f'\n\t<<<<< poshmark users >>>>>')
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '7 - poshmark')
+        (query, ranking) = (user, '6 - poshmark')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         url = (f'https://poshmark.com/closet/{user}')
         try:
@@ -3962,7 +4495,7 @@ def public():    # testuser=    kevinrose
 
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '8 - public')
+        (query, ranking) = (user,'7 - public')
         (fullname, firstname, lastname, middlename) = ('', '', '', '')
         (content, referer, osurl, titleurl, pagestatus) = ('', '', '', '','')
         url = (f'https://public.com/@{user}')
@@ -3996,7 +4529,7 @@ def public():    # testuser=    kevinrose
                 row_data["lastname"] = lastname
                 row_data["pagestatus"] = pagestatus
                 row_data["titleurl"] = titleurl
-                row_data["content"] = content
+                # row_data["content"] = content
                 # row_data["titleurl"] = titleurl                
                 data.append(row_data)   
  
@@ -4405,7 +4938,7 @@ def reddit(): # testuser = kevinrose
             if "nobody on Reddit goes by that name" in eachline or "This account has been suspended" in eachline or "This user has deleted their account" in eachline:
                 ranking = '9 - reddit'
             elif "hasn't posted yet" in eachline :
-                ranking = '8 - reddit'
+                ranking ='7 - reddit'
                 note = "hasn't posted yet"
 
         if '9' not in ranking:
@@ -4568,7 +5101,7 @@ def request(url):
     elif str(pagestatus).startswith('1') :    
         pagestatus = (f'Info - {pagestatus}')
     try:
-        pagestatus = pagestatus.strip()
+        pagestatus = str(pagestatus).strip()
     except Exception as e:
         print(f"Error striping pagestatus: {str(e)}")
 # titleurl
@@ -4608,9 +5141,10 @@ def request(url):
         print(f'{error}')
         titleurl = ''
 
-    titleurl = titleurl.strip()
-    content = content.strip()
-    
+    try:
+        titleurl = str(titleurl).strip()
+        content = str(content).strip()
+    except:pass
     return (content, referer, osurl, titleurl, pagestatus)   
 
 def reversephonecheck():# testPhone= 
@@ -5160,7 +5694,7 @@ def sportstrackerold(): # testuser = kevinrose https://www.sportstracker.net/kev
                 row_data["user"] = user
                 row_data["city"] = city            
                 row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
+                # row_data["content"] = content                
                 row_data["titleurl"] = titleurl         
 
                 data.append(row_data)
@@ -5205,7 +5739,7 @@ def spotify(): # testuser = kevinrose
             row_data["user"] = user
             row_data["pagestatus"] = pagestatus
             row_data["titleurl"] = titleurl
-            row_data["content"] = content           
+            # row_data["content"] = content           
                         
             data.append(row_data)
 
@@ -5287,7 +5821,7 @@ def thatsthememail():   # testEmail= smooth8101@yahoo.com
         pagestatus = ''                
         if url != '':
             # print(f'{url}	{email}') 
-            ranking = '8 - thatsthem'
+            ranking ='7 - thatsthem'
             row_data["query"] = query
             row_data["ranking"] = ranking
             row_data["url"] = url
@@ -5428,7 +5962,7 @@ def telegram(): # testuser = kevinrose
                 row_data["user"] = user
                 row_data["note"] = fullname
                 row_data["pagestatus"] = pagestatus    
-                row_data["content"] = content                
+                # row_data["content"] = content                
                 row_data["titleurl"] = titleurl                 
                 data.append(row_data)
 
@@ -5488,7 +6022,7 @@ def threads():    # testuser=    kevinrose     # add info
             row_data["note"] = note
             # row_data["pagestatus"] = pagestatus
             # row_data["titleurl"] = titleurl            
-            # row_data["content"] = content           
+            row_data["user"] = user           
             data.append(row_data)
 
 
@@ -5511,7 +6045,7 @@ def tiktok(): # testuser = kevinrose
             if fullname == user:
                 fullname = ''
             elif 'Make Your Day' in fullname:
-                ranking = '8 - tiktok'
+                ranking ='7 - tiktok'
                 fullname = ''
             if ' ' in fullname:
                 (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
@@ -5935,7 +6469,7 @@ def twitter():    # testuser=    kevinrose     # add info
 def breachbase(): 
     if len(emails) > 0:
         row_data = {}
-        ranking = '8 - manual'
+        ranking ='7 - manual'
         url = ('https://breachbase.com/')
         row_data["ranking"] = ranking
         row_data["url"] = url
@@ -5985,7 +6519,7 @@ def vimeo():    # testuser=    kevinrose
             row_data["middlename"] = firstname
             row_data["fullname"] = fullname
             row_data["note"] = note
-            # row_data["DOB"] = DOB
+            row_data["user"] = user
             # row_data["misc"] = misc
             # row_data["content"] = content
             # row_data["pagestatus"] = pagestatus
@@ -6049,6 +6583,7 @@ def whatsmyname():    # testuser=   kevinrose
         row_data["ranking"] = ranking
         row_data["url"] = url
         row_data["note"] = note
+        row_data["user"] = user
         data.append(row_data)
 
 def whitepagesphone():# testuser=    210-316-9435
@@ -6286,7 +6821,7 @@ def wordpress(): # testuser = kevinrose
             row_data["note"] = note
             row_data["pagestatus"] = pagestatus
             row_data["titleurl"] = titleurl
-            row_data["content"] = content            
+            # row_data["content"] = content            
             data.append(row_data)
 
 
@@ -6294,7 +6829,7 @@ def wordpress_profiles(): # testuser = kevinrose
     print(f'\n\t<<<<< wordpress users >>>>>')
     for user in users:    
         row_data = {}
-        (query, ranking) = (user, '8 - wordpress')
+        (query, ranking) = (user,'7 - wordpress')
 
 
         (Success, fullname, lastname, firstname, case, SEX) = ('','','','','','')
@@ -6321,9 +6856,10 @@ def wordpress_profiles(): # testuser = kevinrose
             row_data["url"] = url
             row_data["fullname"] = fullname
             row_data["url"] = url
+            row_data["user"] = user
             row_data["pagestatus"] = pagestatus
             row_data["titleurl"] = titleurl
-            row_data["content"] = content             
+            # row_data["content"] = content             
             data.append(row_data)
 
 
@@ -6359,7 +6895,7 @@ def write_blurb():
     column_names = [cell.value for cell in header_row]    
     
     # Columns to skip
-    columns_to_skip = ["query", "ranking", "content", "referer", "osurl", "titleurl", "pagestatus", "city", "state", "firstname", "lastname", "Latitude", "Longitude", "Coordinate", "original_file", "Icon"]
+    columns_to_skip = [None, "None", "query", "ranking", "content", "referer", "osurl", "titleurl", "pagestatus", "city", "state", "country", "firstname", "middlename", "lastname", "Latitude", "Longitude", "Coordinate", "original_file", "Source file information", "Icon", "Type", "Tag"]
 
     
     for idx, cell in enumerate(header_row, start=1):
@@ -6376,6 +6912,7 @@ def write_blurb():
     doc = Document()
  
     sentence = (f'An open-source search revealed the following details.\n\n')
+    
     print(f'{sentence}')  
     doc.add_paragraph(sentence)    
     # Loop through rows in the Excel file and write to Word document
@@ -6383,7 +6920,7 @@ def write_blurb():
         if not any(row): continue
         sentence = "\n".join(f"{column}: {value}" for column, value in zip(column_names, row) if column not in columns_to_skip and value is not None)
         if sentence:
-        # if sentence.strip():
+            sentence = sentence.replace(' 00:00:00', '')    # test
             doc.add_paragraph(sentence)
             doc.add_paragraph("")  # Add an empty line between rows
 
@@ -6432,10 +6969,10 @@ def write_intel(data):
     for col_index, header in enumerate(headers_intel):
         cell = worksheet.cell(row=1, column=col_index + 1)
         cell.value = header
-        if col_index in [3, 4, 5, 6, 49, 50]: 
+        if col_index in [2, 3, 4, 5, 6]: 
             fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid") # orange?
             cell.fill = fill
-        elif col_index in [7,8, 13, 14, 15, 29, 30, 35, 36, 37, 38, 39, 40, 41, 42, 43]:  # yellow headers
+        elif col_index in [7,8, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 35, 36, 37, 38, 39, 40, 41, 42, 43, 49, 50]:  # yellow headers
             fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")  # Use yellow color
             cell.fill = fill
         # elif col_index == 27:  # Red for column 27
@@ -7120,7 +7657,7 @@ def validnumber():# testPhone=
         if city != '':        
             city = city.title()
             if city == "Directory Assistance":
-                ranking = '8 - validnumber'
+                ranking ='7 - validnumber'
         state = state.replace('..','').replace('Illinois','IL')
         if state == '':
             state = phone_state_check(phone, state).replace('?', '')
@@ -7376,7 +7913,7 @@ def zabasearch():# testPhone=
             row_data["note"] = note            
             row_data["state"] = state    
             row_data["city"] = city  
-            row_data["content"] = content
+            # row_data["content"] = content
             row_data["pagestatus"] = pagestatus            
             row_data["referer"] = referer   
             row_data["osurl"] = osurl   
@@ -7413,7 +7950,6 @@ fofa.so
 https://magabook.com/Mike
 https://gamejolt.com/site-api/web/profile/@menutkart
 https://www.digitalfootprintcheck.com/free-checker.html?q=kevinrose@gmail.com
-https://www.geocaching.com/p/?u=kevinrose
 https://www.kickstarter.com/profile/kevinrose
 
 
@@ -7456,16 +7992,11 @@ create a new identity_hunt with xlsx and requests instead of urllib2
 
 
 https://opengovus.com/search?q=kevinrose%2C+LLC
-
-
 https://api.allen-live.in/api/v1/user/identities/{email}
 https://public-api.wordpress.com/rest/v1.1/users/{email}/auth-options
 https://seguro.marca.com/ueregistro/v2/usuarios/comprobacion/{email}/2
-https://{user}.bdsmlr.com
 https://{user}.blogspot.com/
 https://{user}.livejournal.com
-    https://{user}.weebly.com/ # kevinrose  fullname
-https://35photo.pro/@{user}/
 https://500px.com/{user}
 https://7dach.ru/profile/{user}
 https://admireme.vip/{user}/
@@ -7482,8 +8013,6 @@ https://api.dailymotion.com/user/{user}?fields=id,username,screenname,descriptio
 https://api.destream.net/siteapi/v2/live/details/{user}
 https://api.discogs.com/users/{user}
 https://api.fotka.com/v2/user/dataStatic?login={user}
-https://api.github.com/users/{user}
-https://api.imgur.com/account/v1/accounts/{user}?client_id=546c25a59c58ad7&include=trophies%2Cmedallions # kevinrose
 https://api.mojang.com/minecraft/profile/lookup/name/{user} # kevinrose
 https://api.niftygateway.com/user/profile-and-offchain-nifties-by-url/?profile_url={user} # kevinrose
 https://api.omg.lol/address/{user}/info
@@ -7506,7 +8035,6 @@ https://bitbucket.org/{user}/
 https://boosty.to/{user}
 https://boot.dev/u/{user}
 https://bsky.app/profile/{user}.bsky.social
-    https://calendly.com/{user} # kevinrose
 https://calendly.com/api/booking/profiles/{user} # kevinrose
 https://client.warpcast.com/v2/user-by-username?username={user} # kevinrose
 https://codeberg.org/{user}
@@ -7533,14 +8061,10 @@ https://discuss.kotlinlang.org/u/{user}
 https://discuss.kotlinlang.org/u/{user}.json
 https://discuss.python.org/u/{user}
 https://discuss.python.org/u/{user}.json
-https://disqus.com/api/3.0/users/details?user=username%3A{user}&attach=userFlaggedUser&api_key=E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2
-https://disqus.com/by/{user}/
 https://donatello.to/{user}
 https://dribbble.com/{user} # kevinrose
 https://dribbble.com/{user}/about
-https://en.gravatar.com/{user}.json # kevinrose
 https://en.liberapay.com/{user}
-https://en.wikipedia.org/w/api.php?action=query&format=json&list=users&ususers={user}&usprop=editcount|registration|gender&formatversion=2
 https://en.wikipedia.org/wiki/User:{user}   # kevinrose
 https://fansly.com/{user} # kevinrose
 https://forum.arduino.cc/u/{user}
@@ -7556,7 +8080,6 @@ https://forums.opera.com/user/{user}
 https://fotka.com/profil/{user}
 https://foursquare.com/{user}
 https://freesound.org/people/{user}/
-https://gist.github.com/{user}
 https://gitea.com/{user}
 https://gitea.com/api/v1/users/{user}
 https://gitee.com/{user} # kevinrose
@@ -7564,7 +8087,6 @@ https://gitee.com/api/v5/users/{user} # kevinrose
 https://gitlab.com/{user} # kevinrose
 https://gitlab.com/api/v4/users?username={user} # kevinrose
 https://gpodder.net/user/{user}/
-https://gravatar.com/{user}
 https://habr.com/ru/users/{user}/
 https://hamaha.net/{user}
 https://hamaha.net/{user}/tab:info
@@ -7572,7 +8094,6 @@ https://hashnode.com/@{user}
 https://hub.docker.com/u/{user}
 https://hub.docker.com/v2/users/{user}/
 https://ifttt.com/p/{user} # kevinrose
-https://imgur.com/user/{user}
 https://independent.academia.edu/{user}
 https://issuu.com/{user}
 https://issuu.com/query?format=json&_=3210224608766&profileUsername={user}&action=issuu.user.get_anonymous
@@ -7586,13 +8107,11 @@ https://lemmy.world/u/{user}
 https://lichess.org/@/{user} # kevinrose
 https://lichess.org/api/user/{user} # kevinrose
 https://linktr.ee/{user}
-https://medium.com/@{user}
 https://meta.discourse.org/u/{user}
 https://meta.discourse.org/u/{user}.json
 https://mix.com/{user}
 https://music.yandex.ru/handlers/library.jsx?owner={user}
 https://music.yandex.ru/users/{user}
-https://myspace.com/{user} # kevinrose
 https://namemc.com/profile/{user}
 https://naturalnews.com/author/{user}/
 https://news.ycombinator.com/user?id={user}
@@ -7605,33 +8124,26 @@ https://packagist.org/users/{user}/
 https://paragraph.com/@{user}
 https://paragraph.com/api/blogs/@{user}
 https://pastebin.com/u/{user}
-https://picsart.com/u/{user} # kevinrose
 https://play.google.com/store/apps/developer?id={user}
 https://pr0gramm.com/api/profile/info?name={user}
-https://pr0gramm.com/user/{user}
 https://pypi.org/user/{user}
-https://scratch.mit.edu/users/{user} # kevinrose
 https://soundcloud.com/{user} # kevinrose
 https://sourceforge.net/u/{user}/
 https://stats.fm/{user}
-https://steamcommunity.com/id/{user}/ # kevinrose
 https://t.me/{user}
 https://themeforest.net/user/{user}
 https://trello.com/{user} # kevinrose
 https://trello.com/1/Members/{user} # kevinrose
-https://twitch.tv/{user}
 https://ubuntu-mate.community/u/{user}
 https://ubuntu-mate.community/u/{user}.json
 https://uk.advfn.com/forum/profile/{user}
 https://users.rust-lang.org/u/{user}
 https://users.rust-lang.org/u/{user}.json
-https://vimeo.com/{user} # kevinrose
 https://vimeo.com/api/v2/{user}/info.json
 https://virgool.io/@{user}
 https://vk.com/{user} # kevinrose
 https://warframe.market/profile/{user}
 https://warpcast.com/{user}
-https://wiki.archlinux.org/api.php?action=query&format=json&list=users&ususers={user}&usprop=blockinfo|groups|editcount|registration|gender&formatversion=2
 https://wiki.archlinux.org/title/User:{user}
 https://www.7cups.com/@{user}
 https://www.adultism.com/profile/{user}
@@ -7645,11 +8157,9 @@ https://www.bandlab.com/{user} # kevinrose
 https://www.bandlab.com/api/v1.3/users/{user} # kevinrose
 https://www.bdsmsingles.com/members/{user}/
 https://www.beatstars.com/{user} # kevinrose
-https://www.behance.net/{user} # kevinrose
 https://www.behance.net/{user}/appreciated
 https://www.bitchute.com/channel/{user}/
 https://www.boot.dev/u/{user}
-https://www.dailymotion.com/{user}
 https://www.defensivecarry.com/members/?username={user}
 https://www.discogs.com/user/{user} # kevinrose
 https://www.donationalerts.com/api/v1/user/{user}/donationpagesettings
@@ -7658,79 +8168,25 @@ https://www.etoro.com/api/logininfo/v1.1/users/{user} # kevinrose
 https://www.etoro.com/people/{user} # kevinrose
 https://www.figma.com/@{user}
 https://www.freepik.com/author/{user}
-    https://www.goodreads.com/{user} # kevinrose    
 https://www.instructables.com/member/{user}/
 https://www.kaggle.com/{user} # kevinrose
 https://www.last.fm/user/{user}
-https://www.linkedin.com/in/{user} # kevinrose
 https://www.minds.com/{user} # kevinrose
 https://www.minds.com/api/v3/register/validate?username={user} # kevinrose
 https://www.newamerica.org/our-people/{user}/
 https://www.npmjs.com/~{user}
 https://www.openstreetmap.org/user/{user}
 https://www.producthunt.com/@{user}
-https://www.reddit.com/user/{user}/
-https://www.reddit.com/user/{user}/about.json
-https://www.roblox.com/user.aspx?username={user}
-
-
 https://www.speedrun.com/api/v1/users/{user}
 https://www.speedrun.com/users/{user}
 https://www.sports-tracker.com/view_profile/{user}
 https://www.thefirearmsforum.com/members/?username={user}
-https://www.threads.net/@{user} # kevinrose
 https://www.threads.net/api/v1/users/web_profile_info/?username={user} # kevinrose
-https://www.tiktok.com/@{user} # kevinrose
 https://www.vinted.pt/member/general/search?search_text={user} # kevinrose
 https://www.weforum.org/people/{user}
-https://www.youtube.com/@{user} # kevinrose
 https://www.zhihu.com/people/{user}
 https://www.zomato.com/{user}/reviews
-https://youtube.com/@{user}
 https://zmarsa.com/uzytkownik/{user}
-
-
-gumroad  # kevinrose
-linktree    # kevinrose
-micorosoftlearn # kevinrose
-dockerhub # kevinrose
-huggingface # kevinrose
-codecademy # kevinrose
-protonmail # kevinrose
-roblox # kevinrose
-chess.com # kevinrose
-mixcloud # kevinrose
-duolingo # kevinrose
-amazon # kevinrose
-deviantart # kevinrose
-discord # kevinrose
-px500 # kevinrose
-blogger # kevinrose
-sportstracker # kevinrose
-bluesky # kevinrose
-
-11:  [Γ£ö] Xvideos (kevinrose@gmail.com): Registered
-20:  [Γ£ö] Nextdoor (kevinrose@gmail.com): Registered
-30:  [Γ£ö] Adobe (kevinrose@gmail.com): Registered
-34:  [Γ£ö] Zoho (kevinrose@gmail.com): Registered
-47:  [Γ£ö] Codecademy (kevinrose@gmail.com): Registered
-72:  [Γ£ö] Myfitnesspal (kevinrose@gmail.com): Registered
-Duolingo (kevinrose@gmail.com): Registered   photo       https://www.duolingo.com/2017-06-30/users?email=kevinrose@gmail.com
-103:  [Γ£ö] Spotify (kevinrose@gmail.com): Registered
-111:  [Γ£ö] Foxnews (kevinrose@gmail.com): Registered
-113:  [Γ£ö] Nytimes (kevinrose@gmail.com): Registered
-119:  [Γ£ö] Moz (kevinrose@gmail.com): Registered
-121:  [Γ£ö] Office365 (kevinrose@gmail.com): Registered
-122:  [Γ£ö] Anydo (kevinrose@gmail.com): Registered
-123:  [Γ£ö] Eventbrite (kevinrose@gmail.com): Registered
-141:  [Γ£ö] Walmart (kevinrose@gmail.com): Registered
-144:  [Γ£ö] Vivino (kevinrose@gmail.com): Registered
-152:  [Γ£ö] Pinterest (kevinrose@gmail.com): Registered
-154:  [Γ£ö] Instagram (kevinrose@gmail.com): Registered
-https://api.x.com/i/users/email_available.json?email=kevinrose@gmail.com
-
-155:  [Γ£ö] Facebook (kevinrose@gmail.com): Registered
-156:  [Γ£ö] Mastodon (kevinrose@gmail.com): Registered
 
 
 https://github.com/kaifcodec/user-scanner
