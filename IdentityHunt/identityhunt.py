@@ -2947,6 +2947,11 @@ def hodgepodge():
         "https://xboxgamertag.com/search/{user}",
         "https://youpic.com/photographer/{user}/",
         "https://zmarsa.com/uzytkownik/{user}",
+
+        "https://www.quora.com/profile/{user}",
+        "https://www.stumbleupon.com/stumbler/{user}",
+        "https://www.ello.co/{user}",
+        "https://www.weheartit.com/{user}",
         ]
 
     print("\n\t<<<<< hodgepodge of user sites >>>>>")
@@ -4096,7 +4101,7 @@ def paypal(): # testuser = kevinrose
         (query, ranking) = (user, '3 - paypal')
 
         (city, country, fullname, titleurl, pagestatus, state) = ('', '', '', '', '', '')
-        (fulladdress, lastname, firstname, photo) = ('', '', '', '')
+        (fulladdress, lastname, firstname, middlename, photo) = ('', '', '', '', '')
         (email, phone, info, misc) = ('', '', '', '')
         user = user.rstrip()
         url = (f'https://www.paypal.com/paypalme/{user}')
@@ -8127,7 +8132,6 @@ https://pastebin.com/u/{user}
 https://play.google.com/store/apps/developer?id={user}
 https://pr0gramm.com/api/profile/info?name={user}
 https://pypi.org/user/{user}
-https://soundcloud.com/{user} # kevinrose
 https://sourceforge.net/u/{user}/
 https://stats.fm/{user}
 https://t.me/{user}
