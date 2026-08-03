@@ -43,7 +43,7 @@ from tkinter import ttk, filedialog, scrolledtext
 
 author = 'LincolnLandForensics'
 description2 = "OSINT: track people down by username, email, ip, phone and website"
-version = '3.5.4'
+version = '3.5.5'
 
 headers_intel = [
     "query", "ranking", "fullname", "url", "email", "user", "phone",
@@ -845,7 +845,7 @@ def blogspot_users(): # testuser = kevinrose
         return     
     for user in users:
         row_data = {}
-        (query, ranking) = (user, '4 - blogspot')
+        (query, ranking, note) = (user, '4 - blogspot', '')
     
         url = f"https://{user}.blogspot.com"
 
