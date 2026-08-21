@@ -945,7 +945,7 @@ def calendly(): # testuser = kevinrose or jeff
                 note = eachline.strip().split("\"")[1]
                 print(f'note = {note}')
 
-        if fullname != '':
+        if fullname != '' and '404' not in fullname:
             ranking = '5 - calendly'
             (fullname, firstname, middlename, lastname) = fullname_parse(fullname)
 
@@ -1397,8 +1397,8 @@ def etsy(): # testuser = kevinrose https://www.etsy.com/people/kevinrose    # pr
                 ranking = '9 - etsy'
                 fullname = ''
 
-            if 1 == 1:
-            # if ranking == '4 - etsy':
+            # if 1 == 1:
+            if ranking == '4 - etsy':
                 print(f'{url}	{fullname}') 
 
                 row_data["query"] = query
@@ -2614,7 +2614,7 @@ def hodgepodge():
         "https://en.liberapay.com/{user}",
         "https://en.wikipedia.org/wiki/Special:CentralAuth/{user}?uselang=qqx",
         "https://en.wikipedia.org/wiki/User:{user}  ",
-        "https://f3.cool/{user}/",
+        # "https://f3.cool/{user}/",
         "https://fameswap.com/user/{user}",
         "https://flipboard.com/@{user}",
         "https://fortnitetracker.com/profile/all/{user}",
@@ -2879,7 +2879,7 @@ def hodgepodge():
         "https://www.ifttt.com/p/{user}",
         "https://www.imagefap.com/profile/{user}",
         "https://www.imood.com/users/{user}",
-        "https://www.instapaper.com/p/{user}",
+        # "https://www.instapaper.com/p/{user}",
         "https://www.instructables.com/member/{user}/",
         "https://www.interpals.net/{user}",
         "https://www.jeuxvideo.com/profil/{user}",
@@ -6069,8 +6069,7 @@ def tiktok(): # testuser = kevinrose
             row_data["fullname"] = fullname
             row_data["titleurl"] = titleurl
             row_data["pagestatus"] = pagestatus
-            
-                                   
+                       
             data.append(row_data)
 
 def tinder():    # testuser=    john
@@ -6269,7 +6268,8 @@ def truthSocial(): # testuser = realdonaldtrump https://truthsocial.com/@realDon
         else:
             fullname = ''
 
-        if 1==1:
+        if fullname != 'Truth SOCIAL':
+        # if 1==1:
         # if '@' in titleurl: 
             print(f'{url}	{fullname}') 
             row_data["query"] = query
@@ -6848,7 +6848,8 @@ def wordpress_profiles(): # testuser = kevinrose
             (content, referer, osurl, titleurl, pagestatus) = ('','','','','')
         except:
             pass
-        if '404' not in str(pagestatus):
+        if '200' in str(pagestatus):
+        # if '404' not in str(pagestatus):
             fullname = str(titleurl)
             fullname = fullname.split(" (")[0]
             if fullname.lower() in titleurl.lower():
