@@ -62,7 +62,7 @@ if sys.version_info > (3, 7, 9) and os.name == "nt":
 
 author = 'LincolnLandForensics'
 description2 = "convert Cellebrite contacts, account, web history, chats and call exports to intel format"
-version = '1.1.7'
+version = '1.1.8'
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Menu           >>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -572,14 +572,14 @@ def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
     for row_index, row_data in enumerate(data):
         (fullname, url, phone, email, business, misc) = ('', '', '', '', '', '')
         (lastname, firstname, snippet, Icon) = ('', '', '', '')
-        (Time, time_orig, timezone) = ('', '', '')
+        (Time, time_orig, timezone, sort) = ('', '', '', '')
         (ranking, source_file, original_file) = (f'4 - {datatype}', '', '')
         (fulladdress , note, info, source, user, query) = ('', '', '', '', '', '')
         (AKA, DOB, otheremails, titleurl, dnsdomain, country) = ('', '', '', '', '', '')
         (Latitude, Longitude, Coordinate, fulladdress2, state, Time) = ('', '', '', '', '', '')
         (From, to, cc, bcc, subject, body) = ('', '', '', '', '', '')
         (status, priority, attachment, Altitude, receiver, Sender) = ('', '', '', '', '', '')
-        (city, state, country, case, Direction) = ('', '', '', '', '')
+        (city, state, country, case, Direction, transcript) = ('', '', '', '', '', '')
         
 # fullname        
         fullname = row_data.get("Name") or ''
@@ -638,13 +638,17 @@ def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
                 dnsdomain = dnsdomain.group(1)
  
 
+# note        
+     
+        note = row_data.get("Password") or ''   
 
 
 
 # info        
      
-        info = row_data.get("Entries") or row_data.get("Entry") or ''
+        info = row_data.get("Entries") or row_data.get("Entry") or row_data.get("File name") or row_data.get("SSID") or ''   
         info2 = row_data.get("Body") or row_data.get("Message") or '' # chats cellebrite
+        transcript = row_data.get("Transcript") or ''
       
         
         entry2 = row_data.get("Entry (2)") or ''
@@ -656,6 +660,7 @@ def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
             info += '\n' + entry3
 
         info = (info or '').strip()
+       
        
 
         # print(f'info = {info}')   # temp
@@ -682,7 +687,6 @@ def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
         
         if info == "" and info2 != "":
             info = info2
-            print(f'___________info2 = {info2}') # temp
             
             ranking == "3 - Chats"
             Time = (row_data.get("Timestamp: Time") or '').strip()
@@ -866,8 +870,12 @@ def read_cellebrite(input_xlsx, case_number_arg=None, status_callback=None):
 
 # source
         source = row_data.get("Source")
-        source = os.path.basename(source)
-        print(f'source = {source}')  # temp
+        
+        try:
+            source = os.path.basename(source)
+        except: pass
+        
+        
         if source is None:
             source = ''
         elif ranking2 is not None and "-" not in ranking:
@@ -1197,6 +1205,11 @@ STATUS:{status}
         original_file = row_data.get("original_file") or input_xlsx
         original_file = os.path.basename(original_file)
         
+# sort
+        sort = row_data.get("#") or ''
+
+
+
 
 
 # Altitude
@@ -1373,7 +1386,10 @@ STATUS:{status}
         row_data["original_file"] = original_file     
         row_data["Tag"] = tag     
         row_data["Type"] = type_data     
-        row_data["Icon"] = Icon     
+        row_data["Icon"] = Icon
+        row_data["#"] = sort        
+        row_data["transcript"] = transcript    
+        
     return data
 
 def fullname_build(firstname, middlename, lastname):
@@ -1480,7 +1496,7 @@ def write_xlsx(data, output_filename, status_callback=None):
         "managers", "Time", "Latitude", "Longitude", "Coordinate",
         "original_file", "Source", "Source file information", "Plate", "VIS", "VIN",
         "VYR", "VMA", "LIC", "LIY", "DLN", "DLS", "content", "referer", "osurl",
-        "titleurl", "pagestatus", "ip", "dnsdomain", "Tag", "Icon", "Type"
+        "titleurl", "pagestatus", "ip", "dnsdomain", "Tag", "Icon", "Type", "#", "transcript"
         ]
 
     # Write headers to the first row
