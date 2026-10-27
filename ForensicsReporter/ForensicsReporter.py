@@ -5,9 +5,9 @@
 # <<<<<<<<<<<<<<<<<<<<<<<<<<     Change Me       >>>>>>>>>>>>>>>>>>>>>>>>>>
 # change this section with your details
 global agency
-agency = "MWW" # ISP, MWW
+agency = "IDOR" # ISP, MWW
 global agencyFull
-agencyFull = "Ministry of Wacky Walks"   # Ministry of Wacky Walks
+agencyFull = "Illinois Department of Revenue"   # Ministry of Wacky Walks
 global divisionFull
 divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Division
 
@@ -15,7 +15,7 @@ divisionFull = "Bureau of Criminal Investigations" # Criminal Investigation Divi
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 author = 'LincolnLandForensics'
 description = "Convert imaging logs to xlsx, print stickers, write activity reports/checklists and case notes"
-version = '3.4.9'
+version = '3.5.1'
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Imports        >>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1641,7 +1641,6 @@ def pdf_extract(filename):
         if makeModel_match:
             makeModel = makeModel_match.group(1).strip()
 
-
         # OS
         os_match = re.search(r'OS Name (.*?)\n', tempNotes)    # cellebrite
         # os_match2 = re.search(r'Software Version (.*?)\n', tempNotes)    # GrayKey
@@ -2257,67 +2256,108 @@ Exhibit {exhibit}
             # report = ("%s The image (SHA256 Hash: % s) (MD5 Hash: % s) was saved as %s." %(report, imageSHA256, imageMD5, exportLocation.split('\\')[-1])) 
 
             if writeBlocker != '':
+                if verifyHash.lower() == 'y':
+                    report = (
+                        f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                        f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The forensic imaging process was completed successfully and verified with no errors. The source hash was calculated and confirmed unchanged before processing. The acquisition and verification hash values matched, ensuring data integrity.\n"
+                        f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
+                    )
+                else:
+                    report = (
+                        f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                        f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The forensic imaging process was completed successfully\n\n"
+                    )
 
-                report = (
-                    f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
-                    f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
-                    f"The forensic imaging process was completed successfully and verified with no errors. The source hash was calculated and confirmed unchanged before processing. The acquisition and verification hash values matched, ensuring data integrity.\n"
-                    f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
-                )
             else:
-                report = (
-                    f"{report}\n"
-                    f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
-                    f"The forensic imaging process was completed successfully and verified with no errors. The source hash was calculated and confirmed unchanged before processing. The acquisition and verification hash values matched, ensuring data integrity.\n"
-                    f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
-                )
-
-
+                if verifyHash.lower() == 'y':
+                    report = (
+                        f"{report}\n"
+                        f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The forensic imaging process was completed successfully and verified with no errors. The source hash was calculated and confirmed unchanged before processing. The acquisition and verification hash values matched, ensuring data integrity.\n"
+                        f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
+                    )
+                else:
+                    report = (
+                        f"{report}\n"
+                        f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The forensic imaging process was completed successfully\n\n"
+                    )
 
         elif len(imageMD5) != 0 and exportLocation != '':
             # report = ("%s The image (MD5 Hash: % s) was saved as %s." %(report, imageMD5, exportLocation.split('\\')[-1])) 
             if writeBlocker != '':
-                report = (
-                    f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
-                    f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
-                    f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
-                    f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
-                )
-            else:
-                report = (
-                    f"{report}\n"
-                    f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
-                    f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
-                    f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
-                )
+                if verifyHash.lower() == 'y':
+                   report = (
+                        f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                        f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
+                        f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
+                    )
+                else:
+                    report = (
+                        f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                        f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The imaging process completed with no errors.\n\n"
+                    )                
 
+            else:
+                if verifyHash.lower() == 'y':
+                    report = (
+                        f"{report}\n"
+                        f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
+                        f"\n\tSource MD5 hash:         {imageMD5}\n\tVerification MD5 hash: {imageMD5}\n\n"
+                    )
+                else:
+                    report = (
+                        f"{report}\n"
+                        f"The image (MD5 Hash: {imageMD5}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The imaging process completed with no errors.\n\n"
+                    )                    
 
 
 
         elif len(imageSHA256) != 0 and imageSHA256 != 'NA' and imageSHA256 != 'na' and imageSHA256 != 'N/A':
             # report = ("%s The image had a SHA256 hash of % s." %(report, imageSHA256))
             if writeBlocker != '':
-                report = (
-                    f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
-                    f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
-                    f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
-                    f"\n\tSource SHA256 hash:         {imageSHA256}\n\tVerification SHA256 hash: {imageSHA256}\n\n"
-                )
-            else:
-                report = (
-                    f"{report}\n"
-                    f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
-                    f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
-                    f"\n\tSource SHA256 hash:         {imageSHA256}\n\tVerification SHA256 hash: {imageSHA256}\n\n"
-                )
+                if verifyHash.lower() == 'y':
+                    report = (
+                        f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                        f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
+                        f"\n\tSource SHA256 hash:         {imageSHA256}\n\tVerification SHA256 hash: {imageSHA256}\n\n"
+                    )
 
+                else:
+                    report = (
+                        f"{report} A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. "
+                        f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The imaging process completed with no errors\n\n"
+                    )
+            else:
+                if verifyHash.lower() == 'y':
+                    report = (
+                        f"{report}\n"
+                        f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The imaging process completed with no errors and was verified. The acquisition and verification hash values matched and are listed below:\n"
+                        f"\n\tSource SHA256 hash:         {imageSHA256}\n\tVerification SHA256 hash: {imageSHA256}\n\n"
+                    )
+                else:
+                    report = (
+                        f"{report}\n"
+                        f"The image (SHA256 hash: {imageSHA256}) was saved as {os.path.basename(exportLocation)}. "
+                        f"The imaging process completed with no errors.\n\n"
+                    )
+                    
         # if "write blocker, to conduct" in report:
             # report = ("%s A write blocker is a tool that prevents any write access to a device, thus only allowing for read-only access to maintain the integrity of the evidence. " %(report))  
         # Analysis tool processing
         if analysisTool and analysisTool2:
             report = f"{report}The image was processed with {analysisTool} and further analyzed with {analysisTool2}."
         elif analysisTool:
-            report = f"{report} The image was processed with {analysisTool}."
+            report = f"{report}The image was processed with {analysisTool}."
 
         if verifyHash.lower() == 'y':
             report = f"{report} The forensic image hash value was verified prior to processing thereby confirming the data remained unaltered prior to processing."
