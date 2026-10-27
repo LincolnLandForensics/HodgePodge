@@ -9,20 +9,45 @@ import exifread   # pip install exifread
 import hashlib   # pip install hashlib
 import openpyxl   # pip install openpyx
 import argparse # for menu system
-from datetime import datetime
+from datetime import datetime, timedelta
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
 import threading
+import zipfile
+import xml.etree.ElementTree as ET
+import pypdf
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<      Pre-Sets       >>>>>>>>>>>>>>>>>>>>>>>>>>
 
 author = 'LincolnLandForensics'
-description = "exif data reader"
-version = '0.1.0'
+description = "forensic metadata and exif reader"
+version = '1.0.1'
 
 global image_types
-image_types = ['.jpg', '.jpeg', '.heic', '.heif', '.png', '.tiff', '.tif', '.webp']
+global doc_types
+global opendoc_types
+global pdf_types
+global rtf_types
+global epub_types
+global geo_types
+global media_types
+
+image_types = [
+    '.jpg', '.jpeg', '.png', '.heic', '.heif', '.tiff', '.tif', '.webp', '.avif', '.gif', '.bmp',
+    '.cr2', '.cr3', '.nef', '.arw', '.dng', '.orf', '.rw2', '.raf'
+]
+doc_types = ['.docx', '.xlsx', '.pptx']
+opendoc_types = ['.odt', '.ods', '.odp']
+pdf_types = ['.pdf']
+rtf_types = ['.rtf']
+epub_types = ['.epub']
+geo_types = ['.gpx', '.kml', '.kmz']
+media_types = [
+    '.mp4', '.m4v', '.mov', '.3gp', '.3g2', '.avi', '.mkv', '.mts', '.m2ts', 
+    '.m4a', '.wav', '.mp3', '.flac', '.ogg'
+]
+
 
 # Colorize section
 global color_red
@@ -190,10 +215,11 @@ def process_exif(photos_folder, output_file, status_callback=None, progress_call
 
     # Define headers
     headers = [
-        'Name', 'DateCreated', 'DateTimeOriginal', 'FileCreateDate', 'FileModifyDate', 'Timezone',
-        'DeviceManufacturer', 'ExifToolVersion', 'FileSize', 'FileType', 'FileTypeExtension', 'LensMake',
-        'Software', 'HostComputer', 'LensInfo', 'LensModel', 'Model', 'NumberOfImages', 
-        'Altitude', 'Latitude', 'Longitude', 'Coordinate', 'Time', 'Type', 'Icon', 'Description', 'MD5'
+        'Name', 'DateCreated', 'DateTimeOriginal', 'FileCreateDate', 'FileModifyDate', 'Timezone'
+        ,'DeviceManufacturer', 'ExifToolVersion', 'FileSize', 'FileType', 'FileTypeExtension', 'LensMake'
+        ,'Software', 'HostComputer', 'LensInfo', 'LensModel', 'Model', 'NumberOfImages'
+        ,'Altitude', 'Latitude', 'Longitude', 'Coordinate', 'Time', 'Type', 'Icon', 'Description', 'MD5'
+        , 'Copyright', 'Creator', 'Author', 'LastModifiedBy', 'Path'
     ]
     sheet.append(headers)
 
@@ -203,10 +229,10 @@ def process_exif(photos_folder, output_file, status_callback=None, progress_call
 
     sheet.freeze_panes = 'B2'
 
-    files = [f for f in os.listdir(photos_folder) if os.path.splitext(f)[1].lower() in image_types]
+    files = [f for f in os.listdir(photos_folder) if os.path.isfile(os.path.join(photos_folder, f))]
     total_files = len(files)
     
-    msg = f'Analyzing {total_files} photos from {photos_folder} folder'
+    msg = f'Analyzing {total_files} files from {photos_folder} folder'
     if status_callback: status_callback(msg)
     msg_blurb_square(msg, color_green)
 
@@ -309,10 +335,249 @@ def hashfile(file_path):
     return hash_md5.hexdigest()
     
 
-def read_exif_data(file_path):
-    """Reads selected EXIF data from an image file."""
-    with open(file_path, 'rb') as f:
-        tags = exifread.process_file(f, stop_tag='UNDEFINED')
+def get_ooxml_metadata(file_path):
+    """
+    Parses metadata from OOXML files (.docx, .xlsx, .pptx) without external dependencies.
+    """
+    metadata = {}
+    
+    def find_element(root, local_name):
+        # Standard namespaces
+        ns = {
+            'cp': 'http://schemas.openxmlformats.org/package/2006/metadata/core-properties',
+            'dc': 'http://purl.org/dc/elements/1.1/',
+            'dcterms': 'http://purl.org/dc/terms/',
+            'ep': 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties'
+        }
+        for prefix in ns:
+            elem = root.find(f"{prefix}:{local_name}", ns)
+            if elem is not None:
+                return elem
+        # Fallback to tag suffix matching
+        for elem in root.iter():
+            tag = elem.tag
+            if tag.endswith('}' + local_name) or tag == local_name:
+                return elem
+        return None
+
+    def get_val(root, local_name):
+        elem = find_element(root, local_name)
+        return elem.text if elem is not None else None
+
+    try:
+        with zipfile.ZipFile(file_path, 'r') as zip_ref:
+            # Parse core.xml
+            if 'docProps/core.xml' in zip_ref.namelist():
+                core_xml = zip_ref.read('docProps/core.xml')
+                root = ET.fromstring(core_xml)
+                metadata['creator'] = get_val(root, 'creator')
+                metadata['lastModifiedBy'] = get_val(root, 'lastModifiedBy')
+                metadata['created'] = get_val(root, 'created')
+                metadata['modified'] = get_val(root, 'modified')
+                metadata['title'] = get_val(root, 'title')
+                metadata['subject'] = get_val(root, 'subject')
+                metadata['description'] = get_val(root, 'description')
+                metadata['keywords'] = get_val(root, 'keywords')
+
+            # Parse app.xml
+            if 'docProps/app.xml' in zip_ref.namelist():
+                app_xml = zip_ref.read('docProps/app.xml')
+                root = ET.fromstring(app_xml)
+                metadata['application'] = get_val(root, 'Application')
+                metadata['appVersion'] = get_val(root, 'AppVersion')
+                metadata['company'] = get_val(root, 'Company')
+                metadata['template'] = get_val(root, 'Template')
+                metadata['totalTime'] = get_val(root, 'TotalTime')
+                metadata['pages'] = get_val(root, 'Pages')
+                metadata['words'] = get_val(root, 'Words')
+                metadata['characters'] = get_val(root, 'Characters')
+    except Exception as e:
+        print(f"Error parsing OOXML file {file_path}: {e}")
+    return metadata
+
+
+def parse_mp4_timestamps(file_path):
+    """
+    Extracts embedded creation and modification timestamps from QuickTime/ISO BMFF 
+    containers (MP4, MOV, 3GP, M4V, M4A) by reading the 'mvhd' atom directly.
+    """
+    creation_time = None
+    modification_time = None
+    try:
+        with open(file_path, 'rb') as f:
+            data = f.read(1024 * 1024) # check first 1MB
+            idx = data.find(b'mvhd')
+            if idx != -1:
+                version = data[idx + 4]
+                time_offset = idx + 8
+                if version == 0:
+                    c_time = int.from_bytes(data[time_offset : time_offset + 4], 'big')
+                    m_time = int.from_bytes(data[time_offset + 4 : time_offset + 8], 'big')
+                elif version == 1:
+                    c_time = int.from_bytes(data[time_offset : time_offset + 8], 'big')
+                    m_time = int.from_bytes(data[time_offset + 8 : time_offset + 16], 'big')
+                else:
+                    return None, None
+                
+                epoch_1904 = datetime(1904, 1, 1)
+                if c_time > 0:
+                    creation_time = (epoch_1904 + timedelta(seconds=c_time)).strftime('%Y-%m-%d %H:%M:%S')
+                if m_time > 0:
+                    modification_time = (epoch_1904 + timedelta(seconds=m_time)).strftime('%Y-%m-%d %H:%M:%S')
+    except Exception as e:
+        print(f"Error parsing QuickTime timestamps: {e}")
+    return creation_time, modification_time
+
+
+def get_pdf_metadata(file_path):
+    """Parses PDF metadata using the pypdf library."""
+    metadata = {}
+    try:
+        reader = pypdf.PdfReader(file_path)
+        meta = reader.metadata
+        if meta:
+            metadata['creator'] = meta.creator
+            metadata['producer'] = meta.producer
+            metadata['author'] = meta.author
+            metadata['title'] = meta.title
+            metadata['subject'] = meta.subject
+            metadata['creation_date'] = meta.creation_date
+            metadata['modification_date'] = meta.modification_date
+    except Exception as e:
+        print(f"Error parsing PDF metadata: {e}")
+    return metadata
+
+
+def get_gpx_metadata(file_path):
+    """Parses GPX tracking files."""
+    metadata = {}
+    try:
+        with open(file_path, 'rb') as f:
+            root = ET.fromstring(f.read())
+        ns = {'g': 'http://www.topografix.com/GPX/1/1'}
+        def get_val(local_name):
+            elem = root.find(f".//g:{local_name}", ns) or root.find(f".//{local_name}")
+            return elem.text if elem is not None else None
+        
+        metadata['name'] = get_val('name')
+        metadata['creator'] = root.get('creator')
+        metadata['time'] = get_val('time')
+        
+        trks = root.findall(".//g:trkpt", ns) or root.findall(".//trkpt")
+        wpts = root.findall(".//g:wpt", ns) or root.findall(".//wpt")
+        metadata['trackpoints_count'] = len(trks)
+        metadata['waypoints_count'] = len(wpts)
+    except Exception as e:
+        print(f"Error parsing GPX metadata: {e}")
+    return metadata
+
+
+def get_kml_metadata(file_path):
+    """Parses KML and KMZ tracking containers."""
+    metadata = {}
+    try:
+        kml_content = None
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext == '.kmz':
+            with zipfile.ZipFile(file_path, 'r') as zip_ref:
+                for name in zip_ref.namelist():
+                    if name.endswith('.kml'):
+                        kml_content = zip_ref.read(name)
+                        break
+        else:
+            with open(file_path, 'rb') as f:
+                kml_content = f.read()
+                
+        if kml_content:
+            root = ET.fromstring(kml_content)
+            ns = {'k': 'http://www.opengis.net/kml/2.2'}
+            def get_val(local_name):
+                elem = root.find(f".//k:{local_name}", ns) or root.find(f".//{local_name}")
+                return elem.text if elem is not None else None
+            
+            metadata['name'] = get_val('name')
+            metadata['description'] = get_val('description')
+            
+            placemarks = root.findall(".//k:Placemark", ns) or root.findall(".//Placemark")
+            metadata['placemarks_count'] = len(placemarks)
+    except Exception as e:
+        print(f"Error parsing KML/KMZ metadata: {e}")
+    return metadata
+
+
+def get_epub_metadata(file_path):
+    """Parses EPUB book metadata."""
+    metadata = {}
+    try:
+        with zipfile.ZipFile(file_path, 'r') as zip_ref:
+            opf_file = None
+            for name in zip_ref.namelist():
+                if name.endswith('.opf'):
+                    opf_file = name
+                    break
+            if opf_file:
+                opf_content = zip_ref.read(opf_file)
+                root = ET.fromstring(opf_content)
+                metadata_elem = root.find('.//{http://www.idpf.org/2007/opf}metadata') or root.find('.//metadata')
+                if metadata_elem is not None:
+                    def get_val(local_name):
+                        elem = metadata_elem.find(f".//{{http://purl.org/dc/elements/1.1/}}{local_name}") or metadata_elem.find(f".//{local_name}")
+                        return elem.text if elem is not None else None
+                    
+                    metadata['creator'] = get_val('creator')
+                    metadata['title'] = get_val('title')
+                    metadata['date'] = get_val('date')
+                    metadata['publisher'] = get_val('publisher')
+                    metadata['language'] = get_val('language')
+                    metadata['subject'] = get_val('subject')
+    except Exception as e:
+        print(f"Error parsing EPUB metadata: {e}")
+    return metadata
+
+
+def get_opendoc_metadata(file_path):
+    """Parses OpenDocument meta.xml metadata."""
+    metadata = {}
+    try:
+        with zipfile.ZipFile(file_path, 'r') as zip_ref:
+            if 'meta.xml' in zip_ref.namelist():
+                meta_xml = zip_ref.read('meta.xml')
+                root = ET.fromstring(meta_xml)
+                ns = {
+                    'office': 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
+                    'meta': 'urn:oasis:names:tc:opendocument:xmlns:meta:1.0',
+                    'dc': 'http://purl.org/dc/elements/1.1/',
+                }
+                office_meta = root.find('office:meta', ns)
+                if office_meta is not None:
+                    def get_val(path):
+                        elem = office_meta.find(path, ns)
+                        return elem.text if elem is not None else None
+                    
+                    metadata['creator'] = get_val('dc:creator')
+                    metadata['creation_date'] = get_val('meta:creation-date')
+                    metadata['date'] = get_val('dc:date')
+                    metadata['generator'] = get_val('meta:generator')
+                    metadata['editing_duration'] = get_val('meta:editing-duration')
+                    
+                    stats_elem = office_meta.find('meta:document-statistic', ns)
+                    if stats_elem is not None:
+                        metadata['words'] = stats_elem.get(f"{{{ns['meta']}}}word-count")
+                        metadata['pages'] = stats_elem.get(f"{{{ns['meta']}}}page-count")
+                        metadata['characters'] = stats_elem.get(f"{{{ns['meta']}}}character-count")
+    except Exception as e:
+        print(f"Error parsing OpenDocument metadata: {e}")
+    return metadata
+
+
+def read_image_metadata(file_path, hash_md5):
+    """Reads EXIF data from an image file."""
+    tags = {}
+    try:
+        with open(file_path, 'rb') as f:
+            tags = exifread.process_file(f, stop_tag='UNDEFINED')
+    except Exception as e:
+        print(f"Error parsing EXIF with exifread: {e}")
 
     gps_latitude = tags.get('GPS GPSLatitude')
     gps_latitude_ref = tags.get('GPS GPSLatitudeRef')
@@ -322,14 +587,6 @@ def read_exif_data(file_path):
     latitude = convert_to_decimal(gps_latitude.values, gps_latitude_ref.values[0]) if gps_latitude and gps_latitude_ref else ""
     longitude = convert_to_decimal(gps_longitude.values, gps_longitude_ref.values[0]) if gps_longitude and gps_longitude_ref else ""
 
-    # Generate MD5 hash for the file
-    try:
-        hash_md5 = hashfile(file_path)
-
-    except Exception as e:
-        print(f"Error hashing '{file_path}': {e}")        
-        hash_md5 = ""
-        
     exif_data = {
         'Name': os.path.basename(file_path),
         'DateCreated': tags.get('Image DateTime'),
@@ -357,14 +614,591 @@ def read_exif_data(file_path):
         'Type': 'Images',
         'Time': tags.get('EXIF DateTimeOriginal'),
         'Description': '',        
-        'MD5': hash_md5
+        'MD5': hash_md5,
+        'Copyright': tags.get('Copyright'),
+        'Creator': tags.get('Image Artist'),
+        'LastModifiedBy': '',
     }
 
     for key, value in exif_data.items():
         exif_data[key] = str(value) if value else ""
         
     Description = cleanup_description(exif_data)
+    exif_data['Description'] = Description
     return exif_data, Description
+
+
+def read_docx_metadata(file_path, hash_md5):
+    """Reads metadata from an OOXML file (.docx, .xlsx, .pptx)."""
+    meta = get_ooxml_metadata(file_path)
+    
+    def format_ooxml_date(date_str):
+        if not date_str:
+            return ""
+        try:
+            date_str_clean = date_str.replace('Z', '')
+            if '.' in date_str_clean:
+                date_str_clean = date_str_clean.split('.')[0]
+            dt = datetime.strptime(date_str_clean, '%Y-%m-%dT%H:%M:%S')
+            return dt.strftime('%Y-%m-%d %H:%M:%S')
+        except Exception:
+            return date_str
+
+    date_created = format_ooxml_date(meta.get('created'))
+    date_modified = format_ooxml_date(meta.get('modified'))
+
+    exif_data = {
+        'Name': os.path.basename(file_path),
+        'DateCreated': date_created,
+        'DateTimeOriginal': date_modified,
+        'FileCreateDate': datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'FileModifyDate': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Timezone': '',
+        'DeviceManufacturer': '',
+        'FileSize': os.path.getsize(file_path),
+        'FileType': os.path.splitext(file_path)[1].replace('.', '').upper(),
+        'FileTypeExtension': os.path.splitext(file_path)[1].replace('.', '').lower(),
+        'LensMake': '',
+        'Software': meta.get('application', ''),
+        'HostComputer': '',
+        'LensInfo': '',
+        'LensModel': '',
+        'Model': '',
+        'Altitude': '',
+        'Latitude': '',
+        'Longitude': '',
+        'Coordinate': '',
+        'NumberOfImages': '',
+        'ExifToolVersion': '',
+        'Icon': 'Documents',
+        'Type': 'Documents',
+        'Time': date_modified if date_modified else date_created,
+        'Description': '',        
+        'MD5': hash_md5,
+        'Copyright': '',
+        
+        # Additional fields captured in Description
+        'Creator': meta.get('creator', ''),
+        'LastModifiedBy': meta.get('lastModifiedBy', ''),
+        'AppVersion': meta.get('appVersion', ''),
+        'Company': meta.get('company', ''),
+        'Template': meta.get('template', ''),
+        'TotalTime': meta.get('totalTime', ''),
+        'Pages': meta.get('pages', ''),
+        'Words': meta.get('words', ''),
+        'Characters': meta.get('characters', ''),
+        'Title': meta.get('title', ''),
+        'Subject': meta.get('subject', ''),
+        'Keywords': meta.get('keywords', ''),
+    }
+
+    for key, value in exif_data.items():
+        exif_data[key] = str(value) if value else ""
+        
+    Description = cleanup_description(exif_data)
+    exif_data['Description'] = Description
+    return exif_data, Description
+
+
+def read_opendoc_metadata(file_path, hash_md5):
+    """Reads metadata from OpenDocument formats (.odt, .ods, .odp)."""
+    ext = os.path.splitext(file_path)[1].lower()
+    meta = get_opendoc_metadata(file_path)
+    
+    def format_opendoc_date(date_str):
+        if not date_str:
+            return ""
+        try:
+            date_str_clean = date_str.replace('Z', '')
+            if 'T' in date_str_clean:
+                if '.' in date_str_clean:
+                    date_str_clean = date_str_clean.split('.')[0]
+                dt = datetime.strptime(date_str_clean, '%Y-%m-%dT%H:%M:%S')
+                return dt.strftime('%Y-%m-%d %H:%M:%S')
+        except Exception:
+            pass
+        return date_str
+
+    date_created = format_opendoc_date(meta.get('creation_date'))
+    date_modified = format_opendoc_date(meta.get('date'))
+
+    exif_data = {
+        'Name': os.path.basename(file_path),
+        'DateCreated': date_created,
+        'DateTimeOriginal': date_modified,
+        'FileCreateDate': datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'FileModifyDate': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Timezone': '',
+        'DeviceManufacturer': '',
+        'FileSize': os.path.getsize(file_path),
+        'FileType': ext.replace('.', '').upper(),
+        'FileTypeExtension': ext.replace('.', '').lower(),
+        'LensMake': '',
+        'Software': meta.get('generator', ''),
+        'HostComputer': '',
+        'LensInfo': '',
+        'LensModel': '',
+        'Model': '',
+        'Altitude': '',
+        'Latitude': '',
+        'Longitude': '',
+        'Coordinate': '',
+        'NumberOfImages': '',
+        'ExifToolVersion': '',
+        'Icon': 'Documents',
+        'Type': 'Documents',
+        'Time': date_modified if date_modified else date_created,
+        'Description': '',        
+        'MD5': hash_md5,
+        'Copyright': '',
+        'Creator': meta.get('creator', ''),
+        'LastModifiedBy': '',
+        'EditingDuration': meta.get('editing_duration', ''),
+        'Pages': meta.get('pages', ''),
+        'Words': meta.get('words', ''),
+        'Characters': meta.get('characters', '')
+    }
+
+    for key, value in exif_data.items():
+        exif_data[key] = str(value) if value else ""
+        
+    Description = cleanup_description(exif_data)
+    exif_data['Description'] = Description
+    return exif_data, Description
+
+
+def read_epub_metadata(file_path, hash_md5):
+    """Reads metadata from EPUB electronic books."""
+    ext = os.path.splitext(file_path)[1].lower()
+    meta = get_epub_metadata(file_path)
+    
+    date_val = meta.get('date', '')
+    if date_val and 'T' in date_val:
+        try:
+            date_val_clean = date_val.replace('Z', '').split('.')[0]
+            dt = datetime.strptime(date_val_clean, '%Y-%m-%dT%H:%M:%S')
+            date_val = dt.strftime('%Y-%m-%d %H:%M:%S')
+        except Exception:
+            pass
+
+    exif_data = {
+        'Name': os.path.basename(file_path),
+        'DateCreated': date_val,
+        'DateTimeOriginal': '',
+        'FileCreateDate': datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'FileModifyDate': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Timezone': '',
+        'DeviceManufacturer': '',
+        'FileSize': os.path.getsize(file_path),
+        'FileType': 'EPUB',
+        'FileTypeExtension': 'epub',
+        'LensMake': '',
+        'Software': meta.get('publisher', ''),
+        'HostComputer': '',
+        'LensInfo': '',
+        'LensModel': '',
+        'Model': '',
+        'Altitude': '',
+        'Latitude': '',
+        'Longitude': '',
+        'Coordinate': '',
+        'NumberOfImages': '',
+        'ExifToolVersion': '',
+        'Icon': 'Documents',
+        'Type': 'Documents',
+        'Time': date_val if date_val else datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Description': '',        
+        'MD5': hash_md5,
+        'Copyright': '',
+        'Creator': meta.get('creator', ''),
+        'LastModifiedBy': '',
+        'Title': meta.get('title', ''),
+        'Publisher': meta.get('publisher', ''),
+        'Language': meta.get('language', ''),
+        'Subject': meta.get('subject', '')
+    }
+
+    for key, value in exif_data.items():
+        exif_data[key] = str(value) if value else ""
+        
+    Description = cleanup_description(exif_data)
+    exif_data['Description'] = Description
+    return exif_data, Description
+
+
+def read_pdf_metadata(file_path, hash_md5):
+    """Reads metadata from PDF documents using pypdf."""
+    ext = os.path.splitext(file_path)[1].lower()
+    meta = get_pdf_metadata(file_path)
+    
+    def format_pdf_date(dt):
+        if not dt:
+            return ""
+        if isinstance(dt, datetime):
+            return dt.strftime('%Y-%m-%d %H:%M:%S')
+        dt_str = str(dt)
+        if dt_str.startswith('D:'):
+            try:
+                raw_dt = dt_str[2:16]
+                parsed = datetime.strptime(raw_dt, '%Y%m%d%H%M%S')
+                return parsed.strftime('%Y-%m-%d %H:%M:%S')
+            except Exception:
+                pass
+        return dt_str
+
+    date_created = format_pdf_date(meta.get('creation_date'))
+    date_modified = format_pdf_date(meta.get('modification_date'))
+
+    exif_data = {
+        'Name': os.path.basename(file_path),
+        'DateCreated': date_created,
+        'DateTimeOriginal': date_modified,
+        'FileCreateDate': datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'FileModifyDate': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Timezone': '',
+        'DeviceManufacturer': '',
+        'FileSize': os.path.getsize(file_path),
+        'FileType': 'PDF',
+        'FileTypeExtension': 'pdf',
+        'LensMake': '',
+        'Software': meta.get('producer', ''),
+        'HostComputer': '',
+        'LensInfo': '',
+        'LensModel': '',
+        'Model': '',
+        'Altitude': '',
+        'Latitude': '',
+        'Longitude': '',
+        'Coordinate': '',
+        'NumberOfImages': '',
+        'ExifToolVersion': '',
+        'Icon': 'Documents',
+        'Type': 'Documents',
+        'Time': date_modified if date_modified else date_created,
+        'Description': '',        
+        'MD5': hash_md5,
+        'Copyright': '',
+        'Creator': meta.get('creator', '') or meta.get('author', ''),
+        'LastModifiedBy': '',
+        'Title': meta.get('title', ''),
+        'Subject': meta.get('subject', ''),
+        'Producer': meta.get('producer', ''),
+        'Author': meta.get('author', '')
+    }
+
+    for key, value in exif_data.items():
+        exif_data[key] = str(value) if value else ""
+        
+    Description = cleanup_description(exif_data)
+    exif_data['Description'] = Description
+    return exif_data, Description
+
+
+def read_rtf_metadata(file_path, hash_md5):
+    """Reads metadata from RTF documents by regex searching the info block."""
+    ext = os.path.splitext(file_path)[1].lower()
+    author, company, title, subject = '', '', '', ''
+    c_date, r_date = '', ''
+    
+    try:
+        with open(file_path, 'rb') as f:
+            header_data = f.read(32768)
+            import re
+            
+            def extract_field(tag):
+                match = re.search(rb'\\' + tag.encode() + rb'\s+([^\\}]+)', header_data)
+                return match.group(1).decode('utf-8', errors='ignore').strip() if match else ''
+
+            author = extract_field('author')
+            company = extract_field('company')
+            title = extract_field('title')
+            subject = extract_field('subject')
+            
+            def extract_date(date_tag):
+                date_match = re.search(rb'\\' + date_tag.encode() + rb'\\yr(\d+)\\mo(\d+)\\dy(\d+)\\hr(\d+)\\min(\d+)', header_data)
+                if date_match:
+                    parts = [int(p) for p in date_match.groups()]
+                    try:
+                        dt = datetime(parts[0], parts[1], parts[2], parts[3], parts[4])
+                        return dt.strftime('%Y-%m-%d %H:%M:%S')
+                    except Exception:
+                        pass
+                return ''
+
+            c_date = extract_date('creatim')
+            r_date = extract_date('revtim')
+    except Exception as e:
+        print(f"Error parsing RTF {file_path}: {e}")
+
+    exif_data = {
+        'Name': os.path.basename(file_path),
+        'DateCreated': c_date,
+        'DateTimeOriginal': r_date,
+        'FileCreateDate': datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'FileModifyDate': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Timezone': '',
+        'DeviceManufacturer': '',
+        'FileSize': os.path.getsize(file_path),
+        'FileType': 'RTF',
+        'FileTypeExtension': 'rtf',
+        'LensMake': '',
+        'Software': '',
+        'HostComputer': '',
+        'LensInfo': '',
+        'LensModel': '',
+        'Model': '',
+        'Altitude': '',
+        'Latitude': '',
+        'Longitude': '',
+        'Coordinate': '',
+        'NumberOfImages': '',
+        'ExifToolVersion': '',
+        'Icon': 'Documents',
+        'Type': 'Documents',
+        'Time': r_date if r_date else c_date,
+        'Description': '',        
+        'MD5': hash_md5,
+        'Copyright': '',
+        'Creator': author,
+        'LastModifiedBy': '',
+        'Title': title,
+        'Subject': subject,
+        'Company': company
+    }
+
+    for key, value in exif_data.items():
+        exif_data[key] = str(value) if value else ""
+        
+    Description = cleanup_description(exif_data)
+    exif_data['Description'] = Description
+    return exif_data, Description
+
+
+def read_geo_metadata(file_path, hash_md5):
+    """Reads metadata from GPX and KML/KMZ geolocation files."""
+    ext = os.path.splitext(file_path)[1].lower()
+    name, description_str, creator = '', '', ''
+    time_val = ''
+    trackpoints_count, waypoints_count, placemarks_count = 0, 0, 0
+    
+    if ext == '.gpx':
+        meta = get_gpx_metadata(file_path)
+        name = meta.get('name', '')
+        creator = meta.get('creator', '')
+        time_val = meta.get('time', '')
+        trackpoints_count = meta.get('trackpoints_count', 0)
+        waypoints_count = meta.get('waypoints_count', 0)
+    elif ext in ['.kml', '.kmz']:
+        meta = get_kml_metadata(file_path)
+        name = meta.get('name', '')
+        description_str = meta.get('description', '')
+        placemarks_count = meta.get('placemarks_count', 0)
+
+    if time_val and 'T' in time_val:
+        try:
+            time_val_clean = time_val.replace('Z', '').split('.')[0]
+            dt = datetime.strptime(time_val_clean, '%Y-%m-%dT%H:%M:%S')
+            time_val = dt.strftime('%Y-%m-%d %H:%M:%S')
+        except Exception:
+            pass
+
+    exif_data = {
+        'Name': os.path.basename(file_path),
+        'DateCreated': time_val,
+        'DateTimeOriginal': '',
+        'FileCreateDate': datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'FileModifyDate': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Timezone': '',
+        'DeviceManufacturer': '',
+        'FileSize': os.path.getsize(file_path),
+        'FileType': ext.replace('.', '').upper(),
+        'FileTypeExtension': ext.replace('.', '').lower(),
+        'LensMake': '',
+        'Software': '',
+        'HostComputer': '',
+        'LensInfo': '',
+        'LensModel': '',
+        'Model': '',
+        'Altitude': '',
+        'Latitude': '',
+        'Longitude': '',
+        'Coordinate': '',
+        'NumberOfImages': '',
+        'ExifToolVersion': '',
+        'Icon': 'Tracking',
+        'Type': 'Tracking',
+        'Time': time_val if time_val else datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Description': '',        
+        'MD5': hash_md5,
+        'Copyright': '',
+        'Creator': creator,
+        'LastModifiedBy': '',
+        'GeoName': name,
+        'GeoDescription': description_str,
+        'TrackPointsCount': trackpoints_count,
+        'WayPointsCount': waypoints_count,
+        'PlacemarksCount': placemarks_count
+    }
+
+    for key, value in exif_data.items():
+        exif_data[key] = str(value) if value else ""
+        
+    Description = cleanup_description(exif_data)
+    exif_data['Description'] = Description
+    return exif_data, Description
+
+
+def read_media_metadata(file_path, hash_md5):
+    """Reads metadata from video or audio files."""
+    ext = os.path.splitext(file_path)[1].lower()
+    c_time, m_time = None, None
+    if ext in ['.mp4', '.m4v', '.mov', '.3gp', '.3g2', '.m4a']:
+        c_time, m_time = parse_mp4_timestamps(file_path)
+
+    is_audio = ext in ['.m4a', '.wav', '.mp3', '.flac', '.ogg']
+    icon_type = 'Audio' if is_audio else 'Video'
+
+    exif_data = {
+        'Name': os.path.basename(file_path),
+        'DateCreated': c_time if c_time else '',
+        'DateTimeOriginal': m_time if m_time else '',
+        'FileCreateDate': datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'FileModifyDate': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Timezone': '',
+        'DeviceManufacturer': '',
+        'FileSize': os.path.getsize(file_path),
+        'FileType': ext.replace('.', '').upper(),
+        'FileTypeExtension': ext.replace('.', '').lower(),
+        'LensMake': '',
+        'Software': '',
+        'HostComputer': '',
+        'LensInfo': '',
+        'LensModel': '',
+        'Model': '',
+        'Altitude': '',
+        'Latitude': '',
+        'Longitude': '',
+        'Coordinate': '',
+        'NumberOfImages': '',
+        'ExifToolVersion': '',
+        'Icon': icon_type,
+        'Type': icon_type,
+        'Time': m_time if m_time else (c_time if c_time else datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S')),
+        'Description': '',        
+        'MD5': hash_md5,
+        'Copyright': '',
+        'Creator': '',
+        'LastModifiedBy': ''
+    }
+
+    if ext == '.mp3':
+        try:
+            with open(file_path, 'rb') as f:
+                f.seek(-128, 2)
+                tag_data = f.read(128)
+                if tag_data[:3] == b'TAG':
+                    title = tag_data[3:33].strip(b'\x00\r\n\t ').decode('utf-8', errors='ignore')
+                    artist = tag_data[33:63].strip(b'\x00\r\n\t ').decode('utf-8', errors='ignore')
+                    album = tag_data[63:93].strip(b'\x00\r\n\t ').decode('utf-8', errors='ignore')
+                    if title: exif_data['Title'] = title
+                    if artist: exif_data['Creator'] = artist
+                    if album: exif_data['Album'] = album
+        except Exception:
+            pass
+
+    for key, value in exif_data.items():
+        exif_data[key] = str(value) if value else ""
+        
+    Description = cleanup_description(exif_data)
+    exif_data['Description'] = Description
+    return exif_data, Description
+
+
+def read_generic_metadata(file_path, hash_md5):
+    """Reads basic metadata from any generic file."""
+    ext = os.path.splitext(file_path)[1].lower()
+    
+    exif_data = {
+        'Name': os.path.basename(file_path),
+        'DateCreated': '',
+        'DateTimeOriginal': '',
+        'FileCreateDate': datetime.fromtimestamp(os.path.getctime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'FileModifyDate': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Timezone': '',
+        'DeviceManufacturer': '',
+        'FileSize': os.path.getsize(file_path),
+        'FileType': ext.replace('.', '').upper() if ext else "UNKNOWN",
+        'FileTypeExtension': ext.replace('.', '').lower() if ext else "",
+        'LensMake': '',
+        'Software': '',
+        'HostComputer': '',
+        'LensInfo': '',
+        'LensModel': '',
+        'Model': '',
+        'Altitude': '',
+        'Latitude': '',
+        'Longitude': '',
+        'Coordinate': '',
+        'NumberOfImages': '',
+        'ExifToolVersion': '',
+        'Icon': 'Files',
+        'Type': 'Files',
+        'Time': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+        'Description': '',        
+        'MD5': hash_md5,
+        'Copyright': '',
+        'Creator': '',
+        'Author': '',        
+        'LastModifiedBy': ''
+    }
+
+    if ext == '.json':
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                import json
+                jdata = json.load(f)
+                snippet = {k: v for i, (k, v) in enumerate(jdata.items()) if i < 30}
+                for k, v in snippet.items():
+                    exif_data[f"JSON_{k}"] = str(v)
+        except Exception:
+            pass
+
+    for key, value in exif_data.items():
+        exif_data[key] = str(value) if value else ""
+        
+    Description = cleanup_description(exif_data)
+    exif_data['Description'] = Description
+    return exif_data, Description
+
+
+def read_exif_data(file_path):
+    """Unified entry point to read metadata from any file type."""
+    try:
+        hash_md5 = hashfile(file_path)
+    except Exception as e:
+        print(f"Error hashing '{file_path}': {e}")        
+        hash_md5 = ""
+
+    ext = os.path.splitext(file_path)[1].lower()
+    
+    if ext in doc_types:
+        return read_docx_metadata(file_path, hash_md5)
+    elif ext in opendoc_types:
+        return read_opendoc_metadata(file_path, hash_md5)
+    elif ext in epub_types:
+        return read_epub_metadata(file_path, hash_md5)
+    elif ext in pdf_types:
+        return read_pdf_metadata(file_path, hash_md5)
+    elif ext in rtf_types:
+        return read_rtf_metadata(file_path, hash_md5)
+    elif ext in geo_types:
+        return read_geo_metadata(file_path, hash_md5)
+    elif ext in media_types:
+        return read_media_metadata(file_path, hash_md5)
+    elif ext in image_types:
+        return read_image_metadata(file_path, hash_md5)
+    else:
+        return read_generic_metadata(file_path, hash_md5)
 
 
 def msg_blurb_square(msg_blurb, color):
